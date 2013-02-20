@@ -1,5 +1,7 @@
 package services.backend.user;
 
+import play.libs.F.Promise;
+
 public interface UserService {
 
 	/**
@@ -8,6 +10,6 @@ public interface UserService {
 	 * @param password
 	 * @return user access token or null on failure
 	 */
-	String authenticate(String username, String password);
+    Promise<String> authenticate(String username, String password);
 	
 }

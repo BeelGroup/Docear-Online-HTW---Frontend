@@ -15,6 +15,7 @@ import java.util.Set;
 //TODO backend team, what is the task of this class?
 //TODO Play Framework is stateless don't keep state there
 //TODO maybe bad code because of Singleton
+@Deprecated//will be implemented stateless and with Akka Actors
 public class ServerMindmapMap {
 	private final Map<URL, Set<String>> serverMapIdMap;
 	private final Map<String, URL> mapIdServerMap;
@@ -90,7 +91,6 @@ public class ServerMindmapMap {
 	
 	/**
 	 * removes a server from the list
-	 * @param port server to shutdown
 	 * @return set with mapIds that have lost their server
 	 */
 	public Set<String> remove(URL server) {
@@ -145,24 +145,4 @@ public class ServerMindmapMap {
     public boolean containsServerURLForMap(String mapId) {
         return mapIdServerMap.containsKey(mapId);
     }
-	
-	public int getNextAvailablePort() {
-		int lowestPort = initialPort;
-		for(URL server : serverMapIdMap.keySet()) {
-			if(server.getPort() >= lowestPort) {
-				lowestPort = server.getPort()+1;
-			}
-		}
-		return lowestPort;
-	}
-	
-	public static class MapMetaData {
-		public long lastTimeAccessed;
-		public int serverPort;
-		
-		public MapMetaData(long lastTimeAccessed, int serverPort) {
-			this.lastTimeAccessed = lastTimeAccessed;
-			this.serverPort = serverPort;
-		}	
-	}
 }

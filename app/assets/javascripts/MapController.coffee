@@ -27,7 +27,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     loadMap: (mapId) ->
       console.log "call: loadMap #{mapId} (MapController)"
-      href = jsRoutes.controllers.ControllerFactory.mindMap.map(mapId).url
+      href = jsRoutes.controllers.MindMap.map(mapId).url
       $.get(href, @createJSONMap, "json")
 
 

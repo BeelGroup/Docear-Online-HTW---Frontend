@@ -34,14 +34,16 @@ public class Application extends Controller {
 	}
 
     /** makes some play routes in JavaScript avaiable */
-    @Cached(key = "js-routes-file")
     public static Result javascriptRoutes() {
         response().setContentType("text/javascript");
+
+
+
         return ok(
+             /* this currently looks like errors in IntelliJ IDEA */
             Routes.javascriptRouter("jsRoutes",
-                routes.javascript.ControllerFactory.new ReverseControllerFactory_mindMap().map(),
-                routes.javascript.ControllerFactory.new ReverseControllerFactory_mindMap().mapListFromDB(),
-                routes.javascript.ControllerFactory.new ReverseControllerFactory_mindMap().closeMap()
+                    routes.javascript.MindMap.map(),
+                    routes.javascript.MindMap.mapListFromDB()
             )
         );
     }

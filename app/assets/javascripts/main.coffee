@@ -6,7 +6,7 @@ require [],  () ->
   loadUserMaps = ->
     $.ajax({
       type: 'GET',
-      url: jsRoutes.controllers.ControllerFactory.mindMap.mapListFromDB().url,
+      url: jsRoutes.controllers.MindMap.mapListFromDB().url,
       dataType: 'json',
       success: (data)->
         $selectMinmap = $('#select-mindmap')
@@ -25,7 +25,7 @@ require [],  () ->
       "loadMap/:mapId": "loadMap"
     },
     loadMap: (mapId)->
-      href = jsRoutes.controllers.ControllerFactory.mindMap.map(mapId).url
+      href = jsRoutes.controllers.MindMap.map(mapId).url
       recall = (data)->
         $("#mindmap").html("")
         jsPlumb.reset()

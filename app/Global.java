@@ -1,3 +1,4 @@
+import configuration.SpringConfiguration;
 import controllers.routes;
 import info.schleichardt.play2.basicauth.CredentialsFromConfChecker;
 import info.schleichardt.play2.basicauth.JAuthenticator;
@@ -60,6 +61,11 @@ public class Global extends GlobalSettings {
         final String errorId = UUID.randomUUID().toString();
         Cache.set(LOGGED_ERROR_CACHE_PREFIX + errorId, new LoggedError(requestHeader, throwable), loggedErrorExpirationInSeconds);
         return redirect(routes.Application.error(errorId));
+    }
+
+    @Override
+    public <A> A getControllerInstance(Class<A> clazz) {
+        return SpringConfiguration.getBean(clazz);
     }
 
     private void logConfiguration(Configuration conf) {

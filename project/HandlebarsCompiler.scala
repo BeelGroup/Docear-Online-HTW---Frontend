@@ -6,6 +6,7 @@ package sbt.handlebars
 
 import java.io._
 import play.api._
+import scalax.file.ImplicitConversions
 
 class HandlebarsCompiler(handlebarsJsFilename: String) {
 
@@ -89,14 +90,14 @@ class HandlebarsCompiler(handlebarsJsFilename: String) {
 
     // load ember
     val emberFile = findFile(handlebarsJsFilename).getOrElse(throw new Exception("handlebars: could not find " + handlebarsJsFilename))
-    ctx.evaluateString(scope, Path(emberFile).slurpString, handlebarsJsFilename, 1, null)
+    ctx.evaluateString(scope, Path(emberFile).string, handlebarsJsFilename, 1, null)
 
     val precompileFunction = scope.get("precompile", scope).asInstanceOf[Function]
 
     Context.exit
 
     (source: File) => {
-      val handlebarsCode = Path(source).slurpString.replace("\r", "")
+      val handlebarsCode = Path(source).string.replace("\r", "")
       Context.call(null, precompileFunction, scope, scope, Array(handlebarsCode)).asInstanceOf[String]
     }
   }
@@ -119,7 +120,6 @@ var template = Handlebars.template, templates = Handlebars.templates = Handlebar
         }
         else if (file.isFile && name.endsWith(".handlebars")) {
           val templateName = path + name.replace(".handlebars", "")
-          println("ember: processing template %s".format(templateName))
           val jsSource = compile(file, options)
           dependencies += file
           output ++= "templates['%s'] = template(%s);\n\n".format(templateName, jsSource)
@@ -164,9 +164,9 @@ var template = Handlebars.template, templates = Handlebars.templates = Handlebar
 }
 
 case class CompilationException(message: String, file: File, atLine: Option[Int]) extends PlayException(
-  "Compilation error", message) with PlayException.ExceptionSource {
-  def line = atLine
-  def position = None
-  def input = Some(scalax.file.Path(file))
-  def sourceName = Some(file.getAbsolutePath)
+  "Compilation error", message) {
+  def line = -1 //atLine.getOrElse(-1) //TODO since Play 2.1 this has to be an Integer
+  def position = -1 //TODO since Play 2.1 this has to be an Integer
+  def input = scalax.file.Path(file).path
+  def sourceName = file.getAbsolutePath.toString
 }

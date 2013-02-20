@@ -19,7 +19,7 @@
     * Java Developing: http://www.playframework.org/documentation/2.0.4/JavaHome
     * Java API: http://www.playframework.org/documentation/api/2.0.4/java/index.html
 * Generate IDE Project Files
-      * `sbt eclipsify` #Eclipse
+      * `sbt eclipse` #Eclipse
       * `sbt idea` #IntelliJ IDEA
       * Netbeans: http://www.playframework.org/documentation/2.0.4/IDE
 * run unit tests in batch mode: `sbt test`
