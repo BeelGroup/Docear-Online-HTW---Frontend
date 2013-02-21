@@ -7,6 +7,7 @@ import models.frontend.LoggedError;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import play.*;
+import play.api.libs.Collections;
 import play.cache.Cache;
 import play.api.mvc.Handler;
 import play.mvc.Action;
@@ -14,6 +15,8 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +46,10 @@ public class Global extends GlobalSettings {
         Logger.info("possible features: " + possibleFeaturesString);
 
         List<String> enabledFeatures = conf.getStringList("application.features");
+        if (enabledFeatures == null) {
+            enabledFeatures = new LinkedList<String>();
+        }
+        Logger.info(enabledFeatures.toString());
         String enabledFeaturesString = StringUtils.join(enabledFeatures, ", ");
         Logger.info("enabled features: " + enabledFeaturesString);
         for (final String feature : enabledFeatures) {

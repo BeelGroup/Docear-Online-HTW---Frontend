@@ -10,12 +10,13 @@ public class FeatureInterceptor extends Action<Feature> {
 
     public Result call(Http.Context ctx) throws Throwable {
 
-
+        Feature configuration1 = configuration;
 
 //        //if is def/conf...
 //        Play.application().configuration();
-//        Logger.info("Calling action for " + ctx);
-//        Logger.info("value " + configuration.value() );
+        Logger.info("Calling action for " + ctx);
+        Logger.info("value " + configuration.getClass() );
+        Logger.info("value " + configuration);
 
         return notFound("not there");
     }
