@@ -22,7 +22,11 @@ public class SpringConfiguration {
         if (APPLICATION_CONTEXT == null) {
             throw new IllegalStateException("application context is not initialized");
         }
-        return APPLICATION_CONTEXT.getBean(beanClass);
+        T bean = null;
+        if (APPLICATION_CONTEXT.getBeansOfType(beanClass).size() > 0) {
+            bean = APPLICATION_CONTEXT.getBean(beanClass);
+        }
+        return bean;
     }
 
     public static void initializeContext(AnnotationConfigApplicationContext applicationContext) {

@@ -6,8 +6,9 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     constructor:->
       @addCanvas()
-      @addZoomPanel()
       @addMinimap()
+      @canvas.addDragDependency(@minimap)
+      @addZoomPanel()
       @zoomAmount = 100
 
 
@@ -23,18 +24,19 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.centerInContainer()
       @rootView.refreshDom()
       jsPlumb.repaintEverything()
-
+      @minimap.updatePosition()
 
     loadMap: (mapId) ->
       console.log "call: loadMap #{mapId} (MapController)"
       href = jsRoutes.controllers.MindMap.map(mapId).url
       $.get(href, @createJSONMap, "json")
+      
 
 
     createJSONMap: (data)=>
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
       @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, document.canvasID ,data.root.isHtml, 0,0,0,0,false) 
-      
+      document.rootID = data.root.id
       if data.root.leftChildren != undefined
         leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode)
         @rootNode.set 'leftChildren', leftNodes
@@ -144,7 +146,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @zoomPanel.renderAndAppendTo document.viewportID
 
 
-    addCanvas:()->
+    addCanvas:(@minimap)->
       MindmapCanvas = Backbone.View.extend
         id: document.canvasID
         tagName: 'div'
@@ -171,6 +173,11 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
             containment: document.viewportID,
             cursor: "move",
             handle: document.canvasID
+          });
+
+        addDragDependency:(dependency)->
+          @$el.draggable({
+            drag:=> dependency.updatePosition()
           });
 
         move:(x,y)->
@@ -226,23 +233,18 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
               $("##{document.canvasID}").css 
                 'left'  : "#{-xPos}px",
                 'top'   : "#{-yPos}px"
-              console.log ui.position
           });
 
 
         renderAndAppendTo:(id)->
           $viewport = $("##{document.viewportID}")
           $canvas = $("##{document.canvasID}")
-          # TODO: posistion cavas -> position viewport in minimap
-          posX = ((parseFloat($canvas.css('left')) - $("##{document.viewportID}").width()  + document.canvasWidth ) / document.canvasWidth  ) * 100
-          posY = ((parseFloat($canvas.css('top'))  - $("##{document.viewportID}").height() + document.canvasHeight) / document.canvasHeight ) * 100
+          
           stats = 
             width: $viewport.width() / 70
             height: $viewport.height() / 70
-            left: posX
-            top:  posY
-
-
+            left: 42
+            top:  42
 
 
           @$el.html @template stats
@@ -259,6 +261,23 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
           @moreEvents()
           @afterAppend()
+
+
+        updatePosition:->
+          $viewport = $("##{document.viewportID}")
+          $canvas   = $("##{document.canvasID}")
+          $root     = $("##{document.rootID}")
+          $minimapViewport = $("##{document.minimapViewportID}")
+          # TODO: posistion cavas -> position viewport in minimap
+          console.log $root.outerWidth()
+          posX = ((parseFloat($canvas.css('left'))  + document.canvasWidth   ) / document.canvasWidth  ) * 100
+          posY = ((parseFloat($canvas.css('top'))   + document.canvasHeight  ) / document.canvasHeight ) * 100
+          
+          $minimapViewport.css
+            'left' : "#{-(posX-100)}%"
+            'top'  : "#{-(posY-100)}%"
+
+
 
       @minimap = new MindmapMinimap()
       @minimap.renderAndAppendTo(document.viewportID)      
