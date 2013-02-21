@@ -17,15 +17,15 @@ import java.util.Set;
 //TODO maybe bad code because of Singleton
 @Deprecated//will be implemented stateless and with Akka Actors
 public class ServerMindmapMap {
-	private final Map<URL, Set<String>> serverMapIdMap;
-	private final Map<String, URL> mapIdServerMap;
+	private final Map<String, Set<String>> serverMapIdMap;
+	private final Map<String, String> mapIdServerMap;
 	private final int maxMapsPerServer;
 	private final int initialPort;
     private static ServerMindmapMap INSTANCE;
 
 	private ServerMindmapMap(int maxMapsPerServer, int initialPort) {
-		serverMapIdMap = Collections.synchronizedMap(new HashMap<URL, Set<String>>());
-		mapIdServerMap = Collections.synchronizedMap(new HashMap<String, URL>());
+		serverMapIdMap = Collections.synchronizedMap(new HashMap<String, Set<String>>());
+		mapIdServerMap = Collections.synchronizedMap(new HashMap<String, String>());
 		this.maxMapsPerServer = maxMapsPerServer;
 		this.initialPort = initialPort;
 	}
@@ -45,21 +45,16 @@ public class ServerMindmapMap {
         final ServerMindmapMap mindmapServerMap = new ServerMindmapMap(mapsPerInstance, port);
 
         if(useSingleDocearInstance) {
-            try {
-                final String hostUrl = conf.getString("backend.singleInstance.host");
-                final String path = conf.getString("backend.v10.pathprefix");
-
-                URL singleServer = new URL(hostUrl+path);
-                mindmapServerMap.put(singleServer, "5");
+                final String hostURL = conf.getString("backend.singleInstance.host");
+                //final String path = conf.getString("backend.v10.pathprefix");
+                
+                mindmapServerMap.put(hostURL, "5");
                 mindmapServerMap.remove("5");
-            } catch (MalformedURLException e) {
-                throw new RuntimeException("cannot read backend url, check your configuration", e);
-            }
         }
         return mindmapServerMap;
     }
 
-    public void put(URL serverAddress, String mapId) {
+    public void put(String serverAddress, String mapId) {
 		//add to port map
 		if(!serverMapIdMap.containsKey(serverAddress)) {
 			serverMapIdMap.put(serverAddress, new HashSet<String>());
@@ -75,10 +70,10 @@ public class ServerMindmapMap {
 	 * @param mapId map to remove
 	 * @return hosting server or null of not hosted
 	 */
-	public URL remove(String mapId) {
+	public String remove(String mapId) {
 		if(mapIdServerMap.containsKey(mapId)) {
 			//get hosting server
-			URL hostingServerPort = mapIdServerMap.get(mapId);
+			String hostingServerPort = mapIdServerMap.get(mapId);
 			Set<String> mapsOnHostingServer = serverMapIdMap.get(hostingServerPort);
 			//remove from maps
 			mapsOnHostingServer.remove(mapId);
@@ -111,8 +106,8 @@ public class ServerMindmapMap {
 	 * 
 	 * @return server port or null if there is no free capacity
 	 */
-	public URL getServerWithFreeCapacity() {
-		for(Entry<URL,Set<String>> entry : serverMapIdMap.entrySet()) {
+	public String getServerWithFreeCapacity() {
+		for(Entry<String,Set<String>> entry : serverMapIdMap.entrySet()) {
 			if(entry.getValue().size() < maxMapsPerServer) {
 				return entry.getKey();
 			}
@@ -129,7 +124,7 @@ public class ServerMindmapMap {
 	 * @param mapId
 	 * @return server port or null if not hosted
 	 */
-	public URL getServerURLForMap(String mapId) {
+	public String getServerURLForMap(String mapId) {
 		if(containsServerURLForMap(mapId)) {
 			return mapIdServerMap.get(mapId);
 		} else {

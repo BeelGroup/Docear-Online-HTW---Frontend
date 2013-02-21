@@ -64,8 +64,12 @@ public class Global extends GlobalSettings {
     }
 
     @Override
-    public <A> A getControllerInstance(Class<A> clazz) {
-        return SpringConfiguration.getBean(clazz);
+    public <A> A getControllerInstance(Class<A> clazz) throws Exception {
+        A bean = SpringConfiguration.getBean(clazz);
+        if (bean == null) {
+            bean = super.getControllerInstance(clazz);
+        }
+        return bean;
     }
 
     private void logConfiguration(Configuration conf) {
