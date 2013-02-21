@@ -1,12 +1,13 @@
 package services.backend.mindmap;
 
+import static akka.pattern.Patterns.ask;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,33 +31,31 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
-import com.typesafe.config.ConfigFactory;
-
+import play.Configuration;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
-import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import scala.concurrent.Future;
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import util.backend.ZipUtils;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.pattern.Patterns;
+
+import com.typesafe.config.ConfigFactory;
 
 @Profile("backendProd")
 @Component
 public class ServerMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
 	private static Map<String, String> serverIdToMapIdMap;
+	private static String freeplaneActorUrl;
 	private static ObjectMapper objectMapper;
 	private static ActorSystem system;
-	private static ActorRef remoteActor;
 	
-
-	public ServerMindMapCrudService() {
-		
+	static {
+		final Configuration conf = Play.application().configuration();
+		freeplaneActorUrl = conf.getString("backend.singleInstance.host");
 		serverIdToMapIdMap = new HashMap<String, String>();
 		objectMapper = new ObjectMapper();
 	}
@@ -65,24 +64,19 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 	public Promise<JsonNode> mindMapAsJson(String id) throws DocearServiceException, IOException {
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
 		String mindmapId = serverIdToMapIdMap.get(id);
-		String serverUrl = null;
 		if(mindmapId == null) { //if not hosted, send to a server
-			Logger.debug("No map for server id " + id + ". Sending to server...");
-			serverUrl = sendMapToDocearInstance(id);
+			Logger.debug("Map for server id " + id + " not open. Sending to freeplane...");
+			sendMapToDocearInstance(id);
 			mindmapId = serverIdToMapIdMap.get(id);
 		} else {
-			serverUrl = ServerMindmapMap.getInstance().getServerURLForMap(mindmapId);
-			Logger.debug("ServerId: " + id + "; MapId: " + mindmapId + "; url: " +serverUrl);
+			Logger.debug("ServerId: " + id + "; MapId: " + mindmapId);
 		}
 
-		String remoteUrl = serverUrl.toString();
-		ActorRef remoteActor = getRemoteActor(remoteUrl);
-
-		Future<Object> future = akka.pattern.Patterns.ask(remoteActor, new MindmapAsJsonRequest(mindmapId), 20000);
+		ActorRef remoteActor = getRemoteActor();
+		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), 20000);
 
 		Promise<JsonNode> promise = Akka.asPromise(future).map(
 				new Function<Object, JsonNode>() {
-
 					@Override
 					public JsonNode apply(Object message) throws Throwable {
 						final MindmapAsJsonReponse response = (MindmapAsJsonReponse)message;
@@ -118,10 +112,8 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		return Promise.pure(Arrays.asList(infos.toArray(new UserMindmapInfo[0])));
 	}
 
-	private String sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
-		//find server with capacity
-		String serverUrl = ServerMindmapMap.getInstance().getServerWithFreeCapacity();
-
+	private void sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
+		
 		File file = null;
 		String mmId = null;
 		try {
@@ -135,9 +127,9 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 
 				file = getMindMapFileFromDocearServer(user, mapId);
 				if(file == null)
-					return null;
+					throw new FileNotFoundException();
 
-				//TODO just a hack, because we are currently using different ids for retrieval then supposed
+				//just a hack, because we are currently using different ids for retrieval then supposed
 				mmId = getMapIdFromFile(file);
 
 			}
@@ -152,11 +144,8 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		serverIdToMapIdMap.put(mapId, mmId);
 
 		//send file to server and put in map
-		ActorRef remoteActor = getRemoteActor(serverUrl);
+		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(new OpenMindMapRequest(file),remoteActor);	
-		//akka.pattern.Patterns.ask(remoteActor, new OpenMindMapRequest(file), 20000);
-
-		return serverUrl;
 	}
 
 	private static File getMindMapFileFromDocearServer(final User user, final String mmIdOnServer) throws IOException {
@@ -189,11 +178,11 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		return null;
 	}
 
-	private ActorRef getRemoteActor(String urlString) {
+	private ActorRef getRemoteActor() {
 		if(system == null) {
 			system = ActorSystem.create("freeplaneSystem",ConfigFactory.load().getConfig("local"));
 		}
-		ActorRef remoteActor = system.actorFor(urlString);
+		ActorRef remoteActor = system.actorFor(freeplaneActorUrl);
 		Logger.debug("Connection to "+remoteActor.path()+" established");
 		return remoteActor;
 	}
