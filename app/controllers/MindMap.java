@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import controllers.featuretoggle.ImplementedFeature;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 
@@ -24,6 +25,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
+
+import static controllers.featuretoggle.Feature.*;
 
 import static controllers.User.getCurrentUser;
 
@@ -64,6 +67,10 @@ public class MindMap extends Controller {
     
     public Result deleteNode() {
     	return TODO;
-    }   
+    }
 
+    @ImplementedFeature({EDIT_NODE_TEXT})
+    public Result neverImplemented() {
+        return TODO;
+    }
 }
