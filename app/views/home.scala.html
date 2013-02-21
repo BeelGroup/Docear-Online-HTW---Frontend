@@ -1,0 +1,14 @@
+@()
+
+@additionalJavaScripts() = {
+<script src='@routes.Assets.at("javascripts/config.js")'></script>
+<script src='@routes.Assets.at("javascripts/index.js")'></script>
+<script src='@routes.Assets.at("javascripts/jsPlumbHandler.js")'></script>
+}
+
+@main("Mind map demo", additionalBodyJavaScripts = additionalJavaScripts()) {
+    @mindMapContainer {
+    }
+}
+
+

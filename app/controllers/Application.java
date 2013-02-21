@@ -11,6 +11,7 @@ import play.cache.Cache;
 import play.cache.Cached;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +21,12 @@ public class Application extends Controller {
 
 	/** displays current mind map drawing */
 	public static Result index() {
-		return ok(views.html.index.render());
+		if(User.isAuthenticated()) {
+			return ok(views.html.home.render());
+		} else {
+			return ok(views.html.index.render(User.credentialsForm));
+		}
+		
 	}
 
     /** displays a feature list and help site */

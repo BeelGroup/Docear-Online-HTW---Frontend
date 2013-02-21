@@ -89,4 +89,5 @@ require [],  () ->
   )
 
   new ApplicationView()
-
+  
+  $('.affix').affix();

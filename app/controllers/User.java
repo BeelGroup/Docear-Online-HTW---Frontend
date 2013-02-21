@@ -24,7 +24,7 @@ import static play.data.Form.form;
 @Component
 public class User extends Controller {
 
-    private static final Form<Credentials> credentialsForm = form(Credentials.class);
+    public static final Form<Credentials> credentialsForm = form(Credentials.class);
 
 	@Autowired
     private UserService userService;
@@ -62,10 +62,6 @@ public class User extends Controller {
         session(SESSION_KEY_TIMEOUT, createTimeoutTimestamp().toString());
     }
 
-    public Result loginForm() {
-        return ok(views.html.user.loginForm.render(credentialsForm));
-    }
-
     public Result logout() {
         session().clear();
         return redirect(routes.Application.index());
@@ -75,6 +71,10 @@ public class User extends Controller {
         return redirect(routes.MindMap.mapListFromDB());
     }
 	
+    public static boolean isAuthenticated() {
+    	return getCurrentUser() != null;
+    }
+    
 	/**
 	 * 
 	 * @return User or null if non is logged-in
