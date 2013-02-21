@@ -68,9 +68,4 @@ public class MindMap extends Controller {
     public Result deleteNode() {
     	return TODO;
     }
-
-    @ImplementedFeature({EDIT_NODE_TEXT})
-    public Result neverImplemented() {
-        return TODO;
-    }
 }

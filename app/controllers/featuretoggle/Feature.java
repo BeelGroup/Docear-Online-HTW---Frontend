@@ -6,7 +6,7 @@ public enum Feature {
     EDIT_NODE_TEXT("enables the user to click on a node and change the text in it");
 
     String description;
-    boolean activated = false;
+    boolean isEnabled = false;
 
     private Feature(String description) {
         this.description = description;
@@ -16,9 +16,13 @@ public enum Feature {
         return description;
     }
 
-    public static void enableFeature(String featureName, boolean enable) {
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public static void enableFeature(String featureName, boolean isEnabled) {
         try {
-            Feature.valueOf(featureName).activated = enable;
+            Feature.valueOf(featureName).isEnabled = isEnabled;
         } catch(IllegalArgumentException e) {
             throw new IllegalArgumentException("Feature not found: " + featureName, e);
         }

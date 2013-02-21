@@ -1,23 +1,26 @@
 package controllers.featuretoggle;
 
-import play.Logger;
-import play.Play;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 
-public class FeatureInterceptor extends Action<Feature> {
+import java.util.Arrays;
 
+public class FeatureInterceptor extends Action<ImplementedFeature> {
     public Result call(Http.Context ctx) throws Throwable {
-
-        Feature configuration1 = configuration;
-
-//        //if is def/conf...
-//        Play.application().configuration();
-        Logger.info("Calling action for " + ctx);
-        Logger.info("value " + configuration.getClass() );
-        Logger.info("value " + configuration);
-
-        return notFound("not there");
+        final Feature[] features = configuration.value();
+        final boolean allFeaturesEnabled = Iterables.all(Arrays.asList(features), new Predicate<Feature>() {
+            @Override
+            public boolean apply(Feature feature) {
+                return feature.isEnabled();
+            }
+        });
+        Result result = notFound();
+        if (allFeaturesEnabled) {
+            result = delegate.call(ctx);
+        }
+        return result;
     }
 }

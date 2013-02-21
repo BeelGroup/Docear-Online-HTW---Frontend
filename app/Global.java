@@ -49,7 +49,6 @@ public class Global extends GlobalSettings {
         if (enabledFeatures == null) {
             enabledFeatures = new LinkedList<String>();
         }
-        Logger.info(enabledFeatures.toString());
         String enabledFeaturesString = StringUtils.join(enabledFeatures, ", ");
         Logger.info("enabled features: " + enabledFeaturesString);
         for (final String feature : enabledFeatures) {
