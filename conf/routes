@@ -21,7 +21,7 @@ GET		/maps			    		@controllers.MindMap.mapListFromDB()
 
 # User
 POST	/login						@controllers.User.login()
-GET 	/login						@controllers.User.loginForm()
+GET 	/login						controllers.Application.index()
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()
 GET 	/profile					@controllers.User.profile()

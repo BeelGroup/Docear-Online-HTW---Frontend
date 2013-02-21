@@ -45,7 +45,6 @@
 </head>
 
 <body class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses'>
-
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container">
@@ -55,12 +54,13 @@
                     <span class="icon-bar"></span>
                 </a>
                 <a class="brand" href="/">@Play.configuration.getString("application.name")</a>
+                @if(isAuthenticated) {
                 <div class="nav-collapse collapse">
                     <ul class="nav">
                         @menuItem("/", "Mind map demo")
                         @menuItem(controllers.routes.Application.smallSolutions().toString, "Small solutions")
                         @menuItem(controllers.routes.Application.help().toString, "Help")
-                        @menuItem(controllers.routes.User.loginForm().toString, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
+                        @menuItem(controllers.routes.Application.index().toString, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
                         @menuItem(controllers.routes.User.profile.toString, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
                         @menuItem(controllers.routes.User.logout.toString, "Logout", onlyIf = isAuthenticated)
                     </ul>
@@ -75,6 +75,7 @@
 	                    </li>
                     </ul>
                 </div><!--/.nav-collapse -->
+                }
             </div>
         </div>
     </div>
