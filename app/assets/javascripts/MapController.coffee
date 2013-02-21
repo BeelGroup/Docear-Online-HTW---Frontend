@@ -185,6 +185,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
            'left'  : "#{(@$el.css 'left')+x}px"
            'top'   : "#{(@$el.css 'top')+y}px"
 
+
         center:->
           xPos = document.canvasWidth/2 - $("##{document.viewportID}").width()/2
           yPos = document.canvasHeight/2 - $("##{document.viewportID}").height()/2
@@ -198,6 +199,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
           @$el.css 
             'width' : "#{document.canvasWidth}px"
             'height': "#{document.canvasHeight}px"
+            'background-color' : 'rgb(230,230,230)'
 
           @center()
           @moreEvents()
@@ -228,8 +230,9 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
             containment: "parent",
             cursor: "move",
             drag: (event, ui)->
-              xPos = document.canvasWidth*ui.position.left/100 - $("##{document.viewportID}").width()/2
-              yPos = document.canvasHeight*ui.position.top/100 - $("##{document.viewportID}").height()/2
+              #                            // position of minimap viewport
+              xPos = document.canvasWidth  * (ui.position.left / $(@).parent().width() * 100) / 100  
+              yPos = document.canvasHeight * (ui.position.top  / $(@).parent().height() * 100) / 100 
               $("##{document.canvasID}").css 
                 'left'  : "#{-xPos}px",
                 'top'   : "#{-yPos}px"
@@ -243,8 +246,8 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
           stats = 
             width: $viewport.width() / 70
             height: $viewport.height() / 70
-            left: 42
-            top:  42
+            left: 0
+            top:  0
 
 
           @$el.html @template stats
@@ -268,10 +271,9 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
           $canvas   = $("##{document.canvasID}")
           $root     = $("##{document.rootID}")
           $minimapViewport = $("##{document.minimapViewportID}")
-          # TODO: posistion cavas -> position viewport in minimap
-          console.log $root.outerWidth()
-          posX = ((parseFloat($canvas.css('left'))  + document.canvasWidth   ) / document.canvasWidth  ) * 100
-          posY = ((parseFloat($canvas.css('top'))   + document.canvasHeight  ) / document.canvasHeight ) * 100
+          
+          posX = ((parseFloat($canvas.css('left'))  + document.canvasWidth ) / document.canvasWidth  ) * 100
+          posY = ((parseFloat($canvas.css('top'))   + document.canvasHeight) / document.canvasHeight ) * 100
           
           $minimapViewport.css
             'left' : "#{-(posX-100)}%"

@@ -1,4 +1,4 @@
-@()
+@(credentialsForm: Form[models.frontend.Credentials])
 
 @additionalJavaScripts() = {
 <script src='@routes.Assets.at("javascripts/config.js")'></script>
@@ -6,9 +6,19 @@
 <script src='@routes.Assets.at("javascripts/jsPlumbHandler.js")'></script>
 }
 
-@main("Mind map demo", additionalBodyJavaScripts = additionalJavaScripts()) {
-    @mindMapContainer {
-    }
+@main("Login", additionalBodyClasses = "login-page", additionalBodyJavaScripts = additionalJavaScripts()) {
+
+    <div class="row-fluid">
+        <div class="span8">
+            <div id="mindmap-container" class="landing-page">
+                @mindMapContainer {
+                }
+            </div>
+        </div>
+        <div class="span4">
+            <div data-spy="affix" data-offset-top="0" class="affix">
+            @user.loginForm(credentialsForm)
+            </div>
+        </div>
+    </div>
 }
-
-

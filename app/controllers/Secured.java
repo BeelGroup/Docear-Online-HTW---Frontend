@@ -31,7 +31,7 @@ public class Secured extends Security.Authenticator {
     @Override
     public Result onUnauthorized(Context ctx) {
         ctx.flash().put("error", "You need to authenticate.");
-        return redirect(routes.User.loginForm());
+        return redirect(routes.Application.index());
     }
 
     public static Instant createTimeoutTimestamp() {
