@@ -34,6 +34,7 @@ public class MindMap extends Controller {
 	private MindMapCrudService mindMapCrudService;
 
 	public Result map(final String id) throws DocearServiceException, IOException {
+		
         final F.Promise<JsonNode> mindMapPromise = mindMapCrudService.mindMapAsJson(id);
         return async(mindMapPromise.map(new F.Function<JsonNode, Result>() {
             @Override
