@@ -60,7 +60,11 @@ public class Global extends GlobalSettings {
          */
         final String errorId = UUID.randomUUID().toString();
         Cache.set(LOGGED_ERROR_CACHE_PREFIX + errorId, new LoggedError(requestHeader, throwable), loggedErrorExpirationInSeconds);
-        return redirect(routes.Application.error(errorId));
+        if (Play.application().isDev()) {
+            return super.onError(requestHeader, throwable);//still show errors in browser
+        } else {
+            return redirect(routes.Application.error(errorId));
+        }
     }
 
     @Override
