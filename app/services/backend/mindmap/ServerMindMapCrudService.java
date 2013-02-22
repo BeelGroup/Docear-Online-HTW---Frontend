@@ -22,6 +22,7 @@ import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages.AddNodeRequest;
@@ -211,10 +212,16 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 				if(file == null)
 					throw new FileNotFoundException();
 
-				//just a hack, because we are currently using different ids for retrieval then supposed
-				mmId = getMapIdFromFile(file);
-
 			}
+			
+			//just a hack, because we are currently using different ids for retrieval then supposed
+			mmId = getMapIdFromFile(file);
+
+			serverIdToMapIdMap.put(mapId, mmId);
+
+			//send file to server and put in map
+			ActorRef remoteActor = getRemoteActor();
+			remoteActor.tell(new OpenMindMapRequest(FileUtils.readFileToString(file)),remoteActor);
 		} catch (FileNotFoundException e) {
 			Logger.error("can't find mindmap file", e);
 		} catch (IOException e) {
@@ -222,12 +229,6 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		} catch (URISyntaxException e) {
 			Logger.error("can't open mindmap file", e);
 		}
-
-		serverIdToMapIdMap.put(mapId, mmId);
-
-		//send file to server and put in map
-		ActorRef remoteActor = getRemoteActor();
-		remoteActor.tell(new OpenMindMapRequest(file),remoteActor);	
 	}
 
 	private static File getMindMapFileFromDocearServer(final User user, final String mmIdOnServer) throws IOException {
