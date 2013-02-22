@@ -33,7 +33,7 @@ define ->
         cancel: "a.ui-icon, .node",
         containment: document.viewportID,
         cursor: "move",
-        handle: document.canvasID
+        handle: document.canvasID 
       });
 
 
