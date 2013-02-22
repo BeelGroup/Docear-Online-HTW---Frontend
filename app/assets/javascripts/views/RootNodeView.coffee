@@ -48,7 +48,6 @@ define ['views/NodeView'], (NodeView) ->
       node.css 'top' , posY + 'px'
 
 
-
     render: ->
       @$el.html @template @getRenderData()
       @recursiveRender $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
