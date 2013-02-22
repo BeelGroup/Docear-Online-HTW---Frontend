@@ -17,6 +17,9 @@ GET     /qunit                      controllers.QUnit.testAll()
 
 # Mindmap
 GET		/map/json/:id				@controllers.MindMap.map(id: String)
+POST	/map/createNode				@controllers.MindMap.createNode()
+POST	/map/changeNode				@controllers.MindMap.changeNode()
+POST	/map/deleteNode				@controllers.MindMap.deleteNode()
 GET		/maps			    		@controllers.MindMap.mapListFromDB()
 
 # User
