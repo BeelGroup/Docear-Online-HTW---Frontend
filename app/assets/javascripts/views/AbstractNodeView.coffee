@@ -97,6 +97,27 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       @$el.append(@model.get 'purehtml')
 
 
+    scale:(amount)->
+        #CSS3:
+        possibilities = document.body.style
+
+        if($.inArray('WebkitTransform', possibilities) or 
+           $.inArray('MozTransform', inpossibilities) or 
+           $.inArray('OTransform', possibilities) or 
+           $.inArray('transform', possibilities))
+
+          @getElement().css
+            '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
+            '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
+            '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
+            '-o-transform'      : "scale(#{amount})"  #/* Opera */
+            #node.css 'zoom', "#{@zoomAmount}%"
+            #node.effect("scale", {percent:150, origin:['middle','center']}, 500)   
+        
+        else
+          console.log 'No CSS3'
+
+
     render: ->
       @$el.html @template @getRenderData()
       # render the subviews

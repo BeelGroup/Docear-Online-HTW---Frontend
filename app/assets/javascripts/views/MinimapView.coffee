@@ -11,7 +11,7 @@ define ->
 
     constructor:(@relatedViewport, @relatedCanvasView)->
       super()
-      @relatedCanvas = @relatedCanvasView.element()
+      @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvasView.addDragDependency(@updatePosition)
 
 
