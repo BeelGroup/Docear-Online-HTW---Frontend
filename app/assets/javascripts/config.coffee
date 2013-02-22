@@ -1,6 +1,7 @@
 document.canvasID = 'mindmap'
 document.viewportID = 'mindmap-container'
 document.minimapViewportID = 'minimap-viewport'
+document.minimapViewportCN = 'minimap-viewport'
 document.minimapCanvasID = 'minimap-canvas'
 document.rootID = 'document.rootID'
 document.canvasWidth = 8000

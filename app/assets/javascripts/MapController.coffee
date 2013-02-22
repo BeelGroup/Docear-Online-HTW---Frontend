@@ -1,14 +1,22 @@
-define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/HtmlView', 'models/Node', 'models/RootNode'],  (DocearRouter, RootNodeView, NodeView,HtmlView,NodeModel,RootNodeModel) ->  
+define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/HtmlView', 'views/MinimapView', 'models/Node', 'models/RootNode'],  (DocearRouter, RootNodeView, NodeView, HtmlView, MinimapView, NodeModel,RootNodeModel) ->  
   module = ->
 
   class MapController
 
 
     constructor:->
-      @addCanvas()
-      @addMinimap()
-      @canvas.addDragDependency(@minimap)
+
+      $viewport = $("##{document.viewportID}")
+
+      @canvas = new MindmapCanvas()
+      @canvas.renderAndAppendTo($viewport)
+
+      # pass related viewport-element and canvas-view
+      @minimap = new MinimapView($viewport, @canvas)
+      @minimap.renderAndAppendTo($viewport, true)
+
       @addZoomPanel()
+
       @zoomAmount = 100
 
 
@@ -19,7 +27,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.getElement().remove();
       # create and append new html 
       @$rootHtml = $(@rootView.render().el).html()
-      $("##{document.canvasID}").append @$rootHtml      
+      @canvas.element().append @$rootHtml      
       @rootView.connectChildren()
       @rootView.centerInContainer()
       @rootView.refreshDom()
@@ -104,7 +112,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
              $.inArray('OTransform', possibilities) or 
              $.inArray('transform', possibilities))
             if(shift.x != 0 or shift.y != 0)
-              console.log shift
               $canvas = $("##{document.canvasID}")
               posX = parseFloat($canvas.css('left')) + shift.x/7 + 'px' 
               posY = parseFloat($canvas.css('top'))  + shift.y/5 + 'px' 
@@ -146,143 +153,65 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @zoomPanel.renderAndAppendTo document.viewportID
 
 
-    addCanvas:(@minimap)->
-      MindmapCanvas = Backbone.View.extend
-        id: document.canvasID
-        tagName: 'div'
-        className: 'ui-draggable'
 
-        moreEvents:()=>
-          $("##{document.canvasID}").mousewheel (event, delta, deltaX, deltaY)=>
-            $viewport = $("##{document.viewportID}")          
-            $right = $(".rightChildren")
-            console.log $right
-            x = event.pageX - $viewport.offset().left - $viewport.width()/2
-            y = event.pageY - $viewport.offset().top - $viewport.height()/2
-            shift = 'x': x, 'y': y
-            if deltaY > 0 then @zoomPanel.zoomIn(event, shift) else @zoomPanel.zoomOut(event, shift)
-            event.preventDefault() 
+    MindmapCanvas = Backbone.View.extend
+      id: document.canvasID
+      tagName: 'div'
+      className: 'ui-draggable'
 
-          $(document).keydown (event)=>
-            if @rootView
-              @rootView.userKeyInput event
+      moreEvents:()=>
+        $("##{document.canvasID}").mousewheel (event, delta, deltaX, deltaY)=>
+          $viewport = $("##{document.viewportID}")          
+          $right = $(".rightChildren")
+          x = event.pageX - $viewport.offset().left - $viewport.width()/2
+          y = event.pageY - $viewport.offset().top - $viewport.height()/2
+          shift = 'x': x, 'y': y
+          if deltaY > 0 then @zoomPanel.zoomIn(event, shift) else @zoomPanel.zoomOut(event, shift)
+          event.preventDefault() 
 
-        afterAppend:()->
-          @$el.draggable({
-            cancel: "a.ui-icon, .node",
-            containment: document.viewportID,
-            cursor: "move",
-            handle: document.canvasID
-          });
+        $(document).keydown (event)=>
+          if @rootView
+            @rootView.userKeyInput event
 
-        addDragDependency:(dependency)->
-          @$el.draggable({
-            drag:=> dependency.updatePosition()
-          });
+      element:-> @$el
 
-        move:(x,y)->
-          @$el.css 
-           'left'  : "#{(@$el.css 'left')+x}px"
-           'top'   : "#{(@$el.css 'top')+y}px"
+      afterAppend:()->
+        @$el.draggable({
+          cancel: "a.ui-icon, .node",
+          containment: document.viewportID,
+          cursor: "move",
+          handle: document.canvasID
+        });
 
+      addDragDependency:(dependencyFunction)->
+        @$el.draggable({
+          drag:-> dependencyFunction()
+        });
 
-        center:->
-          xPos = document.canvasWidth/2 - $("##{document.viewportID}").width()/2
-          yPos = document.canvasHeight/2 - $("##{document.viewportID}").height()/2
-          @$el.css 
-           'left'  : "#{-xPos}px",
-           'top'   : "#{-yPos}px"
-
-        renderAndAppendTo:(id)->
-          $("##{id}").append(@render().el)
-
-          @$el.css 
-            'width' : "#{document.canvasWidth}px"
-            'height': "#{document.canvasHeight}px"
-            'background-color' : 'rgb(230,230,230)'
-
-          @center()
-          @moreEvents()
-          @afterAppend()
-
-      @canvas = new MindmapCanvas()
-      @canvas.renderAndAppendTo(document.viewportID)
+      move:(x,y)->
+        @$el.css 
+         'left'  : "#{(@$el.css 'left')+x}px"
+         'top'   : "#{(@$el.css 'top')+y}px"
 
 
+      center:->
+        xPos = document.canvasWidth/2 - $("##{document.viewportID}").width()/2
+        yPos = document.canvasHeight/2 - $("##{document.viewportID}").height()/2
+        @$el.css 
+         'left'  : "#{-xPos}px",
+         'top'   : "#{-yPos}px"
 
-    addMinimap:()->
-      MindmapMinimap = Backbone.View.extend
-        id: document.minimapCanvasID
-        tagName: 'div'
-        className: 'minimap-canvas'
-        template: Handlebars.templates['Minimap']
+      renderAndAppendTo:($element)->
+        $element.append(@render().el)
 
-        moreEvents:()=>
-          $("##{document.canvasID}").mousewheel (event, delta, deltaX, deltaY)=>
-            #event.stopPropagation()   # not IE
-            #event.cancelBubble = true # IE
-            if deltaY > 0 then @zoomPanel.zoomIn() else @zoomPanel.zoomOut()
-            event.preventDefault() 
+        @$el.css 
+          'width' : "#{document.canvasWidth}px"
+          'height': "#{document.canvasHeight}px"
+          'background-color' : 'rgb(230,230,230)'
 
-        afterAppend:()->
-          $("##{document.minimapViewportID}").draggable({
-            cancel: "a.ui-icon, .node",
-            containment: "parent",
-            cursor: "move",
-            drag: (event, ui)->
-              #                            // position of minimap viewport
-              xPos = document.canvasWidth  * (ui.position.left / $(@).parent().width() * 100) / 100  
-              yPos = document.canvasHeight * (ui.position.top  / $(@).parent().height() * 100) / 100 
-              $("##{document.canvasID}").css 
-                'left'  : "#{-xPos}px",
-                'top'   : "#{-yPos}px"
-          });
-
-
-        renderAndAppendTo:(id)->
-          $viewport = $("##{document.viewportID}")
-          $canvas = $("##{document.canvasID}")
-          
-          stats = 
-            width: $viewport.width() / 70
-            height: $viewport.height() / 70
-            left: 0
-            top:  0
-
-
-          @$el.html @template stats
-          $("##{id}").append(@el)
-
-          @$el.css 
-            'position' : 'absolute'
-            'background-color':'rgba(190,190,190, 0.6)'
-            'left'     : '90%'
-            'top'      : '1%'
-            'width'    : document.canvasWidth / 70
-            'height'   : document.canvasHeight / 70
-          @
-
-          @moreEvents()
-          @afterAppend()
-
-
-        updatePosition:->
-          $viewport = $("##{document.viewportID}")
-          $canvas   = $("##{document.canvasID}")
-          $root     = $("##{document.rootID}")
-          $minimapViewport = $("##{document.minimapViewportID}")
-          
-          posX = ((parseFloat($canvas.css('left'))  + document.canvasWidth ) / document.canvasWidth  ) * 100
-          posY = ((parseFloat($canvas.css('top'))   + document.canvasHeight) / document.canvasHeight ) * 100
-          
-          $minimapViewport.css
-            'left' : "#{-(posX-100)}%"
-            'top'  : "#{-(posY-100)}%"
-
-
-
-      @minimap = new MindmapMinimap()
-      @minimap.renderAndAppendTo(document.viewportID)      
+        @center()
+        @moreEvents()
+        @afterAppend()
 
 
 
