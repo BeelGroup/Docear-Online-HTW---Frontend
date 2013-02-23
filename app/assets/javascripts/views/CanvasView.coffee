@@ -5,9 +5,9 @@ define ->
 
     id: document.canvasID
     tagName: 'div'
-    className: 'ui-draggable'
+    className: 'mindmap-canvas'
 
-    constructor:(@canvas, @zoomAmount = 100)->
+    constructor:(@zoomAmount = 100)->
       super()
 
     moreEvents:()=>
@@ -34,12 +34,6 @@ define ->
         containment: document.viewportID,
         cursor: "move",
         handle: document.canvasID 
-      });
-
-
-    addDragDependency:(dependencyFunction)->
-      @$el.draggable({
-        drag:-> dependencyFunction()
       });
 
 
@@ -89,7 +83,6 @@ define ->
       @$el.css 
         'width' : "#{document.canvasWidth}px"
         'height': "#{document.canvasHeight}px"
-        'background-color' : 'rgb(230,230,230)'
 
       @center()
       @moreEvents()

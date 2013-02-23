@@ -33,13 +33,33 @@
 }
 
 
-#mindmap {
-    width: 10000px;
-    height: 10000px;
-    top: -4850px;
-    left: -4488px;
+#mindmap.mindmap-canvas{
     position: relative;
-    background: #fcfcfc;
+    background-color: rgb(235,235,235)
+}
+
+
+.minimap-viewport{
+    background-color:rgba(120,120,120, 0.6); 
+    position: absolute;
+}
+
+.minimap-canvas{
+    position : absolute;
+    background-color:rgba(190,190,190, 0.6);
+    left     : 90%;
+    top      : 1%;
+}
+
+.zoom-panel{
+    position: absolute;
+    left    : 1%;
+    top     : 1%;
+}
+
+.minimap-viewport.highlight{
+    background-color:rgba(200,120,120, 0.6); 
+    cursor: default;
 }
 
 #mindmap .node {

@@ -8,7 +8,7 @@ define ->
 
     id: 'zoomPanel'
     tagName: 'div'
-    className: 'zoomPanel'
+    className: 'zoom-panel'
     template: Handlebars.templates['ZoomPanel']
 
     events:
@@ -23,11 +23,6 @@ define ->
 
     render:->
       @$el.html @template {zoomFactor: 0}
-
-      @$el.css 
-        'position' : 'absolute'
-        'left'     : '1%'
-        'top'      : '1%'
       @
 
   module.exports = ZoomPanel

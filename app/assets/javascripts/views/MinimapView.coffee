@@ -12,25 +12,32 @@ define ->
     constructor:(@relatedViewport, @relatedCanvasView)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
-      @relatedCanvasView.addDragDependency(@updatePosition)
+      @relatedCanvas.on 'drag', @updatePosition
 
 
     element:-> @$el
 
 
     afterAppend:()->
-      @$el.find(".#{document.minimapViewportCN}").draggable
+     minimapViewport =  @$el.find(".#{document.minimapViewportCN}")
+     minimapViewport.draggable
         cancel: "a.ui-icon, .node"
         containment: "parent"
         cursor: "move"
         drag: (event, ui)=>
-          # position of minimap viewport in % (is set to px value due drag :P)
-          xPos = @relatedCanvas.width()  * (ui.position.left / @$el.width()  * 100) / 100  
-          yPos = @relatedCanvas.height() * (ui.position.top  / @$el.height() * 100) / 100 
+          @updateRelatedCanvasPosition(event, ui)
 
-          @relatedCanvas.css
-            'left'  : "#{-xPos}px",
-            'top'   : "#{-yPos}px"
+      minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
+      
+
+    updateRelatedCanvasPosition:(event, ui)->
+      # position of minimap viewport in % (is set to px value due drag :P)
+      xPos = @relatedCanvas.width()  * (ui.position.left / @$el.width()  * 100) / 100  
+      yPos = @relatedCanvas.height() * (ui.position.top  / @$el.height() * 100) / 100 
+      
+      @relatedCanvas.css
+        'left'  : "#{-xPos}px",
+        'top'   : "#{-yPos}px"
 
 
     draggable:->
@@ -54,10 +61,6 @@ define ->
       @draggable() if @itsDraggable
 
       @$el.css 
-        'position' : 'absolute'
-        'background-color':'rgba(190,190,190, 0.6)'
-        'left'     : '90%'
-        'top'      : '1%'
         'width'    : @relatedCanvas.width() / 70
         'height'   : @relatedCanvas.height() / 70
       @afterAppend()
