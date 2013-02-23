@@ -144,24 +144,24 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
       false
     
     userKeyInput: (event)->
-      if event.keyCode in [37,38,39,40]
+      if event.keyCode in document.navigation.key.allowed
         selectedNode = @model.getSelectedNode()
         if selectedNode != null
           $selectedNode = $('#'+(selectedNode.get 'id')) 
           switch event.keyCode
-            when 37 #LEFT
+            when document.navigation.key.selectLeftChild
               if $($selectedNode).hasClass('right')  
                 @selectParent selectedNode
               else
                 @selectNextChild selectedNode, 'left'
-            when 38 #TOP
+            when document.navigation.key.selectPrevBrother #TOP
               @selectBrother selectedNode, false
-            when 39 #RIGHT
+            when document.navigation.key.selectRightChild #RIGHT
               if $($selectedNode).hasClass('left')  
                 @selectParent selectedNode
               else
                 @selectNextChild selectedNode, 'right'
-            when 40 #DOWN
+            when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
         else
           @model.set 'selected', true
