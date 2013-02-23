@@ -65,6 +65,7 @@ define ->
       @zoom()
       @rootView.centerInContainer()
       @center()
+      @$el.trigger 'center'
 
 
     center:->

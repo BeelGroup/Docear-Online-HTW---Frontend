@@ -8,11 +8,15 @@ define ->
     className: 'minimap-canvas'
     template : Handlebars.templates['Minimap']
 
+    events:
+      'center': -> @updatePosition
+
 
     constructor:(@relatedViewport, @relatedCanvasView)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePosition
+      @relatedCanvas.on 'center', @updatePosition
 
 
     element:-> @$el
