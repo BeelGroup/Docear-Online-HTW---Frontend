@@ -78,6 +78,7 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
         currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
         
         $(childrenContainer).css('top', -(totalChildrenHeight/2 - elementHeight/2))
+        $(childrenContainer).css('height', Math.max(totalChildrenHeight, elementHeight))
         
         if sideOfTree == 'left'
           $(childrenContainer).css('left', -elementWidth+'px')
