@@ -17,3 +17,5 @@ document.navigation.key.selectLeftChild = 37
 document.navigation.key.selectRightChild = 39
 document.navigation.key.selectPrevBrother = 38
 document.navigation.key.selectNextBrother = 40
+
+document.fadeDuration = 600

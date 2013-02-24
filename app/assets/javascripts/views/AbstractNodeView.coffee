@@ -23,6 +23,7 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       id: @model.get 'id'
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
+      @model.bind "change:folded",@changeFoldedStatus , @   
 
     PosToModel: ->
       # TODO: Event will not be called on change
@@ -63,6 +64,21 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
     
     changeSelectStatus: ->
       $('#'+@model.id).toggleClass('selected')
+      
+    changeFoldedStatus: ->
+      $node = $("#"+@model.id)
+      
+      $children = $($node).children('.children');
+      childrenHeight = $children.outerHeight()
+      nodeHeight = $node.outerHeight()
+      
+      if(childrenHeight > nodeHeight) 
+        diff = childrenHeight - nodeHeight
+        @recursivAlignHeight $node, diff
+      $children.fadeOut(document.fadeDuration, ->
+        jsPlumb.repaintEverything()
+      )
+    
 
     # [Debugging] 
     printModel: ->      
@@ -128,6 +144,30 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       @afterRender()
       @
 
+      
+    recursivAlignHeight: ($node, height)->
+      $parent = $node.parent().closest('.node')
+      $parentsChildren = $node.closest('.children')
+      if($($parentsChildren).children('.node').size() > 1)
+        $parentsChildren.animate({
+          top: '+='+(height/2)
+        },
+        duration: document.fadeDuration)
+        $parentsChildren.css('height', $parentsChildren.outerHeight()-height)
+      
+        $node.animate({
+          top: '-='+(height/2)
+        }, document.fadeDuration)
+      
+        $nextBrother = $($node).next('.node')
+        console.log $nextBrother.size()
+        while $nextBrother.size() > 0
+          $($nextBrother).animate({
+            top: '-='+(height)
+          }, document.fadeDuration)
+          $nextBrother = $($nextBrother).next('.node')
+        @recursivAlignHeight $parent, height
+      
 
     alignControls: (model, recursive = false)->
       nodes = [model]
@@ -140,35 +180,8 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
         
         $($fold).click (event)->
-          $node = $(this).closest('.node')
-          
-          $children = $($node).children('.children');
-          
-          childrenHeight = $children.outerHeight()
-          nodeHeight = $node.outerHeight()
-          if(childrenHeight > nodeHeight) 
-            diff = childrenHeight - nodeHeight
-            parentsChildren = $node.closest('.children')
-            if($(parentsChildren).children('.node').size() > 1)
-              $node.parent().closest('.node').children('.children').animate({
-                top: '+='+(diff/2)
-              }, 600)
-            
-              $node.animate({
-                top: '-='+(diff/2)
-              }, 600)
-            
-              $nextBrother = $($node).next('.node')
-              console.log $nextBrother.size()
-              while $nextBrother.size() > 0
-                $($nextBrother).animate({
-                  top: '-='+(diff)
-                }, 600)
-                $nextBrother = $($nextBrother).next('.node')
-              
-          $children.fadeOut(600, ->
-            jsPlumb.repaintEverything()
-          )
+          nodeId = $(this).closest('.node').attr('id')
+          model.findById(nodeId).set 'folded', true
           
       
       
