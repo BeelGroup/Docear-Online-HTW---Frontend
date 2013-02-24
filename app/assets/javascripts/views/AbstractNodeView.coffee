@@ -67,17 +67,31 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       
     changeFoldedStatus: ->
       $node = $("#"+@model.id)
+      $children = $($node).children('.children')
+      isVisible = $children.is(':visible')
       
-      $children = $($node).children('.children');
       childrenHeight = $children.outerHeight()
       nodeHeight = $node.outerHeight()
       
-      if(childrenHeight > nodeHeight) 
+      if $children.children('.node').size() > 0
         diff = childrenHeight - nodeHeight
-        @recursivAlignHeight $node, diff
-      $children.fadeOut(document.fadeDuration, ->
-        jsPlumb.repaintEverything()
-      )
+        $node.parent().closest('.children').children('svg, ._jsPlumb_endpoint').fadeOut(200)
+        if isVisible
+          if childrenHeight > nodeHeight
+            @resizeTree $node, diff
+          $children.fadeOut(document.fadeDuration, ->
+            $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
+            jsPlumb.repaintEverything()
+          )
+        else
+          @resizeTree $node, -diff
+  
+          $children.fadeIn(document.fadeDuration, ->
+            $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
+            jsPlumb.repaintEverything()
+          )
+        
+      
     
 
     # [Debugging] 
@@ -145,7 +159,7 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       @
 
       
-    recursivAlignHeight: ($node, height)->
+    resizeTree: ($node, height)->
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
       if($($parentsChildren).children('.node').size() > 1)
@@ -165,9 +179,9 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
             top: '-='+(height)
           }, document.fadeDuration)
           $nextBrother = $($nextBrother).next('.node')
-        @recursivAlignHeight $parent, height
-      
+        @resizeTree $parent, height
 
+    
     alignControls: (model, recursive = false)->
       nodes = [model]
       while node = nodes.shift()
@@ -179,8 +193,10 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
         
         $($fold).click (event)->
-          nodeId = $(this).closest('.node').attr('id')
-          model.findById(nodeId).set 'folded', true
+          $node = $(this).closest('.node')
+          nodeId = $node.attr('id')
+          isVisible = $($node).children('.children').is(':visible')
+          model.findById(nodeId).set 'folded', isVisible
           
       
       
