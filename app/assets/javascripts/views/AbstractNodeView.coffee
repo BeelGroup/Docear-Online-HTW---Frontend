@@ -139,6 +139,38 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         $fold = $($innerNode).children('.fold')
         $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
         
+        $($fold).click (event)->
+          $node = $(this).closest('.node')
+          
+          $children = $($node).children('.children');
+          
+          childrenHeight = $children.outerHeight()
+          nodeHeight = $node.outerHeight()
+          if(childrenHeight > nodeHeight) 
+            diff = childrenHeight - nodeHeight
+            parentsChildren = $node.closest('.children')
+            if($(parentsChildren).children('.node').size() > 1)
+              $node.parent().closest('.node').children('.children').animate({
+                top: '+='+(diff/2)
+              }, 600)
+            
+              $node.animate({
+                top: '-='+(diff/2)
+              }, 600)
+            
+              $nextBrother = $($node).next('.node')
+              console.log $nextBrother.size()
+              while $nextBrother.size() > 0
+                $($nextBrother).animate({
+                  top: '-='+(diff)
+                }, 600)
+                $nextBrother = $($nextBrother).next('.node')
+              
+          $children.fadeOut(600, ->
+            jsPlumb.repaintEverything()
+          )
+          
+      
       
 
   module.exports = AbstractNodeView
