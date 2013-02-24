@@ -1,22 +1,13 @@
 define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/HtmlView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (DocearRouter, RootNodeView, NodeView, HtmlView, CanvasView, MinimapView, ZoomPanelView, NodeModel,RootNodeModel) ->  
   module = ->
 
-  class MapController
+  class MapView extends Backbone.View
+
+    tagName  : 'div'
+    className: 'mindmap-viewport'
 
 
-    constructor:->
-
-      $viewport = $("##{document.viewportID}")
-
-      @canvas = new CanvasView()
-      @canvas.renderAndAppendTo($viewport)
-
-      # pass related viewport-element and canvas-view
-      @minimap = new MinimapView($viewport, @canvas)
-      @minimap.renderAndAppendTo($viewport, true)
-
-      @zoomPanel = new ZoomPanelView(@canvas)
-      @zoomPanel.renderAndAppendTo $viewport
+    constructor:(@id)->
 
 
     positionNodes:()->
@@ -75,9 +66,30 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       children
 
 
+    renderAndAppendTo:($element)->
+      #$element.append(@el)
+      @renderSubviews()
+      #@afterAppend()
+      @
+
+
+    renderSubviews:()->
+      $viewport = $("##{@id}")
+
+      @canvas = new CanvasView(document.canvasID)
+      @canvas.renderAndAppendTo($viewport)
+
+      # pass related viewport-element and canvas-view
+      @minimap = new MinimapView(document.minimapCanvasID, $viewport, @canvas)
+      @minimap.renderAndAppendTo($viewport, true)
+
+      @zoomPanel = new ZoomPanelView('zoomPanel', @canvas)
+      @zoomPanel.renderAndAppendTo $viewport
+
+
     renderMap:(mapId)->
-      ## first three entries currently filled in main.scala.html
+      ## called in router
       @loadMap(mapId)
 
 
-  module.exports = MapController  
+  module.exports = MapView  

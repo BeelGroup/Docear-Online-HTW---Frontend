@@ -1,7 +1,7 @@
-require ['MapController', 'routers/DocearRouter'],  (MapController, DocearRouter) ->  
+require ['views/MapView', 'routers/DocearRouter'],  (MapView, DocearRouter) ->  
 
   
   initializeJsPlumb()
-  mapController = new MapController()
-  mapController.loadMap(5) # load map 5 as default
-  router = new  DocearRouter(mapController)
+  mapView = new MapView('mindmap-container')
+  mapView.renderAndAppendTo($('.container'))
+  router = new  DocearRouter(mapView)

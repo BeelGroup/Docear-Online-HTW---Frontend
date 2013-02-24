@@ -3,16 +3,15 @@ define ->
 
   class Canvas extends Backbone.View
 
-    id: document.canvasID
     tagName: 'div'
     className: 'mindmap-canvas'
 
-    constructor:(@zoomAmount = 100)->
+    constructor:(@id, @zoomAmount = 100)->
       super()
 
     moreEvents:()=>
-      $("##{document.canvasID}").mousewheel (event, delta, deltaX, deltaY)=>
-        $viewport = $("##{document.viewportID}")          
+      @$el.mousewheel (event, delta, deltaX, deltaY)=>
+        $viewport = @$el.parent()          
         x = event.pageX - $viewport.offset().left - $viewport.width()/2
         y = event.pageY - $viewport.offset().top - $viewport.height()/2
         shift = 'x': x, 'y': y
@@ -20,7 +19,7 @@ define ->
         event.preventDefault() 
 
       $(document).keydown (event)=>
-        if @rootView
+        if typeof @rootView != "undefinded"
           @rootView.userKeyInput event
 
 
@@ -29,18 +28,18 @@ define ->
 
 
     afterAppend:()->
-      @$el.draggable({
-        cancel: "a.ui-icon, .node",
-        containment: document.viewportID,
-        cursor: "move",
-        handle: document.canvasID 
-      });
+      @$el.draggable
+        cancel: "a.ui-icon, .node"
+        containment: @$el.parent().attr('id')
+        cursor: "move"
+        handle: @id
 
 
     move:(x,y)->
       @$el.css 
        'left'  : "#{(@$el.css 'left')+x}px"
        'top'   : "#{(@$el.css 'top')+y}px"
+
 
     zoomIn:(event)=>
       if(@zoomAmount+document.zoomStep <= document.maxZoom)
@@ -61,19 +60,22 @@ define ->
 
 
     zoomCenter:()=>
-      @zoomAmount = 100
-      @zoom()
-      @rootView.centerInContainer()
-      @center()
-      @$el.trigger 'center'
+      if(typeof @rootView != "undefined")
+        @zoomAmount = 100
+        @zoom()
+        @rootView.centerInContainer()
+        @center()
+        @$el.trigger 'center'
 
 
     center:->
-      xPos = document.canvasWidth/2 - $("##{document.viewportID}").width()/2
-      yPos = document.canvasHeight/2 - $("##{document.viewportID}").height()/2
+      # compute center of canvas - center of viewport (== total center)
+      xPos = document.canvasWidth  / 2 - @$el.parent().width()  / 2
+      yPos = document.canvasHeight / 2 - @$el.parent().height() / 2
       @$el.css 
-       'left'  : "#{-xPos}px",
+       'left'  : "#{-xPos}px"
        'top'   : "#{-yPos}px"
+
 
     setRootView:(@rootView)->
 

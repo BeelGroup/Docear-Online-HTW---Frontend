@@ -3,10 +3,6 @@ define ->
 
   class ZoomPanel extends Backbone.View
 
-    constructor:(@canvas)->
-      super()
-
-    id: 'zoomPanel'
     tagName: 'div'
     className: 'zoom-panel'
     template: Handlebars.templates['ZoomPanel']
@@ -15,7 +11,9 @@ define ->
       "click #zoom-in"     : -> @canvas.zoomIn()
       "click #zoom-out"    : -> @canvas.zoomOut()
       "click #zoom-center" : -> @canvas.zoomCenter()
-      
+ 
+    constructor:(@id, @canvas)->
+      super()    
 
     renderAndAppendTo:($element)->
       $element.append(@render().el)

@@ -3,7 +3,6 @@ define ->
 
   class Minimap extends Backbone.View
   
-    id       : document.minimapCanvasID
     tagName  : 'div'
     className: 'minimap-canvas'
     template : Handlebars.templates['Minimap']
@@ -12,7 +11,7 @@ define ->
       'center': -> @updatePosition
 
 
-    constructor:(@relatedViewport, @relatedCanvasView)->
+    constructor:(@id, @relatedViewport, @relatedCanvasView)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePosition
@@ -45,7 +44,6 @@ define ->
 
 
     draggable:->
-      console.log @itsDraggable
       @$el.draggable
         cancel:      "a.ui-icon, .node"
         containment: "parent"
