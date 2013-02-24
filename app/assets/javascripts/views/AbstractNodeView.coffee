@@ -160,7 +160,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         }, document.fadeDuration)
       
         $nextBrother = $($node).next('.node')
-        console.log $nextBrother.size()
         while $nextBrother.size() > 0
           $($nextBrother).animate({
             top: '-='+(height)
