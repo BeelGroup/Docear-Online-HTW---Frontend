@@ -19,6 +19,8 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       # create and append new html 
       @$rootHtml = $(@rootView.render().el).html()
       @canvas.getElement().append @$rootHtml      
+      @rootView.alignControls @rootView.model, true
+      
       @rootView.connectChildren()
       @rootView.centerInContainer()
       @rootView.refreshDom()

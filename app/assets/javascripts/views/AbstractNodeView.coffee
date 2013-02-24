@@ -129,6 +129,16 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       @
 
 
-
+    alignControls: (model, recursive = false)->
+      nodes = [model]
+      while node = nodes.shift()
+        $node = $('#'+node.id)
+        if recursive
+          nodes = $.merge(nodes, node.get('children').slice()  )
+        $innerNode = $($node).children('.inner-node')
+        $fold = $($innerNode).children('.fold')
+        $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
+        
+      
 
   module.exports = AbstractNodeView

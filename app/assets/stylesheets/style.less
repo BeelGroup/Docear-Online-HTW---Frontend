@@ -63,29 +63,40 @@
 }
 
 #mindmap .node {
+    position: absolute;
+}
+
+#mindmap .node .inner-node {
     padding: 10px;
     border: thin solid black;
     border-radius: 30px ;
     display: inline-block;
-    position: absolute;
     cursor: default;
     white-space: nowrap;
 }
-#mindmap .node .fold {
+#mindmap .node .inner-node .fold {
     position: absolute;
     display: none;
-    background-color: #FFFFFF;
+}
+#mindmap .node.right .inner-node .fold {
+    right: -7px;
+}
+#mindmap .node.left .inner-node .fold {
+    left: -7px;
+}
+#mindmap .node .inner-node:hover > .fold {
+    display: block;
 }
 
 #mindmap .node .children {
     position: absolute;
 }
 
-#mindmap .node.selected {
+#mindmap .node.selected > .inner-node {
     background: green;
 }
 
-#mindmap .node .controls {
+#mindmap .node .inner-node .controls {
     display: none;
     position: absolute;
     height: 12px;
@@ -94,7 +105,7 @@
     cursor: pointer;
 }
 
-#mindmap .node .controls textarea{
+#mindmap .node .inner-node .controls textarea{
     z-index: 3;
 }
 
