@@ -47,14 +47,14 @@ public class VisualizationTest extends DocearHttpTest {
 				page = login.click();
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000); // since
 
-				HtmlElement loadMapLink = page.getFirstByXPath("//a[@id='load-map-5']");
+				HtmlElement loadMapLink = page.getFirstByXPath("//ul[@id='select-mindmap']/li[2]/a");
 				page = loadMapLink.click();
 				
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000); // since
 
-				HtmlElement mindmapContainer = page.getFirstByXPath("//div[@id='mindmap']");
+				HtmlElement mindmapContainer = page.getFirstByXPath("//div[@id='mindmap']/div[contains(@class, 'root')]");
 				
-				assertThat(mindmapContainer.asText()).contains("right_L2P01_NodeLink_ToParent");
+				assertThat(mindmapContainer).isNotNull();
 			}
         });
     }
