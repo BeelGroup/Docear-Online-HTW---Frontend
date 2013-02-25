@@ -19,7 +19,7 @@ define ->
         event.preventDefault() 
 
       $(document).keydown (event)=>
-        if typeof @rootView != "undefinded"
+        if typeof @rootView != "undefined"
           @rootView.userKeyInput event
 
 
