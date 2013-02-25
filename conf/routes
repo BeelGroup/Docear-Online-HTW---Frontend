@@ -5,7 +5,6 @@
 # Home page
 GET     /favicon.ico                controllers.Assets.at(path="/public", file="images/favicon.ico")
 GET     /                           controllers.Application.index()
-GET     /mvc                        controllers.Application.mvc()
 GET     /error/:errorId             controllers.Application.error(errorId: String)
 GET	    /help						controllers.Application.help()
 GET     /small-solutions            controllers.Application.smallSolutions()

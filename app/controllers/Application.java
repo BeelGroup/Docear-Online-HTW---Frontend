@@ -34,11 +34,6 @@ public class Application extends Controller {
 		return ok(views.html.help.render());
 	}
 
-	/** for evolving mvc structure on client side */
-	public static Result mvc() {
-		return ok(views.html.mvc.render());
-	}
-
     /** makes some play routes in JavaScript avaiable */
     public static Result javascriptRoutes() {
         response().setContentType("text/javascript");
