@@ -197,6 +197,25 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
           nodeId = $node.attr('id')
           isVisible = $($node).children('.children').is(':visible')
           model.findById(nodeId).set 'folded', isVisible
+        
+        $($innerNode).click (event)->
+          $selectedNode = $('.node.selected')
+          selectedNodeId = $($selectedNode).attr('id')
+          
+          $currentNode = $(this).closest('.node')
+          currentNodeId = $($currentNode).attr('id')
+          
+          if $selectedNode.size() > 0
+            selectedNode = model.findById(selectedNodeId);
+            selectedNode.set 'selected', false
+            
+            if $($selectedNode).closest('.children').children('#'+currentNodeId).size() > 0
+              selectedNode.set 'previouslySelected', false
+
+          currentNode = model.findById(currentNodeId)
+          currentNode.set 'previouslySelected', true
+          currentNode.set 'selected', true
+          
           
       
       
