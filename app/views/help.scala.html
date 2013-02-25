@@ -1,8 +1,63 @@
 @()
 
 @additionalJavaScripts() = {
+<script src='@routes.Assets.at("javascripts/help.js")'></script>
 }
 
 @main("Help", additionalBodyJavaScripts = additionalJavaScripts()) {
-
+    
+    <div class="row-fluid">
+        <div class="span3">
+            <div id="help-menu" data-spy="affix" data-offset-top="0" class="affix">
+                <ul class="menu"></ul>
+            </div>
+        </div>
+        <div id="help-content" class="span9">
+            <div class="row-fluid paragraph">
+                <h1>Docear</h1>
+                Docear (dog-ear) is an academic literature suite. It integrates everything you need to search, organize and create academic literature into a single application: digital library with support for pdf documents, reference manager, note taking and with mind maps taking a central role. What's more, Docear works seamlessly with many existing tools like Mendeley, Microsoft Word, and Foxit Reader. Docear is free and open source, based on Freeplane, funded by the German Federal Ministry of Technology and developed by scientists from around the world, among others from OvGU, and the University of California, Berkeley.
+                <h2>Online Mind Mapping</h2>
+                This online version of Docear is currently developed in association with the HTW-Berlin. This version is in a very early beta state.  
+            </div>
+            
+            <div class="row-fluid paragraph">
+                <h1>Usage</h1>
+                <h2>Registration/Login</h2>
+                To use Docear-Online you need a valid Docear account which can be created at <a href="http://www.docear.org/">docear.org</a>.<br />
+                To sign in, simply use the same credentials as you use to sign in at docear.
+                
+                <h2>Loading Mind Maps</h2>
+                Mind maps can only be loaded if they were created previously using the Docear Desktop Application. It can be downloaded from: <a href="http://www.docear.org/software/download/">the official page</a> and you uploaded them to docear.
+                
+                <h2>Navigation</h2>
+                <h3>Load a Mind Map</h3>
+                To load one of your personal mind maps, select it from the top right menu "select MindMap". Depending on the size of the mind map (number of nodes) it may take a several moments to display it.
+                
+                <h3>Zoom</h3>
+                You can "zoom in/out" into the mind map to resize it. It is especially useful when huge mind maps are loaded to get an overview. To use the zoom functionality, you can either use the mouse wheel or the controls on the left side of the mind map. Depending on your browser version the zoom functionality may not work properly or very slow since it is using new technology. We strongly recommend to use the latest versions of browsers. This is not only due to of missing features but also because of critical security risks.
+                
+                <h3>Fold/Unfold nodes</h3>
+                To fold and unfold nodes, move your mouse over a node. A little symbol appears next to the node. Click it to hide all sub nodes. Depending on the size of your mind map, it may take several moments until it is folded. While changing the tree, connections between the nodes are correctly rendered once all nodes are realigned.   
+                
+                <h3>Keyboard</h3>
+                It is possible to navigate through the mind map using your keyboard. Since this version currently only supports displaying mind maps, you can select nodes using the arrow keys. Selected nodes are highlighted green. Using the - or + key of your keyboard you can fold/unfold the selected node.  
+                
+                
+                
+            </div>
+            
+            <div class="row-fluid paragraph">
+                <h1>Problems</h1>
+                Since this is a beta version of Docear Online, there may always be some problems that occur while using the system. Anyway, some problems can be solved by following these instructions.
+                <h2>I can't select a mind map</h2>
+                To load a mind map, you need to have one saved and uploaded, using the <a href="http://www.docear.org/software/download/">Docear Desktop Application</a>.
+                <h2>I can't edit my mind map</h2>
+                This is only a first beta of Docear Online which only allows to display mind maps. We are currently developing features to edit the mind map.
+                <h2>I don't see my workspace?</h2>
+                Docear Online doesn't support Docears workspace feature.  
+                
+            </div>
+        </div>
+    </div>
+    
 }
