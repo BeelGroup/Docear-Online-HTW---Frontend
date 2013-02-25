@@ -83,7 +83,7 @@ define ['collections/ChildNodes'], (ChildNodes)->
     findById: (id)->
       nodes = []
       nodes = $.merge(nodes, @get('children').slice()  )
-      if @get 'id' == id
+      if @get('id') == id
         return @
       else 
         while node = nodes.shift()
