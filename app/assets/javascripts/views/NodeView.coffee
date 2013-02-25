@@ -105,20 +105,20 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
 
     selectNextChild: (selectedNode, side = 'left')->
       $selectedNode = $('#'+(selectedNode.get 'id')) 
-      
-      nextNode = null
-      if selectedNode instanceof RootNode
-        if side == 'left'
-          nextNode = selectedNode.getNextLeftChild()
+      if $selectedNode.children('.children').is(':visible')
+        nextNode = null
+        if selectedNode instanceof RootNode
+          if side == 'left'
+            nextNode = selectedNode.getNextLeftChild()
+          else
+            nextNode = selectedNode.getNextRightChild()
         else
-          nextNode = selectedNode.getNextRightChild()
-      else
-          nextNode = selectedNode.getNextChild()
-
-      if nextNode != null
-        selectedNode.set 'selected', false
-        nextNode.set 'selected', true
-        return true
+            nextNode = selectedNode.getNextChild()
+  
+        if nextNode != null
+          selectedNode.set 'selected', false
+          nextNode.set 'selected', true
+          return true
       false
         
     selectParent: (selectedNode)->
@@ -169,11 +169,9 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
                 @selectNextChild selectedNode, 'right'
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
+            when document.navigation.key.fold #F
+              selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
           
-          if code in document.navigation.key.fold
-            selectedNode.set 'folded', true
-          else if code in document.navigation.key.unfold
-            selectedNode.set 'folded', false
         else
           @model.set 'selected', true
           
