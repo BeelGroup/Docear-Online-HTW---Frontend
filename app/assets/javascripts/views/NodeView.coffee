@@ -145,11 +145,16 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
       false
     
     userKeyInput: (event)->
-      if event.keyCode in document.navigation.key.allowed
+      
+      if event.keyCode == 0
+        code = event.charCode
+      else
+        code = event.keyCode
+      if (code) in document.navigation.key.allowed
         selectedNode = @model.getSelectedNode()
         if selectedNode != null
           $selectedNode = $('#'+(selectedNode.get 'id')) 
-          switch event.keyCode
+          switch (event.keyCode)
             when document.navigation.key.selectLeftChild
               if $($selectedNode).hasClass('right')  
                 @selectParent selectedNode
@@ -164,6 +169,11 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
                 @selectNextChild selectedNode, 'right'
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
+          
+          if code in document.navigation.key.fold
+            selectedNode.set 'folded', true
+          else if code in document.navigation.key.unfold
+            selectedNode.set 'folded', false
         else
           @model.set 'selected', true
           
