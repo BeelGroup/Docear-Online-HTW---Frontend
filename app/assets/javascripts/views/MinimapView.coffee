@@ -22,7 +22,7 @@ define ->
 
 
     afterAppend:()->
-     minimapViewport =  @$el.find(".#{document.minimapViewportCN}")
+     minimapViewport =  @$el.find('.minimap-viewport')
      minimapViewport.draggable
         cancel: "a.ui-icon, .node"
         containment: "parent"
@@ -50,13 +50,14 @@ define ->
         cursor:      "move"
 
 
-    renderAndAppendTo:($element, @itsDraggable)->
+    renderAndAppendTo:($element, @itsDraggable = false)->
       
       stats = 
         width:  @relatedViewport.width() / 70
         height: @relatedViewport.height() / 70
         left: 0
         top:  0
+        viewport_class: 'minimap-viewport'
 
       @$el.html @template stats
       $element.append(@el)
@@ -70,7 +71,7 @@ define ->
 
 
     updatePosition:=>
-      $minimapViewport = @$el.find(".#{document.minimapViewportCN}")
+      $minimapViewport = @$el.find('.minimap-viewport')
       
       posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  ) * 100
       posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() ) * 100

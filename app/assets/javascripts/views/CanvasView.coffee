@@ -6,7 +6,7 @@ define ->
     tagName: 'div'
     className: 'mindmap-canvas'
 
-    constructor:(@id, @zoomAmount = 100)->
+    constructor:(@id, @width = 8000, @height = 8000, @zoomAmount = 100)->
       super()
 
     moreEvents:()=>
@@ -70,8 +70,8 @@ define ->
 
     center:->
       # compute center of canvas - center of viewport (== total center)
-      xPos = document.canvasWidth  / 2 - @$el.parent().width()  / 2
-      yPos = document.canvasHeight / 2 - @$el.parent().height() / 2
+      xPos = @width  / 2 - @$el.parent().width()  / 2
+      yPos = @height / 2 - @$el.parent().height() / 2
       @$el.css 
        'left'  : "#{-xPos}px"
        'top'   : "#{-yPos}px"
@@ -84,8 +84,8 @@ define ->
       $element.append(@render().el)
 
       @$el.css 
-        'width' : "#{document.canvasWidth}px"
-        'height': "#{document.canvasHeight}px"
+        'width' : "#{@width}px"
+        'height': "#{@height}px"
 
       @center()
       @moreEvents()
