@@ -1,28 +1,34 @@
 package controllers;
 
-import static controllers.User.getCurrentUser;
-
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import controllers.featuretoggle.ImplementedFeature;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 
+import models.backend.exceptions.NoUserLoggedInException;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.MinMaxPriorityQueue;
+import akka.actor.Cancellable;
+import play.libs.F;
+import scala.concurrent.duration.Duration;
 
 import play.Logger;
-import play.libs.F;
-import play.libs.F.Function;
-import play.libs.F.Promise;
+import play.libs.Akka;
 import play.libs.Json;
+import play.libs.F.Promise;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
+
+import static controllers.featuretoggle.Feature.*;
+
+import static controllers.User.getCurrentUser;
 
 @Component
 public class MindMap extends Controller {
@@ -31,7 +37,6 @@ public class MindMap extends Controller {
 	private MindMapCrudService mindMapCrudService;
 
 	public Result map(final String id) throws DocearServiceException, IOException {
-		
         final F.Promise<JsonNode> mindMapPromise = mindMapCrudService.mindMapAsJson(id);
         return async(mindMapPromise.map(new F.Function<JsonNode, Result>() {
             @Override
@@ -53,27 +58,14 @@ public class MindMap extends Controller {
     }
     
     public Result createNode() {
-    	JsonNode addNodeRequestJson = request().body().asJson();
-    	Logger.debug("body content: "+addNodeRequestJson);
-    	final Promise<JsonNode> newNode = mindMapCrudService.addNode(addNodeRequestJson);
-    	return async(newNode.map(new Function<JsonNode, Result>() {
-			@Override
-			public Result apply(JsonNode nodeJson) throws Throwable {
-				return ok(nodeJson);
-			}
-		}));
+    	return TODO;
     }
     
     public Result changeNode() {
-    	JsonNode changeNodeRequestJson = request().body().asJson();
-    	mindMapCrudService.ChangeNode(changeNodeRequestJson);
-    	return ok();
+    	return TODO;
     }
     
     public Result deleteNode() {
-    	JsonNode deleteNodeRequestJson = request().body().asJson();
-    	mindMapCrudService.removeNode(deleteNodeRequestJson);
-    	return ok();
-    }   
-
+    	return TODO;
+    }
 }

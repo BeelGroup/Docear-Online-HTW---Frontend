@@ -41,8 +41,8 @@ define ['views/NodeView'], (NodeView) ->
     centerInContainer: ->
       node = $('#'+@model.get 'id')
 
-      posX = document.canvasWidth  / 2  - $(node).outerWidth()  / 2
-      posY = document.canvasHeight / 2  - $(node).outerHeight() / 2
+      posX = $(node).parent().width()  / 2  - $(node).outerWidth()  / 2
+      posY = $(node).parent().height() / 2  - $(node).outerHeight() / 2
       
       node.css 'left', posX + 'px'
       node.css 'top' , posY + 'px'

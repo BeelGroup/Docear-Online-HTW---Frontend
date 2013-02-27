@@ -52,7 +52,7 @@ public class VisualizationTest extends DocearHttpTest {
 				
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000); // since
 
-				HtmlElement mindmapContainer = page.getFirstByXPath("//div[@id='mindmap']/div[contains(@class, 'root')]");
+				HtmlElement mindmapContainer = page.getFirstByXPath("//div[@id='mindmap-viewport']/div[contains(@class, 'root')]");
 				
 				assertThat(mindmapContainer).isNotNull();
 			}

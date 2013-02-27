@@ -1,4 +1,5 @@
 import configuration.SpringConfiguration;
+import controllers.featuretoggle.Feature;
 import controllers.routes;
 import info.schleichardt.play2.basicauth.CredentialsFromConfChecker;
 import info.schleichardt.play2.basicauth.JAuthenticator;
@@ -6,6 +7,7 @@ import models.frontend.LoggedError;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import play.*;
+import play.api.libs.Collections;
 import play.cache.Cache;
 import play.api.mvc.Handler;
 import play.mvc.Action;
@@ -13,6 +15,9 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
@@ -33,6 +38,22 @@ public class Global extends GlobalSettings {
         initializeBasicAuthPlugin();
         loggedErrorExpirationInSeconds = conf.getInt("application.logged.error.expirationInSeconds");
         super.onStart(application);
+        initializeFeatureToggles(conf);
+    }
+
+    private void initializeFeatureToggles(Configuration conf) {
+        String possibleFeaturesString = StringUtils.join(Feature.values(), ", ");
+        Logger.info("possible features: " + possibleFeaturesString);
+
+        List<String> enabledFeatures = conf.getStringList("application.features");
+        if (enabledFeatures == null) {
+            enabledFeatures = new LinkedList<String>();
+        }
+        String enabledFeaturesString = StringUtils.join(enabledFeatures, ", ");
+        Logger.info("enabled features: " + enabledFeaturesString);
+        for (final String feature : enabledFeatures) {
+            Feature.enableFeature(feature, true);
+        }
     }
 
     @Override

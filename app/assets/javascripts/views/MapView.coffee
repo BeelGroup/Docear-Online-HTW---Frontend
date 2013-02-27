@@ -7,8 +7,8 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
     className: 'mindmap-viewport'
 
 
-    constructor:(@id)->
-
+    constructor:(@id, @canvasWidth = 8000, @canvasHeight = 8000)->
+      super()
 
     positionNodes:()->
       jsPlumb.reset()
@@ -37,7 +37,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     createJSONMap: (data)=>
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
-      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, document.canvasID ,data.root.isHtml, 0,0,0,0,false) 
+      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false) 
       document.rootID = data.root.id
       if data.root.leftChildren != undefined
         leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode)
@@ -69,23 +69,28 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
 
     renderAndAppendTo:($element)->
-      #$element.append(@el)
+      $element.append(@el)
+      @render()
       @renderSubviews()
       #@afterAppend()
       @
 
+    render:()->
+      @$el.css
+        width: @$el.parent().width()
+        height: @$el.parent().height()
 
     renderSubviews:()->
-      $viewport = $("##{@id}")
+      $viewport = @$el
 
-      @canvas = new CanvasView(document.canvasID)
+      @canvas = new CanvasView("#{@id}_canvas", @canvasWidth, @canvasHeight)
       @canvas.renderAndAppendTo($viewport)
 
       # pass related viewport-element and canvas-view
-      @minimap = new MinimapView(document.minimapCanvasID, $viewport, @canvas)
+      @minimap = new MinimapView("#{@id}_minimap-canvas", $viewport, @canvas)
       @minimap.renderAndAppendTo($viewport, true)
 
-      @zoomPanel = new ZoomPanelView('zoomPanel', @canvas)
+      @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
 
 
