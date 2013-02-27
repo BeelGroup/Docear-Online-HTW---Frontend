@@ -1,5 +1,7 @@
 package features.mindmap.node;
 
+import java.util.List;
+
 import base.DocearHttpTest;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -52,9 +54,9 @@ public class VisualizationTest extends DocearHttpTest {
 				
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000); // since
 
-				HtmlElement mindmapContainer = page.getFirstByXPath("//div[@id='mindmap-viewport']/div[contains(@class, 'root')]");
+				List nodes = page.getByXPath("//div[contains(@class, 'node')]");
 				
-				assertThat(mindmapContainer).isNotNull();
+				assertThat(nodes.size()).isGreaterThan(0);
 			}
         });
     }
