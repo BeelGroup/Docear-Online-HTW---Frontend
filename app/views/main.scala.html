@@ -2,6 +2,7 @@
 
 @import play.api.Play
 @import play.api.Play.current
+@import controllers.featuretoggle.Feature.enabledFeatures
 
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
@@ -44,7 +45,7 @@
     <![endif]-->
 </head>
 
-<body class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses'>
+<body class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")'>
 
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">

@@ -1,5 +1,11 @@
 package controllers.featuretoggle;
 
+import com.google.common.collect.Iterables;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
+
 /**
  * Feature toggle mechanism
  *
@@ -11,6 +17,11 @@ package controllers.featuretoggle;
  * {@code
  * if(Feature.FEATURE_NAME.isEnabled()= {feature is available }
  * }
+ *
+ * Usage in Javascripts:
+ * {@code
+ * if("KEYBOARD_NAVIGATION" in features)
+ *  console.log "drin" }
  *
  * Configure available features in conf files: application.features = [KEYBOARD_NAVIGATION, FEATURE_XYZ]
  */
@@ -40,5 +51,13 @@ public enum Feature {
         } catch(IllegalArgumentException e) {
             throw new IllegalArgumentException("Feature not found: " + featureName, e);
         }
+    }
+
+    public static Iterable<Feature> enabledFeatures() {
+        return Iterables.filter(getFeatureList(), new FeatureEnabledPredicate());
+    }
+
+    public static List<Feature> getFeatureList() {
+        return asList(values());
     }
 }
