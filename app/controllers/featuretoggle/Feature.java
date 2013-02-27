@@ -1,5 +1,19 @@
 package controllers.featuretoggle;
 
+/**
+ * Feature toggle mechanism
+ *
+ * Usage in controller or action:
+ * annotate it with:
+ * {@code  @ImplementedFeature({EDIT_NODE_TEXT, KEYBOARD_NAVIGATION})}
+ *
+ * Usage in Scala templates: (don't forget the imports)
+ * {@code
+ * if(Feature.FEATURE_NAME.isEnabled()= {feature is available }
+ * }
+ *
+ * Configure available features in conf files: application.features = [KEYBOARD_NAVIGATION, FEATURE_XYZ]
+ */
 public enum Feature {
     NEVER_IMPLEMENTED("dummy for testing"),
     KEYBOARD_NAVIGATION("enables the user to move with the arrow buttons on the mind map"),
