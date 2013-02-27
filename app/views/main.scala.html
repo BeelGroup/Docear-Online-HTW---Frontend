@@ -2,6 +2,7 @@
 
 @import play.api.Play
 @import play.api.Play.current
+@import controllers.featuretoggle.Feature.enabledFeatures
 
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
