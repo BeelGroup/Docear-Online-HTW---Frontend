@@ -78,18 +78,22 @@
     cursor: default;
     white-space: nowrap;
 }
-.mindmap-canvas .node .inner-node .fold {
+.mindmap-canvas .node .inner-node .action-fold,
+.mindmap-canvas  .node .inner-node .controls {
     position: absolute;
     display: none;
 }
-.mindmap-canvas .node.right .inner-node .fold {
+.mindmap-canvas .node.right .inner-node .action-fold {
     right: -7px;
 }
-.mindmap-canvas .node.left .inner-node .fold {
+.mindmap-canvas .node.left .inner-node .action-fold {
     left: -7px;
 }
-.mindmap-canvas .node .inner-node:hover > .fold,
-.mindmap-canvas .node.selected > .inner-node > .fold {
+
+.mindmap-canvas .node .inner-node:hover > .action-fold,
+.mindmap-canvas .node.selected > .inner-node > .action-fold,
+.mindmap-canvas .node .inner-node:hover > .controls,
+.mindmap-canvas .node.selected > .inner-node > .controls {
     display: block;
 }
 
@@ -138,3 +142,33 @@
     height: auto !important;
     overflow: visible !important;
   }
+  
+
+
+.overlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    background-color: #000000;
+    opacity:0.0;
+    filter:alpha(opacity=0); /* For IE8 and earlier */
+}
+.edit-container {
+    position: absolute;
+    border-radius: 30px;
+    background-color: #FFFFFF;
+    border: 3px solid green;
+    opacity:0.0;
+    filter:alpha(opacity=0); /* For IE8 and earlier */
+    width: 300px;
+    height: 250px;
+}
+.dummy-node-container {
+    margin-top: 10px;
+}
+.edit-node-container textarea {
+    width: 90%;
+    background-color: #FFFFFF;
+}
