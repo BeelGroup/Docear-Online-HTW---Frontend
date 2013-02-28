@@ -58,11 +58,11 @@
                 @if(isAuthenticated) {
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        @menuItem(controllers.routes.Application.smallSolutions().toString, "Small solutions")
-                        @menuItem(controllers.routes.Application.help().toString, "Help")
-                        @menuItem(controllers.routes.Application.index().toString, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
-                        @menuItem(controllers.routes.User.profile.toString, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
-                        @menuItem(controllers.routes.User.logout.toString, "Logout", onlyIf = isAuthenticated)
+                        @menuItem(controllers.routes.Application.smallSolutions().url, "Small solutions")
+                        @menuItem(controllers.routes.Application.help().url, "Help")
+                        @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
+                        @menuItem(controllers.routes.User.profile.url, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
+                        @menuItem(controllers.routes.User.logout.url, "Logout", onlyIf = isAuthenticated)
                     </ul>
                     <ul class="nav pull-right">
                         <li class="dropdown pull-right">
