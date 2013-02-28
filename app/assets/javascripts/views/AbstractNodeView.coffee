@@ -17,14 +17,22 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         toForm: 'PosToForm'
 
 
+    # define events -> here u can pass informations to the model
+    events: 
+      'click .changeable': 'lockModel'
+      'click .action-show': 'printModel'
+      'click .action-change': 'modificateModel'
+      'click .action-fold': -> @foldModel()
+      'click .action-save': -> @model.save(@model.saveOptions)
+      
     # a.k.a. constructor
     constructor: (@model) ->
       super()
       id: @model.get 'id'
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
-      @model.bind "change:folded",@changeFoldedStatus , @   
-
+      @model.bind "change:folded",@changeFoldedStatus , @
+      
     PosToModel: ->
       # TODO: Event will not be called on change
       @model.set 'xPos', @$el.css 'left'
@@ -42,14 +50,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
     getElement:()->
       $('#'+@model.get 'id')
 
-
-    # define events -> here u can pass informations to the model
-    events: =>
-      'click .changeable': 'lockModel'
-      'click .action-show': 'printModel'
-      'click .action-change': 'modificateModel'
-      'click .action-save': (-> @model.save(@model.saveOptions))
-    
     lockModel: ->
       # will be replaced by username
       @model.lock 'me'
@@ -70,12 +70,15 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       $children = $($node).children('.children')
       isVisible = $children.is(':visible')
       
+      $fold = $node.children('.inner-node').children('.action-fold')
+      $fold.toggleClass 'icon-minus-sign'
+      $fold.toggleClass 'icon-plus-sign'
+      
       childrenHeight = $children.outerHeight()
       nodeHeight = $node.outerHeight()
       
       if $children.children('.node').size() > 0
         diff = childrenHeight - nodeHeight
-        $node.parent().closest('.children').children('svg, ._jsPlumb_endpoint').fadeOut(200)
         if isVisible
           if childrenHeight > nodeHeight
             @resizeTree $node, diff
@@ -85,7 +88,8 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
           )
         else
           @resizeTree $node, -diff
-  
+
+          $children.find('svg').hide()
           $children.fadeIn(document.fadeDuration, ->
             $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
             jsPlumb.repaintEverything()
@@ -98,6 +102,12 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
     printModel: ->      
       ##console.log @model.toJSON()
 
+      
+    foldModel: ->
+      $('#'+@model.id).toggleClass('selected')
+      isVisible = $('#'+@model.id).children('.children').is(':visible')
+      @model.set 'folded', isVisible
+      
     # [Debugging] model modification
     modificateModel: -> 
       @model.set 'nodeText', Math.random()   
@@ -191,14 +201,15 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         if recursive
           nodes = $.merge(nodes, node.get('children').slice()  )
         $innerNode = $($node).children('.inner-node')
-        $fold = $($innerNode).children('.fold')
+        $fold = $($innerNode).children('.action-fold')
+        $controls = $($innerNode).children('.controls')
         $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
+        $($controls).css('left', ($($innerNode).outerWidth()-$($controls).outerWidth())/2+"px")
         
         $($fold).click (event)->
-          $node = $(this).closest('.node')
-          nodeId = $node.attr('id')
-          isVisible = $($node).children('.children').is(':visible')
-          model.findById(nodeId).set 'folded', isVisible
+          currentNodeId = $(this).closest('.node').attr('id')
+          isVisible = $('#'+currentNodeId).children('.children').is(':visible')
+          model.findById(currentNodeId).set 'folded', isVisible
         
         $($innerNode).click (event)->
           $selectedNode = $('.node.selected')
@@ -217,7 +228,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
           currentNode = model.findById(currentNodeId)
           currentNode.set 'previouslySelected', true
           currentNode.set 'selected', true
-          
           
       
       
