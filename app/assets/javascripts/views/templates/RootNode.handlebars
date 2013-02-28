@@ -3,11 +3,13 @@
   <div class='leftChildren children'></div>
   
   <div class='inner-node'>
-    {{#if isHTML}}
-      {{{nodeText}}}
-    {{else}}
-      {{nodeText}}
-    {{/if}}
+    <div class='content'>
+      {{#if isHTML}}
+        {{{nodeText}}}
+      {{else}}
+        {{nodeText}}
+      {{/if}}
+    </div>
     <div class='controls'>
       <i class='icon-edit action-edit'></i>
       <i class='icon-file action-new-node'></i>
