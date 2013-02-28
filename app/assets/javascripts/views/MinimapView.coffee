@@ -65,10 +65,12 @@ define ->
       @updateRelatedCanvasPosition(xPos, yPos)     
 
 
-    updateRelatedCanvasPosition:(xPos, yPos)->
-      @relatedCanvas.css
+    updateRelatedCanvasPosition:(xPos, yPos, animate = false)->
+      stats =         
         'left'  : "#{-xPos}px",
         'top'   : "#{-yPos}px"
+
+      if animate then @relatedCanvas.animate stats else @relatedCanvas.css stats
 
 
     updatePositionClick:(event)->
@@ -78,13 +80,17 @@ define ->
 
       xPos = @relatedCanvas.width()  * ((mouseX - $minimapViewport.width() / 2) / @$el.width()  * 100) / 100  
       yPos = @relatedCanvas.height() * ((mouseY - $minimapViewport.height() / 2) / @$el.height() * 100) / 100        
-      @updateRelatedCanvasPosition(xPos, yPos)
+      @updateRelatedCanvasPosition(xPos, yPos, true)
 
       xPosMini = mouseX - $minimapViewport.width()/2
       yPosMini = mouseY - $minimapViewport.height()/2
-      $minimapViewport.css
+
+      $minimapViewport.animate
         'left' : "#{(xPosMini/@$el.width()*100)}%"
-        'top'  : "#{(yPosMini/@$el.height()*100)}%" 
+        'top'  : "#{(yPosMini/@$el.height()*100)}%"
+      #$minimapViewport.css
+      #  'left' : "#{(xPosMini/@$el.width()*100)}%"
+      #  'top'  : "#{(yPosMini/@$el.height()*100)}%" 
 
 
     updatePosition:=>

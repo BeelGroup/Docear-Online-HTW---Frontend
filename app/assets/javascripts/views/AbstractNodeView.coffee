@@ -130,21 +130,23 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
     #TODO: add translate
 
     scale:(amount)->
-      possibilities = document.body.style
+      
+      #possibilities = document.body.style
 
-      if($.inArray('WebkitTransform', possibilities) or 
-         $.inArray('MozTransform', inpossibilities) or 
-         $.inArray('OTransform', possibilities) or 
-         $.inArray('transform', possibilities))
+      #if($.inArray('WebkitTransform', possibilities) or 
+      #   $.inArray('MozTransform', inpossibilities) or 
+      #   $.inArray('OTransform', possibilities) or 
+      #   $.inArray('transform', possibilities))
 
-        @getElement().css
-          '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
-          '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
-          '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
-          '-o-transform'      : "scale(#{amount})"  #/* Opera */  
+      #  @getElement().css
+      #    '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
+      #    '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
+      #    '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
+      #    '-o-transform'      : "scale(#{amount})"  #/* Opera */  
 
-      #console.log amount
-      #@getElement().zoomTo({targetsize:amount*(109/8000), duration:600, root: @getElement().parent()});
+      
+
+      @getElement().zoomTo({targetsize:amount*(@$el.outerWidth()/@$el.parent().width()), duration:600, root: @getElement().parent()});
       
 
 

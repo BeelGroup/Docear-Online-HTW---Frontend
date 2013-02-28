@@ -41,11 +41,29 @@ define ['views/NodeView'], (NodeView) ->
     centerInContainer: ->
       node = $('#'+@model.get 'id')
 
-      posX = $(node).parent().width()  / 2  - $(node).outerWidth()  / 2
-      posY = $(node).parent().height() / 2  - $(node).outerHeight() / 2
+      posX = $(node).parent().parent().width()  / 2  - $(node).outerWidth()  / 2
+      posY = $(node).parent().parent().height() / 2  - $(node).outerHeight() / 2
       
       node.css 'left', posX + 'px'
       node.css 'top' , posY + 'px'
+
+    #TODO: add translate
+
+    scale:(amount)->      
+      #possibilities = document.body.style
+
+      #if($.inArray('WebkitTransform', possibilities) or 
+      #   $.inArray('MozTransform', inpossibilities) or 
+      #   $.inArray('OTransform', possibilities) or 
+      #   $.inArray('transform', possibilities))
+
+      #  @getElement().css
+      #    '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
+      #    '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
+      #    '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
+      #    '-o-transform'      : "scale(#{amount})"  #/* Opera */  
+      el = @getElement()
+      el.zoomTo({targetsize:amount*(el.outerWidth()/el.parent().parent().width()), duration:600, root: el.parent()});
 
 
     render: ->
