@@ -8,7 +8,7 @@ define ->
     template : Handlebars.templates['Minimap']
 
     events:
-      'click': -> @updatePositionClick(event)
+      'click': (event)-> @updatePositionClick(event)
 
 
     constructor:(@id, @relatedViewport, @relatedCanvasView)->
@@ -77,7 +77,7 @@ define ->
       $minimapViewport = @$el.find('.minimap-viewport')
       mouseX = event.pageX - @$el.offset().left
       mouseY = event.pageY - @$el.offset().top
-
+      console.log event
       xPos = @relatedCanvas.width()  * ((mouseX - $minimapViewport.width() / 2) / @$el.width()  * 100) / 100  
       yPos = @relatedCanvas.height() * ((mouseY - $minimapViewport.height() / 2) / @$el.height() * 100) / 100        
       @updateRelatedCanvasPosition(xPos, yPos, true)

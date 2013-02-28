@@ -50,20 +50,20 @@ define ['views/NodeView'], (NodeView) ->
     #TODO: add translate
 
     scale:(amount)->      
-      #possibilities = document.body.style
+      possibilities = document.body.style
 
-      #if($.inArray('WebkitTransform', possibilities) or 
-      #   $.inArray('MozTransform', inpossibilities) or 
-      #   $.inArray('OTransform', possibilities) or 
-      #   $.inArray('transform', possibilities))
+      if($.inArray('WebkitTransform', possibilities) or 
+         $.inArray('MozTransform', inpossibilities) or 
+         $.inArray('OTransform', possibilities) or 
+         $.inArray('transform', possibilities))
 
-      #  @getElement().css
-      #    '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
-      #    '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
-      #    '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
-      #    '-o-transform'      : "scale(#{amount})"  #/* Opera */  
-      el = @getElement()
-      el.zoomTo({targetsize:amount*(el.outerWidth()/el.parent().parent().width()), duration:600, root: el.parent()});
+        @getElement().css
+          '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
+          '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
+          '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
+          '-o-transform'      : "scale(#{amount})"  #/* Opera */  
+      #el = @getElement()
+      #el.zoomTo({targetsize:amount*(el.outerWidth()/el.parent().parent().width()), duration:600, root: el.parent()});
 
 
     render: ->
