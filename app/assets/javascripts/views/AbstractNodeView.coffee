@@ -70,6 +70,10 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       $children = $($node).children('.children')
       isVisible = $children.is(':visible')
       
+      $fold = $node.children('.inner-node').children('.action-fold')
+      $fold.toggleClass 'icon-minus-sign'
+      $fold.toggleClass 'icon-plus-sign'
+      
       childrenHeight = $children.outerHeight()
       nodeHeight = $node.outerHeight()
       
