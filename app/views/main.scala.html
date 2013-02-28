@@ -55,15 +55,15 @@
                     <span class="icon-bar"></span>
                 </a>
                 <a class="brand image" href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" alt="@Play.configuration.getString("application.name")"/></a>
-                @if(isAuthenticated) {
+
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        @menuItem(controllers.routes.Application.smallSolutions().url, "Small solutions")
                         @menuItem(controllers.routes.Application.help().url, "Help")
                         @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
                         @menuItem(controllers.routes.User.profile.url, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
                         @menuItem(controllers.routes.User.logout.url, "Logout", onlyIf = isAuthenticated)
                     </ul>
+                    @if(isAuthenticated) {
                     <ul class="nav pull-right">
                         <li class="dropdown pull-right">
 	                      <a data-toggle="dropdown" class="dropdown-toggle" href="#" id="toggle-mindmap-select">Select MindMap <b class="caret"></b></a>
@@ -74,8 +74,8 @@
 	                      </ul>
 	                    </li>
                     </ul>
+                    }
                 </div><!--/.nav-collapse -->
-                }
             </div>
         </div>
     </div>
