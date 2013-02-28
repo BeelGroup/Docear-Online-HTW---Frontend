@@ -8,7 +8,7 @@ define ->
     template : Handlebars.templates['Minimap']
 
     events:
-      'center': -> @updatePosition
+      'click': -> @updatePositionClick(event)
 
 
     constructor:(@id, @relatedViewport, @relatedCanvasView)->
@@ -16,7 +16,6 @@ define ->
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePosition
       @relatedCanvas.on 'center', @updatePosition
-
 
     element:-> @$el
 
@@ -28,19 +27,9 @@ define ->
         containment: "parent"
         cursor: "move"
         drag: (event, ui)=>
-          @updateRelatedCanvasPosition(event, ui)
+          @updateRelatedCanvasPositionDrag(event, ui)
 
       minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
-      
-
-    updateRelatedCanvasPosition:(event, ui)->
-      # position of minimap viewport in % (is set to px value due drag :P)
-      xPos = @relatedCanvas.width()  * (ui.position.left / @$el.width()  * 100) / 100  
-      yPos = @relatedCanvas.height() * (ui.position.top  / @$el.height() * 100) / 100 
-      
-      @relatedCanvas.css
-        'left'  : "#{-xPos}px",
-        'top'   : "#{-yPos}px"
 
 
     draggable:->
@@ -51,7 +40,6 @@ define ->
 
 
     renderAndAppendTo:($element, @itsDraggable = false)->
-      
       stats = 
         width:  @relatedViewport.width() / 70
         height: @relatedViewport.height() / 70
@@ -68,6 +56,41 @@ define ->
         'height'   : @relatedCanvas.height() / 70
       @afterAppend()
       @
+
+
+    updateRelatedCanvasPositionDrag:(event, ui)->
+      # position of minimap viewport in % (is set to px value due drag :P)
+      xPos = @relatedCanvas.width()  * (ui.position.left / @$el.width()  * 100) / 100  
+      yPos = @relatedCanvas.height() * (ui.position.top  / @$el.height() * 100) / 100  
+      @updateRelatedCanvasPosition(xPos, yPos)     
+
+
+    updateRelatedCanvasPosition:(xPos, yPos, animate = false)->
+      stats =         
+        'left'  : "#{-xPos}px",
+        'top'   : "#{-yPos}px"
+
+      if animate then @relatedCanvas.animate stats else @relatedCanvas.css stats
+
+
+    updatePositionClick:(event)->
+      $minimapViewport = @$el.find('.minimap-viewport')
+      mouseX = event.pageX - @$el.offset().left
+      mouseY = event.pageY - @$el.offset().top
+
+      xPos = @relatedCanvas.width()  * ((mouseX - $minimapViewport.width() / 2) / @$el.width()  * 100) / 100  
+      yPos = @relatedCanvas.height() * ((mouseY - $minimapViewport.height() / 2) / @$el.height() * 100) / 100        
+      @updateRelatedCanvasPosition(xPos, yPos, true)
+
+      xPosMini = mouseX - $minimapViewport.width()/2
+      yPosMini = mouseY - $minimapViewport.height()/2
+
+      $minimapViewport.animate
+        'left' : "#{(xPosMini/@$el.width()*100)}%"
+        'top'  : "#{(yPosMini/@$el.height()*100)}%"
+      #$minimapViewport.css
+      #  'left' : "#{(xPosMini/@$el.width()*100)}%"
+      #  'top'  : "#{(yPosMini/@$el.height()*100)}%" 
 
 
     updatePosition:=>

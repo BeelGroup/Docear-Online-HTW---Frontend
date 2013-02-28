@@ -1,9 +1,11 @@
-<div id='{{id}}' class='node root {{#if folded}}folded{{/if}} {{#if selected}}selected{{/if}}'>
-  <div class='rightChildren children'></div>
-  <div class='leftChildren children'></div>
-  
-  <div class='inner-node'>
-    <div class='content'>
+
+<div id='zoom-container' style="width: 100px; height: 100px">
+  <div id='{{id}}' class='node root {{#if folded}}folded{{/if}} {{#if selected}}selected{{/if}}'>
+    <div class='rightChildren children'></div>
+    <div class='leftChildren children'></div>
+    
+    <div class='inner-node'>
+      <div class='content'>
       {{#if isHTML}}
         {{{nodeText}}}
       {{else}}
@@ -15,7 +17,7 @@
       <i class='icon-file action-new-node'></i>
       <i class='icon-globe action-share'></i>
       <i class='icon-comment action-show'></i>
-      <i class='icon-wrench action-change'></i>    
+      <i class='icon-wrench action-change'></i> 
     </div>
   </div>
 </div>

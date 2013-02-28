@@ -2,7 +2,7 @@
 abstract class
 ###
 
-define ['collections/ChildNodes'], (ChildNodes)->
+define ['collections/ChildNodes', 'PersistenceHandler'], (ChildNodes, PersistenceHandler)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
@@ -21,9 +21,21 @@ define ['collections/ChildNodes'], (ChildNodes)->
       
       @set 'selected', false
       @set 'previouslySelected', false
+      
       ## THROW events on all (also possible: save/update/change)
       #@on 'all', (event) -> console.log "Event: " + event
       @sup = AbstractNode.__super__
+
+      @set 'persistenceHandler', (new PersistenceHandler())
+      @set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
+      
+      @bind 'change',(node, changes)->
+        attributesToPersist = @get 'attributesToPersist'
+        persistenceHandler = @get 'persistenceHandler'
+      
+        $.each changes.changes, (attr, value)->
+          if attr in attributesToPersist
+            persistenceHandler.persistChanges node, changes
 
     # will be set to /map/json/id, when fetch() or update() will be called
     urlRoot: '/map/json/' #TODO replace with jsRoutes command
