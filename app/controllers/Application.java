@@ -104,10 +104,6 @@ public class Application extends Controller {
         return isJson;
     }
 
-    public static Result smallSolutions() {
-		return ok(views.html.smallSolutions.render("Solutions"));
-	}
-
 	public static String getSessionCookieName() {
 		return Play.application().configuration().getString("backend.sessionIdName");
 	}

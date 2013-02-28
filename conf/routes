@@ -7,7 +7,6 @@ GET     /favicon.ico                controllers.Assets.at(path="/public", file="
 GET     /                           controllers.Application.index()
 GET     /error/:errorId             controllers.Application.error(errorId: String)
 GET	    /help						controllers.Application.help()
-GET     /small-solutions            controllers.Application.smallSolutions()
 GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public", file="mindmaps/example1.json")
 
 
