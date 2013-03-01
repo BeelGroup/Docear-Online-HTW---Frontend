@@ -6,6 +6,8 @@ define ->
     tagName: 'div'
     className: 'mindmap-canvas'
 
+
+
     constructor:(@id, @width = 8000, @height = 8000, @zoomAmount = 100)->
       super()
 
@@ -72,7 +74,7 @@ define ->
       # compute center of canvas - center of viewport (== total center)
       xPos = @width  / 2 - @$el.parent().width()  / 2
       yPos = @height / 2 - @$el.parent().height() / 2
-      @$el.css 
+      @$el.animate 
        'left'  : "#{-xPos}px"
        'top'   : "#{-yPos}px"
 

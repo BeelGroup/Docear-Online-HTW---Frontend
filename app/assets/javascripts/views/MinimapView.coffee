@@ -14,8 +14,8 @@ define ->
     constructor:(@id, @relatedViewport, @relatedCanvasView)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
-      @relatedCanvas.on 'drag', @updatePosition
-      @relatedCanvas.on 'center', @updatePosition
+      @relatedCanvas.on 'drag', @updatePositionEvent
+      @relatedCanvas.on 'center', @centerPosition
 
     element:-> @$el
 
@@ -87,22 +87,41 @@ define ->
       xPosMini = mouseX - $minimapViewport.width()/2
       yPosMini = mouseY - $minimapViewport.height()/2
 
-      $minimapViewport.animate
-        'left' : "#{(xPosMini/@$el.width()*100)}%"
-        'top'  : "#{(yPosMini/@$el.height()*100)}%"
-      #$minimapViewport.css
-      #  'left' : "#{(xPosMini/@$el.width()*100)}%"
-      #  'top'  : "#{(yPosMini/@$el.height()*100)}%" 
+      pos =
+        x: (xPosMini/@$el.width()*100)
+        y: (yPosMini/@$el.height()*100)
+
+      @updatePosition pos, true
 
 
-    updatePosition:=>
-      $minimapViewport = @$el.find('.minimap-viewport')
-      
+    updatePositionEvent:=>
       posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  ) * 100
       posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() ) * 100
       
-      $minimapViewport.css
-        'left' : "#{-(posX-100)}%"
-        'top'  : "#{-(posY-100)}%"      
+      pos=
+        x: -posX + 100
+        y: -posY + 100
+
+      @updatePosition pos
+
+    updatePosition:(pos, animated = false)->
+      $minimapViewport = @$el.find('.minimap-viewport')
+
+      stats=
+        'left' : "#{pos.x}%"
+        'top'  : "#{pos.y}%"   
+
+      if animated then $minimapViewport.animate stats else $minimapViewport.css stats
+
+    computeCenterPosition:->
+      $minimapViewport = @$el.find('.minimap-viewport')
+      x = (@$el.width() / 2 - $minimapViewport.width() / 2) / @$el.width() * 100
+      y = (@$el.height() / 2 - $minimapViewport.height() / 2) / @$el.height() * 100
+
+      pos = x: x, y: y
+
+
+    centerPosition:(animate = false)=>
+      @updatePosition @computeCenterPosition(), animate
 
   module.exports = Minimap

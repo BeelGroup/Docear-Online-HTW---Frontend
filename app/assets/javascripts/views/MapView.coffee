@@ -25,7 +25,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.centerInContainer()
       @rootView.refreshDom()
       jsPlumb.repaintEverything()
-      @minimap.updatePosition()
+      @minimap.centerPosition(true)
       @canvas.setRootView(@rootView)
 
 
