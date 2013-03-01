@@ -30,6 +30,7 @@ define ->
           @updateRelatedCanvasPositionDrag(event, ui)
 
       minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
+      minimapViewport.css('opacity','.6');
 
 
     draggable:->
@@ -48,6 +49,7 @@ define ->
         viewport_class: 'minimap-viewport'
 
       @$el.html @template stats
+      @$el.css('opacity','.6');
       $element.append(@el)
       @draggable() if @itsDraggable
 
