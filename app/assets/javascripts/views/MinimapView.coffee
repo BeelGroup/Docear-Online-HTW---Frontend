@@ -97,7 +97,7 @@ define ->
     updatePositionEvent:=>
       posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  ) * 100
       posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() ) * 100
-      
+
       pos=
         x: -posX + 100
         y: -posY + 100

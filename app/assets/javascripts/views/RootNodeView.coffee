@@ -7,6 +7,8 @@ define ['views/NodeView'], (NodeView) ->
 
     constructor: (model) ->
       super model
+      @lastScaleAmount = 1
+      @currentScale = 100
 
     collapsFoldedNodes:()->      
       foldedNodes = $('.node.folded')
@@ -46,24 +48,42 @@ define ['views/NodeView'], (NodeView) ->
       
       node.css 'left', posX + 'px'
       node.css 'top' , posY + 'px'
-
-    #TODO: add translate
+ 
 
     scale:(amount)->      
       possibilities = document.body.style
+      fallback = false
 
-      if($.inArray('WebkitTransform', possibilities) or 
-         $.inArray('MozTransform', inpossibilities) or 
-         $.inArray('OTransform', possibilities) or 
-         $.inArray('transform', possibilities))
+      console.log  $.browser.version
+      # IE
+      if $.browser.msie 
+        if $.browser.version > 8
+          #console.log 'IE 9 & 10'
+          @getElement().css
+            '-ms-transform': "scale(#{amount})" 
 
-        @getElement().css
-          '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
-          '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
-          '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
-          '-o-transform'      : "scale(#{amount})"  #/* Opera */  
-      #el = @getElement()
-      #el.zoomTo({targetsize:amount*(el.outerWidth()/el.parent().parent().width()), duration:600, root: el.parent()});
+        else if $.browser.version <= 8 
+          #console.log 'IE 7 & 8'
+          fallback = true
+
+      # Safari, Firefox and Chrome with CSS3 support 
+      else if($.inArray('WebkitTransform', possibilities) or 
+      $.inArray('MozTransform', inpossibilities) or 
+      $.inArray('OTransform', possibilities)) 
+        #console.log 'Webkit, Moz, O'
+        @getElement().animate {'scale' : amount}, 100
+
+      else
+        #console.log $.browser
+        fallback = true
+
+      # ultra fallback
+      if fallback
+        scaleDiff = 0
+        if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+        @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+        @lastScaleAmount = amount
+        @currentScale += scaleDiff
 
 
     render: ->
