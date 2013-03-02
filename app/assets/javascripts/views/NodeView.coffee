@@ -86,8 +86,6 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
         $(childrenContainer).css('height', Math.max(totalChildrenHeight, elementHeight))
         $(childrenContainer).css('width', totalChildrenWidth)
           
-        $(childrenContainer).css('border', '1px solid #4444FF')
-        
         if sideOfTree == 'left'
           #$(childrenContainer).css('left', -elementWidth+'px')
           $(childrenContainer).css('left', -totalChildrenWidth+'px')
