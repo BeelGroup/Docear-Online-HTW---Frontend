@@ -48,19 +48,24 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
       elementHeight = $(element).outerHeight()
       elementWidth = $(element).outerWidth()
       heightOfChildren = {}
+      widthOfChildren = {}
       parentCenterTop = @getCenterCoordinates(element).top
 
       currentTop = 0
       
       totalChildrenHeight = 0
+      totalChildrenWidth = 0;
       if $children.length > 0
         for child in $children
-          childHeight = @alignChildrenofElement($(child).children('.children'), sideOfTree, i+1)
-          heightOfChildren[$(child).attr('id')] = childHeight
+          childSize = @alignChildrenofElement($(child).children('.children'), sideOfTree, i+1)
+          heightOfChildren[$(child).attr('id')] = childSize[0]
+          widthOfChildren[$(child).attr('id')] = childSize[1]
+          totalChildrenWidth = Math.max(totalChildrenWidth, $(child).outerWidth() + childSize[1])
         
         lastChild = null
         for child in $children
           totalChildrenHeight += heightOfChildren[$(child).attr('id')] + @verticalSpacer
+          
           if lastChild == null
             currentTop = -$(child).outerHeight()/2
           currentTop += heightOfChildren[$(child).attr('id')]/2
@@ -68,7 +73,7 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
           
           if sideOfTree == 'left'
             $(child).addClass('left')
-            $(child).css('left', -$(child).outerWidth() - @horizontalSpacer)
+            $(child).css('right', @horizontalSpacer)
           else
             $(child).addClass('right')	
             $(child).css('left', @horizontalSpacer) 
@@ -76,16 +81,20 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
           currentTop += heightOfChildren[$(child).attr('id')]/2 + @verticalSpacer
         # to correct the addition on the last run we subtract the last added height
         currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
-        
+        totalChildrenWidth += @horizontalSpacer
         $(childrenContainer).css('top', -(totalChildrenHeight/2 - elementHeight/2))
         $(childrenContainer).css('height', Math.max(totalChildrenHeight, elementHeight))
+        $(childrenContainer).css('width', totalChildrenWidth)
+          
+        $(childrenContainer).css('border', '1px solid #4444FF')
         
         if sideOfTree == 'left'
-          $(childrenContainer).css('left', -elementWidth+'px')
+          #$(childrenContainer).css('left', -elementWidth+'px')
+          $(childrenContainer).css('left', -totalChildrenWidth+'px')
         else
           $(childrenContainer).css('left', elementWidth+'px');	
         
-      Math.max(totalChildrenHeight, elementHeight)
+      [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
     destroy: ->
