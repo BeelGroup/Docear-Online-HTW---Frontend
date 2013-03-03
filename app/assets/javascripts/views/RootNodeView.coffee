@@ -40,6 +40,27 @@ define ['views/NodeView'], (NodeView) ->
           @recursiveConnectNodes $(child).children('.children:first')
         ) 
 
+
+    setChildPositions: ->
+      @positions = new Array()
+      @childPositions $('#'+@model.get 'id').find('.rightChildren:first'), @positions
+      @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions
+
+
+    childPositions: (childrenContainer, positions)->
+      children = childrenContainer.children('.node')
+
+      if $(children).size() > 0
+        $.each(children, (index, child)=>
+          positions.push 
+            pos: $(child).position() 
+            width: $(child).width()
+            height: $(child).height() 
+          @childPositions $(child).children('.children:first'), positions
+        )
+      positions
+
+
     centerInContainer: ->
       node = $('#'+@model.get 'id')
 

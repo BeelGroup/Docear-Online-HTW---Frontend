@@ -19,10 +19,24 @@ define ->
 
     element:-> @$el
 
+    drawMiniNodes:(nodePositions)->
+      @createMiniNode stats for stats in nodePositions
 
+    createMiniNode:(stats)->
+      div = document.createElement("div")
+      div.style.position = "absolute"
+      div.style.width  = "2px"#stats.width  / 70 + 'px'
+      div.style.height = "2px"#stats.height / 70 + 'px'
+      div.style.left = stats.pos.left / 70 + @$el.width()/2  + 'px'
+      div.style.top  = stats.pos.top  / 70 + @$el.height()/2 + 'px'
+      div.style.background = "green";
+      # TODO
+      #@$el.append div
+
+     
     afterAppend:()->
-     minimapViewport =  @$el.find('.minimap-viewport')
-     minimapViewport.draggable
+      minimapViewport =  @$el.find('.minimap-viewport')
+      minimapViewport.draggable
         cancel: "a.ui-icon, .node"
         containment: "parent"
         cursor: "move"
