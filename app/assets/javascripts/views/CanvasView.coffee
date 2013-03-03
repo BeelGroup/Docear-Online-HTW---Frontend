@@ -65,8 +65,9 @@ define ->
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
         @zoom()
-        @rootView.centerInContainer()
         @center()
+        #@rootView.centerInContainer()
+        
         @$el.trigger 'center'
 
 
