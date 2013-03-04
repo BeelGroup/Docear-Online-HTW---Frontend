@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, SyncedView, HtmlView) ->
+define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView'], (nodeModel, SyncedView, HtmlView, NodeEditView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -23,7 +23,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       'click .action-show': 'printModel'
       'click .action-change': 'modificateModel'
       'click .action-fold': -> @foldModel()
-      'click .action-save': -> @model.save(@model.saveOptions)
       
     # a.k.a. constructor
     constructor: (@model) ->
@@ -32,6 +31,7 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@changeFoldedStatus , @
+      @model.bind "change:nodeText",@changeNodeText , @
       
     PosToModel: ->
       # TODO: Event will not be called on change
@@ -95,7 +95,37 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
             jsPlumb.repaintEverything()
           )
         
+    changeNodeText: ->
+      $node = $("#"+@model.id)
+      preWidth = $node.outerWidth()
+      preHeight = $node.outerHeight()
+      childrenHeight = $node.children('.children:first').outerHeight()
+      parentIsHeigher = preHeight > childrenHeight
       
+      $node.children('.inner-node').children('.content').html(@model.get 'nodeText')
+      
+      postHeight = $node.outerHeight()
+      diffWidth = $node.outerWidth() - preWidth
+      if $($node).hasClass('left')
+        diffWidth = -diffWidth
+      
+      $node.children('.children').animate({
+        left: '+='+diffWidth
+      },  document.fadeDuration, ->
+        jsPlumb.repaintEverything()
+      )
+      
+      diff = 0
+      if parentIsHeigher
+        if postHeight > preHeight
+          diff = postHeight - preHeight
+        else
+          diff = Math.max(postHeight, childrenHeight) - preHeight
+      else
+        if postHeight > childrenHeight
+          diff = postHeight - childrenHeight
+      $node = $("#"+@model.id)
+      @resizeTree $node, (postHeight - preHeight)
     
 
     # [Debugging] 
@@ -211,6 +241,14 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
           isVisible = $('#'+currentNodeId).children('.children').is(':visible')
           model.findById(currentNodeId).set 'folded', isVisible
         
+        $edit = $($controls).children('.action-edit')
+        $($edit).click (event)->
+          $node = $(this).closest('.node')
+          node = model.findById($node.attr('id'))
+          $mindmapCanvas = $(this).closest('.mindmap-canvas')
+          nodeEditView = new NodeEditView(node)
+          nodeEditView.renderAndAppendTo($mindmapCanvas)
+          
         $($innerNode).click (event)->
           $selectedNode = $('.node.selected')
           selectedNodeId = $($selectedNode).attr('id')

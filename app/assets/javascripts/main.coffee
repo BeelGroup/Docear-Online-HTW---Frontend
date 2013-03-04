@@ -25,8 +25,3 @@ require [],  () ->
           )
     })
   loadUserMaps()
-    
-  
-  $(document).on 'click', '.overlay',  ->
-    $(this).fadeOut(document.fadeDuration)
-    $('.edit-container').fadeOut(document.fadeDuration)
