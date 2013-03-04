@@ -153,6 +153,7 @@
     background-color: #000000;
     opacity:0.0;
     filter:alpha(opacity=0); /* For IE8 and earlier */
+    cursor: default;
 }
 .edit-container {
     position: absolute;
@@ -163,11 +164,23 @@
     filter:alpha(opacity=0); /* For IE8 and earlier */
     width: 300px;
     height: 250px;
+    padding: 10px;
 }
 .dummy-node-container {
     margin-top: 10px;
 }
-.edit-node-container textarea {
+.edit-container .controlls button {
+    float: right;
+}
+.edit-container textarea {
     width: 90%;
     background-color: #FFFFFF;
+    height: 190px;
+}
+.node-edit-container {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
 }
