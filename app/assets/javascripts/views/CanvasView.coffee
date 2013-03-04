@@ -21,7 +21,7 @@ define ->
         event.preventDefault() 
 
       $(document).keydown (event)=>
-        if typeof @rootView != "undefined"
+        if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
           @rootView.userKeyInput event
 
 
@@ -31,7 +31,7 @@ define ->
 
     afterAppend:()->
       @$el.draggable
-        cancel: "a.ui-icon, .inner-node"
+        cancel: "a.ui-icon, .inner-node, :input"
         containment: @$el.parent().attr('id')
         cursor: "move"
         handle: @id

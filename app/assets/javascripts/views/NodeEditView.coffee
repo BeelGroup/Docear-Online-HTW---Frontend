@@ -47,7 +47,9 @@ define ->
       ec = $(@$el.html).find('.edit-container:first')
       ec.offset(@$node.offset())
       $(ec).find('.node-id:first').val(@$node.attr('id'))
-      $(ec).find('textarea.node-content').val(@$node.children('.inner-node').children('.content').html())
+      $textarea = $(ec).find('textarea.node-content')
+      $textarea.val(@$node.children('.inner-node').children('.content').html())
+      $textarea.select()
       @
 
   module.exports = NodeEdit

@@ -49,7 +49,7 @@ define ->
 
     draggable:->
       @$el.draggable
-        cancel:      "a.ui-icon, .inner-node"
+        cancel:      "a.ui-icon, .inner-node, :input"
         containment: "parent"
         cursor:      "move"
 
