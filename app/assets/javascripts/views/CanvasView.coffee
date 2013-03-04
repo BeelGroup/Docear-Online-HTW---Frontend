@@ -31,7 +31,7 @@ define ->
 
     afterAppend:()->
       @$el.draggable
-        cancel: "a.ui-icon, .node"
+        cancel: "a.ui-icon, .inner-node"
         containment: @$el.parent().attr('id')
         cursor: "move"
         handle: @id
