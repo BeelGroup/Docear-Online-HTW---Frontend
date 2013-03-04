@@ -15,9 +15,10 @@ require [],  () ->
         if data.length> 0
           $.each(data, (index,value)->
             if typeof mapLatestRevision[value.mmIdInternal] == "undefined" or mapLatestRevision[value.mmIdInternal].revision < value.revision
+              dateRevision = new Date(value.revision)
               mapLatestRevision[value.mmIdInternal] = {}
               mapLatestRevision[value.mmIdInternal].map = value
-              mapLatestRevision[value.mmIdInternal].revision = value.revision
+              mapLatestRevision[value.mmIdInternal].revision = dateRevision.getTime()
           )
           $selectMinmap.empty()
           $.each(mapLatestRevision, (id,value)->
