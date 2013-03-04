@@ -6,6 +6,10 @@
     padding: 0px 20px;
 }
 
+.container {
+    margin-top: 10px;
+}
+
 #mindmap-container {
     height: 600px;
     position: relative;
@@ -137,9 +141,10 @@
 }
 
 /* IE 7 and 8 DropDown fix: https://github.com/twitter/bootstrap/issues/5102 */
-.nav-collapse.collapse {
+.nav-collapse.collapse, ul.dropdown-menu {
     height: auto !important;
     overflow: visible !important;
+    z-index: 1;
   }
   
 
