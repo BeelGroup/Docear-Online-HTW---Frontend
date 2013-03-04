@@ -87,7 +87,8 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
             jsPlumb.repaintEverything()
           )
         else
-          @resizeTree $node, -diff
+          if childrenHeight > nodeHeight
+            @resizeTree $node, -diff
 
           $children.find('svg').hide()
           $children.fadeIn(document.fadeDuration, ->
@@ -97,9 +98,11 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
         
     changeNodeText: ->
       $node = $("#"+@model.id)
+      $childrenContainer = $node.children('.children:first')
+      
       preWidth = $node.outerWidth()
       preHeight = $node.outerHeight()
-      childrenHeight = $node.children('.children:first').outerHeight()
+      childrenHeight = $childrenContainer.outerHeight()
       parentIsHeigher = preHeight > childrenHeight
       
       $node.children('.inner-node').children('.content').html(@model.get 'nodeText')
@@ -109,23 +112,27 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
       if $($node).hasClass('left')
         diffWidth = -diffWidth
       
-      $node.children('.children').animate({
-        left: '+='+diffWidth
-      },  document.fadeDuration, ->
-        jsPlumb.repaintEverything()
-      )
-      
       diff = 0
-      if parentIsHeigher
-        if postHeight > preHeight
+      if postHeight > childrenHeight
+        if preHeight > childrenHeight
           diff = postHeight - preHeight
         else
-          diff = Math.max(postHeight, childrenHeight) - preHeight
-      else
-        if postHeight > childrenHeight
           diff = postHeight - childrenHeight
-      $node = $("#"+@model.id)
-      @resizeTree $node, (postHeight - preHeight)
+      else if postHeight < childrenHeight
+        if preHeight > childrenHeight
+          diff = childrenHeight - preHeight
+      if diff != 0
+        @resizeTree $node, -diff
+      
+      $childrenContainer.animate {
+        left: '+='+diffWidth
+        top: '+='+(postHeight-preHeight)/2
+      },  document.fadeDuration
+
+      $node.animate {
+        top: '-='+(postHeight-preHeight)/2
+      }, document.fadeDuration, ->
+        jsPlumb.repaintEverything()
     
 
     # [Debugging] 
