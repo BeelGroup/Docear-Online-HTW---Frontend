@@ -1,8 +1,4 @@
 require [],  () ->   
-   
-  if $("body").hasClass("login-page")
-    $("#username").focus()
-  
   loadUserMaps = ->
     $.ajax({
       type: 'GET',
@@ -25,4 +21,8 @@ require [],  () ->
             $selectMinmap.append """<li><a class="dropdown-toggle" href="#loadMap/#{id}"> #{value.map.fileName}</a></li>"""
           )
     })
-  loadUserMaps()
+    
+  if $("body").hasClass("login-page")
+    $("#username").focus()
+  else if $('.logoutButton').size() > 0
+    loadUserMaps()
