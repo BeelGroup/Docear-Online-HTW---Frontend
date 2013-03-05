@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView'], (nodeModel, SyncedView, HtmlView, NodeEditView) ->
+define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, SyncedView, HtmlView, NodeEditView, NodeControlsView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -172,6 +172,8 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
 
     afterRender: ->
       @$el.append(@model.get 'purehtml')
+      controls = new NodeControlsView(@model, @$el)
+      controls.renderAndAppendToNode()
 
 
     #TODO: add translate

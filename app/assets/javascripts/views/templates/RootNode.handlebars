@@ -5,25 +5,7 @@
     <div class='leftChildren children'></div>
     
     <div class='inner-node'>
-      <div class='content'>
-      {{#if isHTML}}
-        {{{nodeText}}}
-      {{else}}
-        {{nodeText}}
-      {{/if}}
+      <div class='content'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
     </div>
-    {{#if editable}}
-    <div class='controls'>
-      {{#if editableText}}
-      <a class='icon-edit action-edit'></a>
-      {{/if}}
-      {{#if editableText}}
-      <a class='icon-file action-new-node'></a>
-      {{/if}}
-      <i class='icon-globe action-share'></i>
-      <i class='icon-comment action-show'></i>
-      <i class='icon-wrench action-change'></i> 
-    </div>
-    {{/if}}
   </div>
 </div>

@@ -21,8 +21,6 @@ define ['collections/ChildNodes', 'PersistenceHandler'], (ChildNodes, Persistenc
       
       @set 'selected', false
       @set 'previouslySelected', false
-      @set 'editable', ($.inArray('NODE_CONTROLS', document.features) > -1)
-      @set 'editableText', ($.inArray('EDIT_NODE_TEXT', document.features) > -1)
       @set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
       
       ## THROW events on all (also possible: save/update/change)
