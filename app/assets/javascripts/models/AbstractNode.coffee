@@ -21,6 +21,7 @@ define ['collections/ChildNodes', 'PersistenceHandler'], (ChildNodes, Persistenc
       
       @set 'selected', false
       @set 'previouslySelected', false
+      @set 'editable', ($.inArray('NODE_CONTROLLS', document.features) > -1)
       
       ## THROW events on all (also possible: save/update/change)
       #@on 'all', (event) -> console.log "Event: " + event
