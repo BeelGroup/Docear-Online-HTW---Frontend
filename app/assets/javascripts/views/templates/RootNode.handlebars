@@ -14,8 +14,12 @@
     </div>
     {{#if editable}}
     <div class='controls'>
-      <i class='icon-edit action-edit'></i>
-      <i class='icon-file action-new-node'></i>
+      {{#if editableText}}
+      <a class='icon-edit action-edit'></a>
+      {{/if}}
+      {{#if editableText}}
+      <a class='icon-file action-new-node'></a>
+      {{/if}}
       <i class='icon-globe action-share'></i>
       <i class='icon-comment action-show'></i>
       <i class='icon-wrench action-change'></i> 

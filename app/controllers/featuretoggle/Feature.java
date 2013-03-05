@@ -30,6 +30,7 @@ public enum Feature {
     KEYBOARD_NAVIGATION("enables the user to move with the arrow buttons on the mind map"),
     EDIT_NODE_TEXT("enables the user to click on a node and change the text in it"),
     NODE_CONTROLLS("enables node controlls to edit/add/delete nodes "),
+    FOLD_NODE("enables to fold/unfold nodes "),
     FEEDBACK("enables a feedback dialog for the user");
 
     String description;
