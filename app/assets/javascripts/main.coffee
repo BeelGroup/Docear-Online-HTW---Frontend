@@ -24,5 +24,5 @@ require [],  () ->
     
   if $("body").hasClass("login-page")
     $("#username").focus()
-  else if $('.logoutButton').size() > 0
+  else if $("body").hasClass('is-authenticated')
     loadUserMaps()
