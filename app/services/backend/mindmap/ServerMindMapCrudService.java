@@ -40,6 +40,7 @@ import org.w3c.dom.Document;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
+import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
@@ -116,20 +117,22 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		}
 
 		String docearServerAPIURL = "https://api.docear.org/user";
-		WS.Response response =  WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
-				.setHeader("accessToken", user.getAccessToken()).get().get();
-
-		BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
-
-		List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
-		for ( String line; (line = br.readLine()) != null; ){
-			String[] strings = line.split("\\|#\\|");
-			Logger.debug(line);
-			UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
-			infos.add(info);
-		}
-
-		return Promise.pure(Arrays.asList(infos.toArray(new UserMindmapInfo[0])));
+        final Promise<WS.Response> accessTokenPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
+                .setHeader("accessToken", user.getAccessToken()).get();
+        return accessTokenPromise.map(new Function<WS.Response, List<UserMindmapInfo>>() {
+            @Override
+            public List<UserMindmapInfo> apply(WS.Response response) throws Throwable {
+                BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
+                List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
+                for ( String line; (line = br.readLine()) != null; ){
+                    String[] strings = line.split("\\|#\\|");
+                    Logger.debug(line);
+                    UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
+                    infos.add(info);
+                }
+                return Arrays.asList(infos.toArray(new UserMindmapInfo[0]));
+            }
+        });
 	}
 	
 	@Override
