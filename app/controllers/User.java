@@ -14,6 +14,7 @@ import play.data.Form;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import services.backend.user.UserService;
 
 import static controllers.Secured.SESSION_KEY_TIMEOUT;
@@ -62,11 +63,13 @@ public class User extends Controller {
         session(SESSION_KEY_TIMEOUT, createTimeoutTimestamp().toString());
     }
 
+    @Security.Authenticated(Secured.class)
     public Result logout() {
         session().clear();
         return redirect(routes.Application.index());
     }
 
+    @Security.Authenticated(Secured.class)
     public Result profile() {
         return redirect(routes.MindMap.mapListFromDB());
     }
