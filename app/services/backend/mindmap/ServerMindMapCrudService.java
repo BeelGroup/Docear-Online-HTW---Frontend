@@ -54,18 +54,11 @@ import com.typesafe.config.ConfigFactory;
 @Profile("backendProd")
 @Component
 public class ServerMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
-	private static Map<String, String> serverIdToMapIdMap;
-	private static String freeplaneActorUrl;
-	private static ObjectMapper objectMapper;
-	private static ActorSystem system;
-	
-	static {
-		final Configuration conf = Play.application().configuration();
-		freeplaneActorUrl = conf.getString("backend.singleInstance.host");
-		serverIdToMapIdMap = new HashMap<String, String>();
-		objectMapper = new ObjectMapper();
-	}
-	
+	private Map<String, String> serverIdToMapIdMap = new HashMap<String, String>();
+	private String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
+	private ObjectMapper objectMapper = new ObjectMapper();
+	private ActorSystem system;
+
 	@Override
 	public Promise<JsonNode> mindMapAsJson(final String id) throws DocearServiceException, IOException {
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
