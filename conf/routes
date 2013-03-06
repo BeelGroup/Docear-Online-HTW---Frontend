@@ -20,6 +20,8 @@ POST	/map/changeNode				@controllers.MindMap.changeNode()
 POST	/map/deleteNode				@controllers.MindMap.deleteNode()
 GET		/maps			    		@controllers.MindMap.mapListFromDB()
 
+POST	/map/addNode				@controllers.MindMap.addNode()
+
 # User
 POST	/login						@controllers.User.login()
 GET 	/login						controllers.Application.index()
