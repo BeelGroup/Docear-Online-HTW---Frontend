@@ -47,7 +47,8 @@ public class Application extends Controller {
                     routes.javascript.MindMap.mapListFromDB(),
                     routes.javascript.MindMap.changeNode(),
                     routes.javascript.MindMap.createNode(),
-                    routes.javascript.MindMap.deleteNode()
+                    routes.javascript.MindMap.deleteNode(),
+                    routes.javascript.MindMap.addNode()
             )
         );
     }
