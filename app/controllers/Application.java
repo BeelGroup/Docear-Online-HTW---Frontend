@@ -108,8 +108,4 @@ public class Application extends Controller {
         }
         return isJson;
     }
-
-	public static String getSessionCookieName() {
-		return Play.application().configuration().getString("backend.sessionIdName");
-	}
 }
