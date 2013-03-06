@@ -35,6 +35,7 @@ public class Application extends Controller {
 	}
 
     /** makes some play routes in JavaScript avaiable */
+    @Cached(key = "js-routes")
     public static Result javascriptRoutes() {
         response().setContentType("text/javascript");
 
