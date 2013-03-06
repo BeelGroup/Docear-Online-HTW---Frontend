@@ -2,7 +2,7 @@
 abstract class
 ###
 
-define ['collections/ChildNodes', 'PersistenceHandler'], (ChildNodes, PersistenceHandler)->
+define ['collections/ChildNodes', 'handlers/PersistenceHandler'], (ChildNodes, PersistenceHandler)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
@@ -106,4 +106,14 @@ define ['collections/ChildNodes', 'PersistenceHandler'], (ChildNodes, Persistenc
             nodes = $.merge(nodes, node.get('children').slice())
       return null
     
+    getRoot: ()->
+      currentNode = @
+      while currentNode.constructor.name != 'RootNode'
+        currentNode = currentNode.get 'parent'
+      currentNode
+
+    getCurrentMapId: ()->
+      root = @getRoot()
+      root.get 'mapId'
+ 
   module.exports = AbstractNode

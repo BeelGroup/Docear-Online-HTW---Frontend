@@ -4,7 +4,7 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
   class AbstractNodeView extends SyncedView
 
     tagName: 'div',
-    className: 'node'	
+    className: 'node' 
     subViews: {}
     horizontalSpacer: 20
     verticalSpacer: 10
@@ -32,6 +32,7 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@changeFoldedStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
+      @model.bind "change:children",@changeChildren , @
       
     PosToModel: ->
       # TODO: Event will not be called on change
@@ -134,6 +135,11 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
       }, document.fadeDuration, ->
         jsPlumb.repaintEverything()
     
+        
+    changeChildren: ->
+      ## TODO -> render and align new child
+      console.log "TODO: render child"
+        
 
     # [Debugging] 
     printModel: ->      
@@ -249,6 +255,12 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
           currentNodeId = $(this).closest('.node').attr('id')
           isVisible = $('#'+currentNodeId).children('.children').is(':visible')
           model.findById(currentNodeId).set 'folded', isVisible
+
+        $newNode = $($controls).children('.action-new-node')
+        $($newNode).click (event)->
+          currentNodeId = $(this).closest('.node').attr('id')
+          # dummy
+          model.findById(currentNodeId).createAndAddChild()
         
         $edit = $($controls).children('.action-edit')
         $($edit).click (event)->
