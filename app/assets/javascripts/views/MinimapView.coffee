@@ -11,7 +11,7 @@ define ->
       'click': (event)-> @updatePositionClick(event)
 
 
-    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 40)->
+    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 70)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePositionEvent

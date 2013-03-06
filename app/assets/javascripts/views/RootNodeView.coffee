@@ -46,7 +46,7 @@ define ['views/NodeView'], (NodeView) ->
       @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions
 
 
-    childPositions: (childrenContainer, positions, relativeTo)->
+    childPositions: (childrenContainer, positions)->
       children = childrenContainer.children('.node')
       if $(children).size() > 0
         $.each(children, (index, child)=>
@@ -54,7 +54,7 @@ define ['views/NodeView'], (NodeView) ->
             pos: $(child).offset() 
             width: $(child).width()
             height: $(child).height() 
-          @childPositions $(child).children('.children:first'), positions, relativeTo
+          @childPositions $(child).children('.children:first'), positions
         )
       positions
 
