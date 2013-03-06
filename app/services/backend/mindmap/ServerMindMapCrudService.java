@@ -37,7 +37,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
-import play.Configuration;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
@@ -55,9 +54,10 @@ import com.typesafe.config.ConfigFactory;
 @Component
 public class ServerMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
 	private Map<String, String> serverIdToMapIdMap = new HashMap<String, String>();
-	private String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
-	private ObjectMapper objectMapper = new ObjectMapper();
+	private final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	private ActorSystem system;
+    private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
 
 	@Override
 	public Promise<JsonNode> mindMapAsJson(final String id) throws DocearServiceException, IOException {
@@ -65,7 +65,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		String mindmapId = getMindMapIdInFreeplane(id);
 
 		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), 20000);
+		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), defaultTimeoutInMillis);
 
 		Promise<JsonNode> promise = Akka.asPromise(future).map(
 				new Function<Object, JsonNode>() {
@@ -141,7 +141,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId);
 		
 		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, request, 20000);
+		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
 		
 		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
 			@Override
@@ -164,7 +164,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);
-//		Future<Object> future = ask(remoteActor, request, 20000);
+//		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
 //		
 //		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
 //			@Override
