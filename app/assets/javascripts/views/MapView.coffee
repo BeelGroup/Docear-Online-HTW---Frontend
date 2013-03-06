@@ -31,15 +31,15 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @minimap.drawMiniNodes @rootView.setChildPositions()
 
 
-    loadMap: (mapId) ->
+    loadMap: (@mapId) ->
       console.log "call: loadMap #{mapId} (MapController)"
-      href = jsRoutes.controllers.MindMap.map(mapId).url
+      href = jsRoutes.controllers.MindMap.map(@mapId).url
       $.get(href, @createJSONMap, "json")
       
 
     createJSONMap: (data)=>
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
-      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false) 
+      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
       document.rootID = data.root.id
       if data.root.leftChildren != undefined
         leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode)

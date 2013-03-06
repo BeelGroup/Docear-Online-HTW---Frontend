@@ -11,7 +11,7 @@ define ->
       'click': (event)-> @updatePositionClick(event)
 
 
-    constructor:(@id, @relatedViewport, @relatedCanvasView)->
+    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 70)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePositionEvent
@@ -20,17 +20,24 @@ define ->
     element:-> @$el
 
     drawMiniNodes:(nodePositions)->
+      $.each $('.mini-node'), -> @remove()
       @createMiniNode stats for stats in nodePositions
 
     createMiniNode:(stats)->
+      width  = stats.width / @ratio
+      width = if width > 1.0 then width else 1
+      height = stats.height / @ratio
+      height = if height > 1.0 then height else 1
+
       div = document.createElement("div")
       div.style.position = "absolute"
-      div.style.width  = "2px"#stats.width  / 70 + 'px'
-      div.style.height = "2px"#stats.height / 70 + 'px'
-      div.style.left = stats.pos.left / 70 + @$el.width()/2  + 'px'
-      div.style.top  = stats.pos.top  / 70 + @$el.height()/2 + 'px'
-      div.style.background = "green";
-      # TODO
+      div.style.width  = width + "px"
+      div.style.height = height + "px"
+      div.style.left = stats.pos.left / @ratio  + 'px'
+      div.style.top  = stats.pos.top  / @ratio  + 'px'
+      div.className = 'mini-node'
+      div.style.background = "green"
+
       #@$el.append div
 
      
@@ -56,8 +63,8 @@ define ->
 
     renderAndAppendTo:($element, @itsDraggable = false)->
       stats = 
-        width:  @relatedViewport.width() / 70
-        height: @relatedViewport.height() / 70
+        width:  @relatedViewport.width() / @ratio
+        height: @relatedViewport.height() / @ratio
         left: 0
         top:  0
         viewport_class: 'minimap-viewport'
@@ -68,8 +75,8 @@ define ->
       @draggable() if @itsDraggable
 
       @$el.css 
-        'width'    : @relatedCanvas.width() / 70
-        'height'   : @relatedCanvas.height() / 70
+        'width'    : @relatedCanvas.width() / @ratio
+        'height'   : @relatedCanvas.height() / @ratio
       @afterAppend()
       @
 
@@ -93,7 +100,7 @@ define ->
       $minimapViewport = @$el.find('.minimap-viewport')
       mouseX = event.pageX - @$el.offset().left
       mouseY = event.pageY - @$el.offset().top
-      console.log event
+      #console.log event
       xPos = @relatedCanvas.width()  * ((mouseX - $minimapViewport.width() / 2) / @$el.width()  * 100) / 100  
       yPos = @relatedCanvas.height() * ((mouseY - $minimapViewport.height() / 2) / @$el.height() * 100) / 100        
       @updateRelatedCanvasPosition(xPos, yPos, true)

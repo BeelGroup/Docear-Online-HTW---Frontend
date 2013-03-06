@@ -1,4 +1,4 @@
-define ['routers/DocearRouter'],  (DocearRouter) ->
+define ['routers/DocearRouter'],  (DocearRouter) ->  
   module = ->
   
   class PersistenceHandler
@@ -8,7 +8,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         'Node': jsRoutes.controllers.MindMap.changeNode().url
       },
       'create': {
-        'Node': jsRoutes.controllers.MindMap.createNode().url
+        'Node': jsRoutes.controllers.MindMap.addNode().url
       },
       'delete': {
         'Node': jsRoutes.controllers.MindMap.deleteNode().url
@@ -26,5 +26,11 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         params = {'json': $.toJSON(values)}
         $.post(@persistenceApi.change[objectName], params)
 
+    persistNew: (object, params)->
+      objectName = object.constructor.name
+      params = {'json': $.toJSON(params)}
+      $.post(@persistenceApi.create[objectName], params, (data)->
+        object.addChild data.id, data.nodeText
+      , 'json')
 
   module.exports = PersistenceHandler

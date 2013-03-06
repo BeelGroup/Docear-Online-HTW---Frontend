@@ -69,7 +69,6 @@ define ->
         #@rootView.centerInContainer()
         
         @$el.trigger 'center'
-        console.log @rootView.getChildPositions()
 
 
     center:->
