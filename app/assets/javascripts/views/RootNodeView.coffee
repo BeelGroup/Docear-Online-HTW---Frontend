@@ -42,19 +42,22 @@ define ['views/NodeView'], (NodeView) ->
 
     setChildPositions: ->
       @positions = new Array()
-      @childPositions $('#'+@model.get 'id').find('.rightChildren:first'), @positions
-      @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions
+      canvas = $('#'+@model.get 'id').parent().parent()
+      @childPositions $('#'+@model.get 'id').find('.rightChildren:first'), @positions, canvas
+      @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions, canvas
 
 
-    childPositions: (childrenContainer, positions)->
+    childPositions: (childrenContainer, positions, canvas)->
       children = childrenContainer.children('.node')
       if $(children).size() > 0
         $.each(children, (index, child)=>
           positions.push 
-            pos: $(child).offset() 
+            pos:
+              left: $(child).offset().left - $(canvas).offset().left
+              top: $(child).offset().top - $(canvas).offset().top
             width: $(child).width()
             height: $(child).height() 
-          @childPositions $(child).children('.children:first'), positions
+          @childPositions $(child).children('.children:first'), positions, canvas
         )
       positions
 

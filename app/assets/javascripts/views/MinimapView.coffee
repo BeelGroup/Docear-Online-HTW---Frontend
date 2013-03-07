@@ -11,7 +11,7 @@ define ->
       'click': (event)-> @updatePositionClick(event)
 
 
-    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 70)->
+    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 60)->
       super()
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePositionEvent
@@ -20,7 +20,8 @@ define ->
     element:-> @$el
 
     drawMiniNodes:(nodePositions)->
-      $.each $('.mini-node'), -> @remove()
+      $.each $('.mini-node'), -> 
+        $(@).remove()
       @createMiniNode stats for stats in nodePositions
 
     createMiniNode:(stats)->
@@ -30,15 +31,13 @@ define ->
       height = if height > 1.0 then height else 1
 
       div = document.createElement("div")
-      div.style.position = "absolute"
+      div.className = 'mini-node'
       div.style.width  = width + "px"
       div.style.height = height + "px"
       div.style.left = stats.pos.left / @ratio  + 'px'
       div.style.top  = stats.pos.top  / @ratio  + 'px'
-      div.className = 'mini-node'
-      div.style.background = "green"
 
-      #@$el.append div
+      @$el.append div
 
      
     afterAppend:()->
