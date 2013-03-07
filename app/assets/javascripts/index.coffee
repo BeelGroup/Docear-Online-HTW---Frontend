@@ -5,3 +5,4 @@ require ['views/MapView', 'routers/DocearRouter'],  (MapView, DocearRouter) ->
     mapView = new MapView('mindmap-viewport')
     mapView.renderAndAppendTo($('#mindmap-container'))
     router = new  DocearRouter(mapView)
+    mapView.loadMap(1)
