@@ -18,7 +18,7 @@ require [],  () ->
           )
           $selectMinmap.empty()
           $.each(mapLatestRevision, (id,value)->
-            $selectMinmap.append """<li><a class="dropdown-toggle" href="#loadMap/#{id}"> #{value.map.fileName}</a></li>"""
+            $selectMinmap.append """<li><a class="dropdown-toggle" href="#loadMap/#{value.map.mmIdOnServer}"> #{value.map.fileName}</a></li>"""
           )
     })
     
