@@ -26,13 +26,11 @@ define ->
       @createMiniNode stats for stats in nodePositions
 
     createMiniNode:(stats)->
-      console.log 'createMiniNode'
       width  = stats.width / @ratio
       width = if width > 1.0 then width else 1
       height = stats.height / @ratio
       height = if height > 1.0 then height else 1
 
-      div = document.createElement("div")
       div.className = 'mini-node'
       div.style.width  = width + "px"
       div.style.height = height + "px"
