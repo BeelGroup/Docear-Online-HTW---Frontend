@@ -59,6 +59,7 @@ define ->
       if(typeof @rootView != "undefined")
         console.log "zoom:#{@zoomAmount}%"
         @rootView.scale @zoomAmount/100
+        @$el.trigger 'zoom', @zoomAmount/100
 
 
     zoomCenter:()=>
