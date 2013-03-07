@@ -50,6 +50,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
       @positionNodes()
       @canvas.center()
+      @minimap.drawMiniNodes @rootView.setChildPositions()
       @rootNode
 
 
