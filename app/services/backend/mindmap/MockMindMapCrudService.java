@@ -30,7 +30,7 @@ import play.Play;
 @Component
 public class MockMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
 	@Override
-	public Promise<JsonNode> mindMapAsJson(String id) throws NoUserLoggedInException, IOException, DocearServiceException {
+	public Promise<JsonNode> mindMapAsJson(String id, Integer nodeCount) throws NoUserLoggedInException, IOException, DocearServiceException {
 		InputStream stream = null;
 		JsonNode jsonNode;
 		try {

@@ -14,7 +14,9 @@ GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public"
 GET     /qunit                      controllers.QUnit.testAll()
 
 # Mindmap
-GET		/map/json/:id				@controllers.MindMap.map(id: String)
+GET		/map/json/:id				@controllers.MindMap.map(id: String, nodeCount:Int ?= -1)
+GET		/map/json/:id/nodeCount/:nodeCount	@controllers.MindMap.map(id: String, nodeCount: Int) 
+
 POST	/map/createNode				@controllers.MindMap.createNode()
 POST	/map/changeNode				@controllers.MindMap.changeNode()
 POST	/map/deleteNode				@controllers.MindMap.deleteNode()

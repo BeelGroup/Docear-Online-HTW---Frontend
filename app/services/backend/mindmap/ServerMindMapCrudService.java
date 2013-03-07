@@ -61,12 +61,12 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
     private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
 
 	@Override
-	public Promise<JsonNode> mindMapAsJson(final String id) throws DocearServiceException, IOException {
+	public Promise<JsonNode> mindMapAsJson(final String id, final Integer nodeCount) throws DocearServiceException, IOException {
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
 		String mindmapId = getMindMapIdInFreeplane(id);
 
 		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), defaultTimeoutInMillis);
+		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId, nodeCount), defaultTimeoutInMillis);
 
 		Promise<JsonNode> promise = Akka.asPromise(future).map(
 				new Function<Object, JsonNode>() {
@@ -82,7 +82,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 						if(t instanceof MapNotFoundException) {
 							Logger.warn("Map expected on server, but was not present. Reopening...");
 							serverIdToMapIdMap.remove(id);
-							return mindMapAsJson(id).get();
+							return mindMapAsJson(id, nodeCount).get();
 						} else {
 							throw t;
 						}

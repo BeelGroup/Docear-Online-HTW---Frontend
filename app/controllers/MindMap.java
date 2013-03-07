@@ -36,8 +36,8 @@ public class MindMap extends Controller {
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
 
-	public Result map(final String id) throws DocearServiceException, IOException {
-        final F.Promise<JsonNode> mindMapPromise = mindMapCrudService.mindMapAsJson(id);
+	public Result map(final String id, final Integer nodeCount) throws DocearServiceException, IOException {
+        final F.Promise<JsonNode> mindMapPromise = mindMapCrudService.mindMapAsJson(id, nodeCount);
         return async(mindMapPromise.map(new F.Function<JsonNode, Result>() {
             @Override
             public Result apply(JsonNode mindMap) throws Throwable {
