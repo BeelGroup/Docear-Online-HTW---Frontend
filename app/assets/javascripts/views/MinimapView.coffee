@@ -51,7 +51,7 @@ define ->
 
       else
         #console.log $.browser
-        fallback = true
+        fallback = true 
 
       # ultra fallback
       #if fallback
@@ -70,7 +70,6 @@ define ->
         $(@).remove()
 
       rootPos = nodePositions.pop()
-
       @$root = @createMiniNode rootPos, @miniNodesContainer
 
       @createMiniNode stats, @$root for stats in nodePositions

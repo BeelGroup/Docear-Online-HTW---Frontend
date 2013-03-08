@@ -2,7 +2,7 @@
 abstract class
 ###
 
-define ['collections/ChildNodes', 'handlers/PersistenceHandler'], (ChildNodes, PersistenceHandler)->
+define ['handlers/PersistenceHandler'], (PersistenceHandler)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
