@@ -92,12 +92,12 @@ public class Application extends Controller {
         return ok(
              /* this currently looks like errors in IntelliJ IDEA */
             Routes.javascriptRouter("jsRoutes",
-                    routes.javascript.MindMap.map(),
                     routes.javascript.User.mapListFromDB(),
+                    routes.javascript.MindMap.map(),
+                    routes.javascript.MindMap.addNode(),
                     routes.javascript.MindMap.changeNode(),
                     routes.javascript.MindMap.createNode(),
-                    routes.javascript.MindMap.deleteNode(),
-                    routes.javascript.MindMap.addNode()
+                    routes.javascript.MindMap.deleteNode()
             )
         );
     }
