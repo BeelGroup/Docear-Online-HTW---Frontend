@@ -4,6 +4,7 @@
 
 # Home page
 GET     /favicon.ico                controllers.Assets.at(path="/public", file="images/favicon.ico")
+GET     /robots.txt                 controllers.Assets.at(path="/public", file="robots.txt")
 GET     /                           controllers.Application.index()
 GET     /error/:errorId             controllers.Application.error(errorId: String)
 GET	    /help						controllers.Application.help()
