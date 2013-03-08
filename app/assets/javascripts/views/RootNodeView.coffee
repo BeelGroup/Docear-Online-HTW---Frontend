@@ -42,10 +42,21 @@ define ['views/NodeView'], (NodeView) ->
 
     setChildPositions: ->
       @positions = new Array()
-      canvas = $('#'+@model.get 'id').parent().parent()
-      @childPositions $('#'+@model.get 'id').find('.rightChildren:first'), @positions, canvas
-      @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions, canvas
+      $me = $('#'+@model.get 'id')
+      canvas = $me.parent().parent()
 
+      @childPositions $me.find('.rightChildren:first'), @positions, canvas
+      @childPositions $me.find('.leftChildren:first'), @positions, canvas
+
+      # root
+      @positions.push 
+        pos:
+          left: $me.offset().left - $(canvas).offset().left
+          top: $me.offset().top - $(canvas).offset().top
+        width: $me.width()
+        height: $me.height() 
+
+      @positions
 
     childPositions: (childrenContainer, positions, canvas)->
       children = childrenContainer.children('.node')
@@ -53,8 +64,8 @@ define ['views/NodeView'], (NodeView) ->
         $.each(children, (index, child)=>
           positions.push 
             pos:
-              left: $(child).offset().left - $(canvas).offset().left
-              top: $(child).offset().top - $(canvas).offset().top
+              left: $(child).offset().left - $(canvas).offset().left - $(canvas).width() / 2
+              top: $(child).offset().top - $(canvas).offset().top - $(canvas).height() / 2
             width: $(child).width()
             height: $(child).height() 
           @childPositions $(child).children('.children:first'), positions, canvas
@@ -102,10 +113,11 @@ define ['views/NodeView'], (NodeView) ->
       # ultra fallback
       if fallback
         scaleDiff = 0
-        if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
-        @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
-        @lastScaleAmount = amount
-        @currentScale += scaleDiff
+        if @lastScaleAmount != amount
+          if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+          @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+          @lastScaleAmount = amount
+          @currentScale += scaleDiff
 
 
     render: ->

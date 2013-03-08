@@ -11,38 +11,71 @@ define ->
       'click': (event)-> @updatePositionClick(event)
 
 
-    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 60)->
+    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 60.0)->
       super()
       @scale = 1
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePositionEvent
       @relatedCanvas.on 'center', @centerPosition
       @relatedCanvas.on 'zoom', @resizeMiniViewport
+      @minimapViewportWidthOffset  = 0.0
+      @minimapViewportHeightOffset = 0.0
+      @lastScaleAmount = 1
+      @currentScale = 100
 
     element:-> @$el
 
-    resizeMiniViewport:(event, @scale)=>
-      @minimapViewportWidth = @relatedViewport.width() / @ratio * (1/@scale)
-      @minimapViewportHeight = @relatedViewport.height() / @ratio * (1/@scale)
+    resizeMiniViewport:(event, amount)=>
+      possibilities = document.body.style
+      fallback = false
+      element = @$root
 
-      @minimapViewportWidthOffset = (@minimapViewportWidth - @minimapViewportOriginWidth) / 2
-      @minimapViewportHeightOffset = (@minimapViewportHeight - @minimapViewportOriginHeight) / 2
+      #console.log  $.browser.version
+      # IE
+      if $.browser.msie 
+        if $.browser.version > 8
+          #console.log 'IE 9 & 10'
+          element.css
+            '-ms-transform': "scale(#{amount})" 
 
-      console.log @minimapViewportWidthOffset
+        else if $.browser.version <= 8 
+          #console.log 'IE 7 & 8'
+          fallback = true
 
-      @minimapViewport.animate
-        'width'    : @minimapViewportWidth 
-        'height'   : @minimapViewportHeight
-      , 100
+      # Safari, Firefox and Chrome with CSS3 support 
+      else if($.inArray('WebkitTransform', possibilities) or 
+      $.inArray('MozTransform', inpossibilities) or 
+      $.inArray('OTransform', possibilities)) 
+        #console.log 'Webkit, Moz, O'
+        element.animate {'scale' : amount}, 100
+
+      else
+        #console.log $.browser
+        fallback = true
+
+      # ultra fallback
+      #if fallback
+        #scaleDiff = 0
+        #if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+        #element.parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1
+        #@lastScaleAmount = amount
+        #@currentScale += scaleDiff
+      
 
 
     drawMiniNodes:(nodePositions)->
-      console.log 'drawMiniNodes'
+      @miniNodesContainer = @$el.find('.mini-nodes-container')
+
       $.each $('.mini-node'), -> 
         $(@).remove()
-      @createMiniNode stats for stats in nodePositions
 
-    createMiniNode:(stats)->
+      rootPos = nodePositions.pop()
+
+      @$root = @createMiniNode rootPos, @miniNodesContainer
+
+      @createMiniNode stats, @$root for stats in nodePositions
+
+    createMiniNode:(stats, $container)->
       width  = stats.width / @ratio
       width = if width > 1.0 then width else 1
       height = stats.height / @ratio
@@ -50,12 +83,13 @@ define ->
 
       div = document.createElement("div")
       div.className = 'mini-node'
-      div.style.width  = width + "px"
+      div.style.width  = width  + "px"
       div.style.height = height + "px"
-      div.style.left = stats.pos.left / @ratio  + 'px'
-      div.style.top  = stats.pos.top  / @ratio  + 'px'
+      div.style.left = stats.pos.left / @ratio + 'px'
+      div.style.top  = stats.pos.top  / @ratio + 'px'
 
-      @$el.append div
+      $container.append div
+      $(div)
 
      
     afterAppend:()->
@@ -68,7 +102,7 @@ define ->
           @updateRelatedCanvasPositionDrag(event, ui)
 
       @minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
-      @minimapViewport.css('opacity','.6');
+      @minimapViewport.css 'opacity', '.6'
 
 
     draggable:->
@@ -79,10 +113,8 @@ define ->
 
 
     renderAndAppendTo:($element, @itsDraggable = false)->
-
-      @minimapViewportOriginWidth = @relatedViewport.width() / @ratio
-      @minimapViewportOriginHeight = @relatedViewport.height() / @ratio
-
+      @minimapViewportOriginWidth = Math.round(@relatedViewport.width() / @ratio)
+      @minimapViewportOriginHeight = Math.round(@relatedViewport.height() / @ratio)
       stats = 
         width:  @minimapViewportOriginWidth
         height: @minimapViewportOriginHeight
@@ -95,17 +127,19 @@ define ->
       $element.append(@el)
       @draggable() if @itsDraggable
 
+      @width = Math.round(@relatedCanvas.width() / @ratio)
+      @height = Math.round(@relatedCanvas.height() / @ratio)
+
       @$el.css 
-        'width'    : @relatedCanvas.width() / @ratio
-        'height'   : @relatedCanvas.height() / @ratio
+        'width'    : @width
+        'height'   : @height
       @afterAppend()
       @
 
 
     updateRelatedCanvasPositionDrag:(event, ui)->
-      # position of minimap viewport in % (is set to px value due drag :P)
-      xPos = @relatedCanvas.width()  * (ui.position.left / @$el.width()  * 100) / 100  
-      yPos = @relatedCanvas.height() * (ui.position.top  / @$el.height() * 100) / 100  
+      xPos = (ui.position.left - @minimapViewportWidthOffset) * @ratio
+      yPos = (ui.position.top - @minimapViewportHeightOffset) * @ratio
       @updateRelatedCanvasPosition(xPos, yPos)     
 
 
@@ -121,7 +155,6 @@ define ->
       $minimapViewport = @$el.find('.minimap-viewport')
       mouseX = event.pageX - @$el.offset().left
       mouseY = event.pageY - @$el.offset().top
-      #console.log event
       xPos = @relatedCanvas.width()  * ((mouseX - $minimapViewport.width() / 2) / @$el.width()  * 100) / 100  
       yPos = @relatedCanvas.height() * ((mouseY - $minimapViewport.height() / 2) / @$el.height() * 100) / 100        
       @updateRelatedCanvasPosition(xPos, yPos, true)
@@ -130,19 +163,18 @@ define ->
       yPosMini = mouseY - $minimapViewport.height()/2
 
       pos =
-        x: (xPosMini/@$el.width()*100)
-        y: (yPosMini/@$el.height()*100)
+        x: xPosMini
+        y: yPosMini
 
       @updatePosition pos, true
 
 
     updatePositionEvent:=>
-      posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  ) * 100
-      posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() ) * 100
-
+      posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  )
+      posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() )
       pos=
-        x: -posX + 100
-        y: -posY + 100
+        x: (-posX  + 1)*@$el.width()
+        y: (-posY  + 1)*@$el.height()
 
       @updatePosition pos
 
@@ -150,15 +182,15 @@ define ->
       $minimapViewport = @$el.find('.minimap-viewport')
 
       stats=
-        'left' : "#{pos.x}%"
-        'top'  : "#{pos.y}%"   
+        'left' : "#{pos.x}px"
+        'top'  : "#{pos.y}px"   
 
       if animated then $minimapViewport.animate stats else $minimapViewport.css stats
 
     computeCenterPosition:->
       $minimapViewport = @$el.find('.minimap-viewport')
-      x = (@$el.width() / 2 - @minimapViewportOriginWidth / 2) / @$el.width() * 100
-      y = (@$el.height() / 2 - @minimapViewportOriginHeight / 2) / @$el.height() * 100
+      x = (@$el.width() / 2 - @minimapViewportOriginWidth / 2) 
+      y = (@$el.height() / 2 - @minimapViewportOriginHeight / 2)
 
       pos = x: x, y: y
 
