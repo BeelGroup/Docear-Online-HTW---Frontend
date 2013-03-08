@@ -131,7 +131,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
 		for ( String line; (line = br.readLine()) != null; ){
 			String[] strings = line.split("\\|#\\|");
-			Logger.debug(line);
+			//Logger.debug(line);
 			UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
 			infos.add(info);
 		}
