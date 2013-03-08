@@ -1,40 +1,89 @@
 package controllers;
 
-import models.backend.exceptions.DocearServiceException;
-import models.backend.exceptions.NoUserLoggedInException;
-import models.frontend.LoggedError;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
-import play.Play;
-import play.Routes;
-import play.cache.Cache;
-import play.cache.Cached;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Security;
+import static play.data.Form.form;
+import info.schleichardt.play2.mailplugin.Mailer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map.Entry;
+
+import models.backend.exceptions.DocearServiceException;
+import models.backend.exceptions.NoUserLoggedInException;
+import models.frontend.FeedbackFormData;
+import models.frontend.LoggedError;
+
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.SimpleEmail;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
+
+import play.Play;
+import play.Routes;
+import play.cache.Cache;
+import play.data.Form;
+import play.mvc.Controller;
+import play.mvc.Result;
 
 public class Application extends Controller {
     public static final String LOGGED_ERROR_CACHE_PREFIX = "logged.error.";
+    public static final Form<FeedbackFormData> feedbackForm = form(FeedbackFormData.class);
+    
 
-	/** displays current mind map drawing */
+	/** displays current mind map drawing 
+	 * @throws EmailException */
 	public static Result index() {
 		if(User.isAuthenticated()) {
 			return ok(views.html.home.render());
 		} else {
 			return ok(views.html.index.render(User.credentialsForm));
 		}
-		
 	}
 
     /** displays a feature list and help site */
 	public static Result help() {
 		return ok(views.html.help.render());
 	}
+	
+	public static Result feedback() throws EmailException {
+		Form<FeedbackFormData> filledForm = feedbackForm.bindFromRequest();
+		
+		if(filledForm.hasErrors()) {
+			return badRequest();
+		} else {
+			final FeedbackFormData data = filledForm.get();
+			
+			//data from request and config
+			final String subject = (data.getFeedbackSubject() != null ? data.getFeedbackSubject() : "New Feedback");
+			final String contactLine = "Contact: " + (data.getFeedbackEmail() != null ? data.getFeedbackEmail() : "non provided");
+			final String[] sendToAddresses = Play.application().configuration().getString("feedback.sendTo").split(",");
+			
+			final StringBuilder contentBuilder = new StringBuilder();
+			contentBuilder.append(contactLine).append("\n");
+			contentBuilder.append("Message:\n").append(data.getFeedbackText());
+			contentBuilder.append("\n\nRequest headers:\n");
+			for(Entry<String,String[]> entry: request().headers().entrySet()) {
+				contentBuilder.append(entry.getKey()).append(" => ");
+				for(String value : entry.getValue()) {
+					contentBuilder.append(value).append(",");
+				}
+				contentBuilder.deleteCharAt(contentBuilder.length()-1).append("\n");
+			}
+			
+			final SimpleEmail mail = new SimpleEmail();
+			mail.setSubject(subject);
+			mail.setFrom("feedback@docear.org");
+			//set recipients
+			for(String address : sendToAddresses) {
+				mail.addTo(address);
+			}
+			
+			mail.setContent(contentBuilder.toString(),"text/plain");
+			Mailer.send(mail);
+			return ok();
+		}
+	}
 
-    /** makes some play routes in JavaScript avaiable */
+    /** makes some play routes in JavaScript available */
     public static Result javascriptRoutes() {
         response().setContentType("text/javascript");
 
@@ -44,7 +93,7 @@ public class Application extends Controller {
              /* this currently looks like errors in IntelliJ IDEA */
             Routes.javascriptRouter("jsRoutes",
                     routes.javascript.MindMap.map(),
-                    routes.javascript.MindMap.mapListFromDB(),
+                    routes.javascript.User.mapListFromDB(),
                     routes.javascript.MindMap.changeNode(),
                     routes.javascript.MindMap.createNode(),
                     routes.javascript.MindMap.deleteNode(),
