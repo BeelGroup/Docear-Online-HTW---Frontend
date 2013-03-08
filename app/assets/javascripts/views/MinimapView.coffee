@@ -20,11 +20,13 @@ define ->
     element:-> @$el
 
     drawMiniNodes:(nodePositions)->
+      console.log 'drawMiniNodes'
       $.each $('.mini-node'), -> 
         $(@).remove()
       @createMiniNode stats for stats in nodePositions
 
     createMiniNode:(stats)->
+      console.log 'createMiniNode'
       width  = stats.width / @ratio
       width = if width > 1.0 then width else 1
       height = stats.height / @ratio
