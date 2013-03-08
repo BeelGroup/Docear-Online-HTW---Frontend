@@ -1,10 +1,10 @@
-define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, SyncedView, HtmlView) ->
+define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, SyncedView, HtmlView, NodeEditView, NodeControlsView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
 
     tagName: 'div',
-    className: 'node'	
+    className: 'node' 
     subViews: {}
     horizontalSpacer: 20
     verticalSpacer: 10
@@ -17,14 +17,23 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         toForm: 'PosToForm'
 
 
+    # define events -> here u can pass informations to the model
+    events: 
+      'click .changeable': 'lockModel'
+      'click .action-show': 'printModel'
+      'click .action-change': 'modificateModel'
+      'click .action-fold': -> @foldModel()
+      
     # a.k.a. constructor
     constructor: (@model) ->
       super()
       id: @model.get 'id'
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
-      @model.bind "change:folded",@changeFoldedStatus , @   
-
+      @model.bind "change:folded",@changeFoldedStatus , @
+      @model.bind "change:nodeText",@changeNodeText , @
+      @model.bind "change:children",@changeChildren , @
+      
     PosToModel: ->
       # TODO: Event will not be called on change
       @model.set 'xPos', @$el.css 'left'
@@ -42,14 +51,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
     getElement:()->
       $('#'+@model.get 'id')
 
-
-    # define events -> here u can pass informations to the model
-    events: =>
-      'click .changeable': 'lockModel'
-      'click .action-show': 'printModel'
-      'click .action-change': 'modificateModel'
-      'click .action-save': (-> @model.save(@model.saveOptions))
-    
     lockModel: ->
       # will be replaced by username
       @model.lock 'me'
@@ -70,12 +71,15 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
       $children = $($node).children('.children')
       isVisible = $children.is(':visible')
       
+      $fold = $node.children('.inner-node').children('.action-fold')
+      $fold.toggleClass 'icon-minus-sign'
+      $fold.toggleClass 'icon-plus-sign'
+      
       childrenHeight = $children.outerHeight()
       nodeHeight = $node.outerHeight()
       
       if $children.children('.node').size() > 0
         diff = childrenHeight - nodeHeight
-        $node.parent().closest('.children').children('svg, ._jsPlumb_endpoint').fadeOut(200)
         if isVisible
           if childrenHeight > nodeHeight
             @resizeTree $node, diff
@@ -84,20 +88,69 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
             jsPlumb.repaintEverything()
           )
         else
-          @resizeTree $node, -diff
-  
+          if childrenHeight > nodeHeight
+            @resizeTree $node, -diff
+
+          $children.find('svg').hide()
           $children.fadeIn(document.fadeDuration, ->
             $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
             jsPlumb.repaintEverything()
           )
         
+    changeNodeText: ->
+      $node = $("#"+@model.id)
+      $childrenContainer = $node.children('.children:first')
       
+      preWidth = $node.outerWidth()
+      preHeight = $node.outerHeight()
+      childrenHeight = $childrenContainer.outerHeight()
+      parentIsHeigher = preHeight > childrenHeight
+      
+      $node.children('.inner-node').children('.content').html(@model.get 'nodeText')
+      
+      postHeight = $node.outerHeight()
+      diffWidth = $node.outerWidth() - preWidth
+      if $($node).hasClass('left')
+        diffWidth = -diffWidth
+      
+      diff = 0
+      if postHeight > childrenHeight
+        if preHeight > childrenHeight
+          diff = postHeight - preHeight
+        else
+          diff = postHeight - childrenHeight
+      else if postHeight < childrenHeight
+        if preHeight > childrenHeight
+          diff = childrenHeight - preHeight
+      if diff != 0
+        @resizeTree $node, -diff
+      
+      $childrenContainer.animate {
+        left: '+='+diffWidth
+        top: '+='+(postHeight-preHeight)/2
+      },  document.fadeDuration
+
+      $node.animate {
+        top: '-='+(postHeight-preHeight)/2
+      }, document.fadeDuration, ->
+        jsPlumb.repaintEverything()
     
+        
+    changeChildren: ->
+      ## TODO -> render and align new child
+      console.log "TODO: render child"
+        
 
     # [Debugging] 
     printModel: ->      
       ##console.log @model.toJSON()
 
+      
+    foldModel: ->
+      $('#'+@model.id).toggleClass('selected')
+      isVisible = $('#'+@model.id).children('.children').is(':visible')
+      @model.set 'folded', isVisible
+      
     # [Debugging] model modification
     modificateModel: -> 
       @model.set 'nodeText', Math.random()   
@@ -125,27 +178,31 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
 
     afterRender: ->
       @$el.append(@model.get 'purehtml')
+      controls = new NodeControlsView(@model, @$el)
+      controls.renderAndAppendToNode()
 
+
+    #TODO: add translate
 
     scale:(amount)->
-        #CSS3:
-        possibilities = document.body.style
+      
+      #possibilities = document.body.style
 
-        if($.inArray('WebkitTransform', possibilities) or 
-           $.inArray('MozTransform', inpossibilities) or 
-           $.inArray('OTransform', possibilities) or 
-           $.inArray('transform', possibilities))
+      #if($.inArray('WebkitTransform', possibilities) or 
+      #   $.inArray('MozTransform', inpossibilities) or 
+      #   $.inArray('OTransform', possibilities) or 
+      #   $.inArray('transform', possibilities))
 
-          @getElement().css
-            '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
-            '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
-            '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
-            '-o-transform'      : "scale(#{amount})"  #/* Opera */
-            #node.css 'zoom', "#{@zoomAmount}%"
-            #node.effect("scale", {percent:150, origin:['middle','center']}, 500)   
-        
-        else
-          console.log 'No CSS3'
+      #  @getElement().css
+      #    '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
+      #    '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
+      #    '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
+      #    '-o-transform'      : "scale(#{amount})"  #/* Opera */  
+
+      
+
+      @getElement().zoomTo({targetsize:amount*(@$el.outerWidth()/@$el.parent().width()), duration:600, root: @getElement().parent()});
+      
 
 
     render: ->
@@ -189,15 +246,30 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
         if recursive
           nodes = $.merge(nodes, node.get('children').slice()  )
         $innerNode = $($node).children('.inner-node')
-        $fold = $($innerNode).children('.fold')
+        $fold = $($innerNode).children('.action-fold')
+        $controls = $($innerNode).children('.controls')
         $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
+        $($controls).css('left', ($($innerNode).outerWidth()-$($controls).outerWidth())/2+"px")
         
         $($fold).click (event)->
-          $node = $(this).closest('.node')
-          nodeId = $node.attr('id')
-          isVisible = $($node).children('.children').is(':visible')
-          model.findById(nodeId).set 'folded', isVisible
+          currentNodeId = $(this).closest('.node').attr('id')
+          isVisible = $('#'+currentNodeId).children('.children').is(':visible')
+          model.findById(currentNodeId).set 'folded', isVisible
+
+        $newNode = $($controls).children('.action-new-node')
+        $($newNode).click (event)->
+          currentNodeId = $(this).closest('.node').attr('id')
+          # dummy
+          model.findById(currentNodeId).createAndAddChild()
         
+        $edit = $($controls).children('.action-edit')
+        $($edit).click (event)->
+          $node = $(this).closest('.node')
+          node = model.findById($node.attr('id'))
+          $mindmapCanvas = $(this).closest('.mindmap-canvas')
+          nodeEditView = new NodeEditView(node)
+          nodeEditView.renderAndAppendTo($mindmapCanvas)
+          
         $($innerNode).click (event)->
           $selectedNode = $('.node.selected')
           selectedNodeId = $($selectedNode).attr('id')
@@ -215,7 +287,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView'], (nodeModel, Synced
           currentNode = model.findById(currentNodeId)
           currentNode.set 'previouslySelected', true
           currentNode.set 'selected', true
-          
           
       
       

@@ -7,6 +7,8 @@ define ['views/NodeView'], (NodeView) ->
 
     constructor: (model) ->
       super model
+      @lastScaleAmount = 1
+      @currentScale = 100
 
     collapsFoldedNodes:()->      
       foldedNodes = $('.node.folded')
@@ -28,7 +30,6 @@ define ['views/NodeView'], (NodeView) ->
     connectChildren: ->
       @recursiveConnectNodes $(@$el).find('.rightChildren:first')
       @recursiveConnectNodes $(@$el).find('.leftChildren:first')
-
     recursiveConnectNodes: (childrenContainer)->
       parent = $(childrenContainer).parent()
       children = childrenContainer.children('.node')
@@ -38,14 +39,70 @@ define ['views/NodeView'], (NodeView) ->
           @recursiveConnectNodes $(child).children('.children:first')
         ) 
 
+
+    setChildPositions: ->
+      @positions = new Array()
+      @childPositions $('#'+@model.get 'id').find('.rightChildren:first'), @positions
+      @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions
+
+
+    childPositions: (childrenContainer, positions)->
+      children = childrenContainer.children('.node')
+      if $(children).size() > 0
+        $.each(children, (index, child)=>
+          positions.push 
+            pos: $(child).offset() 
+            width: $(child).width()
+            height: $(child).height() 
+          @childPositions $(child).children('.children:first'), positions
+        )
+      positions
+
+
     centerInContainer: ->
       node = $('#'+@model.get 'id')
 
-      posX = $(node).parent().width()  / 2  - $(node).outerWidth()  / 2
-      posY = $(node).parent().height() / 2  - $(node).outerHeight() / 2
+      posX = $(node).parent().parent().width()  / 2  - $(node).outerWidth()  / 2
+      posY = $(node).parent().parent().height() / 2  - $(node).outerHeight() / 2
       
       node.css 'left', posX + 'px'
       node.css 'top' , posY + 'px'
+ 
+
+    scale:(amount)->      
+      possibilities = document.body.style
+      fallback = false
+
+      #console.log  $.browser.version
+      # IE
+      if $.browser.msie 
+        if $.browser.version > 8
+          #console.log 'IE 9 & 10'
+          @getElement().css
+            '-ms-transform': "scale(#{amount})" 
+
+        else if $.browser.version <= 8 
+          #console.log 'IE 7 & 8'
+          fallback = true
+
+      # Safari, Firefox and Chrome with CSS3 support 
+      else if($.inArray('WebkitTransform', possibilities) or 
+      $.inArray('MozTransform', inpossibilities) or 
+      $.inArray('OTransform', possibilities)) 
+        #console.log 'Webkit, Moz, O'
+        @getElement().animate {'scale' : amount}, 100
+
+      else
+        #console.log $.browser
+        fallback = true
+
+      # ultra fallback
+      if fallback
+        scaleDiff = 0
+        if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+        @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+        @lastScaleAmount = amount
+        @currentScale += scaleDiff
 
 
     render: ->

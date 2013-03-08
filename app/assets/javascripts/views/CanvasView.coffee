@@ -6,6 +6,8 @@ define ->
     tagName: 'div'
     className: 'mindmap-canvas'
 
+
+
     constructor:(@id, @width = 8000, @height = 8000, @zoomAmount = 100)->
       super()
 
@@ -19,7 +21,7 @@ define ->
         event.preventDefault() 
 
       $(document).keydown (event)=>
-        if typeof @rootView != "undefined"
+        if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
           @rootView.userKeyInput event
 
 
@@ -29,7 +31,7 @@ define ->
 
     afterAppend:()->
       @$el.draggable
-        cancel: "a.ui-icon, .node"
+        cancel: "a.ui-icon, .inner-node, :input"
         containment: @$el.parent().attr('id')
         cursor: "move"
         handle: @id
@@ -63,8 +65,9 @@ define ->
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
         @zoom()
-        @rootView.centerInContainer()
         @center()
+        #@rootView.centerInContainer()
+        
         @$el.trigger 'center'
 
 
@@ -72,7 +75,7 @@ define ->
       # compute center of canvas - center of viewport (== total center)
       xPos = @width  / 2 - @$el.parent().width()  / 2
       yPos = @height / 2 - @$el.parent().height() / 2
-      @$el.css 
+      @$el.animate 
        'left'  : "#{-xPos}px"
        'top'   : "#{-yPos}px"
 

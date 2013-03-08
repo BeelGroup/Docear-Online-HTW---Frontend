@@ -35,6 +35,7 @@ public class Application extends Controller {
 	}
 
     /** makes some play routes in JavaScript avaiable */
+    @Cached(key = "js-routes")
     public static Result javascriptRoutes() {
         response().setContentType("text/javascript");
 
@@ -47,7 +48,8 @@ public class Application extends Controller {
                     routes.javascript.MindMap.mapListFromDB(),
                     routes.javascript.MindMap.changeNode(),
                     routes.javascript.MindMap.createNode(),
-                    routes.javascript.MindMap.deleteNode()
+                    routes.javascript.MindMap.deleteNode(),
+                    routes.javascript.MindMap.addNode()
             )
         );
     }
@@ -106,8 +108,4 @@ public class Application extends Controller {
         }
         return isJson;
     }
-
-	public static String getSessionCookieName() {
-		return Play.application().configuration().getString("backend.sessionIdName");
-	}
 }

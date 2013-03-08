@@ -58,6 +58,17 @@ public class MindMap extends Controller {
         }));
     }
     
+    public Result addNode() {
+    	JsonNode addNodeJSON = request().body().asJson();
+        final F.Promise<JsonNode> addNodePromise = mindMapCrudService.addNode(addNodeJSON);
+        return async(addNodePromise.map(new F.Function<JsonNode, Result>() {
+            @Override
+            public Result apply(JsonNode node) throws Throwable {
+                return ok(node);
+            }
+        }));
+    }
+    
     public Result createNode() {
     	return TODO;
     }

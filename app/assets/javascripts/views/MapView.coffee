@@ -25,19 +25,21 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.centerInContainer()
       @rootView.refreshDom()
       jsPlumb.repaintEverything()
-      @minimap.updatePosition()
+      @minimap.centerPosition(true)
       @canvas.setRootView(@rootView)
+      @rootView.setChildPositions()
+      @minimap.drawMiniNodes @rootView.setChildPositions()
 
 
-    loadMap: (mapId) ->
+    loadMap: (@mapId) ->
       console.log "call: loadMap #{mapId} (MapController)"
-      href = jsRoutes.controllers.MindMap.map(mapId).url
+      href = jsRoutes.controllers.MindMap.map(@mapId).url
       $.get(href, @createJSONMap, "json")
       
 
     createJSONMap: (data)=>
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
-      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false) 
+      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
       document.rootID = data.root.id
       if data.root.leftChildren != undefined
         leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode)
@@ -88,7 +90,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
       # pass related viewport-element and canvas-view
       @minimap = new MinimapView("#{@id}_minimap-canvas", $viewport, @canvas)
-      @minimap.renderAndAppendTo($viewport, true)
+      @minimap.renderAndAppendTo($viewport)
 
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport

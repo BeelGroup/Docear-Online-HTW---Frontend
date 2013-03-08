@@ -28,7 +28,10 @@ import static java.util.Arrays.asList;
 public enum Feature {
     NEVER_IMPLEMENTED("dummy for testing"),
     KEYBOARD_NAVIGATION("enables the user to move with the arrow buttons on the mind map"),
-    EDIT_NODE_TEXT("enables the user to click on a node and change the text in it");
+    EDIT_NODE_TEXT("enables the user to click on a node and change the text in it"),
+    NODE_CONTROLS("enables node controls to edit/add/delete nodes "),
+    FOLD_NODE("enables to fold/unfold nodes "),
+    FEEDBACK("enables a feedback dialog for the user");
 
     String description;
     boolean isEnabled = false;

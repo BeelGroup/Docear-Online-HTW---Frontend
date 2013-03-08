@@ -6,6 +6,10 @@
     padding: 0px 20px;
 }
 
+.container {
+    margin-top: 10px;
+}
+
 #mindmap-container {
     height: 600px;
     position: relative;
@@ -36,23 +40,22 @@
     cursor: pointer;
 }
 
-
 .mindmap-canvas{
     position: relative;
     background-color: rgb(235,235,235)
 }
 
-
 .minimap-viewport{
-    background-color:rgba(120,120,120, 0.6); 
+    background-color:rgb(120,120,120);
     position: absolute;
 }
 
 .minimap-canvas{
     position : absolute;
-    background-color:rgba(190,190,190, 0.6);
-    left     : 90%;
-    top      : 1%;
+    background-color:rgb(190,190,190);
+    right: 1%;
+    top: 1%;
+    cursor: default;
 }
 
 .zoom-panel{
@@ -72,24 +75,28 @@
 
 .mindmap-canvas .node .inner-node {
     padding: 10px;
-    border: thin solid black;
+    border: 1px solid #808080;
     border-radius: 30px ;
     display: inline-block;
     cursor: default;
     white-space: nowrap;
 }
-.mindmap-canvas .node .inner-node .fold {
+.mindmap-canvas .node .inner-node .action-fold,
+.mindmap-canvas  .node .inner-node .controls {
     position: absolute;
     display: none;
 }
-.mindmap-canvas .node.right .inner-node .fold {
+.mindmap-canvas .node.right .inner-node .action-fold {
     right: -7px;
 }
-.mindmap-canvas .node.left .inner-node .fold {
+.mindmap-canvas .node.left .inner-node .action-fold {
     left: -7px;
 }
-.mindmap-canvas .node .inner-node:hover > .fold,
-.mindmap-canvas .node.selected > .inner-node > .fold {
+
+.mindmap-canvas .node .inner-node:hover > .action-fold,
+.mindmap-canvas .node.selected > .inner-node > .action-fold,
+.mindmap-canvas .node .inner-node:hover > .controls,
+.mindmap-canvas .node.selected > .inner-node > .controls {
     display: block;
 }
 
@@ -98,7 +105,7 @@
 }
 
 .mindmap-canvas .node.selected > .inner-node {
-    background: green;
+    border: 2px solid #002080;
 }
 
 .mindmap-canvas .node .inner-node .controls {
@@ -134,7 +141,84 @@
 }
 
 /* IE 7 and 8 DropDown fix: https://github.com/twitter/bootstrap/issues/5102 */
-.nav-collapse.collapse {
+.nav-collapse.collapse, ul.dropdown-menu {
     height: auto !important;
     overflow: visible !important;
+    z-index: 1;
   }
+  
+
+
+.overlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    background-color: #000000;
+    opacity:0.0;
+    filter:alpha(opacity=0); /* For IE8 and earlier */
+    cursor: default;
+}
+.edit-container {
+    position: absolute;
+    border-radius: 30px;
+    background-color: #FFFFFF;
+    border: 3px solid green;
+    opacity:0.0;
+    filter:alpha(opacity=0); /* For IE8 and earlier */
+    width: 300px;
+    height: 250px;
+    padding: 10px;
+}
+.dummy-node-container {
+    margin-top: 10px;
+}
+.edit-container .controls button {
+    float: right;
+}
+.edit-container textarea {
+    width: 90%;
+    background-color: #FFFFFF;
+    height: 190px;
+}
+.node-edit-container {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+}
+
+
+
+#feedback-button
+{
+    position: fixed;
+    top: 40%;
+    left: -10px;
+    
+    background: none repeat scroll 0 0 #FF0000;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #333333;
+    border-right: 1px solid #FFFFFF;
+    color: #FFFFFF;
+    display: block;
+    font-family: Arial,sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 8px;
+    text-decoration: none;
+    height: 120px;
+    width: 32px;
+    
+    border-radius: 0px 10px 10px 0px;
+}
+#feedback-button:hover
+{
+    left: -5px;
+}
+#feedback-button a
+{
+    color: #FFFFFF;
+}

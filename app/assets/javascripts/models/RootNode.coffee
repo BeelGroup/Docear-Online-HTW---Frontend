@@ -2,12 +2,13 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   module = ->
   
   class RootNode extends AbstractNode
-    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked) ->
+    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked, mapId) ->
       super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked
       @set 'containerID', containerID
       @set 'leftChildren', []
       @set 'rightChildren', []
-
+      @set 'mapId', mapId
+    
     # overwriting getter @get 'children' since we RootNode does not have a children attr
     get: (attr)->
       if attr == 'children'
@@ -26,5 +27,17 @@ define ['models/AbstractNode'],  (AbstractNode) ->
     
     getNextRightChild: ->
       @getNextChild @get 'rightChildren'
+
+    addLeftChild: (child)->
+      @get('leftChildren').push(child)
       
+    addRightChild: (child)->
+      @get('rightChildren').push(child)
+    
+    addChild: (child, treeSide)->
+      if treeSide == 'left'
+        addLeftChild child
+      else
+        addRightChild child
+
   module.exports = RootNode

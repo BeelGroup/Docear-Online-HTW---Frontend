@@ -37,10 +37,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
-import play.Configuration;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
+import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
@@ -54,25 +54,19 @@ import com.typesafe.config.ConfigFactory;
 @Profile("backendProd")
 @Component
 public class ServerMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
-	private static Map<String, String> serverIdToMapIdMap;
-	private static String freeplaneActorUrl;
-	private static ObjectMapper objectMapper;
-	private static ActorSystem system;
-	
-	static {
-		final Configuration conf = Play.application().configuration();
-		freeplaneActorUrl = conf.getString("backend.singleInstance.host");
-		serverIdToMapIdMap = new HashMap<String, String>();
-		objectMapper = new ObjectMapper();
-	}
-	
+	private Map<String, String> serverIdToMapIdMap = new HashMap<String, String>();
+	private final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
+	private final ObjectMapper objectMapper = new ObjectMapper();
+	private ActorSystem system;
+    private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
+
 	@Override
 	public Promise<JsonNode> mindMapAsJson(final String id) throws DocearServiceException, IOException {
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
 		String mindmapId = getMindMapIdInFreeplane(id);
 
 		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), 20000);
+		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), defaultTimeoutInMillis);
 
 		Promise<JsonNode> promise = Akka.asPromise(future).map(
 				new Function<Object, JsonNode>() {
@@ -123,20 +117,22 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		}
 
 		String docearServerAPIURL = "https://api.docear.org/user";
-		WS.Response response =  WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
-				.setHeader("accessToken", user.getAccessToken()).get().get();
-
-		BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
-
-		List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
-		for ( String line; (line = br.readLine()) != null; ){
-			String[] strings = line.split("\\|#\\|");
-			//Logger.debug(line);
-			UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
-			infos.add(info);
-		}
-
-		return Promise.pure(Arrays.asList(infos.toArray(new UserMindmapInfo[0])));
+        final Promise<WS.Response> accessTokenPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
+                .setHeader("accessToken", user.getAccessToken()).get();
+        return accessTokenPromise.map(new Function<WS.Response, List<UserMindmapInfo>>() {
+            @Override
+            public List<UserMindmapInfo> apply(WS.Response response) throws Throwable {
+                BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
+                List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
+                for ( String line; (line = br.readLine()) != null; ){
+                    String[] strings = line.split("\\|#\\|");
+                    
+                    UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
+                    infos.add(info);
+                }
+                return Arrays.asList(infos.toArray(new UserMindmapInfo[0]));
+            }
+        });
 	}
 	
 	@Override
@@ -148,7 +144,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId);
 		
 		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, request, 20000);
+		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
 		
 		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
 			@Override
@@ -171,7 +167,7 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);
-//		Future<Object> future = ask(remoteActor, request, 20000);
+//		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
 //		
 //		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
 //			@Override
