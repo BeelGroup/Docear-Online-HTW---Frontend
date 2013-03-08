@@ -28,7 +28,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @minimap.centerPosition(true)
       @canvas.setRootView(@rootView)
       @rootView.setChildPositions()
-      @minimap.drawMiniNodes @rootView.setChildPositions()
 
 
     loadMap: (@mapId) ->
