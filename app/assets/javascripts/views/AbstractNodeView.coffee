@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, SyncedView, HtmlView, NodeEditView, NodeControlsView) ->
+define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, NodeView, SyncedView, HtmlView, NodeEditView, NodeControlsView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -32,7 +32,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@changeFoldedStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
-      @model.bind "change:children",@changeChildren , @
       
     PosToModel: ->
       # TODO: Event will not be called on change
@@ -106,7 +105,7 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
       childrenHeight = $childrenContainer.outerHeight()
       parentIsHeigher = preHeight > childrenHeight
       
-      $node.children('.inner-node').children('.content').html(@model.get 'nodeText')
+      $node.children('.inner-node').children('.content').text(@model.get 'nodeText')
       
       postHeight = $node.outerHeight()
       diffWidth = $node.outerWidth() - preWidth
@@ -135,11 +134,6 @@ define ['models/Node', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView
       }, document.fadeDuration, ->
         jsPlumb.repaintEverything()
     
-        
-    changeChildren: ->
-      ## TODO -> render and align new child
-      console.log "TODO: render child"
-        
 
     # [Debugging] 
     printModel: ->      
