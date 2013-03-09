@@ -15,8 +15,8 @@ define ->
       super()
       @scale = 1
       @relatedCanvas = @relatedCanvasView.getElement()
-      @relatedCanvas.on 'drag', @updatePositionEvent
-      @relatedCanvas.on 'center', @centerPosition
+      @relatedCanvas.on 'drag', @updatePositionOnCanvasDrag
+      @relatedCanvas.on 'canvasWasMovedTo', @updatePositionFromCanvas
       @relatedCanvas.on 'zoom', @resizeMiniViewport
       @minimapViewportWidthOffset  = 0.0
       @minimapViewportHeightOffset = 0.0
@@ -67,9 +67,8 @@ define ->
     drawMiniNodes:(nodePositions, firstDraw = false)->
       if firstDraw
         @scaleAmount = 1.0
-        
+
       @miniNodesContainer = @$el.find('.mini-nodes-container')
-      console.log @scaleAmount
       $.each $('.mini-node'), -> 
         $(@).remove()
 
@@ -105,7 +104,7 @@ define ->
         containment: "parent"
         cursor: "move"
         drag: (event, ui)=>
-          @updateRelatedCanvasPositionDrag(event, ui)
+          @updateRelatedCanvasPositionOnDrag(event, ui)
 
       @minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
       @minimapViewport.css 'opacity', '.6'
@@ -143,7 +142,7 @@ define ->
       @
 
 
-    updateRelatedCanvasPositionDrag:(event, ui)->
+    updateRelatedCanvasPositionOnDrag:(event, ui)->
       xPos = (ui.position.left - @minimapViewportWidthOffset) * @ratio
       yPos = (ui.position.top - @minimapViewportHeightOffset) * @ratio
       @updateRelatedCanvasPosition(xPos, yPos)     
@@ -154,8 +153,13 @@ define ->
         'left'  : "#{-xPos}px",
         'top'   : "#{-yPos}px"
 
-      if animate then @relatedCanvas.animate stats else @relatedCanvas.css stats
+      if animate then @relatedCanvas.stop().animate stats else @relatedCanvas.css stats
 
+    updatePositionFromCanvas:(event, position, animated)=>
+      resizedPos= 
+        x: -position.x /@ratio
+        y: -position.y /@ratio
+      @updatePosition(resizedPos, animated)
 
     updatePositionClick:(event)->
       $minimapViewport = @$el.find('.minimap-viewport')
@@ -175,7 +179,7 @@ define ->
       @updatePosition pos, true
 
 
-    updatePositionEvent:=>
+    updatePositionOnCanvasDrag:=>
       posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  )
       posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() )
       pos=
@@ -191,17 +195,6 @@ define ->
         'left' : "#{pos.x}px"
         'top'  : "#{pos.y}px"   
 
-      if animated then $minimapViewport.animate stats else $minimapViewport.css stats
-
-    computeCenterPosition:->
-      $minimapViewport = @$el.find('.minimap-viewport')
-      x = (@$el.width() / 2 - @minimapViewportOriginWidth / 2) 
-      y = (@$el.height() / 2 - @minimapViewportOriginHeight / 2)
-
-      pos = x: x, y: y
-
-
-    centerPosition:(animate = false)=>
-      @updatePosition @computeCenterPosition(), animate
+      if animated then $minimapViewport.stop().animate stats else $minimapViewport.css stats
 
   module.exports = Minimap

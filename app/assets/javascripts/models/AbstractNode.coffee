@@ -34,6 +34,9 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       
       @bind 'change:selected', =>
         if(@get('selected'))
+          currentlySelected = @get('rootNodeModel').get 'selectedNode'
+          if(typeof(currentlySelected) != 'undefined')
+            currentlySelected.set 'selected', false
           @get('rootNodeModel').set 'selectedNode', @
 
       @bind 'change:folded', =>

@@ -122,14 +122,14 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
             nextNode = selectedNode.getNextChild()
   
         if nextNode != null
-          selectedNode.set 'selected', false
+          #selectedNode.set 'selected', false
           nextNode.set 'selected', true
           return true
       false
         
     selectParent: (selectedNode)->
       selectedNode.get('parent').set 'selected', true
-      selectedNode.set 'selected', false
+      #selectedNode.set 'selected', false
     
     selectBrother: (selectedNode, next = true)->
       $selectedNode = $('#'+(selectedNode.get 'id'))
@@ -144,9 +144,9 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         if $($brother).size() > 0
           id = $($brother).attr('id')
           selectedNode.get('parent').findById(id).set 'selected', true
-          selectedNode.get('parent').findById(id).set 'previouslySelected', true
-          selectedNode.set 'selected', false
-          selectedNode.set 'previouslySelected', false
+          #selectedNode.get('parent').findById(id).set 'previouslySelected', true
+          #selectedNode.set 'selected', false
+          #selectedNode.set 'previouslySelected', false
           return true
       false
 

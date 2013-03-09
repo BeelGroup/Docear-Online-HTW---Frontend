@@ -7,9 +7,9 @@ define ->
     className: 'mindmap-canvas'
 
 
-
     constructor:(@id, @width = 8000, @height = 8000, @zoomAmount = 100)->
       super()
+
 
     moreEvents:()=>
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
@@ -25,8 +25,6 @@ define ->
           @rootView.userKeyInput event
 
 
-
-
     getElement:()->
       $("##{@id}")
 
@@ -39,10 +37,20 @@ define ->
         handle: @id
 
 
-    move:(x,y)->
-      @$el.css 
-       'left'  : "#{(@$el.css 'left')+x}px"
-       'top'   : "#{(@$el.css 'top')+y}px"
+    move:(delta)->
+      pos=
+        x: parseFloat(@$el.css 'left') + delta.x
+        y: parseFloat(@$el.css 'top')  + delta.y
+
+      @moveTo pos
+
+
+    moveTo:(position)->
+      @$el.stop().animate
+       'left'  : "#{position.x}px"
+       'top'   : "#{position.y}px"   
+
+      @$el.trigger 'canvasWasMovedTo', position, true
 
 
     zoomIn:(event)=>
@@ -69,23 +77,43 @@ define ->
         @zoomAmount = 100
         @zoom()
         @center()
-        #@rootView.centerInContainer()
-        
-        @$el.trigger 'center'
 
+    canvasPivot: ->
+      pos=
+        x: (@width  / 2) * -1
+        y: (@height / 2) * -1
 
     center:->
-      # compute center of canvas - center of viewport (== total center)
-      xPos = @width  / 2 - @$el.parent().width()  / 2
-      yPos = @height / 2 - @$el.parent().height() / 2
-      @$el.animate 
-       'left'  : "#{-xPos}px"
-       'top'   : "#{-yPos}px"
+      if typeof(@rootView) != 'undefined'
+        @centerViewTo @rootView.model
+        @rootView.model.set 'selected', true
+      else
+        canvasPivot = @canvasPivot()
+        # left upper corner
+        canvasPivot.x += @$el.parent().width()  / 2
+        canvasPivot.y += @$el.parent().height()  / 2
+        @moveTo canvasPivot
 
 
     setRootView:(@rootView)->
-      @rootView.getElement().on 'newSelectedNode', (event, selectedNode)-> console.log "new selection: #{selectedNode.get 'id'}"
+      @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode)
       @zoomAmount = 100
+
+
+    centerViewTo:(selectedNode)->
+      $element = $("##{selectedNode.id}")
+
+      # position relative to canvas
+      elementPos=
+        x: ($element.offset().left + ($element.width()  * @zoomAmount / 200))
+        y: ($element.offset().top  + ($element.height() * @zoomAmount / 200))
+      
+      delta= 
+        x: @$el.parent().width()  / 2 - elementPos.x + @$el.parent().offset().left
+        y: @$el.parent().height() / 2 - elementPos.y + @$el.parent().offset().top
+
+      @move delta
+
 
     renderAndAppendTo:($element)->
       $element.append(@render().el)

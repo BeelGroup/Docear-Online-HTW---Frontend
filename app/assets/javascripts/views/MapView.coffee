@@ -25,7 +25,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.centerInContainer()
       @rootView.refreshDom()
       jsPlumb.repaintEverything()
-      @minimap.centerPosition(true)
       @canvas.setRootView(@rootView)
       @rootView.setChildPositions()
 
@@ -36,7 +35,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       $.get(href, @createJSONMap, "json")
 
 
-      
 
     createJSONMap: (data)=>
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
@@ -52,10 +50,14 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
       @positionNodes()
       @canvas.center()
-      @minimap.drawMiniNodes @rootView.setChildPositions(), true
+      
+      setTimeout( => 
+        @minimap.drawMiniNodes @rootView.setChildPositions(), true
+      , 500)
+
       @rootView.getElement().on 'newFoldAction', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
-      , 2000)
+      , 500)
       @rootNode
 
 
