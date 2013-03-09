@@ -34,6 +34,8 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       console.log "call: loadMap #{mapId} (MapController)"
       href = jsRoutes.controllers.MindMap.map(@mapId).url
       $.get(href, @createJSONMap, "json")
+
+
       
 
     createJSONMap: (data)=>
@@ -50,7 +52,10 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
       @positionNodes()
       @canvas.center()
-      @minimap.drawMiniNodes @rootView.setChildPositions()
+      @minimap.drawMiniNodes @rootView.setChildPositions(), true
+      @rootView.getElement().on 'newFoldAction', => setTimeout( => 
+        @minimap.drawMiniNodes @rootView.setChildPositions()
+      , 2000)
       @rootNode
 
 
@@ -90,6 +95,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       # pass related viewport-element and canvas-view
       @minimap = new MinimapView("#{@id}_minimap-canvas", $viewport, @canvas)
       @minimap.renderAndAppendTo($viewport)
+
 
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport

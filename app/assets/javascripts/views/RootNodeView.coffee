@@ -10,6 +10,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       model.bind 'change:property1', -> alert("change pty1")
       @lastScaleAmount = 1
       @currentScale = 100
+      @scaleAmount = 1.0
 
     collapsFoldedNodes:()->      
       foldedNodes = $('.node.folded')
@@ -44,36 +45,36 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
 
 
     setChildPositions: ->
-      @positions = new Array()
       $me = $('#'+@model.get 'id')
       canvas = $me.parent().parent()
-
-      @childPositions $me.find('.rightChildren:first'), @positions, canvas
-      @childPositions $me.find('.leftChildren:first'), @positions, canvas
+      leftChilds = new Array()
+      rightChilds = new Array()
 
       # root
-      @positions.push 
+      @positions=
         pos:
-          left: $me.offset().left - $(canvas).offset().left
-          top: $me.offset().top - $(canvas).offset().top
+          left: ($me.offset().left + ($me.width() / 2) - $(canvas).offset().left) 
+          top: ($me.offset().top + ($me.height() / 2) - $(canvas).offset().top)
         width: $me.width()
         height: $me.height() 
-
+        display: 'block'
+        leftChilds: @childPositions $me.find('.leftChildren:first'), leftChilds, canvas
+        rightChilds: @childPositions $me.find('.rightChildren:first'), rightChilds, canvas 
       @positions
 
     childPositions: (childrenContainer, positions, canvas)->
       children = childrenContainer.children('.node')
-      if $(children).size() > 0
-        $.each(children, (index, child)=>
-          positions.push 
-            pos:
-              left: $(child).offset().left - $(canvas).offset().left - $(canvas).width() / 2
-              top: $(child).offset().top - $(canvas).offset().top - $(canvas).height() / 2
-            width: $(child).width()
-            height: $(child).height() 
-            display: $(child).css('display')
-          @childPositions $(child).children('.children:first'), positions, canvas
-        )
+      if childrenContainer.css('display') == 'block'
+        if $(children).size() > 0
+          $.each(children, (index, child)=>
+            positions.push 
+              pos:
+                left: ($(child).offset().left - $(canvas).offset().left - $(canvas).width() / 2) / @scaleAmount
+                top: ($(child).offset().top - $(canvas).offset().top - $(canvas).height() / 2) / @scaleAmount
+              width: $(child).width()
+              height: $(child).height()
+            @childPositions $(child).children('.children:first'), positions, canvas
+          )
       positions
 
     userKeyInput: (event)->
@@ -102,7 +103,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
               selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
-              $("##{@model.get 'id'}").trigger 'newFoldedNode', nextNode
+              $("##{@model.get 'id'}").trigger 'newFoldedNode'
         else
           @model.set 'selected', true
 
@@ -159,7 +160,8 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       node.css 'top' , posY + 'px'
  
 
-    scale:(amount)->      
+    scale:(amount)->  
+      @scaleAmount = amount    
       possibilities = document.body.style
       fallback = false
 

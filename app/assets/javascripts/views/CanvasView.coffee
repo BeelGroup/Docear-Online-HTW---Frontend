@@ -84,8 +84,8 @@ define ->
 
 
     setRootView:(@rootView)->
-      @rootView.getElement().on 'newFoldAction', -> console.log 'new folded action'
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)-> console.log "new selection: #{selectedNode.get 'id'}"
+      @zoomAmount = 100
 
     renderAndAppendTo:($element)->
       $element.append(@render().el)

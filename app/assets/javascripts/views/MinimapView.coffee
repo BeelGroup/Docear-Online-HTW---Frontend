@@ -22,10 +22,11 @@ define ->
       @minimapViewportHeightOffset = 0.0
       @lastScaleAmount = 1
       @currentScale = 100
+      @scaleAmount = 1.0
 
     element:-> @$el
 
-    resizeMiniViewport:(event, amount)=>
+    resizeMiniViewport:(event, @scaleAmount, reset)=>
       possibilities = document.body.style
       fallback = false
       element = @$root
@@ -36,7 +37,7 @@ define ->
         if $.browser.version > 8
           #console.log 'IE 9 & 10'
           element.css
-            '-ms-transform': "scale(#{amount})" 
+            '-ms-transform': "scale(#{@scaleAmount})" 
 
         else if $.browser.version <= 8 
           #console.log 'IE 7 & 8'
@@ -47,7 +48,7 @@ define ->
       $.inArray('MozTransform', inpossibilities) or 
       $.inArray('OTransform', possibilities)) 
         #console.log 'Webkit, Moz, O'
-        element.animate {'scale' : amount}, 100
+        element.animate {'scale' : @scaleAmount}, 100
 
       else
         #console.log $.browser
@@ -63,33 +64,38 @@ define ->
       
 
 
-    drawMiniNodes:(nodePositions)->
+    drawMiniNodes:(nodePositions, firstDraw = false)->
+      if firstDraw
+        @scaleAmount = 1.0
+        
       @miniNodesContainer = @$el.find('.mini-nodes-container')
-
+      console.log @scaleAmount
       $.each $('.mini-node'), -> 
         $(@).remove()
 
-      rootPos = nodePositions.pop()
-      @$root = @createMiniNode rootPos, @miniNodesContainer
+      @$root = @createMiniNode nodePositions, @miniNodesContainer
+ 
+      @createMiniNode stats, @$root for stats in nodePositions.leftChilds
+      @createMiniNode stats, @$root for stats in nodePositions.rightChilds
 
-      @createMiniNode stats, @$root for stats in nodePositions
+      @resizeMiniViewport(null, @scaleAmount)
+
 
     createMiniNode:(stats, $container)->
-      if(stats.display != 'none')
-        width  = stats.width / @ratio
-        width = if width > 1.0 then width else 1
-        height = stats.height / @ratio
-        height = if height > 1.0 then height else 1
+      width  = stats.width / @ratio
+      width = if width > 1.0 then width else 1
+      height = stats.height / @ratio
+      height = if height > 1.0 then height else 1
 
-        div = document.createElement("div")
-        div.className = 'mini-node'
-        div.style.width  = width  + "px"
-        div.style.height = height + "px"
-        div.style.left = stats.pos.left / @ratio + 'px'
-        div.style.top  = stats.pos.top  / @ratio + 'px'
+      div = document.createElement("div")
+      div.className = 'mini-node'
+      div.style.width  = width  + "px"
+      div.style.height = height + "px"
+      div.style.left = stats.pos.left / @ratio + 'px'
+      div.style.top  = stats.pos.top  / @ratio + 'px'
 
-        $container.append div
-        $(div)
+      $container.append div
+      $(div)
 
      
     afterAppend:()->
