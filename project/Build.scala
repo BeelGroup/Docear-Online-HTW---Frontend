@@ -30,7 +30,7 @@ object ApplicationBuild extends Build {
         , "org.webjars" % "webjars-play" % "2.1.0"
         , "org.webjars" % "bootstrap" % "2.1.1"
         , "com.typesafe.akka" %% "akka-remote" % "2.1.0"
-        , "info.schleichardt" %% "play-2-mailplugin" % "0.8"
+        , "info.schleichardt" %% "play-2-mailplugin" % "0.9-java-6-SNAPSHOT"
       )
     }
 
