@@ -2,23 +2,17 @@ package services.backend.mindmap;
 
 import static akka.pattern.Patterns.ask;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import models.backend.User;
-import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 
@@ -52,7 +46,7 @@ import com.typesafe.config.ConfigFactory;
 
 @Profile("backendProd")
 @Component
-public class ServerMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
+public class ServerMindMapCrudService implements MindMapCrudService {
 	private Map<String, String> serverIdToMapIdMap = new HashMap<String, String>();
 	private final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
 	private final ObjectMapper objectMapper = new ObjectMapper();
@@ -116,31 +110,6 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		return mindmapId;
 	}
 
-
-	@Override
-	public Promise<List<UserMindmapInfo>> getListOfMindMapsFromUser(User user) throws IOException {
-		if(user == null) {
-			throw new NullPointerException("user cannot be null");
-		}
-
-		String docearServerAPIURL = "https://api.docear.org/user";
-		final Promise<WS.Response> accessTokenPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
-				.setHeader("accessToken", user.getAccessToken()).get();
-		return accessTokenPromise.map(new Function<WS.Response, List<UserMindmapInfo>>() {
-			@Override
-			public List<UserMindmapInfo> apply(WS.Response response) throws Throwable {
-				BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
-				List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
-				for ( String line; (line = br.readLine()) != null; ){
-					String[] strings = line.split("\\|#\\|");
-
-					UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
-					infos.add(info);
-				}
-				return Arrays.asList(infos.toArray(new UserMindmapInfo[0]));
-			}
-		});
-	}
 
 	@Override
 	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {

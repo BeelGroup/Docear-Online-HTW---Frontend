@@ -21,7 +21,7 @@ GET		/map/json/:id				@controllers.MindMap.map(id: String)
 POST	/map/createNode				@controllers.MindMap.createNode()
 POST	/map/changeNode				@controllers.MindMap.changeNode()
 POST	/map/deleteNode				@controllers.MindMap.deleteNode()
-GET		/maps			    		@controllers.MindMap.mapListFromDB()
+GET		/maps			    		@controllers.User.mapListFromDB()
 
 POST	/map/addNode				@controllers.MindMap.addNode()
 

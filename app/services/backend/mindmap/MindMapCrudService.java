@@ -15,7 +15,7 @@ public interface MindMapCrudService {
     /** Obtains a mind map as JSON String with a specific id. */
     Promise<String> mindMapAsJsonString(String id) throws DocearServiceException, IOException;
     
-    Promise<List<UserMindmapInfo>> getListOfMindMapsFromUser(User user) throws IOException;
+    
     
     /**
      * Adds a node to a map on the given parent 

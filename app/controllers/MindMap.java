@@ -46,17 +46,6 @@ public class MindMap extends Controller {
             }
         }));
 	}
-
-    @Security.Authenticated(Secured.class)
-	public Result mapListFromDB() throws IOException, DocearServiceException {
-        final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = mindMapCrudService.getListOfMindMapsFromUser(getCurrentUser());
-        return async(listOfMindMapsFromUser.map(new F.Function<List<UserMindmapInfo>, Result>() {
-            @Override
-            public Result apply(List<UserMindmapInfo> maps) throws Throwable {
-                return ok(Json.toJson(maps));
-            }
-        }));
-    }
     
     public Result addNode() {
     	JsonNode addNodeJSON = request().body().asJson();
