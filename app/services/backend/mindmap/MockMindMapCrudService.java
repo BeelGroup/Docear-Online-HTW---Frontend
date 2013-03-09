@@ -13,6 +13,7 @@ import models.backend.exceptions.DocearServiceException;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.docear.messages.Messages.ChangeNodeRequest;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,7 @@ import play.libs.F.Promise;
 @Profile("backendMock")
 @Component
 public class MockMindMapCrudService implements MindMapCrudService {
-	
+
 	@Override
 	public Promise<String> mindMapAsJsonString(String id)
 			throws DocearServiceException, IOException {
@@ -33,7 +34,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			if (result == null) {
 				throw new IOException("there is no map with id" + id);
 			}
-			
+
 		} finally {
 		}
 		return Promise.pure(result);
@@ -54,8 +55,9 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public void ChangeNode(JsonNode changeNodeRequestJson) {
-		//nothing to do here
+	public void ChangeNode(String mapId, String nodeJson) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override

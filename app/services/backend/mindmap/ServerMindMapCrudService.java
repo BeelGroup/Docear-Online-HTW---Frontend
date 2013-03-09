@@ -135,11 +135,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 
 	@Override
-	public void ChangeNode(JsonNode changeNodeRequestJson) {
-		final String mapId = getMindMapIdInFreeplane(changeNodeRequestJson.get("mapId").asText());
-		final String node = changeNodeRequestJson.get("nodeAsJsonString").toString();
-		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+node);
-		ChangeNodeRequest request = new ChangeNodeRequest(mapId,node);
+	public void ChangeNode(String mapId, String nodeJson) {
+
+		
+		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+nodeJson);
+		ChangeNodeRequest request = new ChangeNodeRequest(mapId,nodeJson);
 
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);

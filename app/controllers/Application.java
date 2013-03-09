@@ -83,7 +83,7 @@ public class Application extends Controller {
 		}
 	}
 
-    /** makes some play routes in JavaScript avaiable */
+    /** makes some play routes in JavaScript available */
     public static Result javascriptRoutes() {
         response().setContentType("text/javascript");
 
