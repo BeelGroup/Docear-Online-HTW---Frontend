@@ -97,7 +97,7 @@ public class ZipUtils
         while ((entry = zin.getNextEntry()) != null)
         {
             name = entry.getName();
-            if(name.endsWith(".mm")) {
+            if(!name.endsWith(".inf")) {
                 mindmapFile = extractFileToTempFolder(zin,name);
                 break;
             }

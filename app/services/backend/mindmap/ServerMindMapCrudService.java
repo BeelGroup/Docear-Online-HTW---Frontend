@@ -40,7 +40,6 @@ import org.w3c.dom.Document;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
-import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
@@ -59,31 +58,32 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private ActorSystem system;
 	private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
-
+	
 	@Override
-	public Promise<JsonNode> mindMapAsJson(final String id) throws DocearServiceException, IOException {
+	public Promise<String> mindMapAsJsonString(final String id)
+			throws DocearServiceException, IOException {
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
 		String mindmapId = getMindMapIdInFreeplane(id);
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), defaultTimeoutInMillis);
 
-		Promise<JsonNode> promise = Akka.asPromise(future).map(
-				new Function<Object, JsonNode>() {
+		Promise<String> promise = Akka.asPromise(future).map(
+				new Function<Object, String>() {
 					@Override
-					public JsonNode apply(Object message) throws Throwable {
+					public String apply(Object message) throws Throwable {
 						final MindmapAsJsonReponse response = (MindmapAsJsonReponse)message;
 						final String jsonString = response.getJsonString();
-						return objectMapper.readTree(jsonString);
+						return jsonString;
 					}
-				}).recover(new Function<Throwable, JsonNode>() {
+				}).recover(new Function<Throwable, String>() {
 					@Override
-					public JsonNode apply(Throwable t) throws Throwable {
+					public String apply(Throwable t) throws Throwable {
 						if(t instanceof MapNotFoundException) {
 							Logger.warn("Map expected on server, but was not present. Reopening...");
 							t.printStackTrace();
 							serverIdToMapIdMap.remove(id);
-							return mindMapAsJson(id).get();
+							return mindMapAsJsonString(id).get();
 						} else {
 							throw t;
 						}
@@ -93,6 +93,12 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		return promise;
 	}
 
+	/**
+	 * returns docear mapid
+	 * In case the map is not loaded on a server, it gets automatically pushed to freeplane
+	 * @param id
+	 * @return
+	 */
 	private String getMindMapIdInFreeplane(final String id) {
 		String mindmapId = serverIdToMapIdMap.get(id);
 		if(mindmapId == null) { //if not hosted, send to a server
@@ -208,10 +214,11 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 
 				Logger.debug("sendMapToDocearInstance => map is real map, loading from docear server");
 				file = getMindMapFileFromDocearServer(user, mapId);
+				if(file == null) {
+					Logger.debug("sendMapToDocearInstance => map with serverId: "+mapId+" not found on docear server.");
+					throw new FileNotFoundException("Map not found");
+				}
 				Logger.debug("sendMapToDocearInstance => map file: "+file.getAbsolutePath());
-				if(file == null)
-					throw new FileNotFoundException();
-
 			}
 
 			//just a hack, because we are currently using different ids for retrieval then supposed

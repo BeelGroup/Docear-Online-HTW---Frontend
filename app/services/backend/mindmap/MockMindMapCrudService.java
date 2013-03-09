@@ -1,11 +1,7 @@
 package services.backend.mindmap;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -13,37 +9,34 @@ import java.util.Random;
 import models.backend.User;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
-import models.backend.exceptions.NoUserLoggedInException;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import play.libs.F.Promise;
 
 import play.Play;
+import play.libs.F.Promise;
 
 @Profile("backendMock")
 @Component
 public class MockMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
+	
 	@Override
-	public Promise<JsonNode> mindMapAsJson(String id) throws NoUserLoggedInException, IOException, DocearServiceException {
-		InputStream stream = null;
-		JsonNode jsonNode;
+	public Promise<String> mindMapAsJsonString(String id)
+			throws DocearServiceException, IOException {
+		String result = null;
+
 		try {
-			stream = Play.application().resourceAsStream("rest/v1/map/" + id + ".json");
-			if (stream == null) {
+			result = FileUtils.readFileToString(new File(Play.application().path()+"/conf/rest/v1/map/" + id + ".json"));
+			if (result == null) {
 				throw new IOException("there is no map with id" + id);
 			}
-			ObjectMapper mapper = new ObjectMapper();
-			jsonNode = mapper.readTree(stream);
+			
 		} finally {
-			closeQuietly(stream);
 		}
-		return Promise.pure(jsonNode);
+		return Promise.pure(result);
 	}
 
 	@Override
