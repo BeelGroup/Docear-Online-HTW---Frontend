@@ -7,7 +7,7 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
 
   class AbstractNode extends Backbone.Model 
 
-    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked) ->
+    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel) ->
       super()    
       @set 'id', id
       @set 'folded', folded
@@ -18,6 +18,8 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       @set 'hGap', hGap
       @set 'shiftY', shiftY
       @set 'locked', locked
+
+      @set 'rootNodeModel', rootNodeModel
       
       @set 'selected', false
       @set 'previouslySelected', false
@@ -30,6 +32,15 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       @set 'persistenceHandler', (new PersistenceHandler())
       @set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
       
+      @bind 'change:selected', =>
+        if(@get('selected'))
+          @get('rootNodeModel').set 'selectedNode', @
+
+      @bind 'change:folded', =>
+        rootID = @get('rootNodeModel').get 'id'
+        $("##{rootID}").trigger 'newFoldAction'  
+
+
       @bind 'change',(node, changes)->
         attributesToPersist = @get 'attributesToPersist'
         persistenceHandler = @get 'persistenceHandler'

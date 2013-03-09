@@ -75,20 +75,21 @@ define ->
       @createMiniNode stats, @$root for stats in nodePositions
 
     createMiniNode:(stats, $container)->
-      width  = stats.width / @ratio
-      width = if width > 1.0 then width else 1
-      height = stats.height / @ratio
-      height = if height > 1.0 then height else 1
+      if(stats.display != 'none')
+        width  = stats.width / @ratio
+        width = if width > 1.0 then width else 1
+        height = stats.height / @ratio
+        height = if height > 1.0 then height else 1
 
-      div = document.createElement("div")
-      div.className = 'mini-node'
-      div.style.width  = width  + "px"
-      div.style.height = height + "px"
-      div.style.left = stats.pos.left / @ratio + 'px'
-      div.style.top  = stats.pos.top  / @ratio + 'px'
+        div = document.createElement("div")
+        div.className = 'mini-node'
+        div.style.width  = width  + "px"
+        div.style.height = height + "px"
+        div.style.left = stats.pos.left / @ratio + 'px'
+        div.style.top  = stats.pos.top  / @ratio + 'px'
 
-      $container.append div
-      $(div)
+        $container.append div
+        $(div)
 
      
     afterAppend:()->

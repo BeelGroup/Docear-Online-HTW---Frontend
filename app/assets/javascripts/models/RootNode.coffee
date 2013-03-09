@@ -2,12 +2,17 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   module = ->
   
   class RootNode extends AbstractNode
-    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked, mapId) ->
-      super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked
+    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked, mapId, rootNodeView = @) ->
+      super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeView
       @set 'containerID', containerID
       @set 'leftChildren', []
       @set 'rightChildren', []
       @set 'mapId', mapId
+
+      @bind 'change:selectedNode', => 
+        if @get('selectedNode') != null
+          $("##{@get 'id' }").trigger 'newSelectedNode', @get 'selectedNode'
+          
     
     # overwriting getter @get 'children' since we RootNode does not have a children attr
     get: (attr)->

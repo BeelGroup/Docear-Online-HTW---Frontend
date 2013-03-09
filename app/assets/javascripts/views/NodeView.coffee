@@ -110,80 +110,9 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
       done()
 
 
-    selectNextChild: (selectedNode, side = 'left')->
-      $selectedNode = $('#'+(selectedNode.get 'id')) 
-      if $selectedNode.children('.children').is(':visible')
-        nextNode = null
-        if selectedNode instanceof RootNode
-          if side == 'left'
-            nextNode = selectedNode.getNextLeftChild()
-          else
-            nextNode = selectedNode.getNextRightChild()
-        else
-            nextNode = selectedNode.getNextChild()
-  
-        if nextNode != null
-          selectedNode.set 'selected', false
-          nextNode.set 'selected', true
-          return true
-      false
-        
-    selectParent: (selectedNode)->
-      selectedNode.get('parent').set 'selected', true
-      selectedNode.set 'selected', false
     
-    selectBrother: (selectedNode, next = true)->
-      $selectedNode = $('#'+(selectedNode.get 'id'))
-      if not (selectedNode instanceof RootNode)
-        prevNode = null
-        nextNode = null
-        
-        if next
-          $brother = $($selectedNode).next('.node')
-        else
-          $brother = $($selectedNode).prev('.node')
-        if $($brother).size() > 0
-          id = $($brother).attr('id')
-          selectedNode.get('parent').findById(id).set 'selected', true
-          selectedNode.get('parent').findById(id).set 'previouslySelected', true
-          selectedNode.set 'selected', false
-          selectedNode.set 'previouslySelected', false
-          return true
-      false
     
-    userKeyInput: (event)->
-      
-      if event.keyCode == 0
-        code = event.charCode
-      else
-        code = event.keyCode
-      if (code) in document.navigation.key.allowed
-        selectedNode = @model.getSelectedNode()
-        if selectedNode != null
-          $selectedNode = $('#'+(selectedNode.get 'id')) 
-          switch (event.keyCode)
-            when document.navigation.key.selectLeftChild
-              if $($selectedNode).hasClass('right')  
-                @selectParent selectedNode
-              else
-                @selectNextChild selectedNode, 'left'
-            when document.navigation.key.selectPrevBrother #TOP
-              @selectBrother selectedNode, false
-            when document.navigation.key.selectRightChild #RIGHT
-              if $($selectedNode).hasClass('left')  
-                @selectParent selectedNode
-              else
-                @selectNextChild selectedNode, 'right'
-            when document.navigation.key.selectNextBrother #DOWN
-              @selectBrother selectedNode, true
-            when document.navigation.key.fold #F
-              selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
-          
-        else
-          @model.set 'selected', true
-          
-        event.preventDefault()
-      
+
       
 
 
