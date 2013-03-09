@@ -1,37 +1,74 @@
 package controllers;
 
-import models.backend.exceptions.DocearServiceException;
-import models.backend.exceptions.NoUserLoggedInException;
-import models.frontend.LoggedError;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
-import play.Play;
-import play.Routes;
-import play.cache.Cache;
-import play.cache.Cached;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Security;
+import static play.data.Form.form;
+import info.schleichardt.play2.mailplugin.Mailer;
 
 import java.io.IOException;
 import java.util.List;
 
+import models.backend.exceptions.DocearServiceException;
+import models.backend.exceptions.NoUserLoggedInException;
+import models.frontend.FeedbackFormData;
+import models.frontend.LoggedError;
+
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.SimpleEmail;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
+
+import play.Logger;
+import play.Play;
+import play.Routes;
+import play.cache.Cache;
+import play.data.Form;
+import play.mvc.Controller;
+import play.mvc.Result;
+
 public class Application extends Controller {
     public static final String LOGGED_ERROR_CACHE_PREFIX = "logged.error.";
+    public static final Form<FeedbackFormData> feedbackForm = form(FeedbackFormData.class);
+    
 
-	/** displays current mind map drawing */
+	/** displays current mind map drawing 
+	 * @throws EmailException */
 	public static Result index() {
 		if(User.isAuthenticated()) {
 			return ok(views.html.home.render());
 		} else {
 			return ok(views.html.index.render(User.credentialsForm));
 		}
-		
 	}
 
     /** displays a feature list and help site */
 	public static Result help() {
 		return ok(views.html.help.render());
+	}
+	
+	public static Result feedback() throws EmailException {
+		Form<FeedbackFormData> filledForm = feedbackForm.bindFromRequest();
+		
+		if(filledForm.hasErrors()) {
+			return badRequest();
+		} else {
+			final FeedbackFormData data = filledForm.get();
+			
+			final String subject = (data.getFeedbackSubject() != null ? data.getFeedbackSubject() : "New Feedback");
+			final String contactLine = "Contact: " + (data.getFeedbackEmail() != null ? data.getFeedbackEmail() : "non provided");
+			final String[] sendToAddresses = Play.application().configuration().getString("feedback.sendTo").split(",");
+			
+			
+			final SimpleEmail mail = new SimpleEmail();
+			mail.setSubject(subject);
+			mail.setFrom("feedback@docear.org");
+			//set recipients
+			for(String address : sendToAddresses) {
+				mail.addTo(address);
+			}
+			
+			mail.setContent(contactLine+"\n"+data.getFeedbackText(), "plain/text");
+			Mailer.send(mail);
+			return ok();
+		}
 	}
 
     /** makes some play routes in JavaScript avaiable */
