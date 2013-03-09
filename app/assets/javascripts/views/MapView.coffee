@@ -74,7 +74,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       $element.append(@el)
       @render()
       @renderSubviews()
-      #@afterAppend()
       @
 
     render:()->

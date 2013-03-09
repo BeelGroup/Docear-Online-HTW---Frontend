@@ -13,11 +13,28 @@ define ->
 
     constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 60)->
       super()
+      @scale = 1
       @relatedCanvas = @relatedCanvasView.getElement()
       @relatedCanvas.on 'drag', @updatePositionEvent
       @relatedCanvas.on 'center', @centerPosition
+      @relatedCanvas.on 'zoom', @resizeMiniViewport
 
     element:-> @$el
+
+    resizeMiniViewport:(event, @scale)=>
+      @minimapViewportWidth = @relatedViewport.width() / @ratio * (1/@scale)
+      @minimapViewportHeight = @relatedViewport.height() / @ratio * (1/@scale)
+
+      @minimapViewportWidthOffset = (@minimapViewportWidth - @minimapViewportOriginWidth) / 2
+      @minimapViewportHeightOffset = (@minimapViewportHeight - @minimapViewportOriginHeight) / 2
+
+      console.log @minimapViewportWidthOffset
+
+      @minimapViewport.animate
+        'width'    : @minimapViewportWidth 
+        'height'   : @minimapViewportHeight
+      , 100
+
 
     drawMiniNodes:(nodePositions)->
       console.log 'drawMiniNodes'
@@ -26,7 +43,6 @@ define ->
       @createMiniNode stats for stats in nodePositions
 
     createMiniNode:(stats)->
-      console.log 'createMiniNode'
       width  = stats.width / @ratio
       width = if width > 1.0 then width else 1
       height = stats.height / @ratio
@@ -43,16 +59,16 @@ define ->
 
      
     afterAppend:()->
-      minimapViewport =  @$el.find('.minimap-viewport')
-      minimapViewport.draggable
+      @minimapViewport =  @$el.find('.minimap-viewport')
+      @minimapViewport.draggable
         cancel: "a.ui-icon, .node"
         containment: "parent"
         cursor: "move"
         drag: (event, ui)=>
           @updateRelatedCanvasPositionDrag(event, ui)
 
-      minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
-      minimapViewport.css('opacity','.6');
+      @minimapViewport.hover (e)=> $(e.currentTarget).toggleClass('highlight')
+      @minimapViewport.css('opacity','.6');
 
 
     draggable:->
@@ -63,9 +79,13 @@ define ->
 
 
     renderAndAppendTo:($element, @itsDraggable = false)->
+
+      @minimapViewportOriginWidth = @relatedViewport.width() / @ratio
+      @minimapViewportOriginHeight = @relatedViewport.height() / @ratio
+
       stats = 
-        width:  @relatedViewport.width() / @ratio
-        height: @relatedViewport.height() / @ratio
+        width:  @minimapViewportOriginWidth
+        height: @minimapViewportOriginHeight
         left: 0
         top:  0
         viewport_class: 'minimap-viewport'
@@ -137,8 +157,8 @@ define ->
 
     computeCenterPosition:->
       $minimapViewport = @$el.find('.minimap-viewport')
-      x = (@$el.width() / 2 - $minimapViewport.width() / 2) / @$el.width() * 100
-      y = (@$el.height() / 2 - $minimapViewport.height() / 2) / @$el.height() * 100
+      x = (@$el.width() / 2 - @minimapViewportOriginWidth / 2) / @$el.width() * 100
+      y = (@$el.height() / 2 - @minimapViewportOriginHeight / 2) / @$el.height() * 100
 
       pos = x: x, y: y
 
