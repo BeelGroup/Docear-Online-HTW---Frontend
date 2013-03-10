@@ -15,7 +15,9 @@ define ->
       super()
       @scale = 1
       @relatedCanvas = @relatedCanvasView.getElement()
-      @relatedCanvas.on 'drag', @updatePositionOnCanvasDrag
+      # for chrome, there is an individual eventhandling (see @ CanvasView.afterAppend <- throws 'canvasWasMovedTo')
+      if !$.browser.chrome 
+        @relatedCanvas.on 'drag', @updatePositionOnCanvasDrag
       @relatedCanvas.on 'canvasWasMovedTo', @updatePositionFromCanvas
       @relatedCanvas.on 'zoom', @resizeMiniViewport
       @minimapViewportWidthOffset  = 0.0
@@ -180,11 +182,11 @@ define ->
 
 
     updatePositionOnCanvasDrag:=>
-      posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  )
-      posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() )
+      posX = ((parseFloat(@relatedCanvas.css('left'))  + @relatedCanvas.width() ) / @relatedCanvas.width()  ) 
+      posY = ((parseFloat(@relatedCanvas.css('top'))   + @relatedCanvas.height()) / @relatedCanvas.height() ) 
       pos=
-        x: (-posX  + 1)*@$el.width()
-        y: (-posY  + 1)*@$el.height()
+        x: (-posX  + 1)*@$el.width() 
+        y: (-posY  + 1)*@$el.height() 
 
       @updatePosition pos
 
