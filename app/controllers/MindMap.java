@@ -13,6 +13,7 @@ import play.Logger;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
 
 @Component
@@ -21,8 +22,8 @@ public class MindMap extends Controller {
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
 
+	@Security.Authenticated(Secured.class)
 	public Result map(final String id) throws DocearServiceException, IOException {
-		
         final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(id);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
             @Override
@@ -32,6 +33,7 @@ public class MindMap extends Controller {
         }));
 	}
     
+	@Security.Authenticated(Secured.class)
     public Result addNode() {
     	JsonNode addNodeJSON = request().body().asJson();
         final F.Promise<JsonNode> addNodePromise = mindMapCrudService.addNode(addNodeJSON);
@@ -43,6 +45,7 @@ public class MindMap extends Controller {
         }));
     }
     
+    @Security.Authenticated(Secured.class)
     public Result createNode(final String mapId) {
     	Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
     	
@@ -56,6 +59,7 @@ public class MindMap extends Controller {
         }));
     }
     
+    @Security.Authenticated(Secured.class)
     public Result getNode(final String mapId, final String nodeId) {
         final F.Promise<String> addNodePromise = mindMapCrudService.getNode(mapId, nodeId);
         return async(addNodePromise.map(new F.Function<String, Result>() {
@@ -66,6 +70,7 @@ public class MindMap extends Controller {
         }));
     }
     
+    @Security.Authenticated(Secured.class)
     public Result changeNode(final String mapId) {
     	Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
     	
@@ -76,6 +81,7 @@ public class MindMap extends Controller {
     	return ok();
     }
     
+    @Security.Authenticated(Secured.class)
     public Result deleteNode(String mapId) {
     	return TODO;
     }

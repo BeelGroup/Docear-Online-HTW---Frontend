@@ -5,7 +5,6 @@ import java.io.IOException;
 import models.backend.exceptions.DocearServiceException;
 
 import org.codehaus.jackson.JsonNode;
-import org.docear.messages.Messages.ChangeNodeRequest;
 
 import play.libs.F.Promise;
 
