@@ -96,7 +96,6 @@ public class Application extends Controller {
                     routes.javascript.MindMap.map(),
                     routes.javascript.MindMap.addNode(),
                     routes.javascript.MindMap.changeNode(),
-                    routes.javascript.MindMap.createNode(),
                     routes.javascript.MindMap.deleteNode()
             )
         );

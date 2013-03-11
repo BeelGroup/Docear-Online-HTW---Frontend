@@ -1,11 +1,10 @@
 package controllers;
 
 import java.io.IOException;
+import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
 
-import org.codehaus.jackson.JsonNode;
-import org.docear.messages.Messages.ChangeNodeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,8 +19,12 @@ public class MindMap extends Controller {
 	
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
-
-	public Result map(final String mapId, Integer nodeCount) throws DocearServiceException, IOException {
+	
+	public Result map(final String mapId) throws DocearServiceException, IOException {
+		return map(mapId, -1);
+	}
+	
+	public Result map(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
         final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(mapId, nodeCount);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
             @Override
@@ -31,30 +34,30 @@ public class MindMap extends Controller {
         }));
 	}
     
-    public Result addNode() {
-    	JsonNode addNodeJSON = request().body().asJson();
-        final F.Promise<JsonNode> addNodePromise = mindMapCrudService.addNode(addNodeJSON);
-        return async(addNodePromise.map(new F.Function<JsonNode, Result>() {
+    public Result createNode(final String mapId) {
+    	Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
+    	
+    	final String parentNodeId = bodyEntries.get("parentNodeId")[0];
+        final F.Promise<String> addNodePromise = mindMapCrudService.createNode(mapId, parentNodeId);
+        return async(addNodePromise.map(new F.Function<String, Result>() {
             @Override
-            public Result apply(JsonNode node) throws Throwable {
+            public Result apply(String node) throws Throwable {
                 return ok(node);
             }
         }));
     }
     
-    public Result createNode(String mapId) {
-    	return TODO;
-    }
-    
-    public Result changeNode(String mapId) {
-    	final String nodeJson = request().body().asJson().toString();
+    public Result changeNode(final String mapId) {
+    	Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
+    	
+    	final String nodeJson = bodyEntries.get("nodeJson")[0];
     	Logger.debug("changeNode => mapId: '"+mapId+"', nodeJson:'"+nodeJson+"'");
     	
     	mindMapCrudService.ChangeNode(mapId, nodeJson);
     	return ok();
     }
     
-    public Result deleteNode(String mapId) {
+    public Result deleteNode(final String mapId) {
     	return TODO;
     }
 }

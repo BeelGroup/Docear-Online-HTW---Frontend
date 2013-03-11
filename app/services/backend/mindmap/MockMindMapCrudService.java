@@ -40,14 +40,13 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {
+	public Promise<String> createNode(String mapId, String parentNodeId) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
 			Random ran = new Random();
 			int id = ran.nextInt() * ran.nextInt();
-			JsonNode node = mapper.readTree("{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}");
+			String result = "{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}";
 
-			return Promise.pure(node);
+			return Promise.pure(result);
 		} catch (Exception e) {
 			return null;
 		}

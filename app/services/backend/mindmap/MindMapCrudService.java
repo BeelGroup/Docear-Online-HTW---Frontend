@@ -15,11 +15,12 @@ public interface MindMapCrudService {
     Promise<String> mindMapAsJsonString(String id,  Integer nodeCount) throws DocearServiceException, IOException;
     
     /**
-     * Adds a node to a map on the given parent 
-     * @param addNodeRequestJson {"mapId":"THE_ID","parentNodeId":"PARENT_ID"}
+     * Creates and adds a node to a map on the given parent 
+     * @param mapId
+     * @param parentNodeId
      * @return the generated node
      */
-    Promise<JsonNode> addNode(JsonNode addNodeRequestJson);
+    Promise<String> createNode(String mapId, String parentNodeId);
     
     /**
      * 

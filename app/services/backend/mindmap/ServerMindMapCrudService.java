@@ -111,22 +111,18 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 
 	@Override
-	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {
-
-		final String mapId = getMindMapIdInFreeplane(addNodeRequestJson.get("mapId").asText());
-		final String parentNodeId = addNodeRequestJson.get("parentNodeId").asText();
+	public Promise<String> createNode(final String mapId, final String parentNodeId) {
 		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
 		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId);
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
 
-		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
+		Promise<String> promise = Akka.asPromise(future).map(new Function<Object, String>() {
 			@Override
-			public JsonNode apply(Object responseMessage) throws Throwable {
+			public String apply(Object responseMessage) throws Throwable {
 				AddNodeResponse response = (AddNodeResponse)responseMessage;
-				JsonNode node = objectMapper.readTree(response.getNode());
-				return node;
+				return response.getNode().toString();
 			}
 		});
 		return promise;
