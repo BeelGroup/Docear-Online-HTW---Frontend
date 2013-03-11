@@ -23,6 +23,14 @@ public interface MindMapCrudService {
     Promise<JsonNode> addNode(JsonNode addNodeRequestJson);
     
     /**
+     * Creates and adds a node to a map on the given parent 
+     * @param mapId
+     * @param parentNodeId
+     * @return the generated node
+     */
+    Promise<String> createNode(String mapId, String parentNodeId);
+    
+    /**
      * 
      * @param changeNodeRequestJson {"mapId":"THE_ID","node":{...node object with atributes to change...}}
      */
