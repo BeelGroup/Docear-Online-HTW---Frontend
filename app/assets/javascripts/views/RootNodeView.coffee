@@ -1,4 +1,4 @@
-define ['views/NodeView'], (NodeView) ->
+define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
   module = ->
   
   class RootNodeView extends NodeView
@@ -7,8 +7,10 @@ define ['views/NodeView'], (NodeView) ->
 
     constructor: (model) ->
       super model
+      model.bind 'change:property1', -> alert("change pty1")
       @lastScaleAmount = 1
       @currentScale = 100
+      @scaleAmount = 1.0
 
     collapsFoldedNodes:()->      
       foldedNodes = $('.node.folded')
@@ -30,6 +32,8 @@ define ['views/NodeView'], (NodeView) ->
     connectChildren: ->
       @recursiveConnectNodes $(@$el).find('.rightChildren:first')
       @recursiveConnectNodes $(@$el).find('.leftChildren:first')
+
+
     recursiveConnectNodes: (childrenContainer)->
       parent = $(childrenContainer).parent()
       children = childrenContainer.children('.node')
@@ -41,26 +45,110 @@ define ['views/NodeView'], (NodeView) ->
 
 
     setChildPositions: ->
-      @positions = new Array()
-      canvas = $('#'+@model.get 'id').parent().parent()
-      @childPositions $('#'+@model.get 'id').find('.rightChildren:first'), @positions, canvas
-      @childPositions $('#'+@model.get 'id').find('.leftChildren:first'), @positions, canvas
+      $me = $('#'+@model.get 'id')
+      canvas = $me.parent().parent()
+      leftChilds = new Array()
+      rightChilds = new Array()
 
+      # root
+      @positions=
+        pos:
+          left: ($me.offset().left + ($me.width() / 2) - $(canvas).offset().left) 
+          top: ($me.offset().top + ($me.height() / 2) - $(canvas).offset().top)
+        width: $me.width()
+        height: $me.height() 
+        display: 'block'
+        leftChilds: @childPositions $me.find('.leftChildren:first'), leftChilds, canvas
+        rightChilds: @childPositions $me.find('.rightChildren:first'), rightChilds, canvas 
+      @positions
 
     childPositions: (childrenContainer, positions, canvas)->
       children = childrenContainer.children('.node')
-      if $(children).size() > 0
-        $.each(children, (index, child)=>
-          positions.push 
-            pos:
-              left: $(child).offset().left - $(canvas).offset().left
-              top: $(child).offset().top - $(canvas).offset().top
-            width: $(child).width()
-            height: $(child).height() 
-          @childPositions $(child).children('.children:first'), positions, canvas
-        )
+      if childrenContainer.css('display') == 'block'
+        if $(children).size() > 0
+          $.each(children, (index, child)=>
+            positions.push 
+              pos:
+                left: ($(child).offset().left - $(canvas).offset().left - $(canvas).width() / 2) / @scaleAmount
+                top: ($(child).offset().top - $(canvas).offset().top - $(canvas).height() / 2) / @scaleAmount
+              width: $(child).width()
+              height: $(child).height()
+            @childPositions $(child).children('.children:first'), positions, canvas
+          )
       positions
 
+    userKeyInput: (event)->
+      if event.keyCode == 0
+        code = event.charCode
+      else
+        code = event.keyCode
+      if (code) in document.navigation.key.allowed
+        selectedNode = @model.getSelectedNode()
+        if selectedNode != null
+          $selectedNode = $('#'+(selectedNode.get 'id')) 
+          switch (event.keyCode)
+            when document.navigation.key.selectLeftChild
+              if $($selectedNode).hasClass('right')  
+                @selectParent selectedNode
+              else
+                @selectNextChild selectedNode, 'left'
+            when document.navigation.key.selectPrevBrother #TOP
+              @selectBrother selectedNode, false
+            when document.navigation.key.selectRightChild #RIGHT
+              if $($selectedNode).hasClass('left')  
+                @selectParent selectedNode
+              else
+                @selectNextChild selectedNode, 'right'
+            when document.navigation.key.selectNextBrother #DOWN
+              @selectBrother selectedNode, true
+            when document.navigation.key.fold #F
+              selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
+              $("##{@model.get 'id'}").trigger 'newFoldedNode'
+        else
+          @model.set 'selected', true
+
+        event.preventDefault()
+      
+    selectNextChild: (selectedNode, side = 'left')->
+      $selectedNode = $('#'+(selectedNode.get 'id')) 
+      if $selectedNode.children('.children').is(':visible')
+        nextNode = null
+        if selectedNode instanceof RootNode
+          if side == 'left'
+            nextNode = selectedNode.getNextLeftChild()
+          else
+            nextNode = selectedNode.getNextRightChild()
+        else
+            nextNode = selectedNode.getNextChild()
+  
+        if nextNode != null
+          #selectedNode.set 'selected', false
+          nextNode.set 'selected', true
+          return true
+      false
+        
+    selectParent: (selectedNode)->
+      selectedNode.get('parent').set 'selected', true
+      #selectedNode.set 'selected', false
+    
+    selectBrother: (selectedNode, next = true)->
+      $selectedNode = $('#'+(selectedNode.get 'id'))
+      if not (selectedNode instanceof RootNode)
+        prevNode = null
+        nextNode = null
+        
+        if next
+          $brother = $($selectedNode).next('.node')
+        else
+          $brother = $($selectedNode).prev('.node')
+        if $($brother).size() > 0
+          id = $($brother).attr('id')
+          selectedNode.get('parent').findById(id).set 'selected', true
+          #selectedNode.get('parent').findById(id).set 'previouslySelected', true
+          #selectedNode.set 'selected', false
+          #selectedNode.set 'previouslySelected', false
+          return true
+      false
 
     centerInContainer: ->
       node = $('#'+@model.get 'id')
@@ -72,7 +160,8 @@ define ['views/NodeView'], (NodeView) ->
       node.css 'top' , posY + 'px'
  
 
-    scale:(amount)->      
+    scale:(amount)->  
+      @scaleAmount = amount    
       possibilities = document.body.style
       fallback = false
 
@@ -102,10 +191,11 @@ define ['views/NodeView'], (NodeView) ->
       # ultra fallback
       if fallback
         scaleDiff = 0
-        if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
-        @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
-        @lastScaleAmount = amount
-        @currentScale += scaleDiff
+        if @lastScaleAmount != amount
+          if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+          @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+          @lastScaleAmount = amount
+          @currentScale += scaleDiff
 
 
     render: ->

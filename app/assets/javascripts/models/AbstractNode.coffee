@@ -2,12 +2,12 @@
 abstract class
 ###
 
-define ['collections/ChildNodes', 'handlers/PersistenceHandler'], (ChildNodes, PersistenceHandler)->
+define ['handlers/PersistenceHandler'], (PersistenceHandler)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
 
-    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked) ->
+    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel) ->
       super()    
       @set 'id', id
       @set 'folded', folded
@@ -18,6 +18,8 @@ define ['collections/ChildNodes', 'handlers/PersistenceHandler'], (ChildNodes, P
       @set 'hGap', hGap
       @set 'shiftY', shiftY
       @set 'locked', locked
+
+      @set 'rootNodeModel', rootNodeModel
       
       @set 'selected', false
       @set 'previouslySelected', false
@@ -31,6 +33,18 @@ define ['collections/ChildNodes', 'handlers/PersistenceHandler'], (ChildNodes, P
       @set 'persistenceHandler', (new PersistenceHandler())
       @set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
       
+      @bind 'change:selected', =>
+        if(@get('selected'))
+          currentlySelected = @get('rootNodeModel').get 'selectedNode'
+          if(typeof(currentlySelected) != 'undefined')
+            currentlySelected.set 'selected', false
+          @get('rootNodeModel').set 'selectedNode', @
+
+      @bind 'change:folded', =>
+        rootID = @get('rootNodeModel').get 'id'
+        $("##{rootID}").trigger 'newFoldAction'  
+
+
       @bind 'change',(node, changes)->
         attributesToPersist = @get 'attributesToPersist'
         persistenceHandler = @get 'persistenceHandler'

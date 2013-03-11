@@ -2,8 +2,8 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   module = ->
 
   class Node extends AbstractNode
-    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, parent) ->
-      super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked  
+    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, parent, rootNodeModel) ->
+      super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel  
       @set 'children', []
       @set 'parent', parent
       

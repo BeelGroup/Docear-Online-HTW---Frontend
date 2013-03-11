@@ -22,7 +22,7 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
       'click .changeable': 'lockModel'
       'click .action-show': 'printModel'
       'click .action-change': 'modificateModel'
-      'click .action-fold': -> @foldModel()
+      #'click .action-fold': -> @foldModel()
       
     # a.k.a. constructor
     constructor: (@model) ->

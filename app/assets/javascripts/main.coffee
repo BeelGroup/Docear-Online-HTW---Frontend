@@ -2,7 +2,7 @@ require [],  () ->
   loadUserMaps = ->
     $.ajax({
       type: 'GET',
-      url: jsRoutes.controllers.MindMap.mapListFromDB().url,
+      url: jsRoutes.controllers.User.mapListFromDB().url,
       dataType: 'json',
       success: (data)->
         $selectMinmap = $('#select-mindmap')
