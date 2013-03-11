@@ -7,14 +7,10 @@ import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.frontend.Credentials;
 
-import org.codehaus.jackson.JsonNode;
-import org.joda.time.Duration;
-import org.joda.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import play.Logger;
-import play.Play;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -27,7 +23,6 @@ import services.backend.user.UserService;
 import static controllers.Secured.SESSION_KEY_TIMEOUT;
 import static controllers.Secured.SESSION_KEY_USERNAME;
 import static controllers.Secured.createTimeoutTimestamp;
-import static controllers.User.getCurrentUser;
 import static play.data.Form.form;
 
 @Component
@@ -90,7 +85,7 @@ public class User extends Controller {
 
     @Security.Authenticated(Secured.class)
     public Result profile() {
-        return redirect(routes.User.mapListFromDB());
+        return TODO;
     }
 	
     public static boolean isAuthenticated() {
