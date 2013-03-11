@@ -22,6 +22,7 @@ define ['collections/ChildNodes', 'handlers/PersistenceHandler'], (ChildNodes, P
       @set 'selected', false
       @set 'previouslySelected', false
       @set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
+      @set 'lastAddedChild', 'undefined'
       
       ## THROW events on all (also possible: save/update/change)
       #@on 'all', (event) -> console.log "Event: " + event

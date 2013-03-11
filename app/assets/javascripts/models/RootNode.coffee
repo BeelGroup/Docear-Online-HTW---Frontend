@@ -30,9 +30,11 @@ define ['models/AbstractNode'],  (AbstractNode) ->
 
     addLeftChild: (child)->
       @get('leftChildren').push(child)
+      @set 'lastAddedChild', newChild
       
     addRightChild: (child)->
       @get('rightChildren').push(child)
+      @set 'lastAddedChild', newChild
     
     addChild: (child, treeSide)->
       if treeSide == 'left'

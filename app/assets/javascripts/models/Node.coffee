@@ -9,9 +9,8 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       
     addChild: (id, text)->
       newChild = new Node(id, false, text, false,0,0,0,0,false, @)
-      children = @get('children').slice()
-      children.push(newChild)
-      @set 'children', children
+      @get('children').push(newChild)
+      @set 'lastAddedChild', newChild
       
     createAndAddChild: ()->
       values = {}

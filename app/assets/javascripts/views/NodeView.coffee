@@ -20,6 +20,16 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
           @recursiveRender($nodeHtml.find('.children:first'), children)
       )      
     
+    changeChildren: ->
+      ## TODO -> render and align new child
+      console.log "TODO: render child"
+      newChild = @model.get 'lastAddedChild'
+      nodeView = new NodeView(newChild)
+      $nodeHtml = $($(nodeView.render().el).html())
+      $node = $('#'+@model.id)
+      
+      $node.children('.children').append($nodeHtml)
+      
     adjustNodeHierarchy: (parent, children, treeIdentifier)->
       parentId = parent.get 'id'
       $parent = $('#'+parentId)
