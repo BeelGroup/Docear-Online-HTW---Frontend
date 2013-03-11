@@ -56,6 +56,16 @@ public class MindMap extends Controller {
         }));
     }
     
+    public Result getNode(final String mapId, final String nodeId) {
+        final F.Promise<String> addNodePromise = mindMapCrudService.getNode(mapId, nodeId);
+        return async(addNodePromise.map(new F.Function<String, Result>() {
+            @Override
+            public Result apply(String node) throws Throwable {
+                return ok(node);
+            }
+        }));
+    }
+    
     public Result changeNode(final String mapId) {
     	Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
     	

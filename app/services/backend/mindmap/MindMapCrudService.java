@@ -31,6 +31,14 @@ public interface MindMapCrudService {
     Promise<String> createNode(String mapId, String parentNodeId);
     
     /**
+     * Get Node
+     * @param mapId
+     * @param nodeId
+     * @return the node
+     */
+    Promise<String> getNode(String mapId, String nodeId);
+    
+    /**
      * 
      * @param changeNodeRequestJson {"mapId":"THE_ID","node":{...node object with atributes to change...}}
      */

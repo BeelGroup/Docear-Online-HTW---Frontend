@@ -66,6 +66,17 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			return null;
 		}
 	}
+	
+	@Override
+	public Promise<String> getNode(String mapId, String nodeId) {
+		try {
+			String result = "{\"id\":\""+nodeId+"\",\"nodeText\":\"Mock Node\"}";
+
+			return Promise.pure(result);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 
 	@Override
 	public void ChangeNode(String mapId, String nodeJson) {

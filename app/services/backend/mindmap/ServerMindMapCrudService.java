@@ -19,9 +19,12 @@ import models.backend.exceptions.NoUserLoggedInException;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+
 import org.docear.messages.Messages.AddNodeRequest;
 import org.docear.messages.Messages.AddNodeResponse;
 import org.docear.messages.Messages.ChangeNodeRequest;
+import org.docear.messages.Messages.GetNodeRequest;
+import org.docear.messages.Messages.GetNodeResponse;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
 import org.docear.messages.Messages.OpenMindMapRequest;
@@ -122,6 +125,24 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			@Override
 			public String apply(Object responseMessage) throws Throwable {
 				AddNodeResponse response = (AddNodeResponse)responseMessage;
+				return response.getNode().toString();
+			}
+		});
+		return promise;
+	}
+	
+	@Override
+	public Promise<String> getNode(final String mapId, final String nodeId) {
+		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
+		GetNodeRequest request = new GetNodeRequest(mapId,nodeId, -1);
+
+		ActorRef remoteActor = getRemoteActor();
+		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
+
+		Promise<String> promise = Akka.asPromise(future).map(new Function<Object, String>() {
+			@Override
+			public String apply(Object responseMessage) throws Throwable {
+				GetNodeResponse response = (GetNodeResponse)responseMessage;
 				return response.getNode().toString();
 			}
 		});

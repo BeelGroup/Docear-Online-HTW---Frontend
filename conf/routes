@@ -15,11 +15,11 @@ POST	/feedback					controllers.Application.feedback()
 GET     /qunit                      controllers.QUnit.testAll()
 
 # Mindmap
-GET		/map/json/:mapId				@controllers.MindMap.map(mapId: String)
-
+GET		/map/json/:mapId			@controllers.MindMap.map(mapId: String)
 GET		/maps			    		@controllers.User.mapListFromDB()
+GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String)
 
-POST	/map/:mapId/createNode			@controllers.MindMap.createNode(mapId: String)
+POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
 POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
 POST	/map/:mapId/deleteNode		@controllers.MindMap.deleteNode(mapId: String)
 
