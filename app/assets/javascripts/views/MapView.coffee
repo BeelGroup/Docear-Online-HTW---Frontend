@@ -25,7 +25,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.centerInContainer()
       @rootView.refreshDom()
       jsPlumb.repaintEverything()
-      @minimap.centerPosition(true)
       @canvas.setRootView(@rootView)
       @rootView.setChildPositions()
 
@@ -34,37 +33,46 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       console.log "call: loadMap #{mapId} (MapController)"
       href = jsRoutes.controllers.MindMap.map(@mapId).url
       $.get(href, @createJSONMap, "json")
-      
+
+
 
     createJSONMap: (data)=>
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
       @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
       document.rootID = data.root.id
       if data.root.leftChildren != undefined
-        leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode)
+        leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode, @rootNode)
         @rootNode.set 'leftChildren', leftNodes
       
       if data.root.rightChildren != undefined
-        rightNodes = getRecursiveChildren(data.root.rightChildren, @rootNode)
+        rightNodes = getRecursiveChildren(data.root.rightChildren, @rootNode, @rootNode)
         @rootNode.set 'rightChildren', rightNodes
 
       @positionNodes()
       @canvas.center()
+      
+      setTimeout( => 
+        @minimap.drawMiniNodes @rootView.setChildPositions(), true
+      , 500)
+
+      @rootView.getElement().on 'newFoldAction', => setTimeout( => 
+        @minimap.drawMiniNodes @rootView.setChildPositions()
+      , 500)
       @rootNode
 
 
-    getRecursiveChildren = (childrenData, parent)->
+    getRecursiveChildren = (childrenData, parent, root)->
       children = []
       if childrenData.id != undefined && childrenData.id != null
         #id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked
-        newChild = new NodeModel(childrenData.id, childrenData.folded, childrenData.nodeText, childrenData.isHtml,0,0,0,0,false, parent)
+        newChild = new NodeModel(childrenData.id, childrenData.folded, childrenData.nodeText, childrenData.isHtml,0,0,0,0,false, parent, root)
         children.push newChild
       else if childrenData != undefined
         for child in childrenData
           if child.nodeText != ""
-            newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent)
+            newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root)
             if child.children != undefined
-              newChild.set 'children', getRecursiveChildren(child.children, newChild)
+              newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
             children.push newChild
       children
 
@@ -73,7 +81,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       $element.append(@el)
       @render()
       @renderSubviews()
-      #@afterAppend()
       @
 
     render:()->
@@ -90,6 +97,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       # pass related viewport-element and canvas-view
       @minimap = new MinimapView("#{@id}_minimap-canvas", $viewport, @canvas)
       @minimap.renderAndAppendTo($viewport)
+
 
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport

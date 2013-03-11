@@ -2,23 +2,17 @@ package services.backend.mindmap;
 
 import static akka.pattern.Patterns.ask;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import models.backend.User;
-import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 
@@ -40,7 +34,6 @@ import org.w3c.dom.Document;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
-import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
@@ -53,36 +46,37 @@ import com.typesafe.config.ConfigFactory;
 
 @Profile("backendProd")
 @Component
-public class ServerMindMapCrudService extends MindMapCrudServiceBase implements MindMapCrudService {
+public class ServerMindMapCrudService implements MindMapCrudService {
 	private Map<String, String> serverIdToMapIdMap = new HashMap<String, String>();
 	private final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private ActorSystem system;
-    private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
-
+	private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
+	
 	@Override
-	public Promise<JsonNode> mindMapAsJson(final String id, final Integer nodeCount) throws DocearServiceException, IOException {
+	public Promise<String> mindMapAsJsonString(final String id, final Integer nodeCount) throws DocearServiceException, IOException {
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
 		String mindmapId = getMindMapIdInFreeplane(id);
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId, nodeCount), defaultTimeoutInMillis);
 
-		Promise<JsonNode> promise = Akka.asPromise(future).map(
-				new Function<Object, JsonNode>() {
+		Promise<String> promise = Akka.asPromise(future).map(
+				new Function<Object, String>() {
 					@Override
-					public JsonNode apply(Object message) throws Throwable {
+					public String apply(Object message) throws Throwable {
 						final MindmapAsJsonReponse response = (MindmapAsJsonReponse)message;
 						final String jsonString = response.getJsonString();
-						return objectMapper.readTree(jsonString);
+						return jsonString;
 					}
-				}).recover(new Function<Throwable, JsonNode>() {
+				}).recover(new Function<Throwable, String>() {
 					@Override
-					public JsonNode apply(Throwable t) throws Throwable {
+					public String apply(Throwable t) throws Throwable {
 						if(t instanceof MapNotFoundException) {
 							Logger.warn("Map expected on server, but was not present. Reopening...");
+							t.printStackTrace();
 							serverIdToMapIdMap.remove(id);
-							return mindMapAsJson(id, nodeCount).get();
+							return mindMapAsJsonString(id, nodeCount).get();
 						} else {
 							throw t;
 						}
@@ -91,13 +85,19 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 
 		return promise;
 	}
-	
-	private String getMindMapIdInFreeplane(String id) {
+
+	/**
+	 * returns docear mapid
+	 * In case the map is not loaded on a server, it gets automatically pushed to freeplane
+	 * @param id
+	 * @return
+	 */
+	private String getMindMapIdInFreeplane(final String id) {
 		String mindmapId = serverIdToMapIdMap.get(id);
 		if(mindmapId == null) { //if not hosted, send to a server
 			Logger.debug("Map for server id " + id + " not open. Sending to freeplane...");
 			try {
-			sendMapToDocearInstance(id);
+				sendMapToDocearInstance(id);
 			} catch (NoUserLoggedInException e) {
 				throw new RuntimeException("No user logged in", e);
 			}
@@ -105,47 +105,22 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		} else {
 			Logger.debug("ServerId: " + id + "; MapId: " + mindmapId);
 		}
-		
+
 		return mindmapId;
 	}
 
 
 	@Override
-	public Promise<List<UserMindmapInfo>> getListOfMindMapsFromUser(User user) throws IOException {
-		if(user == null) {
-			throw new NullPointerException("user cannot be null");
-		}
-
-		String docearServerAPIURL = "https://api.docear.org/user";
-        final Promise<WS.Response> accessTokenPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
-                .setHeader("accessToken", user.getAccessToken()).get();
-        return accessTokenPromise.map(new Function<WS.Response, List<UserMindmapInfo>>() {
-            @Override
-            public List<UserMindmapInfo> apply(WS.Response response) throws Throwable {
-                BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
-                List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
-                for ( String line; (line = br.readLine()) != null; ){
-                    String[] strings = line.split("\\|#\\|");
-                    Logger.debug(line);
-                    UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
-                    infos.add(info);
-                }
-                return Arrays.asList(infos.toArray(new UserMindmapInfo[0]));
-            }
-        });
-	}
-	
-	@Override
 	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {
-		
+
 		final String mapId = getMindMapIdInFreeplane(addNodeRequestJson.get("mapId").asText());
 		final String parentNodeId = addNodeRequestJson.get("parentNodeId").asText();
 		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
 		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId);
-		
+
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
-		
+
 		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
 			@Override
 			public JsonNode apply(Object responseMessage) throws Throwable {
@@ -159,24 +134,24 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 
 
 	@Override
-	public void ChangeNode(JsonNode changeNodeRequestJson) {
-		final String mapId = getMindMapIdInFreeplane(changeNodeRequestJson.get("mapId").asText());
-		final String node = changeNodeRequestJson.get("nodeAsJsonString").toString();
-		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+node);
-		ChangeNodeRequest request = new ChangeNodeRequest(mapId,node);
+	public void ChangeNode(String mapId, String nodeJson) {
+
 		
+		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+nodeJson);
+		ChangeNodeRequest request = new ChangeNodeRequest(mapId,nodeJson);
+
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);
-//		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
-//		
-//		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
-//			@Override
-//			public JsonNode apply(Object responseMessage) throws Throwable {
-//				ChangeNodeResponse response = (AddNodeResponse)responseMessage;
-//				JsonNode node = objectMapper.readTree(response.getNode());
-//				return node;
-//			}
-//		});
+		//		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
+		//		
+		//		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
+		//			@Override
+		//			public JsonNode apply(Object responseMessage) throws Throwable {
+		//				ChangeNodeResponse response = (AddNodeResponse)responseMessage;
+		//				JsonNode node = objectMapper.readTree(response.getNode());
+		//				return node;
+		//			}
+		//		});
 		//return promise;
 	}
 
@@ -186,17 +161,18 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 		final String nodeId = removeNodeRequestJson.get("nodeId").asText();
 		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
 		RemoveNodeRequest request = new RemoveNodeRequest(mapId,nodeId);
-		
+
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);
 	}
 
 	private void sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
-		
+		Logger.debug("sendMapToDocearInstance => mapId: "+mapId);
 		File file = null;
 		String mmId = null;
 		try {
 			if(mapId.length() == 1) { //test map
+				Logger.debug("sendMapToDocearInstance => map is demo map, loading from resources");
 				mmId = mapId;
 				file = new File(Play.application().resource("mindmaps/"+mapId+".mm").toURI());
 			} else { //map from user account
@@ -204,14 +180,18 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 				if(user == null)
 					throw new NoUserLoggedInException();
 
+				Logger.debug("sendMapToDocearInstance => map is real map, loading from docear server");
 				file = getMindMapFileFromDocearServer(user, mapId);
-				if(file == null)
-					throw new FileNotFoundException();
-
+				if(file == null) {
+					Logger.debug("sendMapToDocearInstance => map with serverId: "+mapId+" not found on docear server.");
+					throw new FileNotFoundException("Map not found");
+				}
+				Logger.debug("sendMapToDocearInstance => map file: "+file.getAbsolutePath());
 			}
-			
+
 			//just a hack, because we are currently using different ids for retrieval then supposed
 			mmId = getMapIdFromFile(file);
+			Logger.debug("sendMapToDocearInstance => real mindmapId: "+mmId);
 
 			serverIdToMapIdMap.put(mapId, mmId);
 
@@ -228,12 +208,14 @@ public class ServerMindMapCrudService extends MindMapCrudServiceBase implements 
 	}
 
 	private static File getMindMapFileFromDocearServer(final User user, final String mmIdOnServer) throws IOException {
-		String docearServerAPIURL = "https://api.docear.org/user";
-
-		WS.Response response =  WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/" + mmIdOnServer)
+		final String docearServerAPIURL = "https://api.docear.org/user";
+		final String resource = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/" + mmIdOnServer;
+		Logger.debug("getMindMapFileFromDocearServer => calling URL: '"+resource+"'");
+		Logger.debug(user.getAccessToken());
+		WS.Response response =  WS.url(resource)
 				.setHeader("accessToken", user.getAccessToken())
 				.get().get();
-
+		
 		if(response.getStatus() == 200) {
 			return ZipUtils.extractMindmap(response.getBodyAsStream());
 		} else {

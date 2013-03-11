@@ -1,21 +1,18 @@
 package services.backend.mindmap;
 
 import java.io.IOException;
-import java.util.List;
 
-import models.backend.User;
-import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 
 import org.codehaus.jackson.JsonNode;
+import org.docear.messages.Messages.ChangeNodeRequest;
+
 import play.libs.F.Promise;
 
 public interface MindMapCrudService {
-
-    /** Obtains a mind map as JSON with a specific id. */
-    Promise<JsonNode> mindMapAsJson(String id, Integer nodeCount) throws DocearServiceException, IOException;
-
-    Promise<List<UserMindmapInfo>> getListOfMindMapsFromUser(User user) throws IOException;
+     
+    /** Obtains a mind map as JSONString  with a specific id. */
+    Promise<String> mindMapAsJsonString(String id,  Integer nodeCount) throws DocearServiceException, IOException;
     
     /**
      * Adds a node to a map on the given parent 
@@ -28,7 +25,7 @@ public interface MindMapCrudService {
      * 
      * @param changeNodeRequestJson {"mapId":"THE_ID","node":{...node object with atributes to change...}}
      */
-    void ChangeNode(JsonNode changeNodeRequestJson);
+    void ChangeNode(String mapId, String nodeJson);
     
     /**
      * 

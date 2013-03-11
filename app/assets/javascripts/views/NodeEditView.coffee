@@ -48,7 +48,12 @@ define ->
       ec.offset(@$node.offset())
       $(ec).find('.node-id:first').val(@$node.attr('id'))
       $textarea = $(ec).find('textarea.node-content')
-      $textarea.val(@$node.children('.inner-node').children('.content').html())
+      
+      $contentContainer = @$node.children('.inner-node').children('.content')
+      if $contentContainer.hasClass('isHtml')
+        $textarea.val($contentContainer.html())
+      else
+        $textarea.val($contentContainer.text())
       $textarea.select()
       @
 

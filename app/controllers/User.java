@@ -1,5 +1,10 @@
 package controllers;
 
+import java.io.IOException;
+import java.util.List;
+
+import models.backend.UserMindmapInfo;
+import models.backend.exceptions.DocearServiceException;
 import models.frontend.Credentials;
 
 import org.codehaus.jackson.JsonNode;
@@ -12,6 +17,8 @@ import play.Logger;
 import play.Play;
 import play.data.Form;
 import play.libs.F;
+import play.libs.Json;
+import play.libs.F.Promise;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -20,6 +27,7 @@ import services.backend.user.UserService;
 import static controllers.Secured.SESSION_KEY_TIMEOUT;
 import static controllers.Secured.SESSION_KEY_USERNAME;
 import static controllers.Secured.createTimeoutTimestamp;
+import static controllers.User.getCurrentUser;
 import static play.data.Form.form;
 
 @Component
@@ -56,6 +64,17 @@ public class User extends Controller {
         }
         return result;
     }
+	
+    @Security.Authenticated(Secured.class)
+	public Result mapListFromDB() throws IOException, DocearServiceException {
+        final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(getCurrentUser());
+        return async(listOfMindMapsFromUser.map(new F.Function<List<UserMindmapInfo>, Result>() {
+            @Override
+            public Result apply(List<UserMindmapInfo> maps) throws Throwable {
+                return ok(Json.toJson(maps));
+            }
+        }));
+    }
 
     private void setAuthenticatedSession(Credentials credentials, String accessToken) {
         Session.createSession(credentials.getUsername(), accessToken);
@@ -71,7 +90,7 @@ public class User extends Controller {
 
     @Security.Authenticated(Secured.class)
     public Result profile() {
-        return redirect(routes.MindMap.mapListFromDB());
+        return redirect(routes.User.mapListFromDB());
     }
 	
     public static boolean isAuthenticated() {

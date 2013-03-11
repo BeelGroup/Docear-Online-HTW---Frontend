@@ -4,10 +4,13 @@
 
 # Home page
 GET     /favicon.ico                controllers.Assets.at(path="/public", file="images/favicon.ico")
+GET     /robots.txt                 controllers.Assets.at(path="/public", file="robots.txt")
 GET     /                           controllers.Application.index()
 GET     /error/:errorId             controllers.Application.error(errorId: String)
 GET	    /help						controllers.Application.help()
 GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public", file="mindmaps/example1.json")
+
+POST	/feedback					controllers.Application.feedback()
 
 
 
@@ -17,10 +20,10 @@ GET     /qunit                      controllers.QUnit.testAll()
 GET		/map/json/:id				@controllers.MindMap.map(id: String, nodeCount:Int ?= -1)
 GET		/map/json/:id/nodeCount/:nodeCount	@controllers.MindMap.map(id: String, nodeCount: Int) 
 
-POST	/map/createNode				@controllers.MindMap.createNode()
-POST	/map/changeNode				@controllers.MindMap.changeNode()
-POST	/map/deleteNode				@controllers.MindMap.deleteNode()
-GET		/maps			    		@controllers.MindMap.mapListFromDB()
+POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
+POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
+POST	/map/:mapId/deleteNode		@controllers.MindMap.deleteNode(mapId: String)
+GET		/maps			    		@controllers.User.mapListFromDB()
 
 POST	/map/addNode				@controllers.MindMap.addNode()
 

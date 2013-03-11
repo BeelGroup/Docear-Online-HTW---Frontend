@@ -22,7 +22,7 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
       'click .changeable': 'lockModel'
       'click .action-show': 'printModel'
       'click .action-change': 'modificateModel'
-      'click .action-fold': -> @foldModel()
+      #'click .action-fold': -> @foldModel()
       
     # a.k.a. constructor
     constructor: (@model) ->
@@ -104,8 +104,14 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
       preHeight = $node.outerHeight()
       childrenHeight = $childrenContainer.outerHeight()
       parentIsHeigher = preHeight > childrenHeight
+
+      $contentContainer = $node.children('.inner-node').children('.content')
+      if @model.get 'isHtml'
+        $contentContainer.addClass('isHtml')
+        $contentContainer.html(@model.get 'nodeText')
+      else
+        $contentContainer.text(@model.get 'nodeText')
       
-      $node.children('.inner-node').children('.content').text(@model.get 'nodeText')
       
       postHeight = $node.outerHeight()
       diffWidth = $node.outerWidth() - preWidth
