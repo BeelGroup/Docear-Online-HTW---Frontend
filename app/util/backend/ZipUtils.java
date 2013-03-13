@@ -2,6 +2,8 @@ package util.backend;
 
 import org.apache.commons.io.FileUtils;
 
+import play.Logger;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,17 +74,28 @@ public class ZipUtils
 
 	private static File extractFileToTempFolder(ZipInputStream in, String name) throws IOException
 	{
-		File f = new File(FileUtils.getTempDirectoryPath(), name);
+		String path = FileUtils.getTempDirectoryPath();
+		Logger.debug("ZipUtils: FileUtils.getTempDirectoryPath=" + path);
+		if (!path.endsWith(System.getProperty("file.separator"))){
+			path += System.getProperty("file.separator");
+		} 
+		path += name;
+		Logger.debug("ZipUtils: Full path=" + path);
+		File f = new File(path);
 		if(f.exists()) {
 			f.delete();
 			f.createNewFile();
 		}
+		Logger.debug("ZipUtils: created File");
 		byte[] buffer = new byte[BUFFER_SIZE];
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+		Logger.debug("ZipUtils: created BufferedOutputStream");
 		int count = -1;
 		while ((count = in.read(buffer)) != -1)
 			out.write(buffer, 0, count);
 		out.close();
+		
+		Logger.debug("ZipUtils: extractFileToTempFolder end");
 
 		return f;
 	}
