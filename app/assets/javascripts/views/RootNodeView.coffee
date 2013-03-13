@@ -102,8 +102,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
-              selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
-              $("##{@model.get 'id'}").trigger 'newFoldedNode'
+              $("##{@model.get 'id'}").trigger 'newFoldedNode', selectedNode
         else
           @model.set 'selected', true
 
@@ -160,7 +159,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       node.css 'top' , posY + 'px'
  
 
-    scale:(amount)->  
+    scale:(amount, animate = true)->  
       @scaleAmount = amount    
       possibilities = document.body.style
       fallback = false
@@ -182,7 +181,10 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       $.inArray('MozTransform', inpossibilities) or 
       $.inArray('OTransform', possibilities)) 
         #console.log 'Webkit, Moz, O'
-        @getElement().animate {'scale' : amount}, 100
+        if animate
+          @getElement().animate {'scale' : amount}, 100
+        else
+          @getElement().animate {'scale' : amount}, 0
 
       else
         #console.log $.browser
