@@ -1,10 +1,10 @@
 <configuration>
     <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/application.log</file>
+        <file>/var/log/play-frontend/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <fileNamePattern>/var/log/play-frontend/application.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
