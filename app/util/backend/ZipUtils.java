@@ -72,9 +72,7 @@ public class ZipUtils
 
 	private static File extractFileToTempFolder(ZipInputStream in, String name) throws IOException
 	{
-
-		
-		File f = new File(FileUtils.getTempDirectoryPath() +name);//TODO Julius, please test for platform independence on MS Windows
+		File f = new File(FileUtils.getTempDirectoryPath(), name);
 		if(f.exists()) {
 			f.delete();
 			f.createNewFile();
