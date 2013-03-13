@@ -31,9 +31,14 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     loadMap: (@mapId) ->
       console.log "call: loadMap #{mapId} (MapController)"
-      href = jsRoutes.controllers.MindMap.map(@mapId).url
-      $.get(href, @createJSONMap, "json")
-
+      @href = jsRoutes.controllers.MindMap.map(@mapId).url
+      @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
+        $.get(@href, @createJSONMap, "json")
+      )
+      #@$el.fadeTo(200, 0.5)
+      
+      #@$el.fadeTo(200, 1.0)
+      
 
 
     createJSONMap: (data)=>
@@ -58,6 +63,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.getElement().on 'newFoldAction', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
+      @$el.parent().find(".loading-map-overlay").fadeOut()
       @rootNode
 
 
@@ -75,6 +81,14 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
               newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
             children.push newChild
       children
+
+    toggleLoadingOverlay:->
+
+    addLoadingOverlay:->
+      div = document.createElement("div")
+      div.className = 'loading-map-overlay'
+      $(div).hide()
+      @$el.parent().append div
 
 
     renderAndAppendTo:($element)->
@@ -102,6 +116,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
 
+      @addLoadingOverlay()
 
     renderMap:(mapId)->
       ## called in router
