@@ -1,19 +1,15 @@
 <div id="feedbackDialog" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="Feedback" aria-hidden="true">
-	<form method="POST" class="form-horizontal" action="@controllers.routes.Application.index().url">
+	<form method="POST" class="form-horizontal feedback-form" action="@controllers.routes.Application.feedback().url">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
 			<h3 id="myModalLabel">Feedback</h3>
 		</div>
 		<div class="modal-body">
+          
           <div class="control-group">
-            <label class="control-label" for="feedback-type">Type</label>
+            <label class="control-label" for="feedback-email">Email</label>
             <div class="controls">
-                <select class="input-xlarge" name="feedbackType" id="feedback-type">
-                    <option value="0">Error</option>
-                    <option value="1">Feature</option>
-                    <option value="2">Suggestion</option>
-                    <option value="3">Other</option>
-                </select>
+                <input class="input-xlarge" type="text" name="feedbackEmail" id="feedback-email"  placeholder="yourname[at]example.com"/>
             </div>
           </div>
           
@@ -31,7 +27,12 @@
             </div>
           </div>
         </div>
-        
+        <div class="alert hide">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <div class="form-warning">
+                <strong class="type"></strong> <span class="message"></span>.
+            </div>
+        </div>
 		<div class="modal-footer">
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
 			<button class="btn btn-primary" type="submit" >Submit</button>
