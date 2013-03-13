@@ -54,7 +54,7 @@
                     <ul class="nav">
                         @menuItem(controllers.routes.Application.help().url, "Help")
                         @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
-                        @menuItem(controllers.routes.User.profile.url, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
+                        @menuItem(null, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
                         @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated)
                     </ul>
                     @if(isAuthenticated) {

@@ -11,4 +11,4 @@ document.navigation.key.selectPrevBrother = 38
 document.navigation.key.selectNextBrother = 40
 document.navigation.key.fold = 32
 
-document.fadeDuration = 300
+document.fadeDuration = 0

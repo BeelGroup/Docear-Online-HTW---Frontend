@@ -2,18 +2,13 @@ package services.backend.mindmap;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
-import models.backend.User;
-import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.docear.messages.Messages.ChangeNodeRequest;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +34,19 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		}
 		return Promise.pure(result);
 	}
+	
+	@Override
+	public Promise<String> createNode(String mapId, String parentNodeId) {
+		try {
+			Random ran = new Random();
+			int id = ran.nextInt() * ran.nextInt();
+			String result = "{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}";
+
+			return Promise.pure(result);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 
 	@Override
 	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {
@@ -49,6 +57,17 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			JsonNode node = mapper.readTree("{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}");
 
 			return Promise.pure(node);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	@Override
+	public Promise<String> getNode(String mapId, String nodeId) {
+		try {
+			String result = "{\"id\":\""+nodeId+"\",\"nodeText\":\"Mock Node\"}";
+
+			return Promise.pure(result);
 		} catch (Exception e) {
 			return null;
 		}

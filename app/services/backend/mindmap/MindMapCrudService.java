@@ -5,7 +5,6 @@ import java.io.IOException;
 import models.backend.exceptions.DocearServiceException;
 
 import org.codehaus.jackson.JsonNode;
-import org.docear.messages.Messages.ChangeNodeRequest;
 
 import play.libs.F.Promise;
 
@@ -21,6 +20,22 @@ public interface MindMapCrudService {
      * @return the generated node
      */
     Promise<JsonNode> addNode(JsonNode addNodeRequestJson);
+    
+    /**
+     * Creates and adds a node to a map on the given parent 
+     * @param mapId
+     * @param parentNodeId
+     * @return the generated node
+     */
+    Promise<String> createNode(String mapId, String parentNodeId);
+    
+    /**
+     * Get Node
+     * @param mapId
+     * @param nodeId
+     * @return the node
+     */
+    Promise<String> getNode(String mapId, String nodeId);
     
     /**
      * 

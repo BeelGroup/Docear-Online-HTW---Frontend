@@ -100,26 +100,27 @@ define ->
     zoomIn:(event)=>
       if(@zoomAmount+document.zoomStep <= document.maxZoom)
         @zoomAmount += document.zoomStep
-        @zoom(event)
+        @zoom(@zoomAmount)
        
 
     zoomOut:(event, shift)=>
       if(@zoomAmount-document.zoomStep >= document.minZoom)
         @zoomAmount -= document.zoomStep
-        @zoom(event)
+        @zoom(@zoomAmount)
 
 
-    zoom:(event)=>
+    zoom:(amount, animate = true)=>
       if(typeof @rootView != "undefined")
-        console.log "zoom:#{@zoomAmount}%"
-        @rootView.scale @zoomAmount/100
-        @$el.trigger 'zoom', @zoomAmount/100
+        console.log "zoom:#{amount}%"
+        @rootView.scale amount/100, animate
+        @$el.trigger 'zoom', amount/100
+        #jsPlumb.repaintEverything()
 
 
     zoomCenter:()=>
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
-        @zoom()
+        @zoom(@zoomAmount)
         @center()
 
     canvasPivot: ->
@@ -144,8 +145,20 @@ define ->
 
     setRootView:(@rootView)->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode)
-      @zoomAmount = 100
+      @rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
+      @zoomAmount = 100  
 
+
+    foldNode:(@selectedNode)->
+      @$overlay = @$el.parent().parent().find(".loading-map-overlay")
+      @$overlay.fadeIn(200, =>
+        @zoom(100, false)
+        $selectedNode = $('#'+(@selectedNode.get 'id'))
+        @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
+        @zoom(@zoomAmount, false)
+        @$overlay.fadeOut(400)
+      )
+      
 
     centerViewTo:(selectedNode)->
       $element = $("##{selectedNode.id}")

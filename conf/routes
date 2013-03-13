@@ -12,18 +12,19 @@ GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public"
 
 POST	/feedback					controllers.Application.feedback()
 
-
-
 GET     /qunit                      controllers.QUnit.testAll()
 
 # Mindmap
-GET		/map/json/:id				@controllers.MindMap.map(id: String)
-POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
-POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
-POST	/map/:mapId/deleteNode		@controllers.MindMap.deleteNode(mapId: String)
+GET		/map/json/:mapId			@controllers.MindMap.map(mapId: String)
 GET		/maps			    		@controllers.User.mapListFromDB()
 
-POST	/map/addNode				@controllers.MindMap.addNode()
+GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String)
+DELETE	/map/:mapId/node/:nodeId	@controllers.MindMap.deleteNode(mapId: String, nodeId: String)
+
+POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
+POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
+
+POST	/map/addNode			@controllers.MindMap.addNode()
 
 # User
 POST	/login						@controllers.User.login()
