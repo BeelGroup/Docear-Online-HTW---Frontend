@@ -106,8 +106,8 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
       parentIsHeigher = preHeight > childrenHeight
 
       $contentContainer = $node.children('.inner-node').children('.content')
-      if @model.get 'isHtml'
-        $contentContainer.addClass('isHtml')
+      if @model.get 'isHTML'
+        $contentContainer.addClass('isHTML')
         $contentContainer.html(@model.get 'nodeText')
       else
         $contentContainer.text(@model.get 'nodeText')

@@ -50,7 +50,7 @@ define ->
       $textarea = $(ec).find('textarea.node-content')
       
       $contentContainer = @$node.children('.inner-node').children('.content')
-      if $contentContainer.hasClass('isHtml')
+      if $contentContainer.hasClass('isHTML')
         $textarea.val($contentContainer.html())
       else
         $textarea.val($contentContainer.text())

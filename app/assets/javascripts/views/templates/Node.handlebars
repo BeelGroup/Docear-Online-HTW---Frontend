@@ -2,7 +2,7 @@
   <div class='children'></div>
   
   <div class='inner-node'>
-    <div class='content'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
+    <div class='content {{#if isHTML}}isHTML{{/if}}'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
     {{#if foldable}}
       <i class='icon-minus-sign action-fold'></i>
     {{/if}} 
