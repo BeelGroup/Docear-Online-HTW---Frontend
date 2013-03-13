@@ -273,7 +273,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 			return doc.getDocumentElement().getAttribute("dcr_id");
 
-		} catch (Exception e) {}
+		} catch (Exception e) {
+            Logger.error("getMapIdFromFile failed", e);
+        }
 
 
 		return null;
