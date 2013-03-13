@@ -5,7 +5,7 @@ connectWrapper = ->
     jsPlumb.connect.apply(this, arguments)
 
 initializeJsPlumb = ->
-  STROKE_COLOR = "#ff0000" #TODO style information should only be in style.less, idea $("#not-visible-example-element").css('color')
+  STROKE_COLOR = "#487698" #TODO style information should only be in style.less, idea $("#not-visible-example-element").css('color')
 
   jsPlumb.Defaults.PaintStyle =
     lineWidth: 3,
