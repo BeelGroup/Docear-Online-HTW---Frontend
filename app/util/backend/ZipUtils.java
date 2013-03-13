@@ -74,15 +74,9 @@ public class ZipUtils
 
 	private static File extractFileToTempFolder(ZipInputStream in, String name) throws IOException
 	{
-		String path = FileUtils.getTempDirectoryPath();
-		Logger.debug("ZipUtils: FileUtils.getTempDirectoryPath=" + path);
-		if (!path.endsWith(System.getProperty("file.separator"))){
-			path += System.getProperty("file.separator");
-		} 
-		path += name;
-		Logger.debug("ZipUtils: Full path=" + path);
-		File f = new File(path);
-		if(f.exists()) {
+		File f = new File(FileUtils.getTempDirectory(), name);
+        Logger.debug("ZipUtils: Full path=" + f.getAbsolutePath());
+        if(f.exists()) {
 			f.delete();
 			f.createNewFile();
 		}
@@ -94,7 +88,6 @@ public class ZipUtils
 		while ((count = in.read(buffer)) != -1)
 			out.write(buffer, 0, count);
 		out.close();
-		
 		Logger.debug("ZipUtils: extractFileToTempFolder end");
 
 		return f;
