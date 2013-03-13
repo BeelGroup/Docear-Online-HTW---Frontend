@@ -251,6 +251,9 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
         $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
         $($controls).css('left', ($($innerNode).outerWidth()-$($controls).outerWidth())/2+"px")
         
+        if $($node).children('.children').children('.node').size() == 0
+          $($fold).hide()
+        
         $($fold).click (event)->
           currentNodeId = $(this).closest('.node').attr('id')
           isVisible = $('#'+currentNodeId).children('.children').is(':visible')
