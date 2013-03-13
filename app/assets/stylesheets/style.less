@@ -1,26 +1,36 @@
 @docear-blue: #073E6A;
 
-.docear-test {background: @docear-blue; color: white;}
-
-.navbar .brand.image {
-    padding: 0px 20px;
+.docear-test 
+{
+    background: @docear-blue; 
+    backgound-color: #487698;
+    color: white;
 }
 
-.container {
+.navbar .brand.image 
+{
+    padding: 0px 20px;
+
+}
+
+.container 
+{
     margin-top: 10px;
 }
 
-#mindmap-container {
+#mindmap-container 
+{
     height: 600px;
     position: relative;
     overflow: hidden;
     cursor: move;
-    border: 1px solid #000000;
+    border: 1px solid #333333;
 }
 
-#mindmap-container #zoom-control {
+#mindmap-container #zoom-control 
+{
     width: 50px;
-    border: 1px dashed #000000;
+    border: 1px dashed #333333;
     background-color: #EBEBEB;
     position: relative;
     top: 0px;
@@ -30,75 +40,90 @@
     text-align: center;
 }
 
-.loading-map-overlay{
+.loading-map-overlay
+{
   top: 0%;
   left: 0%;
   width: 100%;
   height: 100%;
   position: absolute;
   z-index: 11;
-  background-color: #FFFFFF;
+  background-color: rgb(122,168,202);
   opacity:0.7;
   filter:alpha(opacity=70); /* For IE8 and earlier */
   cursor: progress;  
 }
 
-.circle-button {
+.circle-button 
+{
+    color: #EFEFEF;
     padding: 10px;
-    border: 5px solid #FFFFFF;
+    margin: 2px;
+    border: 1px solid #333333;
     font-weight: bold;
     font-size: 20px;
-    background-color: #EEEEEE;
+    background-color: #487698;
     border-radius: 30px 30px 30px 30px;
     cursor: pointer;
 }
 
-.mini-node{
+.mindmap-canvas
+{
+    position: relative;
+    background-color: rgb(235,235,235);
+}
+
+.mini-node
+{
     position: absolute;
     background: rgb(50,155,50); 
     z-index: 1;
 }
 
-.mini-nodes-container{
+.mini-nodes-container
+{
 
 }
 
-.mindmap-canvas{
-    position: relative;
-    background-color: rgb(235,235,235)
-}
-
-.minimap-viewport{
-    background-color:rgb(120,120,120);
+.minimap-viewport
+{
+    background-color: rgb(72,118,152);
+    border: 1px solid #333333;
     position: absolute;
     z-index: 10;
-    border: 1px solid black;
 }
 
-.minimap-canvas{
+.minimap-viewport.highlight
+{
+    background-color:rgb(122,168,202);
+    cursor: default;
+}
+
+.minimap-canvas
+{
     position : absolute;
     background-color:rgb(190,190,190);
+    border: 1px solid #333333;
     right: 1%;
     top: 1%;
     cursor: default;
 }
 
-.zoom-panel{
+.zoom-panel
+{
     position: absolute;
     left    : 1%;
     top     : 1%;
 }
 
-.minimap-viewport.highlight{
-    background-color:rgba(200,120,120, 0.6); 
-    cursor: default;
-}
 
-.mindmap-canvas .node {
+.mindmap-canvas .node 
+{
     position: absolute;
 }
 
-.mindmap-canvas .node .inner-node {
+.mindmap-canvas .node .inner-node 
+{
     padding: 10px;
     border: 1px solid #808080;
     border-radius: 30px ;
@@ -106,34 +131,44 @@
     cursor: default;
     white-space: nowrap;
 }
+
 .mindmap-canvas .node .inner-node .action-fold,
-.mindmap-canvas  .node .inner-node .controls {
+.mindmap-canvas  .node .inner-node .controls 
+{
     position: absolute;
     display: none;
 }
-.mindmap-canvas .node.right .inner-node .action-fold {
+
+.mindmap-canvas .node.right .inner-node .action-fold 
+{
     right: -7px;
 }
-.mindmap-canvas .node.left .inner-node .action-fold {
+
+.mindmap-canvas .node.left .inner-node .action-fold 
+{
     left: -7px;
 }
 
 .mindmap-canvas .node .inner-node:hover > .action-fold,
 .mindmap-canvas .node.selected > .inner-node > .action-fold,
 .mindmap-canvas .node .inner-node:hover > .controls,
-.mindmap-canvas .node.selected > .inner-node > .controls {
+.mindmap-canvas .node.selected > .inner-node > .controls 
+{
     display: block;
 }
 
-.mindmap-canvas .node .children {
+.mindmap-canvas .node .children 
+{
     position: absolute;
 }
 
-.mindmap-canvas .node.selected > .inner-node {
-    border: 2px solid #002080;
+.mindmap-canvas .node.selected > .inner-node 
+{
+    border: 2px solid #487698;
 }
 
-.mindmap-canvas .node .inner-node .controls {
+.mindmap-canvas .node .inner-node .controls 
+{
     display: none;
     position: absolute;
     height: 12px;
@@ -142,39 +177,48 @@
     cursor: pointer;
 }
 
-.mindmap-canvas .node .inner-node .controls textarea{
+.mindmap-canvas .node .inner-node .controls textarea
+{
     z-index: 3;
 }
 
-#mindmap-container.landing-page {
+#mindmap-container.landing-page 
+{
     height: 300px;
 }
 
 
 
-#help-menu {
+#help-menu 
+{
     border: 1px dotted #CCCCCC;
 }
-#help-content h1 {
+
+#help-content h1 
+{
     font-size:32px;
 }
-#help-content h2 {
+
+#help-content h2 
+{
     font-size:24px;
 }
-#help-content h3 {
+
+#help-content h3
+{
     font-size:16px;
 }
 
 /* IE 7 and 8 DropDown fix: https://github.com/twitter/bootstrap/issues/5102 */
-.nav-collapse.collapse, ul.dropdown-menu {
+.nav-collapse.collapse, ul.dropdown-menu 
+{
     height: auto !important;
     overflow: visible !important;
     z-index: 1;
-  }
+}
   
-
-
-.overlay {
+.overlay 
+{
     position: absolute;
     top: 0px;
     left: 0px;
@@ -185,7 +229,9 @@
     filter:alpha(opacity=0); /* For IE8 and earlier */
     cursor: default;
 }
-.edit-container {
+
+.edit-container 
+{
     position: absolute;
     border-radius: 30px;
     background-color: #FFFFFF;
@@ -196,18 +242,26 @@
     height: 250px;
     padding: 10px;
 }
-.dummy-node-container {
+
+.dummy-node-container 
+{
     margin-top: 10px;
 }
-.edit-container .controls button {
+
+.edit-container .controls button 
+{
     float: right;
 }
-.edit-container textarea {
+
+.edit-container textarea 
+{
     width: 90%;
     background-color: #FFFFFF;
     height: 190px;
 }
-.node-edit-container {
+
+.node-edit-container 
+{
     position: absolute;
     top: 0px;
     left: 0px;
@@ -223,10 +277,10 @@
     top: 40%;
     left: -10px;
     
-    background: none repeat scroll 0 0 #FF0000;
+    background: none repeat scroll 0 0 #487698;
     border-bottom: 1px solid #333333;
-    border-left: 1px solid #333333;
-    border-right: 1px solid #FFFFFF;
+    border-right: 1px solid #333333;
+    border-left: 1px solid #FFFFFF;
     color: #FFFFFF;
     display: block;
     font-family: Arial,sans-serif;
@@ -239,10 +293,12 @@
     
     border-radius: 0px 10px 10px 0px;
 }
+
 #feedback-button:hover
 {
     left: -5px;
 }
+
 #feedback-button a
 {
     color: #FFFFFF;
