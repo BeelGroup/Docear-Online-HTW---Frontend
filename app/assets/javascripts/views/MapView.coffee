@@ -116,6 +116,8 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
 
+      @canvas.center()
+
       @addLoadingOverlay()
 
     renderMap:(mapId)->
