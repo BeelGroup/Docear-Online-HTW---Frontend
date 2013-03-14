@@ -43,33 +43,31 @@
     <div class="navbar navbar-inverse navbar-static-top">
         <div class="navbar-inner">
             <div class="container">
-                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" id="toggle-main-navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </a>
                 <a class="brand image" href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" alt="@Play.configuration.getString("application.name")"/></a>
 
-                <div class="nav-collapse collapse">
+                <div class="nav">
+                    @if(isAuthenticated) {
+                    <ul class="nav pull-left">
+                        <li class="dropdown pull-left">
+                          <a data-toggle="dropdown" class="dropdown-toggle" href="#" id="toggle-mindmap-select">Select MindMap <b class="caret"></b></a>
+                          <ul class="dropdown-menu" id="select-mindmap">
+                            @menuItem("#loadMap/2", "Demo Map2", linkId="load-map-2", linkClass="")
+                            @menuItem("#loadMap/3", "Demo Map3", linkId="load-map-3", linkClass="")
+                            @menuItem("#loadMap/5", "Demo Map5", linkId="load-map-5", linkClass="")
+                          </ul>
+                        </li>
+                    </ul>
+                    }
                     <ul class="nav">
                         @menuItem(controllers.routes.Application.help().url, "Help")
                         @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
                         @menuItem(null, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
                         @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated)
                     </ul>
-                    @if(isAuthenticated) {
-                    <ul class="nav pull-right">
-                        <li class="dropdown pull-right">
-	                      <a data-toggle="dropdown" class="dropdown-toggle" href="#" id="toggle-mindmap-select">Select MindMap <b class="caret"></b></a>
-	                      <ul class="dropdown-menu" id="select-mindmap">
-	                        @menuItem("#loadMap/2", "Demo Map2", linkId="load-map-2", linkClass="")
-	                        @menuItem("#loadMap/3", "Demo Map3", linkId="load-map-3", linkClass="")
-	                        @menuItem("#loadMap/5", "Demo Map5", linkId="load-map-5", linkClass="")
-	                      </ul>
-	                    </li>
-                    </ul>
-                    }
-                </div><!--/.nav-collapse -->
+                </div>
+                
+                <div class="nav pull-right" id="current-mindmap-name">
+                </div>
             </div>
         </div>
     </div>

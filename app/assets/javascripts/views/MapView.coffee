@@ -42,6 +42,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
 
     createJSONMap: (data)=>
+      $('#current-mindmap-name').text(data.name)
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
       @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
       document.rootID = data.root.id
