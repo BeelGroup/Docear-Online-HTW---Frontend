@@ -24,6 +24,8 @@ DELETE	/map/:mapId/node/:nodeId	@controllers.MindMap.deleteNode(mapId: String, n
 POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
 POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
 
+POST	/map/addNode			@controllers.MindMap.addNode()
+
 # User
 POST	/login						@controllers.User.login()
 GET 	/login						controllers.Application.index()
