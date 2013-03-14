@@ -1,0 +1,25 @@
+@()
+
+@additionalJavaScripts() = {
+<script src='@routes.Assets.at("javascripts/imprint.js")'></script>
+}
+
+@main("Help", additionalBodyJavaScripts = additionalJavaScripts()) {
+    
+    <div class="row-fluid">
+        <div id="imprint-content" class="span9">
+            <div class="row-fluid paragraph">
+                <h1>Impressum</h1>
+               	<p>This website is run by Joeran Beel, Stefan Langer and Marcel Genzmehr. For more information visit the <a href="http://www.docear.org/docear/about/">Docear About page</a>.
+				<p>V. i. S. d. P<br />
+				Joeran Beel<br />
+				Edithawinkel 3<br />
+				39108 Magdeburg<br />
+				Germany</p>
+				<p>Phone &amp; Fax: +49 911-30844-99138<br />
+				Email: <a href="mailto:info@@docear.org">info@@docear.org</a></p>
+            </div>
+        </div>
+    </div>
+    
+}
