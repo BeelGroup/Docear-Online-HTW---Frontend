@@ -256,8 +256,9 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
         
         $($fold).click (event)->
           currentNodeId = $(this).closest('.node').attr('id')
-          isVisible = $('#'+currentNodeId).children('.children').is(':visible')
-          model.findById(currentNodeId).set 'folded', isVisible
+          #isVisible = $('#'+currentNodeId).children('.children').is(':visible')
+          #model.findById(currentNodeId).set 'folded', isVisible
+          $("##{model.get('rootNodeModel').get 'id'}").trigger 'newFoldedNode', model.findById(currentNodeId)
 
         $newNode = $($controls).children('.action-new-node')
         $($newNode).click (event)->

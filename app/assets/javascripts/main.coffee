@@ -42,12 +42,21 @@ require [],  () ->
     )
     
   $('form.feedback-form').submit ->
+    
     formURL = $(this).attr('action')
     formType = $(this).attr('method')
     
     $form = $(this)
     formData = {}
     formData = formToJson($(this))
+    $form.find('.control-group.error').removeClass('error')
+    
+    # reset messages
+    $messageContainer = $($form).find('.alert:first')
+    $messages = $($messageContainer).find('.form-warning:first ul.message')
+    $messages.empty()
+    $messageContainer.fadeOut()
+    
     $.ajax({
       type: formType,
       url: formURL,
@@ -58,13 +67,18 @@ require [],  () ->
         $($form).find('.alert:first').hide()
       ,
       statusCode: {
-        400: (data)->
-          $messageContainer = $($form).find('.alert:first')
+        400: (xhr, textStatus, errorThrown)->
+          messages = jQuery.parseJSON(xhr.responseText);
+          
           $($messageContainer).find('.form-warning:first .type').text('ERROR!')
-          $($messageContainer).find('.form-warning:first .message').text('Feedback could not be saved!')
+          $.each(messages, (id, message)->
+            $(""":input[name=#{id}]""").closest('.control-group').addClass('error')
+            $messages.append("""<li>#{message}</li>""")
+          )
+          
           $($messageContainer).fadeIn()
       }
-    })
+    }, 'json')
     false
   
   if $("body").hasClass("login-page")
