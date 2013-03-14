@@ -7,7 +7,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/HtmlView', 'models/Node',
     ## splat parameter (*) (regex)
     ## reg ex example: '/^(.*?)$/' : 'doIt'
     routes:
-      'loadMap/:mapId': 'loadMap'
+      'map/:mapId': 'loadMap'
       'doSomathingWithMap/:id/*action':  'resource'
       #'*path': 'notFound'
 
