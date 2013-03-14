@@ -259,6 +259,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	private static File getMindMapFileFromDocearServer(final User user, final String mmIdOnServer) throws IOException {
+		
 		final String docearServerAPIURL = "https://api.docear.org/user";
 		final String resource = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/" + mmIdOnServer;
 		Logger.debug("getMindMapFileFromDocearServer => calling URL: '"+resource+"'");
