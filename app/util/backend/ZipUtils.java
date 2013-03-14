@@ -100,8 +100,10 @@ public class ZipUtils
         String name;
         while ((entry = zin.getNextEntry()) != null)
         {
+        	
             name = entry.getName();
             if(!name.endsWith(".inf")) {
+            	Logger.debug("ZipUtils.extractMindmap => map with name "+name+" found!");
                 mindmapFile = extractFileToTempFolder(zin,name);
                 break;
             }
