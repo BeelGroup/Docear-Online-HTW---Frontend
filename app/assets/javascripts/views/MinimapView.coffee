@@ -18,6 +18,8 @@ define ->
       # for chrome, there is an individual eventhandling (see @ CanvasView.afterAppend <- throws 'canvasWasMovedTo')
       if !$.browser.chrome 
         @relatedCanvas.on 'drag', @updatePositionOnCanvasDrag
+      else
+        @relatedCanvas.on 'dragging', @updatePositionOnCanvasDrag
       @relatedCanvas.on 'canvasWasMovedTo', @updatePositionFromCanvas
       @relatedCanvas.on 'zoom', @resizeMiniViewport
       @minimapViewportWidthOffset  = 0.0

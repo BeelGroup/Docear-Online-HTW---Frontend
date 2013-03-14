@@ -33,38 +33,38 @@ define ->
       @browserZoom = Math.round(window.outerWidth / window.innerWidth * 100)/100
 
     afterAppend:()->
-      if $.browser.chrome
-        @$el.draggable
-          start:(evt, ui)=>
-            @calculateBrowserZoom()
-            @dragCounter = 0
+      @$el.draggable
+        start:(evt, ui)=>
+          @calculateBrowserZoom()
+          #console.log @browserZoom
+          if($.browser.chrome && (@browserZoom < 0.95 || @browserZoom > 1.05))
+            #console.log 'using chrome workaround'
+            @dragCounter = 0          
+        drag:(evt,ui)=>
+          if $.browser.chrome
+            if @browserZoom < 0.95 || @browserZoom > 1.05
+              canvasHeight = $(@).parent().height()
+              canvasWidth = $(@).parent().width()
 
-          drag:(evt,ui)=>
-            canvasHeight = $(@).parent().height()
-            canvasWidth = $(@).parent().width()
+              ui.position.top = Math.round(ui.position.top / @browserZoom )
+              ui.position.left = Math.round(ui.position.left / @browserZoom )
 
-            ui.position.top = Math.round(ui.position.top / @browserZoom );
-            ui.position.left = Math.round(ui.position.left / @browserZoom );
+              if @dragCounter > 0
+                position=
+                  x: parseFloat(@$el.css('left')) * 1/@browserZoom
+                  y: parseFloat(@$el.css('top'))* 1/@browserZoom
+                @$el.trigger 'canvasWasMovedTo', position, true
 
-            if @dragCounter > 0
-              position=
-                x: parseFloat(@$el.css('left')) * 1/@browserZoom
-                y: parseFloat(@$el.css('top'))* 1/@browserZoom
-              @$el.trigger 'canvasWasMovedTo', position, true
+            else
+              @$el.trigger 'dragging'
+
 
             @dragCounter++
 
-          cancel: "a.ui-icon, .inner-node, :input"
-          containment: @$el.parent().attr('id')
-          cursor: "move"
-          handle: @id
-      
-      else
-        @$el.draggable
-          cancel: "a.ui-icon, .inner-node, :input"
-          containment: @$el.parent().attr('id')
-          cursor: "move"
-          handle: @id
+        cancel: "a.ui-icon, .inner-node, :input"
+        containment: @$el.parent().attr('id')
+        cursor: "move"
+        handle: @id
 
 
     move:(delta)->
