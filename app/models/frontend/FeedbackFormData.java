@@ -5,10 +5,10 @@ import play.data.validation.Constraints.Required;
 
 public class FeedbackFormData {
 
-	@Email
+	@Email(message = "No valid email entered.")
 	private String feedbackEmail;
 	private String feedbackSubject;
-	@Required
+	@Required(message = "Text is required.")
 	private String feedbackText;
 	
 	
