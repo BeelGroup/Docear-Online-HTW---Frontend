@@ -47,6 +47,13 @@ require [],  () ->
     formType = $(this).attr('method')
     
     $form = $(this)
+    
+    $ajaxLoader = $('<img src="/assets/images/loader-1.gif" alt="loader" />')
+    $footer = $($form).find('.modal-footer:first')
+    
+    $footer.children('.btn-primary').hide()
+    $footer.append($ajaxLoader)
+    
     formData = {}
     formData = formToJson($(this))
     $form.find('.control-group.error').removeClass('error')
@@ -65,9 +72,14 @@ require [],  () ->
         $($form).find('.close:first').click()
         resetForm $($form)
         $($form).find('.alert:first').hide()
+        $ajaxLoader.remove()
+        $footer.children().show()
       ,
       statusCode: {
         400: (xhr, textStatus, errorThrown)->
+          $ajaxLoader.remove()
+          $footer.children('.btn-primary').show()
+          
           messages = jQuery.parseJSON(xhr.responseText);
           
           $($messageContainer).find('.form-warning:first .type').text('ERROR!')
