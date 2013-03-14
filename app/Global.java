@@ -14,11 +14,11 @@ import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultString;
@@ -39,6 +39,30 @@ public class Global extends GlobalSettings {
         loggedErrorExpirationInSeconds = conf.getInt("application.logged.error.expirationInSeconds");
         super.onStart(application);
         initializeFeatureToggles(conf);
+        logGit(application);
+    }
+
+    private void logGit(Application application) {
+        try {
+            Properties propertiesFromClasspath = getPropertiesFromClasspath("buildInfo.properties", application);
+            Set<Map.Entry<Object, Object>> entries = propertiesFromClasspath.entrySet();
+            for (Map.Entry<Object, Object> entry : entries) {
+                Logger.info(entry.getKey() + ":" + entry.getValue());
+            }
+        } catch (IOException e) {
+            Logger.error("can't load git info", e);
+        }
+    }
+
+    private Properties getPropertiesFromClasspath(String propFileName, Application application) throws IOException {
+        Properties props = new Properties();
+        InputStream inputStream = application.classloader().getResourceAsStream(propFileName);
+        if (inputStream == null) {
+            throw new FileNotFoundException("property file '" + propFileName
+                    + "' not found in the classpath");
+        }
+        props.load(inputStream);
+        return props;
     }
 
     private void initializeFeatureToggles(Configuration conf) {

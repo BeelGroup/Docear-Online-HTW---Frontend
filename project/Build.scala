@@ -1,3 +1,5 @@
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.storage.file.ReflogEntry
 import sbt._
 import sbt.Keys._
 import play.Project._
@@ -68,6 +70,19 @@ object ApplicationBuild extends Build {
       , testOptions in Test += Tests.Argument("sequential", "true")
       , javacOptions ++= Seq("-source", "1.6", "-target", "1.6")//for compatibility with Debian Squeeze
       , cleanFiles <+= baseDirectory {base => base / "h2"} //clean up h2 data files
+      , resourceGenerators in Compile <+= (resourceManaged in Compile) map { dir =>
+        val file = dir / "buildInfo.properties"
+        val git = Git.open(new File("."))
+        val iterator = git.reflog().call().iterator()
+        val entry = iterator.next
+        val content = """git.newId=%s
+          |git.oldId=%s
+          |git.comment=%s
+          |git.who=%s
+        """.stripMargin.format(entry.getNewId, entry.getOldId.toString, entry.getComment.toString, entry.getWho.toString)
+        IO.write(file, content)
+        Seq(file)
+      }
     )
 
 }
