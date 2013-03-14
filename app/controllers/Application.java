@@ -48,7 +48,7 @@ public class Application extends Controller {
 		Form<FeedbackFormData> filledForm = feedbackForm.bindFromRequest();
 		
 		if(filledForm.hasErrors()) {
-			return badRequest();
+			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final FeedbackFormData data = filledForm.get();
 			
@@ -58,9 +58,9 @@ public class Application extends Controller {
 			final String[] sendToAddresses = Play.application().configuration().getString("feedback.sendTo").split(",");
 			
 			final StringBuilder contentBuilder = new StringBuilder();
-			contentBuilder.append(contactLine).append("\n");
+			contentBuilder.append(contactLine).append("\n\n");
 			contentBuilder.append("Message:\n").append(data.getFeedbackText());
-			contentBuilder.append("\n\nRequest headers:\n");
+			contentBuilder.append("\n\n\n==================\nRequest headers:\n");
 			for(Entry<String,String[]> entry: request().headers().entrySet()) {
 				contentBuilder.append(entry.getKey()).append(" => ");
 				for(String value : entry.getValue()) {
@@ -71,13 +71,14 @@ public class Application extends Controller {
 			
 			final SimpleEmail mail = new SimpleEmail();
 			mail.setSubject(subject);
-			mail.setFrom("feedback@docear.org");
+			mail.setFrom("fb.my.docear@web.de");
 			//set recipients
 			for(String address : sendToAddresses) {
 				mail.addTo(address);
 			}
 			
 			mail.setContent(contentBuilder.toString(),"text/plain");
+			
 			Mailer.send(mail);
 			return ok();
 		}

@@ -1,9 +1,11 @@
 package models.frontend;
 
+import play.data.validation.Constraints.Email;
 import play.data.validation.Constraints.Required;
 
 public class FeedbackFormData {
 
+	@Email
 	private String feedbackEmail;
 	private String feedbackSubject;
 	@Required
