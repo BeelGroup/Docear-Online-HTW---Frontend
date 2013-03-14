@@ -17,6 +17,7 @@ import org.apache.commons.mail.SimpleEmail;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 
+import play.Logger;
 import play.Play;
 import play.Routes;
 import play.cache.Cache;
@@ -44,15 +45,11 @@ public class Application extends Controller {
 		return ok(views.html.help.render());
 	}
 	
-	/** displays imprint site */
-	public static Result imprint() {
-		return ok(views.html.imprint.render());
-	}
-	
 	public static Result feedback() throws EmailException {
 		Form<FeedbackFormData> filledForm = feedbackForm.bindFromRequest();
 		
 		if(filledForm.hasErrors()) {
+			Logger.debug("Feedback errors: " + filledForm.errorsAsJson().toString());
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final FeedbackFormData data = filledForm.get();
