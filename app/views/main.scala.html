@@ -52,7 +52,6 @@
 
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                    	<p>@controllers.routes.Application.mindmapInfo()</p>
                         @menuItem(controllers.routes.Application.help().url, "Help")
                         @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
                         @menuItem(null, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
