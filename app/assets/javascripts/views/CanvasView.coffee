@@ -83,7 +83,7 @@ define ->
 
       if $.browser.chrome
         @calculateBrowserZoom()
-        if @browserZoom != 1.0 then animated = false
+        if(@browserZoom > 1.05 && @browserZoom < 0.95) then animated = false
         position=
           x: position.x * 1/@browserZoom
           y: position.y * 1/@browserZoom
@@ -148,7 +148,7 @@ define ->
 
 
     setRootView:(@rootView)->
-      @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode)
+      @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false)
       @rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
       
       @zoomAmount = 100  
@@ -165,19 +165,50 @@ define ->
       )
       
 
-    centerViewTo:(selectedNode)->
+    centerViewTo:(selectedNode, shiftInAnyCase = true)->
       $element = $("##{selectedNode.id}")
 
       # position relative to canvas
-      elementPos=
-        x: ($element.offset().left + ($element.width()  * @zoomAmount / 200))
-        y: ($element.offset().top  + ($element.height() * @zoomAmount / 200))
-      
-      delta= 
-        x: @$el.parent().width()  / 2 - elementPos.x + @$el.parent().offset().left
-        y: @$el.parent().height() / 2 - elementPos.y + @$el.parent().offset().top
 
-      @move delta
+      canvasWidth = $element.width()  * @zoomAmount
+      canvasHeight = $element.height() * @zoomAmount
+
+      halfParentWidth = @$el.parent().width()  / 2
+      halfParentHeight = @$el.parent().height() / 2
+
+      halfElementWidth = $element.width() * @zoomAmount/200
+      halfElementHeight = $element.height() * @zoomAmount/200
+
+      elementPos =
+        x: ($element.offset().left + (canvasWidth / 200))
+        y: ($element.offset().top  + (canvasHeight / 200))
+
+      delta = 
+        x: halfParentWidth - elementPos.x + @$el.parent().offset().left
+        y: halfParentHeight - elementPos.y + @$el.parent().offset().top
+
+      iCanSeeU = true
+
+      #console.log 'delta x ' + Math.abs(delta.x) + ' elementWidth ' + elementWidth + ' half parent width ' + halfParentWidth
+      #console.log 'delta y ' + Math.abs(delta.y) + ' elementHeight ' + elementHeight + ' half parent height ' + halfParentHeight
+
+      # right corner
+      if delta.x < 0.0
+        if (Math.abs(delta.x) + halfElementWidth) >= halfParentWidth
+          iCanSeeU = false
+      else # left corner
+        if (Math.abs(delta.x) + halfElementWidth) >= halfParentWidth
+          iCanSeeU = false
+      # lower corner
+      if delta.y < 0.0
+        if (Math.abs(delta.y) + halfElementHeight) >= halfParentHeight
+          iCanSeeU = false
+      else # upper corner
+        if (Math.abs(delta.y) + halfElementHeight) >= halfParentHeight
+          iCanSeeU = false
+
+      if shiftInAnyCase or not iCanSeeU
+        @move delta
 
 
     renderAndAppendTo:($element)->
@@ -190,7 +221,7 @@ define ->
       @center()
       @moreEvents()
       @afterAppend()
-      
+
 
 
   module.exports = Canvas
