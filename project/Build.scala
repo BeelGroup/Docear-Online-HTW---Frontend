@@ -1,4 +1,5 @@
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.errors.RepositoryNotFoundException
 import org.eclipse.jgit.storage.file.ReflogEntry
 import sbt._
 import sbt.Keys._
@@ -58,6 +59,21 @@ object ApplicationBuild extends Build {
       )
     }
 
+   lazy val gitInfos = {
+     try {
+       val git = Git.open(new File("."))
+       val iterator = git.reflog().call().iterator()
+       val entry = iterator.next
+       """git.newId=%s
+         |git.oldId=%s
+         |git.comment=%s
+         |git.who=%s
+       """.stripMargin.format(entry.getNewId, entry.getOldId.toString, entry.getComment.toString, entry.getWho.toString)
+     } catch {
+       case e: RepositoryNotFoundException => "git.info.missing=true"
+     }
+   }
+
     val main = play.Project(appName, appVersion, appDependencies).settings(
       coffeescriptOptions := Seq("bare")//coffee script code will not be wrapped in an anonymous function, necessary for tests
       , resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -72,15 +88,7 @@ object ApplicationBuild extends Build {
       , cleanFiles <+= baseDirectory {base => base / "h2"} //clean up h2 data files
       , resourceGenerators in Compile <+= (resourceManaged in Compile) map { dir =>
         val file = dir / "buildInfo.properties"
-        val git = Git.open(new File("."))
-        val iterator = git.reflog().call().iterator()
-        val entry = iterator.next
-        val content = """git.newId=%s
-          |git.oldId=%s
-          |git.comment=%s
-          |git.who=%s
-        """.stripMargin.format(entry.getNewId, entry.getOldId.toString, entry.getComment.toString, entry.getWho.toString)
-        IO.write(file, content)
+        IO.write(file, gitInfos)
         Seq(file)
       }
     )
