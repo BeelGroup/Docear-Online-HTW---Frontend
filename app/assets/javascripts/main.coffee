@@ -18,7 +18,8 @@ require [],  () ->
           )
           $selectMinmap.empty()
           $.each(mapLatestRevision, (id,value)->
-            $selectMinmap.append """<li><a class="dropdown-toggle" href="#loadMap/#{value.map.mmIdOnServer}"> #{value.map.fileName}</a></li>"""
+            date = $.datepicker.formatDate("dd.mm.yy", new Date(value.map.revision))
+            $selectMinmap.append """<li><a class="dropdown-toggle" href="#loadMap/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
           )
     })
     
@@ -47,7 +48,6 @@ require [],  () ->
     $form = $(this)
     formData = {}
     formData = formToJson($(this))
-    console.log formData
     $.ajax({
       type: formType,
       url: formURL,
@@ -59,7 +59,6 @@ require [],  () ->
       ,
       statusCode: {
         400: (data)->
-          console.log data
           $messageContainer = $($form).find('.alert:first')
           $($messageContainer).find('.form-warning:first .type').text('ERROR!')
           $($messageContainer).find('.form-warning:first .message').text('Feedback could not be saved!')
