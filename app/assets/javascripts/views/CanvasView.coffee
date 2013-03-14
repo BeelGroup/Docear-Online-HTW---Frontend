@@ -150,6 +150,7 @@ define ->
     setRootView:(@rootView)->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode)
       @rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
+      
       @zoomAmount = 100  
 
 
@@ -189,7 +190,7 @@ define ->
       @center()
       @moreEvents()
       @afterAppend()
-
+      
 
 
   module.exports = Canvas
