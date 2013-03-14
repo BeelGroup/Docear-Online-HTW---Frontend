@@ -44,6 +44,11 @@ public class Application extends Controller {
 		return ok(views.html.help.render());
 	}
 	
+	/** displays imprint site */
+	public static Result imprint() {
+		return ok(views.html.imprint.render());
+	}
+	
 	public static Result feedback() throws EmailException {
 		Form<FeedbackFormData> filledForm = feedbackForm.bindFromRequest();
 		
