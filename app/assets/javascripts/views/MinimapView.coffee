@@ -28,6 +28,7 @@ define ->
       @currentScale = 100
       @scaleAmount = 1.0
 
+
     element:-> @$el
 
     resizeMiniViewport:(event, @scaleAmount, reset)=>
