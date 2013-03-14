@@ -48,11 +48,12 @@ require [],  () ->
     
     $form = $(this)
     
-    $ajaxLoader = $('<img src="/assets/images/loader-1.gif" alt="loader" />')
     $footer = $($form).find('.modal-footer:first')
     
+    $ajaxLoader = $footer.find('.loader:first')
+    
     $footer.children('.btn-primary').hide()
-    $footer.append($ajaxLoader)
+    $ajaxLoader.show()
     
     formData = {}
     formData = formToJson($(this))
@@ -72,12 +73,12 @@ require [],  () ->
         $($form).find('.close:first').click()
         resetForm $($form)
         $($form).find('.alert:first').hide()
-        $ajaxLoader.remove()
+        $ajaxLoader.hide()
         $footer.children().show()
       ,
       statusCode: {
         400: (xhr, textStatus, errorThrown)->
-          $ajaxLoader.remove()
+          $ajaxLoader.hide()
           $footer.children('.btn-primary').show()
           
           messages = jQuery.parseJSON(xhr.responseText);

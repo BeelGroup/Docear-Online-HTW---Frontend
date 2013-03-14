@@ -6,9 +6,20 @@
 
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
-        <li @if(relativeUrl == request.uri ) {class="active"}><a href="@relativeUrl" id="@linkId" class="@linkClass">
-            @if(glyphicon != "") {<i class="@glyphicon icon-white"></i>}
-        @label</a></li>
+        <li @if(relativeUrl == request.uri ) {class="active"}>
+          @if(relativeUrl != null) {
+            <a href="@relativeUrl" id="@linkId" class="@linkClass">
+          }else{
+            <div class="no-link">
+          }
+                @if(glyphicon != "") {<i class="@glyphicon icon-white"></i>}
+                @label
+          @if(relativeUrl != null) {
+            </a>
+          }else{
+            </div>
+          }
+        </li>
     }
 }
 
@@ -69,7 +80,7 @@
                     </ul>
                 </div>
                 
-                <div class="nav pull-right" id="current-mindmap-name">
+                <div class="nav pull-right no-link" id="current-mindmap-name">
                 </div>
             </div>
         </div>
