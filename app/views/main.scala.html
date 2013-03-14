@@ -59,6 +59,7 @@
                     </ul>
                     }
                     <ul class="nav">
+                        @menuItem("http://www.docear.org/imprint/", "Imprint")
                         @menuItem(controllers.routes.Application.help().url, "Help")
                         @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
                         @menuItem(null, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
@@ -85,7 +86,7 @@
         @dialogs.feedback()
         <footer>
             <p>
-            <a href="@controllers.routes.Application.imprint()">Imprint</a> &copy; @Play.configuration.getString("application.organization") 2013
+            &copy; @Play.configuration.getString("application.organization") 2013
             </p>
         </footer>
 
