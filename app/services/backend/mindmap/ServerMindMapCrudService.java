@@ -59,29 +59,38 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	@Override
 	public Promise<String> mindMapAsJsonString(final String id)
 			throws DocearServiceException, IOException {
+		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mapId: " + id);
+		
 		//hack, because we use 'wrong' ids at the moment because of docear server ids
-		String mindmapId = getMindMapIdInFreeplane(id);
-
+		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => converting serverId to mindmapId");
+		final String mindmapId = getMindMapIdInFreeplane(id);
+		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mindmapId: "+mindmapId);
+		
+		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => getting remote actor");
 		ActorRef remoteActor = getRemoteActor();
+		
+		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => sending request to freeplane");
 		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), defaultTimeoutInMillis);
 
 		Promise<String> promise = Akka.asPromise(future).map(
 				new Function<Object, String>() {
 					@Override
 					public String apply(Object message) throws Throwable {
+						Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
 						final MindmapAsJsonReponse response = (MindmapAsJsonReponse)message;
 						final String jsonString = response.getJsonString();
+						Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : "+jsonString.substring(0, 10));
 						return jsonString;
 					}
 				}).recover(new Function<Throwable, String>() {
 					@Override
 					public String apply(Throwable t) throws Throwable {
 						if(t instanceof MapNotFoundException) {
-							Logger.warn("Map expected on server, but was not present. Reopening...");
-							t.printStackTrace();
+							Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...",t);
 							serverIdToMapIdMap.remove(id);
 							return mindMapAsJsonString(id).get();
 						} else {
+							Logger.error("ServerMindMapCrudService.mindMapAsJsonString => unexpected Exception! ",t);
 							throw t;
 						}
 					}
@@ -97,19 +106,20 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	 * @return
 	 */
 	private String getMindMapIdInFreeplane(final String id) {
+		Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: "+id);
 		String mindmapId = serverIdToMapIdMap.get(id);
 		if(mindmapId == null) { //if not hosted, send to a server
-			Logger.debug("Map for server id " + id + " not open. Sending to freeplane...");
+			Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id " + id + " not open. Sending to freeplane...");
 			try {
 				sendMapToDocearInstance(id);
 			} catch (NoUserLoggedInException e) {
+				Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => No user logged in! ",e);
 				throw new RuntimeException("No user logged in", e);
 			}
 			mindmapId = serverIdToMapIdMap.get(id);
-		} else {
-			Logger.debug("ServerId: " + id + "; MapId: " + mindmapId);
 		}
-
+		
+		Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: " + id + "; MapId: " + mindmapId);
 		return mindmapId;
 	}
 	
@@ -207,12 +217,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	private void sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
-		Logger.debug("sendMapToDocearInstance => mapId: "+mapId);
+		Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => mapId: "+mapId);
 		File file = null;
 		String mmId = null;
 		try {
 			if(mapId.length() == 1) { //test map
-				Logger.debug("sendMapToDocearInstance => map is demo map, loading from resources");
+				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo map, loading from resources");
 				mmId = mapId;
 				file = new File(Play.application().resource("mindmaps/"+mapId+".mm").toURI());
 			} else { //map from user account
@@ -220,30 +230,31 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				if(user == null)
 					throw new NoUserLoggedInException();
 
-				Logger.debug("sendMapToDocearInstance => map is real map, loading from docear server");
+				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is real map, loading from docear server");
 				file = getMindMapFileFromDocearServer(user, mapId);
 				if(file == null) {
-					Logger.debug("sendMapToDocearInstance => map with serverId: "+mapId+" not found on docear server.");
+					Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map with serverId: "+mapId+" not found on docear server.");
 					throw new FileNotFoundException("Map not found");
 				}
-				Logger.debug("sendMapToDocearInstance => map file: "+file.getAbsolutePath());
+				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map file: "+file.getAbsolutePath());
 			}
 
 			//just a hack, because we are currently using different ids for retrieval then supposed
 			mmId = getMapIdFromFile(file);
-			Logger.debug("sendMapToDocearInstance => real mindmapId: "+mmId);
+			Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => real mindmapId: "+mmId);
 
 			serverIdToMapIdMap.put(mapId, mmId);
 
 			//send file to server and put in map
 			ActorRef remoteActor = getRemoteActor();
-			remoteActor.tell(new OpenMindMapRequest(FileUtils.readFileToString(file)),remoteActor);
+			remoteActor.tell(new OpenMindMapRequest(FileUtils.readFileToString(file),file.getName()),remoteActor);
 		} catch (FileNotFoundException e) {
-			Logger.error("can't find mindmap file", e);
+			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
+			throw new RuntimeException();
 		} catch (IOException e) {
-			Logger.error("can't open mindmap file", e);
+			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
 		} catch (URISyntaxException e) {
-			Logger.error("can't open mindmap file", e);
+			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
 		}
 	}
 
