@@ -33,19 +33,17 @@ define ->
       @browserZoom = Math.round(window.outerWidth / window.innerWidth * 100)/100
 
     afterAppend:()->
-      @$el.draggable
-        start:(evt, ui)=>
-          @calculateBrowserZoom()
-          #console.log @browserZoom
-          if($.browser.chrome && (@browserZoom < 0.95 || @browserZoom > 1.05))
-            #console.log 'using chrome workaround'
-            @dragCounter = 0          
-        drag:(evt,ui)=>
-          if $.browser.chrome
+      if $.browser.chrome
+        @$el.draggable
+          start:(evt, ui)=>
+            @calculateBrowserZoom()
             if @browserZoom < 0.95 || @browserZoom > 1.05
-              canvasHeight = $(@).parent().height()
-              canvasWidth = $(@).parent().width()
-
+              @fallback = true
+            else
+              @fallback = false
+            @dragCounter = 0          
+          drag:(evt,ui)=>
+            if(@fallback)
               ui.position.top = Math.round(ui.position.top / @browserZoom )
               ui.position.left = Math.round(ui.position.left / @browserZoom )
 
@@ -61,10 +59,16 @@ define ->
 
             @dragCounter++
 
-        cancel: "a.ui-icon, .inner-node, :input"
-        containment: @$el.parent().attr('id')
-        cursor: "move"
-        handle: @id
+          cancel: "a.ui-icon, .inner-node, :input"
+          containment: @$el.parent().attr('id')
+          cursor: "move"
+          handle: @id
+      else
+        @$el.draggable
+          cancel: "a.ui-icon, .inner-node, :input"
+          containment: @$el.parent().attr('id')
+          cursor: "move"
+          handle: @id
 
 
     move:(delta)->
