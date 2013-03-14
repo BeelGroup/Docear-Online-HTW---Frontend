@@ -12,10 +12,9 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     positionNodes:()->
       jsPlumb.reset()
+
       @rootView = new RootNodeView @rootNode
       
-      # remove old html elements
-      @rootView.getElement().remove();
       # create and append new html 
       @$rootHtml = $(@rootView.render().el).html()
       @canvas.getElement().append @$rootHtml      
@@ -30,6 +29,9 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
 
     loadMap: (@mapId) ->
+      if typeof @rootView != 'undefined'
+        # remove old html elements
+        @rootView.getElement().remove();
       console.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.map(@mapId).url
       @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
