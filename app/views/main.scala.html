@@ -56,7 +56,7 @@
             <div class="container">
                 <a class="brand image" href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" alt="@Play.configuration.getString("application.name")"/></a>
 
-                <div class="nav">
+                <div class="nav nav-collapse collapse">
                     @if(isAuthenticated) {
                     <ul class="nav pull-left">
                         <li class="dropdown pull-left">
