@@ -11,7 +11,7 @@ define ->
       'click': (event)-> @updatePositionClick(event)
 
 
-    constructor:(@id, @relatedViewport, @relatedCanvasView, @ratio = 60.0)->
+    constructor:(@id, @relatedViewport, @relatedCanvasView, @maxWidth = 200.0)->
       super()
       @scale = 1
       @relatedCanvas = @relatedCanvasView.getElement()
@@ -22,14 +22,38 @@ define ->
         @relatedCanvas.on 'dragging', @updatePositionOnCanvasDrag
       @relatedCanvas.on 'canvasWasMovedTo', @updatePositionFromCanvas
       @relatedCanvas.on 'zoom', @resizeMiniViewport
+      @relatedCanvas.on 'resize', @resize
       @minimapViewportWidthOffset  = 0.0
       @minimapViewportHeightOffset = 0.0
       @lastScaleAmount = 1
       @currentScale = 100
       @scaleAmount = 1.0
 
+      @ratio = @relatedCanvas.width() / @maxWidth
+
+
 
     element:-> @$el
+
+    resize:()=>
+      @ratio = @relatedCanvas.width() / @maxWidth
+      @setSize()
+
+      @minimapViewportOriginWidth = Math.round(@relatedViewport.width() / @ratio)
+      @minimapViewportOriginHeight = Math.round(@relatedViewport.height() / @ratio)
+      @minimapViewport.css
+        'width' : @minimapViewportOriginWidth
+        'height': @minimapViewportOriginHeight
+
+
+    setSize:->
+      @width = Math.round(@relatedCanvas.width() / @ratio)
+      @height = Math.round(@relatedCanvas.height() / @ratio)
+
+      @$el.css 
+        'width'    : @width
+        'height'   : @height
+
 
     resizeMiniViewport:(event, @scaleAmount, reset)=>
       possibilities = document.body.style
@@ -69,18 +93,18 @@ define ->
       
 
 
-    drawMiniNodes:(nodePositions, firstDraw = false)->
-      if firstDraw
+    drawMiniNodes:(@nodePositions, firstDraw = false)->
+      if firstDraw 
         @scaleAmount = 1.0
 
       @miniNodesContainer = @$el.find('.mini-nodes-container')
       $.each $('.mini-node'), -> 
         $(@).remove()
 
-      @$root = @createMiniNode nodePositions, @miniNodesContainer
+      @$root = @createMiniNode @nodePositions, @miniNodesContainer
  
-      @createMiniNode stats, @$root for stats in nodePositions.leftChilds
-      @createMiniNode stats, @$root for stats in nodePositions.rightChilds
+      @createMiniNode stats, @$root for stats in @nodePositions.leftChilds
+      @createMiniNode stats, @$root for stats in @nodePositions.rightChilds
 
       @resizeMiniViewport(null, @scaleAmount)
 
@@ -125,6 +149,7 @@ define ->
     renderAndAppendTo:($element, @itsDraggable = false)->
       @minimapViewportOriginWidth = Math.round(@relatedViewport.width() / @ratio)
       @minimapViewportOriginHeight = Math.round(@relatedViewport.height() / @ratio)
+
       stats = 
         width:  @minimapViewportOriginWidth
         height: @minimapViewportOriginHeight
@@ -137,12 +162,8 @@ define ->
       $element.append(@el)
       @draggable() if @itsDraggable
 
-      @width = Math.round(@relatedCanvas.width() / @ratio)
-      @height = Math.round(@relatedCanvas.height() / @ratio)
+      @setSize()
 
-      @$el.css 
-        'width'    : @width
-        'height'   : @height
       @afterAppend()
       @
 
@@ -160,11 +181,11 @@ define ->
 
       if animate then @relatedCanvas.stop().animate stats else @relatedCanvas.css stats
 
-    updatePositionFromCanvas:(event, position, animated)=>
+    updatePositionFromCanvas:(event, stats)=>
       resizedPos= 
-        x: -position.x /@ratio
-        y: -position.y /@ratio
-      @updatePosition(resizedPos, animated)
+        x: -stats.position.x /@ratio
+        y: -stats.position.y /@ratio
+      @updatePosition(resizedPos, stats.animated)
 
     updatePositionClick:(event)->
       $minimapViewport = @$el.find('.minimap-viewport')

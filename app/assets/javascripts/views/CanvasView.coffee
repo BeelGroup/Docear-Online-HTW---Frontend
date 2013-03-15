@@ -25,6 +25,24 @@ define ->
         if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
           @rootView.userKeyInput event
 
+    resize:(@width, @height)->
+
+      curWidth = @$el.width()
+      curHeight = @$el.height()
+      curX = @$el.css 'left'
+      curY = @$el.css 'top'
+
+      xdiff = @width - curWidth 
+      ydiff = @height - curHeight 
+
+      @$el.css 
+        'width' : "#{@width}px"
+        'height': "#{@height}px"
+        'left'  : "#{curX - xdiff/2}px"
+        'top'   : "#{curY - ydiff/2}px"
+
+      @$el.trigger 'resize'
+
 
     getElement:()->
       $("##{@id}")
@@ -51,7 +69,7 @@ define ->
                 position=
                   x: parseFloat(@$el.css('left')) * 1/@browserZoom
                   y: parseFloat(@$el.css('top'))* 1/@browserZoom
-                @$el.trigger 'canvasWasMovedTo', position, true
+                @$el.trigger 'canvasWasMovedTo', stats= position: position, animated: false
 
             else
               @$el.trigger 'dragging'
@@ -98,7 +116,7 @@ define ->
           'left'  : "#{position.x}px"
           'top'   : "#{position.y}px" 
 
-      @$el.trigger 'canvasWasMovedTo', position, true
+      @$el.trigger 'canvasWasMovedTo', stats= position: position, animated: true
 
 
     zoomIn:(event)=>

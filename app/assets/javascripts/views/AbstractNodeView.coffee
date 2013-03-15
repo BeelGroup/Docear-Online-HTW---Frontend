@@ -219,8 +219,6 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
         $(html).appendTo(@el)
       # extend the ready rendered htlm element
       @afterRender()
-      console.log @$el
-      console.log @$el.html()
       @
 
       

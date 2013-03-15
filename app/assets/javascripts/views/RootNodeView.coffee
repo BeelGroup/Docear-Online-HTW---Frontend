@@ -47,6 +47,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
     setChildPositions: ->
       $me = $('#'+@model.get 'id')
       canvas = $me.parent().parent()
+      console.log canvas.css('left')
       leftChilds = new Array()
       rightChilds = new Array()
 

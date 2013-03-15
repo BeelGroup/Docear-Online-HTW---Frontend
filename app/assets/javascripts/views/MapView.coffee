@@ -37,9 +37,8 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
         $.get(@href, @createJSONMap, "json")
       )
-      #@$el.fadeTo(200, 0.5)
       
-      #@$el.fadeTo(200, 1.0)
+      #@canvas.resize 20000, 20000
       
 
 
