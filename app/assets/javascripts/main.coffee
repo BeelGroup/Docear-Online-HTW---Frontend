@@ -19,7 +19,7 @@ require [],  () ->
           $selectMinmap.empty()
           $.each(mapLatestRevision, (id,value)->
             date = $.datepicker.formatDate("dd.mm.yy", new Date(value.map.revision))
-            $selectMinmap.append """<li><a class="dropdown-toggle" href="#map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
+            $selectMinmap.append """<li><a class="dropdown-toggle" href="/#map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
           )
     })
     
