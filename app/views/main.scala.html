@@ -10,7 +10,7 @@
           @if(relativeUrl != null) {
             <a href="@relativeUrl" id="@linkId" class="@linkClass">
           }else{
-            <div class="no-link">
+            <div class="@linkClass" id="@linkId">
           }
                 @if(glyphicon != "") {<i class="@glyphicon icon-white"></i>}
                 @label
@@ -71,16 +71,18 @@
                     }
                     <ul class="nav">
                         @menuItem("http://www.docear.org/imprint/", "Imprint")
-                        @menuItem(controllers.routes.Application.help().url, "Help")
                         @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
+                        @menuItem(controllers.routes.Application.help().url, "Help")
+                    </ul>
+                </div>
+                <div class="nav pull-right">
+                    <ul class="nav pull-right">
+                        @menuItem(null, " ", linkId="current-mindmap-name", linkClass="no-link", onlyIf = isAuthenticated)
                         @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
-                            @menuItem(null, username, onlyIf = isAuthenticated, glyphicon = "icon-user")
+                            @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
                         }
                         @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated)
                     </ul>
-                </div>
-                
-                <div class="nav pull-right no-link" id="current-mindmap-name">
                 </div>
             </div>
         </div>
