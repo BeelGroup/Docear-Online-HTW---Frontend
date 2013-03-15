@@ -12,7 +12,7 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
     recursiveRender: (parent, nodes)->
       $.each(nodes, (index, node)=>
         nodeView = new NodeView(node)
-        $nodeHtml = $($(nodeView.render().el).html())
+        $nodeHtml = $($(nodeView.render().el))
         $(parent).append($nodeHtml)
         
         children = node.get 'children'
@@ -25,7 +25,7 @@ define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNod
       console.log "TODO: render child"
       newChild = @model.get 'lastAddedChild'
       nodeView = new NodeView(newChild)
-      $nodeHtml = $($(nodeView.render().el).html())
+      $nodeHtml = $($(nodeView.render().el))
       $node = $('#'+@model.id)
       
       $node.children('.children').append($nodeHtml)

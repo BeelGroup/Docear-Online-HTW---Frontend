@@ -19,7 +19,7 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
 
     # define events -> here u can pass informations to the model
     events: 
-      'click .inner-node': (event)-> @selectNode(event)
+      'click': (event)-> @selectNode(event)
       'click .changeable': 'lockModel'
       'click .action-show': 'printModel'
       'click .action-change': 'modificateModel'
@@ -212,11 +212,15 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
     render: ->
       @$el.html @template @getRenderData()
       # render the subviews
+      @$el.attr('id', @model.get 'id')
+      @$el.attr('folded', @model.get 'folded')
       for viewId, view of @subViews
         html = view.render().el
         $(html).appendTo(@el)
       # extend the ready rendered htlm element
       @afterRender()
+      console.log @$el
+      console.log @$el.html()
       @
 
       
