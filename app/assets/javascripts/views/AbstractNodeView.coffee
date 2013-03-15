@@ -19,6 +19,7 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
 
     # define events -> here u can pass informations to the model
     events: 
+      'click .inner-node': (event)-> @selectNode(event)
       'click .changeable': 'lockModel'
       'click .action-show': 'printModel'
       'click .action-change': 'modificateModel'
@@ -27,12 +28,15 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
     # a.k.a. constructor
     constructor: (@model) ->
       super()
-      id: @model.get 'id'
+      #id: @model.get 'id'
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@changeFoldedStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
       
+    selectNode:()->
+      console.log 'test'
+
     PosToModel: ->
       # TODO: Event will not be called on change
       @model.set 'xPos', @$el.css 'left'
@@ -275,21 +279,9 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
           nodeEditView.renderAndAppendTo($mindmapCanvas)
           
         $($innerNode).click (event)->
-          $selectedNode = $('.node.selected')
-          selectedNodeId = $($selectedNode).attr('id')
-          
           $currentNode = $(this).closest('.node')
           currentNodeId = $($currentNode).attr('id')
-          
-          if $selectedNode.size() > 0
-            selectedNode = model.findById(selectedNodeId);
-            selectedNode.set 'selected', false
-            
-            if $($selectedNode).closest('.children').children('#'+currentNodeId).size() > 0
-              selectedNode.set 'previouslySelected', false
-
           currentNode = model.findById(currentNodeId)
-          currentNode.set 'previouslySelected', true
           currentNode.set 'selected', true
           
       

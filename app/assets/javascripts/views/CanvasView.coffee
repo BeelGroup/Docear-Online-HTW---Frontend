@@ -168,8 +168,6 @@ define ->
     centerViewTo:(selectedNode, shiftInAnyCase = true)->
       $element = $("##{selectedNode.id}")
 
-      # position relative to canvas
-
       canvasWidth = $element.width()  * @zoomAmount
       canvasHeight = $element.height() * @zoomAmount
 
