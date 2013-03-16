@@ -1,5 +1,5 @@
 document.zoomStep = 25
-document.maxZoom = 150
+document.maxZoom = 200
 document.minZoom = 50
 
 document.navigation = {}

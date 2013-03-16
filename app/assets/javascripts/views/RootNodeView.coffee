@@ -44,10 +44,38 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         ) 
 
 
+    getTotalSize:()->
+      $me = $('#'+@model.get 'id')
+
+      sizeOfLeftChilds=
+        x: $me.children('.rightChildren:first').outerWidth()
+        y: $me.children('.rightChildren:first').outerHeight()
+
+      sizeOfRightChilds=
+        x: $me.children('.leftChildren:first').outerWidth()
+        y: $me.children('.leftChildren:first').outerHeight()
+
+      leftSize = $me.outerWidth() / 2 + sizeOfLeftChilds.x
+      rightSize = $me.outerWidth() / 2 + sizeOfRightChilds.x
+
+      if sizeOfLeftChilds.y > sizeOfRightChilds.y
+        height = sizeOfLeftChilds.y
+      else
+        height = sizeOfRightChilds.y
+
+      totalSizes=
+        x: sizeOfLeftChilds.x + $me.outerWidth() + sizeOfRightChilds.x
+        y: height
+        xRight: rightSize
+        xLeft : leftSize
+        xMaxHalf  : if leftSize > rightSize then leftSize else rightSize
+        yMaxHalf  : height / 2
+
+
     setChildPositions: ->
       $me = $('#'+@model.get 'id')
       canvas = $me.parent().parent()
-      console.log canvas.css('left')
+
       leftChilds = new Array()
       rightChilds = new Array()
 

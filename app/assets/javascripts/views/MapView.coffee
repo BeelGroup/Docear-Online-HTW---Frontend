@@ -7,7 +7,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
     className: 'mindmap-viewport'
 
 
-    constructor:(@id, @canvasWidth = 8000, @canvasHeight = 8000)->
+    constructor:(@id)->
       super()
 
     positionNodes:()->
@@ -107,7 +107,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
     renderSubviews:()->
       $viewport = @$el
 
-      @canvas = new CanvasView("#{@id}_canvas", @canvasWidth, @canvasHeight)
+      @canvas = new CanvasView("#{@id}_canvas")
       @canvas.renderAndAppendTo($viewport)
 
       # pass related viewport-element and canvas-view

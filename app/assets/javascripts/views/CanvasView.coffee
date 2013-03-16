@@ -7,8 +7,10 @@ define ->
     className: 'mindmap-canvas'
 
 
-    constructor:(@id, @width = 8000, @height = 8000, @zoomAmount = 100)->
+    constructor:(@id)->
       super()
+      @size = @minSize = 3000
+      @zoomAmount = 100
       @calculateBrowserZoom()
 
 
@@ -25,23 +27,48 @@ define ->
         if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
           @rootView.userKeyInput event
 
-    resize:(@width, @height)->
 
-      curWidth = @$el.width()
-      curHeight = @$el.height()
-      curX = @$el.css 'left'
-      curY = @$el.css 'top'
+    checkBoundaries:->
+      @totalSize = @rootView.getTotalSize()
 
-      xdiff = @width - curWidth 
-      ydiff = @height - curHeight 
+      if @totalSize.xMaxHalf * document.maxZoom > @totalSize.yMaxHalf * document.maxZoom 
+        greaterValue = @totalSize.xMaxHalf * document.maxZoom / 50 
+      else
+        greaterValue = @totalSize.yMaxHalf * document.maxZoom / 50
 
-      @$el.css 
-        'width' : "#{@width}px"
-        'height': "#{@height}px"
-        'left'  : "#{curX - xdiff/2}px"
-        'top'   : "#{curY - ydiff/2}px"
+      if greaterValue > @minSize
+        # distance between root and first child is currently not noted - so +200 as workaround
+        @resize greaterValue + 500
+      else
+        @resize @minSize
 
-      @$el.trigger 'resize'
+
+
+    resize:(size)->
+
+      if size != @size
+        @size = size
+        console.log 'Resize canvas to: '+ @size + ' px'
+
+        curWidth = @$el.width()
+        curHeight = @$el.height()
+        curX = @$el.css 'left'
+        curY = @$el.css 'top'
+
+        xdiff = @size - curWidth 
+        ydiff = @size - curHeight 
+
+        @$el.css 
+          'width' : "#{@size}px"
+          'height': "#{@size}px"
+          'left'  : "#{curX - xdiff/2}px"
+          'top'   : "#{curY - ydiff/2}px"
+
+        @$el.trigger 'resize'
+        @rootView.centerInContainer()
+        @center()
+
+
 
 
     getElement:()->
@@ -147,8 +174,8 @@ define ->
 
     canvasPivot: ->
       pos=
-        x: (@width  / 2) * -1
-        y: (@height / 2) * -1
+        x: (@size / 2) * -1
+        y: (@size / 2) * -1
 
     center:->
       if typeof(@rootView) != 'undefined'
@@ -171,13 +198,20 @@ define ->
       
       @zoomAmount = 100  
 
+      @checkBoundaries()
+
 
     foldNode:(@selectedNode)->
       @$overlay = @$el.parent().parent().find(".loading-map-overlay")
       @$overlay.fadeIn(200, =>
-        @zoom(100, false)
+        oldZoomAmount = @zoomAmount
+        @zoomAmount = 100
+        @zoom(@zoomAmount, false)
         $selectedNode = $('#'+(@selectedNode.get 'id'))
         @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
+        #TODO: check size after fold
+        #@checkBoundaries()
+        @zoomAmount = oldZoomAmount
         @zoom(@zoomAmount, false)
         @$overlay.fadeOut(400)
       )
@@ -231,8 +265,8 @@ define ->
       $element.append(@render().el)
 
       @$el.css 
-        'width' : "#{@width}px"
-        'height': "#{@height}px"
+        'width' : "#{@size}px"
+        'height': "#{@size}px"
 
       @center()
       @moreEvents()
