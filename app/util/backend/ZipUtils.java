@@ -74,15 +74,20 @@ public class ZipUtils
 
 	private static File extractFileToTempFolder(ZipInputStream in, String name) throws IOException
 	{
-		File f = new File(FileUtils.getTempDirectory(), name);
-        Logger.debug("ZipUtils: Full path=" + f.getAbsolutePath());
-        if(f.exists()) {
-			f.delete();
-			f.createNewFile();
+		final File directory = new File(FileUtils.getTempDirectoryPath()+"/docear/play");
+		if(!directory.exists()) {
+			directory.mkdirs();
+		}
+		
+		final File tempFile = new File(directory, name);
+        Logger.debug("ZipUtils: Full path=" + tempFile.getAbsolutePath());
+        if(tempFile.exists()) {
+			tempFile.delete();
+			tempFile.createNewFile();
 		}
 		Logger.debug("ZipUtils: created File");
 		byte[] buffer = new byte[BUFFER_SIZE];
-		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(tempFile));
 		Logger.debug("ZipUtils: created BufferedOutputStream");
 		int count = -1;
 		while ((count = in.read(buffer)) != -1)
@@ -90,7 +95,7 @@ public class ZipUtils
 		out.close();
 		Logger.debug("ZipUtils: extractFileToTempFolder end");
 
-		return f;
+		return tempFile;
 	}
 
 	public static File extractMindmap(InputStream zipStream) throws IOException {

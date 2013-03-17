@@ -246,8 +246,13 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			serverIdToMapIdMap.put(mapId, mmId);
 
 			//send file to server and put in map
-			ActorRef remoteActor = getRemoteActor();
-			remoteActor.tell(new OpenMindMapRequest(FileUtils.readFileToString(file),file.getName()),remoteActor);
+			final ActorRef remoteActor = getRemoteActor();
+			final String fileContentAsString = FileUtils.readFileToString(file);
+			final String fileName = file.getName();
+			//deleting temporary created file
+			file.delete();
+			
+			remoteActor.tell(new OpenMindMapRequest(fileContentAsString,fileName),remoteActor);
 		} catch (FileNotFoundException e) {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
 			throw new RuntimeException();
