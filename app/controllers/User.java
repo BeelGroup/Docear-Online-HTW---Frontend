@@ -50,7 +50,7 @@ public class User extends Controller {
                         setAuthenticatedSession(credentials, accessToken);
                         return redirect(routes.Application.index());
                     } else {
-                        filledForm.reject("The credentials doesn't match any user.");
+                        filledForm.reject("The credentials don not match any user.");
                         Logger.debug(credentials.getUsername() + " is unauthorized");
                         return unauthorized(views.html.user.loginForm.render(filledForm));
                     }
