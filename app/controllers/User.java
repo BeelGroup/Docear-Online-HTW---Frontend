@@ -38,7 +38,7 @@ public class User extends Controller {
         Result result;
 
         if (filledForm.hasErrors()) {
-            result = badRequest(views.html.user.loginForm.render(filledForm));
+            result = badRequest(views.html.index.render(filledForm));
         } else {
             final Credentials credentials = filledForm.get();
             final F.Promise<String> tokenPromise = userService.authenticate(credentials.getUsername(), credentials.getPassword());
@@ -50,9 +50,9 @@ public class User extends Controller {
                         setAuthenticatedSession(credentials, accessToken);
                         return redirect(routes.Application.index());
                     } else {
-                        filledForm.reject("The credentials don not match any user.");
+                        filledForm.reject("The credentials don't match any user.");
                         Logger.debug(credentials.getUsername() + " is unauthorized");
-                        return unauthorized(views.html.user.loginForm.render(filledForm));
+                        return unauthorized(views.html.index.render(filledForm));
                     }
                 }
             }));
