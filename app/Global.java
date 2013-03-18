@@ -1,5 +1,6 @@
 import configuration.SpringConfiguration;
 import controllers.featuretoggle.Feature;
+import controllers.featuretoggle.FeatureComparator;
 import controllers.routes;
 import info.schleichardt.play2.basicauth.CredentialsFromConfChecker;
 import info.schleichardt.play2.basicauth.JAuthenticator;
@@ -8,7 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import play.*;
-import play.api.libs.Collections;
 import play.cache.Cache;
 import play.api.mvc.Handler;
 import play.libs.Json;
@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static java.util.Collections.*;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultString;
 import static play.mvc.Controller.flash;
@@ -70,18 +71,22 @@ public class Global extends GlobalSettings {
     }
 
     private void initializeFeatureToggles(Configuration conf) {
-        String possibleFeaturesString = StringUtils.join(Feature.values(), ", ");
+        final List<Feature> possibleFeatures = Arrays.asList(Feature.values());
+        sort(possibleFeatures, new FeatureComparator());
+        String possibleFeaturesString = StringUtils.join(possibleFeatures, ", ");
         Logger.info("possible features: " + possibleFeaturesString);
+        final Configuration featureConf = conf.getConfig("application.features");
+        List<String> enabledFeatureList = new LinkedList<String>();
+        for (String feature : featureConf.keys()) {
+            if(featureConf.getBoolean(feature)) {
+                Feature.enableFeature(feature, true);
+                enabledFeatureList.add(feature);
+            }
 
-        List<String> enabledFeatures = conf.getStringList("application.features");
-        if (enabledFeatures == null) {
-            enabledFeatures = new LinkedList<String>();
         }
-        String enabledFeaturesString = StringUtils.join(enabledFeatures, ", ");
+        sort(enabledFeatureList);
+        String enabledFeaturesString = StringUtils.join(enabledFeatureList, ", ");
         Logger.info("enabled features: " + enabledFeaturesString);
-        for (final String feature : enabledFeatures) {
-            Feature.enableFeature(feature, true);
-        }
     }
 
     @Override
