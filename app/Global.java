@@ -5,11 +5,13 @@ import info.schleichardt.play2.basicauth.CredentialsFromConfChecker;
 import info.schleichardt.play2.basicauth.JAuthenticator;
 import models.frontend.LoggedError;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import play.*;
 import play.api.libs.Collections;
 import play.cache.Cache;
 import play.api.mvc.Handler;
+import play.libs.Json;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -22,6 +24,8 @@ import java.util.*;
 
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultString;
+import static play.mvc.Controller.flash;
+import static play.mvc.Results.notFound;
 import static play.mvc.Results.redirect;
 import static controllers.Application.LOGGED_ERROR_CACHE_PREFIX;
 
@@ -150,5 +154,18 @@ public class Global extends GlobalSettings {
     private void initializeBasicAuthPlugin() {
         basicAuthEnabled = isTrue(Play.application().configuration().getBoolean("basic.auth.enabled"));//use -Dbasic.auth.enabled=true
         Logger.info(basicAuthEnabled ? "basic auth is enabled" : "basic auth is disabled");
+    }
+
+    @Override
+    public Result onHandlerNotFound(Http.RequestHeader requestHeader) {
+        Logger.warn("404 for " + requestHeader);
+        if (requestHeader.accepts("text/html")) {
+            flash("warning", "Page not found");
+            return notFound(views.html.status404.render(requestHeader));
+        } else {
+            ObjectNode result = Json.newObject();
+            result.put("message", "not found");
+            return notFound(result);
+        }
     }
 }

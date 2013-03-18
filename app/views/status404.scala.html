@@ -1,0 +1,10 @@
+@(requestHeader: play.mvc.Http.RequestHeader)
+
+@main("Page not found") {
+
+        <p>Please try these pages:</p>
+        <ul>
+            <li><a href="@routes.Application.index.url">Startpage</a></li>
+            <li><a href="@routes.Application.help.url">Help Page</a></li>
+        </ul>
+}
