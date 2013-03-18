@@ -78,7 +78,7 @@
                         @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
                             @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
                         }
-                        @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated)
+                        @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
                     </ul>
                 </div>
             </div>
