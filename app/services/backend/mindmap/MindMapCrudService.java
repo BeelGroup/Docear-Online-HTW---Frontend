@@ -37,15 +37,20 @@ public interface MindMapCrudService {
      */
     Promise<String> getNode(String mapId, String nodeId);
     
+    
+    Promise<Boolean> listenForUpdates(String mapId);
+    
     /**
      * 
      * @param changeNodeRequestJson {"mapId":"THE_ID","node":{...node object with atributes to change...}}
      */
-    void ChangeNode(String mapId, String nodeJson);
+    void changeNode(String mapId, String nodeJson);
     
     /**
      * 
      * @param removeNodeRequestJson {"mapId":"THE_ID","nodeId":"NODE_ID"}
      */
     void removeNode(JsonNode removeNodeRequestJson);
+    
+    
 }

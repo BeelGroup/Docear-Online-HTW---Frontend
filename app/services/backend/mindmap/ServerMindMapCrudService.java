@@ -25,6 +25,8 @@ import org.docear.messages.Messages.AddNodeResponse;
 import org.docear.messages.Messages.ChangeNodeRequest;
 import org.docear.messages.Messages.GetNodeRequest;
 import org.docear.messages.Messages.GetNodeResponse;
+import org.docear.messages.Messages.ListenToUpdateOccurrenceRequest;
+import org.docear.messages.Messages.ListenToUpdateOccurrenceRespone;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
 import org.docear.messages.Messages.OpenMindMapRequest;
@@ -40,6 +42,7 @@ import play.libs.Akka;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
+import scala.Function1;
 import scala.concurrent.Future;
 import util.backend.ZipUtils;
 import akka.actor.ActorRef;
@@ -96,6 +99,29 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 					}
 				});
 
+		return promise;
+	}
+	
+	@Override
+	public Promise<Boolean> listenForUpdates(String serverMapId) {
+		//refuse if map is not open
+		if(!serverIdToMapIdMap.containsKey(serverMapId)) {
+			return Promise.pure(false);
+		}
+		
+		final String mindmapId = getMindMapIdInFreeplane(serverMapId);
+		final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(mindmapId);
+		
+		Future<Object> future =  ask(getRemoteActor(), request, 120000); //two minutes for longpolling
+		Promise<Boolean> promise = Akka.asPromise(future).map(new Function<Object, Boolean>() {
+
+			@Override
+			public Boolean apply(Object arg0) throws Throwable {
+				final ListenToUpdateOccurrenceRespone response = (ListenToUpdateOccurrenceRespone)arg0;
+				return response.getResult();
+			}
+		});
+		
 		return promise;
 	}
 
@@ -184,7 +210,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 
 	@Override
-	public void ChangeNode(String mapId, String nodeJson) {
+	public void changeNode(String mapId, String nodeJson) {
 
 		
 		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+nodeJson);

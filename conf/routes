@@ -24,11 +24,14 @@ DELETE	/map/:mapId/node/:nodeId	@controllers.MindMap.deleteNode(mapId: String, n
 POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
 POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
 
+GET		/map/:mapId/listen			@controllers.MindMap.listenForUpdates(mapId: String)
+
 POST	/map/addNode			@controllers.MindMap.addNode()
 
 # User
-POST	/login						@controllers.User.login()
 GET 	/login						controllers.Application.index()
+POST	/login						@controllers.User.login()
+
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()
 GET 	/profile					@controllers.User.profile()

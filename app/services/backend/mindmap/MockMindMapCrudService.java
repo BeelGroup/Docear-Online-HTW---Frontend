@@ -74,7 +74,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public void ChangeNode(String mapId, String nodeJson) {
+	public void changeNode(String mapId, String nodeJson) {
 		// TODO Auto-generated method stub
 
 	}
@@ -83,6 +83,12 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	public void removeNode(JsonNode removeNodeRequestJson) {
 		//nothing to do here
 
+	}
+	
+	@Override
+	public Promise<Boolean> listenForUpdates(String mapId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

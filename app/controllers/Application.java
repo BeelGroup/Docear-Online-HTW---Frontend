@@ -67,8 +67,19 @@ public class Application extends Controller {
 			final String[] sendToAddresses = Play.application().configuration().getString("feedback.sendTo").split(",");
 			
 			final StringBuilder contentBuilder = new StringBuilder();
+			//from whom
 			contentBuilder.append(contactLine).append("\n\n");
+			//the message
 			contentBuilder.append("Message:\n").append(data.getFeedbackText());
+			//debug infos
+			contentBuilder.append("\n\n\n==================\nDebug infos:\n");
+			for(Entry<String,String> entry : debugInfo().entrySet()) {
+				contentBuilder.append(entry.getKey())
+				.append(" => ")
+				.append(entry.getValue())
+				.append("\n");
+			}
+			//request headers from user
 			contentBuilder.append("\n\n\n==================\nRequest headers:\n");
 			for(Entry<String,String[]> entry: request().headers().entrySet()) {
 				contentBuilder.append(entry.getKey()).append(" => ");
