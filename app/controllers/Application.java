@@ -1,11 +1,18 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.google.common.collect.Maps;
 import info.schleichardt.play2.mailplugin.Mailer;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
@@ -160,5 +167,31 @@ public class Application extends Controller {
             }
         }
         return isJson;
+    }
+
+    private static String gitCommit;
+    public static Map<String, String> debugInfo() {
+        Map<String, String> debugInfo = Maps.newTreeMap();
+        debugInfo.put("time", new Date().toString());
+        debugInfo.put("method", request().method());
+        debugInfo.put("uri", request().uri());
+        debugInfo.put("host", request().host());
+        debugInfo.put("remoteAddress", request().remoteAddress());
+        debugInfo.put("User-Agent", request().getHeader("User-Agent"));
+        if (gitCommit == null) {
+            Properties props = new Properties();
+            InputStream inputStream = Play.application().classloader().getResourceAsStream("buildInfo.properties");
+            if (inputStream != null) {
+                try {
+                    props.load(inputStream);
+                    gitCommit = props.getProperty("git.newId");
+                } catch (IOException e) {
+                    Logger.warn("can't find git properties", e);
+                }
+            }
+
+        }
+        debugInfo.put("revision", gitCommit);
+        return debugInfo;
     }
 }

@@ -3,6 +3,13 @@
 @import play.api.Play
 @import play.api.Play.current
 @import controllers.featuretoggle.Feature.enabledFeatures
+@import scala.collection.JavaConversions._
+
+<!--
+    @Application.debugInfo().map { entry =>
+        @entry._1=@entry._2
+    }
+-->
 
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {

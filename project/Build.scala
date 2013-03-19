@@ -1,6 +1,6 @@
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
-import org.eclipse.jgit.lib.RepositoryCache
+import org.eclipse.jgit.lib.{ObjectId, RepositoryCache}
 import org.eclipse.jgit.storage.file.ReflogEntry
 import org.eclipse.jgit.util.FS
 import sbt._
@@ -71,7 +71,7 @@ object ApplicationBuild extends Build {
          |git.oldId=%s
          |git.comment=%s
          |git.who=%s
-       """.stripMargin.format(entry.getNewId, entry.getOldId.toString, entry.getComment.toString, entry.getWho.toString)
+       """.stripMargin.format(ObjectId.toString(entry.getNewId), ObjectId.toString(entry.getOldId), entry.getComment, entry.getWho.toString)
      } catch {
        case e: RepositoryNotFoundException => "git.info.missing=true"
      }
