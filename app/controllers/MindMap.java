@@ -26,9 +26,13 @@ public class MindMap extends Controller {
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
 
-	@Security.Authenticated(Secured.class)
+	//cannot be secured, because we load the welcome map
 	public Result map(final String mapId) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId="+mapId);
+		if(!mapId.equals("welcome") && !User.isAuthenticated())
+			return unauthorized();
+		
+		
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(mapId);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override

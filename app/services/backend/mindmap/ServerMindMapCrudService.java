@@ -19,7 +19,6 @@ import models.backend.exceptions.NoUserLoggedInException;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-
 import org.docear.messages.Messages.AddNodeRequest;
 import org.docear.messages.Messages.AddNodeResponse;
 import org.docear.messages.Messages.ChangeNodeRequest;
@@ -42,7 +41,6 @@ import play.libs.Akka;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
-import scala.Function1;
 import scala.concurrent.Future;
 import util.backend.ZipUtils;
 import akka.actor.ActorRef;
@@ -245,12 +243,18 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	private void sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
 		Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => mapId: "+mapId);
 		File file = null;
+		boolean isDemoMap = false;
 		String mmId = null;
 		try {
 			if(mapId.length() == 1) { //test map
+				isDemoMap = true;
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo map, loading from resources");
 				mmId = mapId;
 				file = new File(Play.application().resource("mindmaps/"+mapId+".mm").toURI());
+			} else if(mapId.equals("welcome")) {
+				isDemoMap = true;
+				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is welcome map, loading from resources");
+				file = new File(Play.application().resource("mindmaps/welcome.mm").toURI());
 			} else { //map from user account
 				User user = controllers.User.getCurrentUser();
 				if(user == null)
@@ -265,6 +269,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map file: "+file.getAbsolutePath());
 			}
 
+			
 			//just a hack, because we are currently using different ids for retrieval then supposed
 			mmId = getMapIdFromFile(file);
 			Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => real mindmapId: "+mmId);
@@ -275,8 +280,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			final ActorRef remoteActor = getRemoteActor();
 			final String fileContentAsString = FileUtils.readFileToString(file);
 			final String fileName = file.getName();
-			//deleting temporary created file
-			file.delete();
+			//deleting temporary created file (but not demo maps)
+			if(!isDemoMap)
+				file.delete();
 			
 			remoteActor.tell(new OpenMindMapRequest(fileContentAsString,fileName),remoteActor);
 		} catch (FileNotFoundException e) {

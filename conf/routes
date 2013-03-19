@@ -15,7 +15,7 @@ POST	/feedback					controllers.Application.feedback()
 GET     /qunit                      controllers.QUnit.testAll()
 
 # Mindmap
-GET		/map/json/:mapId			@controllers.MindMap.map(mapId: String)
+GET		/map/:mapId/json			@controllers.MindMap.map(mapId: String)
 GET		/maps			    		@controllers.User.mapListFromDB()
 
 GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String)
