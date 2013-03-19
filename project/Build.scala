@@ -1,6 +1,8 @@
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.eclipse.jgit.lib.RepositoryCache
 import org.eclipse.jgit.storage.file.ReflogEntry
+import org.eclipse.jgit.util.FS
 import sbt._
 import sbt.Keys._
 import play.Project._
@@ -61,7 +63,8 @@ object ApplicationBuild extends Build {
 
    lazy val gitInfos = {
      try {
-       val git = Git.open(new File("."))
+       val repo = RepositoryCache.open(RepositoryCache.FileKey.lenient(new File(".git"), FS.DETECTED), true)
+       val git = new Git(repo)
        val iterator = git.reflog().call().iterator()
        val entry = iterator.next
        """git.newId=%s
