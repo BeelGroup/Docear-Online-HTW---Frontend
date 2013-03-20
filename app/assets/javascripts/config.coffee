@@ -1,6 +1,6 @@
-document.zoomStep = 25
+document.zoomStep = 20
 document.maxZoom = 200
-document.minZoom = 50
+document.minZoom = 20
 
 document.navigation = {}
 document.navigation.key = {}
