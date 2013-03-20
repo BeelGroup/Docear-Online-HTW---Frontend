@@ -5,6 +5,7 @@ import static akka.pattern.Patterns.ask;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -254,7 +255,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			} else if(mapId.equals("welcome")) {
 				isDemoMap = true;
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is welcome map, loading from resources");
-				file = new File(Play.application().resource("mindmaps/welcome.mm").toURI());
+				final URI uri = Play.application().resource("mindmaps/welcome.mm").toURI();
+				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => welcome map uri: "+uri.toString());
+				file = new File(uri);
 			} else { //map from user account
 				User user = controllers.User.getCurrentUser();
 				if(user == null)

@@ -74,7 +74,7 @@ public class ZipUtils
 
 	private static File extractFileToTempFolder(ZipInputStream in, String name) throws IOException
 	{
-		final File directory = new File(FileUtils.getTempDirectoryPath()+"/docear/play");
+		final File directory = new File(FileUtils.getTempDirectoryPath()+"/docear-play");
 		if(!directory.exists()) {
 			directory.mkdirs();
 		}
