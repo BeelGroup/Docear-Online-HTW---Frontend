@@ -93,13 +93,20 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @$el.parent().append div
 
 
-    renderAndAppendTo:($element)->
+    renderAndAppendTo:($element, forceFullscreen = true)->
       $element.append(@el)
-      @render()
+      @render(forceFullscreen)
       @renderSubviews()
       @
 
-    render:()->
+    render:(forceFullscreen)->
+      @$el.parent().fadeIn()
+
+      if forceFullscreen
+        @$el.parent().css
+          width: Math.round(window.innerWidth) - 80 +'px'
+          height: Math.round(window.innerHeight) - 150 +'px'
+
       @$el.css
         width: @$el.parent().width()
         height: @$el.parent().height()
