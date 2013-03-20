@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -251,11 +250,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				isDemoMap = true;
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo map, loading from resources");
 				mmId = mapId;
-				file = new File(Play.application().resource("mindmaps/"+mapId+".mm").toURI());
+				file = new File(URI.create(Play.application().resource("mindmaps/"+mapId+".mm").toString().replace("jar:", "")));
 			} else if(mapId.equals("welcome")) {
 				isDemoMap = true;
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is welcome map, loading from resources");
-				final URI uri = Play.application().resource("mindmaps/welcome.mm").toURI();
+				final URI uri = URI.create(Play.application().resource("mindmaps/welcome.mm").toString().replace("jar:", ""));
+				
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => welcome map uri: "+uri.toString());
 				file = new File(uri);
 			} else { //map from user account
@@ -292,8 +292,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
 			throw new RuntimeException();
 		} catch (IOException e) {
-			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
-		} catch (URISyntaxException e) {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
 		}
 	}
