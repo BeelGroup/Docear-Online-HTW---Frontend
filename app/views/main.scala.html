@@ -60,7 +60,7 @@
 <body class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")'>
     <div class="navbar navbar-inverse navbar-static-top">
         <div class="navbar-inner">
-            <div class="container">
+            <div class="menu-container">
                 <a class="brand image" href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" alt="@Play.configuration.getString("application.name")"/></a>
 
                 <div class="nav nav-collapse collapse">
