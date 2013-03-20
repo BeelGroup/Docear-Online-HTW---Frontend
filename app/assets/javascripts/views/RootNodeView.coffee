@@ -141,7 +141,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       $selectedNode = $('#'+(selectedNode.get 'id')) 
       if $selectedNode.children('.children').is(':visible')
         nextNode = null
-        if selectedNode instanceof RootNode
+        if typeof(selectedNode.get 'leftChildren') != 'undefined'
           if side == 'left'
             nextNode = selectedNode.getNextLeftChild()
           else
@@ -161,7 +161,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
     
     selectBrother: (selectedNode, next = true)->
       $selectedNode = $('#'+(selectedNode.get 'id'))
-      if not (selectedNode instanceof RootNode)
+      if typeof(selectedNode.get 'leftChildren') == 'undefined'
         prevNode = null
         nextNode = null
         
