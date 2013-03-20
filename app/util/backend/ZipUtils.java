@@ -72,34 +72,8 @@ public class ZipUtils
         zin.close();
     }
 
-	private static File extractFileToTempFolder(ZipInputStream in, String name) throws IOException
-	{
-		final File directory = new File(FileUtils.getTempDirectoryPath()+"/docear-play");
-		if(!directory.exists()) {
-			directory.mkdirs();
-		}
-		
-		final File tempFile = new File(directory, name);
-        Logger.debug("ZipUtils: Full path=" + tempFile.getAbsolutePath());
-        if(tempFile.exists()) {
-			tempFile.delete();
-			tempFile.createNewFile();
-		}
-		Logger.debug("ZipUtils: created File");
-		byte[] buffer = new byte[BUFFER_SIZE];
-		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(tempFile));
-		Logger.debug("ZipUtils: created BufferedOutputStream");
-		int count = -1;
-		while ((count = in.read(buffer)) != -1)
-			out.write(buffer, 0, count);
-		out.close();
-		Logger.debug("ZipUtils: extractFileToTempFolder end");
-
-		return tempFile;
-	}
-
-	public static File extractMindmap(InputStream zipStream) throws IOException {
-        File mindmapFile = null;
+	public static InputStream getMindMapInputStream(InputStream zipStream,final StringBuilder outFileName) throws IOException {
+        //File mindmapFile = null;
         ZipInputStream zin = new ZipInputStream(zipStream);
         ZipEntry entry;
         String name;
@@ -109,12 +83,14 @@ public class ZipUtils
             name = entry.getName();
             if(!name.endsWith(".inf")) {
             	Logger.debug("ZipUtils.extractMindmap => map with name "+name+" found!");
-                mindmapFile = extractFileToTempFolder(zin,name);
-                break;
+            	outFileName.append(name);
+            	return zin;
+                //mindmapFile = extractFileToTempFolder(zin,name);
+                //break;
             }
 
         }
         zin.close();
-        return mindmapFile;
+        return null;
 	}
 }

@@ -2,10 +2,11 @@ package services.backend.mindmap;
 
 import static akka.pattern.Patterns.ask;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ import models.backend.User;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages.AddNodeRequest;
@@ -34,6 +35,7 @@ import org.docear.messages.exceptions.MapNotFoundException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import play.Logger;
 import play.Play;
@@ -242,61 +244,55 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 	private void sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
 		Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => mapId: "+mapId);
-		File file = null;
-		boolean isDemoMap = false;
-		String mmId = null;
+		InputStream in = null;		
+		String fileName = null; 
+		
 		try {
-			if(mapId.length() == 1) { //test map
-				isDemoMap = true;
-				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo map, loading from resources");
-				mmId = mapId;
-				file = new File(URI.create(Play.application().resource("mindmaps/"+mapId+".mm").toString().replace("jar:", "")));
-			} else if(mapId.equals("welcome")) {
-				isDemoMap = true;
-				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is welcome map, loading from resources");
-				final URI uri = URI.create(Play.application().resource("mindmaps/welcome.mm").toString().replace("jar:", ""));
-				
-				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => welcome map uri: "+uri.toString());
-				file = new File(uri);
+			if(mapId.length() == 1 || mapId.equals("welcome")) { //test/welcome map
+				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo/welcome map, loading from resources");
+				in = Play.application().resourceAsStream("mindmaps/"+mapId+".mm");
+				fileName = mapId+".mm";
 			} else { //map from user account
 				User user = controllers.User.getCurrentUser();
 				if(user == null)
 					throw new NoUserLoggedInException();
 
+				final StringBuilder outfileName = new StringBuilder();
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is real map, loading from docear server");
-				file = getMindMapFileFromDocearServer(user, mapId);
-				if(file == null) {
+				in = getMindMapInputStreamFromDocearServer(user, mapId,outfileName);
+				
+				fileName = outfileName.toString();
+				if(in == null) {
 					Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map with serverId: "+mapId+" not found on docear server.");
 					throw new FileNotFoundException("Map not found");
 				}
-				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map file: "+file.getAbsolutePath());
+				//Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map file: "+file.getAbsolutePath());
 			}
 
+			StringWriter writer = new StringWriter();
+			IOUtils.copy(in, writer);
+			final String fileContentAsString = writer.toString();
 			
 			//just a hack, because we are currently using different ids for retrieval then supposed
-			mmId = getMapIdFromFile(file);
+			final String mmId = getMapIdFromMindmapXmlString(fileContentAsString);
 			Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => real mindmapId: "+mmId);
 
-			serverIdToMapIdMap.put(mapId, mmId);
-
 			//send file to server and put in map
+			serverIdToMapIdMap.put(mapId, mmId);
 			final ActorRef remoteActor = getRemoteActor();
-			final String fileContentAsString = FileUtils.readFileToString(file);
-			final String fileName = file.getName();
-			//deleting temporary created file (but not demo maps)
-			if(!isDemoMap)
-				file.delete();
-			
+		
 			remoteActor.tell(new OpenMindMapRequest(fileContentAsString,fileName),remoteActor);
 		} catch (FileNotFoundException e) {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
 			throw new RuntimeException();
 		} catch (IOException e) {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
 	}
 
-	private static File getMindMapFileFromDocearServer(final User user, final String mmIdOnServer) throws IOException {
+	private static InputStream getMindMapInputStreamFromDocearServer(final User user, final String mmIdOnServer, final StringBuilder outFileName) throws IOException {
 		
 		final String docearServerAPIURL = "https://api.docear.org/user";
 		final String resource = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/" + mmIdOnServer;
@@ -307,24 +303,25 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				.get().get();
 		
 		if(response.getStatus() == 200) {
-			return ZipUtils.extractMindmap(response.getBodyAsStream());
+			return ZipUtils.getMindMapInputStream(response.getBodyAsStream(),outFileName);
 		} else {
 			return null;
 		}
 	}
 
-	private static String getMapIdFromFile(File mindmapFile) {
+	private static String getMapIdFromMindmapXmlString(String xmlString) {
 		try {
 			DocumentBuilderFactory dbFactory =  DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(mindmapFile);
-
+			InputSource is = new InputSource(new StringReader(xmlString));
+			Document doc = dBuilder.parse(is);
 			doc.getDocumentElement().normalize();
 
 			return doc.getDocumentElement().getAttribute("dcr_id");
 
 		} catch (Exception e) {
             Logger.error("getMapIdFromFile failed", e);
+            //throw new RuntimeException(e);
         }
 
 
