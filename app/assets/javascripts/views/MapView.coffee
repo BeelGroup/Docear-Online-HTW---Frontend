@@ -4,7 +4,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
   class MapView extends Backbone.View
 
     tagName  : 'div'
-    className: 'mindmap-viewport'
+    className: 'mindmap-viewport, no-selecting-highlight'
 
 
     constructor:(@id)->
