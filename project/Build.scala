@@ -16,7 +16,7 @@ object ApplicationBuild extends Build {
       val seleniumVersion = "2.29.1"
       Seq(
         "junit" % "junit-dep" % "4.11" % "test"
-        , "commons-io" % "commons-io" % "2.4"//heroku does not find it without the explicit dependency
+        //, "commons-io" % "commons-io" % "2.4"//heroku does not find it without the explicit dependency
         , "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.0.2"
         , "commons-lang" % "commons-lang" % "2.6"
         , "org.springframework" % "spring-context" % "3.1.2.RELEASE"

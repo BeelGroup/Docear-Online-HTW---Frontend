@@ -48,7 +48,7 @@
     <title>@title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap.min.css"))' rel="stylesheet">
-    <link href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap-responsive.min.css"))' rel="stylesheet">
+    <!-- <link href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap-responsive.min.css"))' rel="stylesheet"> -->
     <link href='@routes.Assets.at("stylesheets/style.css")' rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -57,18 +57,28 @@
     <![endif]-->
 </head>
 
-<body class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")'>
+<body style="min-width: 1000px;" class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")'>
+
+	@*<div class="navbar navbar-inverse navbar-static-top">
+	<div class="navbar-inner">
+		<a class="brand image" href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" alt="@Play.configuration.getString("application.name")"/></a>
+		<ul class="nav">
+			<li>test</li>
+			<li>test2</li>
+		</ul>
+	</div>
+	</div>*@
     <div class="navbar navbar-inverse navbar-static-top">
         <div class="navbar-inner">
             <div class="menu-container">
                 <a class="brand image" href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" alt="@Play.configuration.getString("application.name")"/></a>
 
-                <div class="nav nav-collapse collapse">
+                <div style="width: 300px;" class="nav nav-collapse collapse">
                     @if(isAuthenticated) {
                     <ul class="nav pull-left">
                         <li class="dropdown pull-left">
                           <a data-toggle="dropdown" class="dropdown-toggle" href="#" id="toggle-mindmap-select">Select MindMap <b class="caret"></b></a>
-                          <ul class="dropdown-menu" id="select-mindmap">
+                          <ul class="dropdown-menu" id="select-mindmap" data-no-collapse="true">
                           </ul>
                         </li>
                     </ul>
