@@ -15,7 +15,7 @@ object ApplicationBuild extends Build {
     val appDependencies = {
       val seleniumVersion = "2.29.1"
       Seq(
-        "info.schleichardt" %% "play-2-basic-auth" % "0.3-SNAPSHOT"
+        "junit" % "junit-dep" % "4.11" % "test"
         , "commons-io" % "commons-io" % "2.4"//heroku does not find it without the explicit dependency
         , "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.0.2"
         , "commons-lang" % "commons-lang" % "2.6"
@@ -35,7 +35,7 @@ object ApplicationBuild extends Build {
         , "org.webjars" % "webjars-play" % "2.1.0"
         , "org.webjars" % "bootstrap" % "2.1.1"
         , "com.typesafe.akka" %% "akka-remote" % "2.1.0"
-        , "info.schleichardt" %% "play-2-mailplugin" % "0.9-java-6-SNAPSHOT"
+        , "info.schleichardt" %% "play-2-mailplugin" % "0.9-SNAPSHOT"
       )
     }
 
@@ -79,7 +79,8 @@ object ApplicationBuild extends Build {
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
       coffeescriptOptions := Seq("bare")//coffee script code will not be wrapped in an anonymous function, necessary for tests
-      , resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+     // , resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots" //commented out because sonatype is offline on 21.03.2013 12:28
+      , resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/" //temporary. delete if sonatype is up again
       , templatesImport += "views.TemplateUtil._"
       , handlebarsEntryPoints <<= (sourceDirectory in Compile)(base => base / "assets" / "javascripts" / "views" / "templates" ** "*.handlebars")
       , handlebarsOptions := Seq.empty[String]
