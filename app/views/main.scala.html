@@ -93,12 +93,12 @@
     </div>
 
     <div class="container">
-        @simpleAlertFlash("alert-block", "warning")
+    	@* EXACT PURPOSE *@
+        @*@simpleAlertFlash("alert-block", "warning")
         @simpleAlertFlash("alert-error", "error")
         @simpleAlertFlash("alert-success", "success")
-        @simpleAlertFlash("alert-info", "info")
+        @simpleAlertFlash("alert-info", "info")*@
         @content
-
         <hr>
         
         <div id="feedback-button"><a href="#feedbackDialog" class="feedback-button" data-toggle="modal"><img src="/assets/images/feedback.png" /></a></div>
