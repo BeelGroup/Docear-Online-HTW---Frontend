@@ -2,8 +2,6 @@ import configuration.SpringConfiguration;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.FeatureComparator;
 import controllers.routes;
-import info.schleichardt.play2.basicauth.CredentialsFromConfChecker;
-import info.schleichardt.play2.basicauth.JAuthenticator;
 import models.frontend.LoggedError;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.node.ObjectNode;
@@ -23,7 +21,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static java.util.Collections.*;
-import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.defaultString;
 import static play.mvc.Controller.flash;
 import static play.mvc.Results.notFound;
@@ -32,15 +29,12 @@ import static controllers.Application.LOGGED_ERROR_CACHE_PREFIX;
 
 public class Global extends GlobalSettings {
     private int loggedErrorExpirationInSeconds;
-    private final JAuthenticator authenticator = new JAuthenticator(new CredentialsFromConfChecker());
-    private boolean basicAuthEnabled;
 
     @Override
     public void onStart(Application application) {
         final Configuration conf = Play.application().configuration();
         logConfiguration(conf);
         initializeSpring();
-        initializeBasicAuthPlugin();
         loggedErrorExpirationInSeconds = conf.getInt("application.logged.error.expirationInSeconds");
         super.onStart(application);
         initializeFeatureToggles(conf);
@@ -87,15 +81,6 @@ public class Global extends GlobalSettings {
         sort(enabledFeatureList);
         String enabledFeaturesString = StringUtils.join(enabledFeatureList, ", ");
         Logger.info("enabled features: " + enabledFeaturesString);
-    }
-
-    @Override
-    public Handler onRouteRequest(final Http.RequestHeader requestHeader) {
-        Handler handler = super.onRouteRequest(requestHeader);
-        if(basicAuthEnabled) {
-            handler = authenticator.requireBasicAuthentication(requestHeader, handler);
-        }
-        return handler;
     }
 
     @Override
@@ -154,11 +139,6 @@ public class Global extends GlobalSettings {
     private void initializeSpring() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         configuration.SpringConfiguration.initializeContext(context);
-    }
-
-    private void initializeBasicAuthPlugin() {
-        basicAuthEnabled = isTrue(Play.application().configuration().getBoolean("basic.auth.enabled"));//use -Dbasic.auth.enabled=true
-        Logger.info(basicAuthEnabled ? "basic auth is enabled" : "basic auth is disabled");
     }
 
     @Override
