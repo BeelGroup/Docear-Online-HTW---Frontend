@@ -11,7 +11,7 @@ import play.libs.F.Promise;
 public interface MindMapCrudService {
      
     /** Obtains a mind map as JSONString  with a specific id. */
-    Promise<String> mindMapAsJsonString(String id) throws DocearServiceException, IOException;
+    Promise<String> mindMapAsJsonString(String id,Integer nodeCount) throws DocearServiceException, IOException;
    ;
     
     /**
@@ -35,7 +35,7 @@ public interface MindMapCrudService {
      * @param nodeId
      * @return the node
      */
-    Promise<String> getNode(String mapId, String nodeId);
+    Promise<String> getNode(String mapId, String nodeId, Integer nodeCount);
     
     
     Promise<Boolean> listenForUpdates(String mapId);

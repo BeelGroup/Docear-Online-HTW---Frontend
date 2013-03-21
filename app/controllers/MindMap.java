@@ -27,13 +27,13 @@ public class MindMap extends Controller {
 	private MindMapCrudService mindMapCrudService;
 
 	//cannot be secured, because we load the welcome map
-	public Result map(final String mapId) throws DocearServiceException, IOException {
-		Logger.debug("MindMap.map <- mapId="+mapId);
+	public Result map(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
+		Logger.debug("MindMap.map <- mapId="+mapId+ "; nodeCount: "+nodeCount);
 		if(!mapId.equals("welcome") && !User.isAuthenticated())
 			return unauthorized();
 		
 		
-		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(mapId);
+		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(mapId,nodeCount);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String mindMap) throws Throwable {
@@ -70,10 +70,11 @@ public class MindMap extends Controller {
 		}));
 	}
 
-	@Security.Authenticated(Secured.class)
-	public Result getNode(final String mapId, final String nodeId) {
-		Logger.debug("MindMap.createNode <- mapId="+mapId+", nodeId="+nodeId);
-		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(mapId, nodeId);
+	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
+		Logger.debug("MindMap.createNode <- mapId="+mapId+", nodeId="+nodeId+", nodeCount= "+nodeCount);
+		if(!mapId.equals("welcome") && !User.isAuthenticated())
+			return unauthorized();
+		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(mapId, nodeId,nodeCount);
 		return async(addNodePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String node) throws Throwable {

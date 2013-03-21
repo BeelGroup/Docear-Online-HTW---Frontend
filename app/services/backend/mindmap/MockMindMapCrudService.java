@@ -20,7 +20,7 @@ import play.libs.F.Promise;
 public class MockMindMapCrudService implements MindMapCrudService {
 
 	@Override
-	public Promise<String> mindMapAsJsonString(String id)
+	public Promise<String> mindMapAsJsonString(String id, Integer nodeCount)
 			throws DocearServiceException, IOException {
 		String result = null;
 
@@ -63,7 +63,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 	
 	@Override
-	public Promise<String> getNode(String mapId, String nodeId) {
+	public Promise<String> getNode(String mapId, String nodeId, Integer nodeCount) {
 		try {
 			String result = "{\"id\":\""+nodeId+"\",\"nodeText\":\"Mock Node\"}";
 

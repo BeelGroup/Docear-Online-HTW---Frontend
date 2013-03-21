@@ -120,7 +120,8 @@ public class Application extends Controller {
                     routes.javascript.MindMap.createNode(),
                     routes.javascript.MindMap.changeNode(),
                     routes.javascript.MindMap.deleteNode(),
-                    routes.javascript.Application.index()
+                    routes.javascript.Application.index(),
+                    routes.javascript.Assets.at()
             )
         );
     }

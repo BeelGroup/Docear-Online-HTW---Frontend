@@ -60,7 +60,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
 	
 	@Override
-	public Promise<String> mindMapAsJsonString(final String id)
+	public Promise<String> mindMapAsJsonString(final String id,final Integer nodeCount)
 			throws DocearServiceException, IOException {
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mapId: " + id);
 		
@@ -73,7 +73,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		ActorRef remoteActor = getRemoteActor();
 		
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => sending request to freeplane");
-		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId), defaultTimeoutInMillis);
+		Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId,nodeCount), defaultTimeoutInMillis);
 
 		Promise<String> promise = Akka.asPromise(future).map(
 				new Function<Object, String>() {
@@ -91,7 +91,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 						if(t instanceof MapNotFoundException) {
 							Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...",t);
 							serverIdToMapIdMap.remove(id);
-							return mindMapAsJsonString(id).get();
+							return mindMapAsJsonString(id,nodeCount).get();
 						} else {
 							Logger.error("ServerMindMapCrudService.mindMapAsJsonString => unexpected Exception! ",t);
 							throw t;
@@ -168,9 +168,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 	
 	@Override
-	public Promise<String> getNode(final String mapId, final String nodeId) {
-		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
-		GetNodeRequest request = new GetNodeRequest(mapId,nodeId, -1);
+	public Promise<String> getNode(final String mapId, final String nodeId, final Integer nodeCount) {
+		Logger.debug("getNode => mapId: "+mapId+"; nodeId: "+nodeId+ ", nodeCount: "+nodeCount);
+		final GetNodeRequest request = new GetNodeRequest(mapId,nodeId, nodeCount);
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
