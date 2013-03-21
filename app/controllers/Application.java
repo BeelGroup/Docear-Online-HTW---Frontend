@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.mail.internet.InternetAddress;
+
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 import models.frontend.FeedbackFormData;
@@ -96,7 +98,9 @@ public class Application extends Controller {
 			for(String address : sendToAddresses) {
 				mail.addTo(address);
 			}
-			
+			for(InternetAddress ia : mail.getToAddresses()) {
+				Logger.debug("feedback => to address: "+ia.toString());
+			}
 			mail.setContent(contentBuilder.toString(),"text/plain");
 			
 			Mailer.send(mail);
