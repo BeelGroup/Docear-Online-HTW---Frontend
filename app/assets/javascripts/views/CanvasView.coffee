@@ -29,23 +29,20 @@ define ->
 
 
     checkBoundaries:->
-      @totalSize = @rootView.getTotalSize()
+      @totalMapsize = @rootView.getTotalSize()
 
-      if @totalSize.xMaxHalf * document.maxZoom > @totalSize.yMaxHalf * document.maxZoom 
-        greaterValue = @totalSize.xMaxHalf * document.maxZoom / 50 
+      if @totalMapsize.xMaxHalf * document.maxZoom > @totalMapsize.yMaxHalf * document.maxZoom 
+        greaterValue = @totalMapsize.xMaxHalf * document.maxZoom / 50 
       else
-        greaterValue = @totalSize.yMaxHalf * document.maxZoom / 50
+        greaterValue = @totalMapsize.yMaxHalf * document.maxZoom / 50
 
       if greaterValue > @minSize
-        # distance between root and first child is currently not noted - so +200 as workaround
+        # distance between root and first child is currently not noted - so +500 as workaround
         @resize greaterValue + 500
       else
         @resize @minSize
 
-
-
     resize:(size)->
-
       if size != @size
         @size = size
         console.log 'Resize canvas to: '+ @size + ' px'
@@ -67,8 +64,6 @@ define ->
         @$el.trigger 'resize'
         @rootView.centerInContainer()
         @center()
-
-
 
 
     getElement:()->
@@ -116,16 +111,15 @@ define ->
           handle: @id
 
 
-    move:(delta)->
+    move:(delta, animated = true, time = 200)->
       pos=
         x: parseFloat(@$el.css 'left') + delta.x
         y: parseFloat(@$el.css 'top')  + delta.y
 
-      @moveTo pos, true
+      @moveTo pos, animated, time
 
 
-    moveTo:(position, animated)->
-
+    moveTo:(position, animated, time = 200)->
       if $.browser.chrome
         @calculateBrowserZoom()
         if(@browserZoom > 1.05 && @browserZoom < 0.95) then animated = false
@@ -133,10 +127,9 @@ define ->
           x: position.x * 1/@browserZoom
           y: position.y * 1/@browserZoom
 
+      console.log 'fdwfdsfds'
       if animated
-        @$el.stop().animate
-         'left'  : "#{position.x}px"
-         'top'   : "#{position.y}px" 
+        @$el.animate {'left':"#{position.x}px",'top':"#{position.y}px"}, {duration: time, queue: true}
       else
         @$el.stop()
         @$el.css
@@ -148,29 +141,94 @@ define ->
 
     zoomIn:(event)=>
       if(@zoomAmount+document.zoomStep <= document.maxZoom)
+        @oldZoomAmount = @zoomAmount
         @zoomAmount += document.zoomStep
+        @repositionViewportOnZoom(true)
         @zoom(@zoomAmount)
        
 
     zoomOut:(event, shift)=>
       if(@zoomAmount-document.zoomStep >= document.minZoom)
+        @oldZoomAmount = @zoomAmount
         @zoomAmount -= document.zoomStep
+        @repositionViewportOnZoom(false)
         @zoom(@zoomAmount)
 
 
     zoom:(amount, animate = true)=>
       if(typeof @rootView != "undefined")
         console.log "zoom:#{amount}%"
-        @rootView.scale amount/100, animate
-        @$el.trigger 'zoom', amount/100
-        #jsPlumb.repaintEverything()
 
+        @previousMapSize.x = @currentMapSize.x
+        @previousMapSize.y = @currentMapSize.y
+        @currentMapSize.x = @totalMapsize.x * amount/100
+        @currentMapSize.y = @totalMapsize.y * amount/100
+        
+        @rootView.scale amount/100, true
+        @$el.trigger 'zoom', amount/100
+        5500
+        #jsPlumb.repaintEverything()
 
     zoomCenter:()=>
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
         @zoom(@zoomAmount)
         @center()
+
+    repositionViewportOnZoom:(zoomIn)->   
+
+      xGrow = @totalMapsize.x * @zoomAmount - @totalMapsize.x * @oldZoomAmount
+      yGrow = @totalMapsize.y * @zoomAmount - @totalMapsize.y * @oldZoomAmount
+
+
+      pos = @getPosition()
+      xRelDist = (Math.abs(pos.x) / @size) * 2 
+      yRelDist = (Math.abs(pos.y) / @size) * 2
+
+      diff=
+       x: xGrow/100 * xRelDist
+       y: yGrow/100 * yRelDist
+
+      quadrant = @getQuadrant() 
+
+      if quadrant == 1
+        @move pos= x: -diff.x, y: diff.y, true, 100
+      if quadrant == 2
+        @move pos= x:  diff.x, y: diff.y, true, 100 
+      if quadrant == 3
+        @move pos= x:  diff.x, y: -diff.y, true, 100  
+      if quadrant == 4
+        @move pos= x: -diff.x, y: -diff.y, true, 100
+
+    getDistanceToCenter:->
+      pos = @getPosition()
+      dist = Math.sqrt(pos.x*pos.x + pos.y*pos.y)
+
+    getRelativeDistanceToCenter:->
+      dist = @getDistanceToCenter()
+      relDist = dist / @$el.width() * 2
+
+    getPosition:->
+      pos= 
+        x: (@$el.width() / 2) + (@$el.parent().width() / -2) + parseFloat @$el.css('left')  
+        y: (@$el.height() / 2) + (@$el.parent().height() / -2) + parseFloat @$el.css('top') 
+
+    getQuadrant: ->
+      error = 0
+      pos = @getPosition()
+
+      if pos.x < -error && pos.y > error
+        quadrant = 1
+      else if pos.x > error && pos.y > error
+        quadrant = 2
+      else if pos.x > error && pos.y < -error
+        quadrant = 3
+      else if pos.x < -error && pos.y < -error
+        quadrant = 4
+      else
+        quadrant = 0
+
+      quadrant
 
     canvasPivot: ->
       pos=
@@ -196,8 +254,9 @@ define ->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false)
       @rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
       
-      @zoomAmount = 100  
-
+      @zoomAmount = 100   
+      @currentMapSize = @rootView.getTotalSize()
+      @previousMapSize = @rootView.getTotalSize()
       @checkBoundaries()
 
 
@@ -238,9 +297,6 @@ define ->
         y: halfParentHeight - elementPos.y + @$el.parent().offset().top
 
       iCanSeeU = true
-
-      #console.log 'delta x ' + Math.abs(delta.x) + ' elementWidth ' + elementWidth + ' half parent width ' + halfParentWidth
-      #console.log 'delta y ' + Math.abs(delta.y) + ' elementHeight ' + elementHeight + ' half parent height ' + halfParentHeight
 
       # right corner
       if delta.x < 0.0
