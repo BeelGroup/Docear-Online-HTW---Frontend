@@ -211,7 +211,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       $.inArray('OTransform', possibilities)) 
         #console.log 'Webkit, Moz, O'
         if animate
-          @getElement().animate {'scale' : amount}, 100
+          @getElement().animate {'scale' : amount}, {duration: 100, queue: false}
         else
           @getElement().animate {'scale' : amount}, 0
 
