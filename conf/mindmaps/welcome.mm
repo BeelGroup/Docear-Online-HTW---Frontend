@@ -1,6 +1,6 @@
 <map version="docear 1.0" dcr_id="welcome" dcr_uri="workspace:/../../../../D:/HTW/docear/welcome.mm">
 <!--To view this file, download free mind mapping software Freeplane from http://freeplane.sourceforge.net -->
-<node TEXT="Wellcome to Docear Online (Alpha)" ID="ID_1723255651" CREATED="1283093380553" MODIFIED="1363699931295"><hook NAME="MapStyle">
+<node TEXT="Welcome to Docear Online (Alpha)" ID="ID_1723255651" CREATED="1283093380553" MODIFIED="1363699931295"><hook NAME="MapStyle">
 
 <map_styles>
 <stylenode LOCALIZED_TEXT="styles.root_node">
