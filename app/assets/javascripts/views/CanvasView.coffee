@@ -127,7 +127,6 @@ define ->
           x: position.x * 1/@browserZoom
           y: position.y * 1/@browserZoom
 
-      console.log 'fdwfdsfds'
       if animated
         @$el.animate {'left':"#{position.x}px",'top':"#{position.y}px"}, {duration: time, queue: true}
       else

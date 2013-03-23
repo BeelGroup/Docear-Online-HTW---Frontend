@@ -4,6 +4,6 @@ require ['views/MapView', 'routers/DocearRouter'],  (MapView, DocearRouter) ->
     initializeJsPlumb()
     $('#mindmap-container').fadeIn()
     mapView = new MapView('mindmap-viewport')
-    mapView.renderAndAppendTo($('#mindmap-container'), false)
+    mapView.renderAndAppendTo($('#mindmap-container'), true)
     router = new  DocearRouter(mapView)
     mapView.loadMap("welcome")

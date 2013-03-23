@@ -9,6 +9,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     constructor:(@id)->
       super()
+      $(window).on('resize', @resizeViewport)
 
     positionNodes:()->
       jsPlumb.reset()
@@ -28,6 +29,15 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @rootView.setChildPositions()
 
 
+    resizeViewport:=>
+      console.log 'resize'
+
+      @updateWidthAndHeight()
+      if typeof @minimap != 'undefined'
+        @minimap.setViewportSize()
+
+
+
     loadMap: (@mapId) ->
       if typeof @rootView != 'undefined'
         # remove old html elements
@@ -38,9 +48,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
         $.get(@href, @createJSONMap, "json")
       )
       
-      #@canvas.resize 20000, 20000
-      
-
 
     createJSONMap: (data)=>
       $('#current-mindmap-name').text(data.name)
@@ -99,17 +106,46 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       @renderSubviews()
       @
 
-    render:(forceFullscreen)->
-      @$el.parent().fadeIn()
+    computeHeight:->
+      container = @$el.parent().parent()
+      verticalMargin = parseFloat(container.css('margin-top'))+parseFloat(container.css('margin-bottom'))
+      height = Math.round(window.innerHeight)-@$el.parent().position().top-verticalMargin
 
-      if forceFullscreen
-        @$el.parent().css
-          width: Math.round(window.innerWidth) - 80 +'px'
-          height: Math.round(window.innerHeight) - 150 +'px'
+    computeWidth:->
+      container = @$el.parent().parent()
+      mmContainer = @$el.parent()
+      horizontalContainerMargin = parseFloat(container.css('margin-left'))+parseFloat(container.css('margin-right'))
+      horizontalMmContainerMargin = parseFloat(mmContainer.css('margin-left'))+parseFloat(mmContainer.css('margin-right'))
+      width = Math.round(window.innerWidth)-horizontalContainerMargin-horizontalMmContainerMargin
+
+    updateWidthAndHeight:->
+      mindmapContainer = @$el.parent()
+      container = @$el.parent().parent()
+
+      if @forceFullscreen
+        width = @computeWidth()
+        height = @computeHeight()
+      else
+        width = container.width()
+        height = container.height()
+
+      container.css
+        width:  width+'px'
+        height: height+'px'
+
+      mindmapContainer.css
+        width:  width+'px'
+        height: height+'px'
 
       @$el.css
-        width: @$el.parent().width()
-        height: @$el.parent().height()
+        width:  width+'px'
+        height: height+'px'
+
+
+    render:(@forceFullscreen)->
+      @$el.parent().fadeIn()
+      @updateWidthAndHeight()
+
 
     renderSubviews:()->
       $viewport = @$el
