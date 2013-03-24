@@ -1,4 +1,4 @@
-define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/HtmlView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (DocearRouter, RootNodeView, NodeView, HtmlView, CanvasView, MinimapView, ZoomPanelView, NodeModel,RootNodeModel) ->  
+define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
   module = ->
 
   class MapView extends Backbone.View
@@ -13,7 +13,6 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     positionNodes:()->
       jsPlumb.reset()
-
       @rootView = new RootNodeView @rootNode
       
       # create and append new html 
@@ -95,7 +94,14 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
 
     addLoadingOverlay:->
       div = document.createElement("div")
+      loaderGifRoute = jsRoutes.controllers.Assets.at('images/loader-bar.gif').url
       div.className = 'loading-map-overlay'
+      $(div).css 
+        'background-image'  : "url(#{loaderGifRoute})"
+        'background-repeat' : 'no-repeat' 
+        'background-attachment' : 'fixed' 
+        'background-position'   : 'center' 
+
       $(div).hide()
       @$el.parent().append div
 

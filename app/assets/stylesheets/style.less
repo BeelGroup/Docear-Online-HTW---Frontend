@@ -1,13 +1,18 @@
-@docear-blue: #073E6A;
+@docear-dark-blue: #073E6A;
+@docear-blue: #487698;
+@docear-light-blue: #7AA8CA;
+@light-grey: #EBEBEB;
+@grey: rgb(190,190,190);
+@dark-grey: #808080;
 
 body{
-    background-color: rgb(122,168,202);
+    background-color: @docear-light-blue
 }
 
 .docear-test 
 {
-    background: @docear-blue; 
-    backgound-color: #487698;
+    background: @docear-dark-blue; 
+    backgound-color: @docear-blue;
     color: white;
 }
 
@@ -73,7 +78,7 @@ body{
   height: 100%;
   position: absolute;
   z-index: 11;
-  background-color: rgb(122,168,202);
+  background-color: @docear-light-blue;
   opacity:0.7;
   filter:alpha(opacity=70); /* For IE8 and earlier */
   cursor: progress;  
@@ -87,7 +92,7 @@ body{
     border: 1px solid #333333;
     font-weight: bold;
     font-size: 20px;
-    background-color: #487698;
+    background-color: @docear-blue;
     border-radius: 30px 30px 30px 30px;
     cursor: pointer;
     opacity:0.7;
@@ -97,13 +102,13 @@ body{
 .mindmap-canvas
 {
     position: relative;
-    background-color: rgb(235,235,235);
+    background-color: @light-grey;
 }
 
 .mini-node
 {
     position: absolute;
-    background: rgb(50,155,50); 
+    background: @docear-dark-blue; 
     z-index: 1;
 }
 
@@ -114,7 +119,7 @@ body{
 
 .minimap-viewport
 {
-    background-color: rgb(72,118,152);
+    background-color: @docear-blue;
     border: 1px solid #333333;
     position: absolute;
     z-index: 10;
@@ -122,14 +127,14 @@ body{
 
 .minimap-viewport.highlight
 {
-    background-color:rgb(122,168,202);
+    background-color: @docear-light-blue;
     cursor: default;
 }
 
 .minimap-canvas
 {
     position : absolute;
-    background-color:rgb(190,190,190);
+    background-color: @grey;
     border: 1px solid #333333;
     right: 1%;
     top: 1%;
@@ -152,7 +157,7 @@ body{
 .mindmap-canvas .node .inner-node 
 {
     padding: 10px;
-    border: 1px solid #808080;
+    border: 1px solid @dark-grey;
     border-radius: 30px ;
     display: inline-block;
     cursor: default;
@@ -191,7 +196,7 @@ body{
 
 .mindmap-canvas .node.selected > .inner-node 
 {
-    border: 2px solid #487698;
+    border: 2px solid @docear-blue;
 }
 
 .mindmap-canvas .node .inner-node .controls 
@@ -214,7 +219,6 @@ body{
     margin-left: 330px;   
     margin-right: 10px;   
 }
-
 
 
 #help-menu 
@@ -305,9 +309,9 @@ body{
     top: 55%;
     left: -10px;
     
-    background: none repeat scroll 0 0 #487698;
-    border-bottom: 1px solid #333333;
-    border-right: 1px solid #333333;
+    background: none repeat scroll 0 0 @docear-blue;
+    border-bottom: 1px solid @dark-grey;
+    border-right: 1px solid @dark-grey;
     border-left: 1px solid #FFFFFF;
     color: #FFFFFF;
     display: block;

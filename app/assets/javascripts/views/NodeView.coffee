@@ -1,4 +1,4 @@
-define ['views/AbstractNodeView', 'models/RootNode'], (AbstractNodeView, RootNode) ->
+define ['views/AbstractNodeView'], (AbstractNodeView) ->
   module = ->
   
   class NodeView extends AbstractNodeView

@@ -1,4 +1,4 @@
-define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, NodeView, SyncedView, HtmlView, NodeEditView, NodeControlsView) ->
+require ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, NodeView, SyncedView, NodeEditView, NodeControlsView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -16,7 +16,6 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
         toModel: 'PosToModel'
         toForm: 'PosToForm'
 
-
     # define events -> here u can pass informations to the model
     events: 
       'click': (event)-> @selectNode(event)
@@ -25,7 +24,6 @@ define ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/HtmlView', '
       'click .action-change': 'modificateModel'
       #'click .action-fold': -> @foldModel()
       
-    # a.k.a. constructor
     constructor: (@model) ->
       super()
       #id: @model.get 'id'
