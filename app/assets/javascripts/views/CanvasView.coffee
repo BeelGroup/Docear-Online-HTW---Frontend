@@ -25,7 +25,11 @@ define ->
 
       $(document).keydown (event)=>
         if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
-          @rootView.userKeyInput event
+          if event.keyCode == 27
+            @centerViewTo @rootView.model
+            @rootView.model.set 'selected', true
+          else
+            @rootView.userKeyInput event
 
 
     checkBoundaries:->

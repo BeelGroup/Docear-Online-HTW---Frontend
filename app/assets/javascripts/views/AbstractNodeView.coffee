@@ -1,9 +1,9 @@
-require ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, NodeView, SyncedView, NodeEditView, NodeControlsView) ->
+define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, SyncedView, NodeEditView, NodeControlsView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
 
-    tagName: 'div',
+    tagName: 'div'
     className: 'node' 
     subViews: {}
     horizontalSpacer: 20
@@ -26,7 +26,6 @@ require ['models/Node', 'views/NodeView', 'views/SyncedView', 'views/NodeEditVie
       
     constructor: (@model) ->
       super()
-      #id: @model.get 'id'
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@changeFoldedStatus , @
