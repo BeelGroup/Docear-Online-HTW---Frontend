@@ -11,22 +11,21 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
       super()
 
     positionNodes:()->
-      jsPlumb.reset()
-
       @rootView = new RootNodeView @rootNode
-      
+
       # create and append new html 
       @$rootHtml = $(@rootView.render().el).html()
       @canvas.getElement().append @$rootHtml      
       @rootView.alignControls @rootView.model, true
+
+      @rootView.refreshDom()
       
       @rootView.connectChildren()
+      
       @rootView.centerInContainer()
-      @rootView.refreshDom()
-      jsPlumb.repaintEverything()
+      
       @canvas.setRootView(@rootView)
-      @rootView.setChildPositions()
-
+      
 
     loadMap: (@mapId) ->
       if typeof @rootView != 'undefined'
@@ -56,6 +55,7 @@ define ['routers/DocearRouter', 'views/RootNodeView', 'views/NodeView', 'views/H
         @rootNode.set 'rightChildren', rightNodes
 
       @positionNodes()
+      
       @canvas.center()
       
       setTimeout( => 
