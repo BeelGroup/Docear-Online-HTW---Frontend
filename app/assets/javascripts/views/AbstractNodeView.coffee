@@ -256,6 +256,8 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         
         if $($node).children('.children').children('.node').size() == 0
           $($fold).hide()
+        else
+          $($fold).show()
         
         $($fold).click (event)->
           currentNodeId = $(this).closest('.node').attr('id')
