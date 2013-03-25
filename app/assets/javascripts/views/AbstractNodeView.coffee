@@ -83,19 +83,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         if isVisible
           if childrenHeight > nodeHeight
             @resizeTree $node, diff
-          $children.fadeOut(document.fadeDuration, ->
-            $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
-            jsPlumb.repaintEverything()
-          )
+          $children.fadeOut(document.fadeDuration)
         else
           if childrenHeight > nodeHeight
             @resizeTree $node, -diff
-
-          $children.find('svg').hide()
-          $children.fadeIn(document.fadeDuration, ->
-            $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
-            jsPlumb.repaintEverything()
-          )
+          $children.fadeIn(document.fadeDuration)
         
     changeNodeText: ->
       $node = $("#"+@model.id)
@@ -138,8 +130,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
       $node.animate {
         top: '-='+(postHeight-preHeight)/2
-      }, document.fadeDuration, ->
-        jsPlumb.repaintEverything()
+      }, document.fadeDuration
     
 
     # [Debugging] 

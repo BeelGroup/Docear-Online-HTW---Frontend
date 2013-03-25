@@ -26,7 +26,6 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       height2 = @alignChildrenofElement($('#'+@model.get 'id').children('.rightChildren:first'), 'right')
       height = (height1 > height2) ? height1 : height2
       
-      jsPlumb.repaintEverything()
       height
       
     connectChildren: ->

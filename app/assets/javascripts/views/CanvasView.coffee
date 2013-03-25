@@ -170,7 +170,6 @@ define ->
         @rootView.scale amount/100, true
         @$el.trigger 'zoom', amount/100
         5500
-        #jsPlumb.repaintEverything()
 
     zoomCenter:()=>
       if(typeof @rootView != "undefined")
