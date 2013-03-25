@@ -3,6 +3,8 @@ isTest = $("body").hasClass("test-mode")
 connectNodes = (sourceIdentifier, targetIdentifier) -> 
   $connectionContainer = $(targetIdentifier).children('.connection')
   
+  $($connectionContainer).svg('destroy');
+  
   sourceWidth = $(sourceIdentifier).outerWidth()
   sourceHeight = $(sourceIdentifier).outerHeight()
   sourceLeft = $(sourceIdentifier).offset().left
@@ -12,8 +14,6 @@ connectNodes = (sourceIdentifier, targetIdentifier) ->
   targetWidth = $(targetIdentifier).outerWidth()
   targetLeft = $(targetIdentifier).offset().left
   targetTop = $(targetIdentifier).offset().top
-
-  $childrenContainer = $(targetIdentifier).closest('.children')
 
   strokeWidth = document.graph.defaultWidth
   strokeColor = document.graph.defaultColor
@@ -114,5 +114,9 @@ connectNodes = (sourceIdentifier, targetIdentifier) ->
     pathNode = paper.path(pathString).attr({
       "stroke" : strokeColor
       "stroke-width" : strokeWidth
-    })
+    })  
     
+updateTree = ($node)->
+  $parent = $($node).parent().closest('.node')
+  connectNodes($parent, $node)
+  

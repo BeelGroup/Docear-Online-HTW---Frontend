@@ -222,7 +222,8 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       
         $node.animate({
           top: '-='+(height/2)
-        }, document.fadeDuration)
+        }, 
+        duration: document.fadeDuration)
       
         $nextBrother = $($node).next('.node')
         while $nextBrother.size() > 0
@@ -230,8 +231,16 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
             top: '-='+(height)
           }, document.fadeDuration)
           $nextBrother = $($nextBrother).next('.node')
+          
+        setTimeout(->
+          $.each($parentsChildren.children('.node'), (index, $node)->
+            updateTree($node)
+          )
+        , document.fadeDuration)
+        
         @resizeTree $parent, height
-
+        
+        
     
     alignControls: (model, recursive = false)->
       nodes = [model]
