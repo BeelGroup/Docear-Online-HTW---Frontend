@@ -37,16 +37,11 @@ define ->
 
     resize:()=>
       @ratio = @relatedCanvas.width() / @maxWidth
-      @setSize()
-
-      @minimapViewportOriginWidth = Math.round(@relatedViewport.width() / @ratio)
-      @minimapViewportOriginHeight = Math.round(@relatedViewport.height() / @ratio)
-      @minimapViewport.css
-        'width' : @minimapViewportOriginWidth
-        'height': @minimapViewportOriginHeight
+      @setCanvasSize()
+      @setViewportSize()
 
 
-    setSize:->
+    setCanvasSize:->
       @width = Math.round(@relatedCanvas.width() / @ratio)
       @height = Math.round(@relatedCanvas.height() / @ratio)
 
@@ -54,6 +49,13 @@ define ->
         'width'    : @width
         'height'   : @height
 
+
+    setViewportSize:->
+      @minimapViewportOriginWidth = Math.round(@relatedViewport.width() / @ratio)
+      @minimapViewportOriginHeight = Math.round(@relatedViewport.height() / @ratio)
+      @minimapViewport.css
+        'width' : @minimapViewportOriginWidth
+        'height': @minimapViewportOriginHeight
 
     resizeMiniViewport:(event, @scaleAmount, reset)=>
       possibilities = document.body.style
@@ -162,7 +164,7 @@ define ->
       $element.append(@el)
       @draggable() if @itsDraggable
 
-      @setSize()
+      @setCanvasSize()
 
       @afterAppend()
       @

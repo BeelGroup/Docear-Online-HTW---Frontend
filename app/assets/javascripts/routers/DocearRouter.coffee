@@ -1,4 +1,4 @@
-define ['views/RootNodeView', 'views/NodeView', 'views/HtmlView', 'models/Node', 'models/RootNode'],  (RootNodeView, NodeView,HtmlView,NodeModel,RootNodeModel) ->
+define [],() ->
   module = ->
   
   class DocearRouter extends Backbone.Router

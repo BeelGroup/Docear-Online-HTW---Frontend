@@ -3,8 +3,10 @@ define ->
 
   class SyncedView extends Backbone.View
       
+    constructor:->
+      super()
+
     delegateEvents: (events) ->
-      super
       if @model?
         @fieldMap = @fieldMap or {}
         for selector, field of @fieldMap

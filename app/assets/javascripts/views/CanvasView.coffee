@@ -25,7 +25,11 @@ define ->
 
       $(document).keydown (event)=>
         if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
-          @rootView.userKeyInput event
+          if event.keyCode == 27
+            @centerViewTo @rootView.model
+            @rootView.model.set 'selected', true
+          else
+            @rootView.userKeyInput event
 
 
     checkBoundaries:->
@@ -127,7 +131,6 @@ define ->
           x: position.x * 1/@browserZoom
           y: position.y * 1/@browserZoom
 
-      console.log 'fdwfdsfds'
       if animated
         @$el.animate {'left':"#{position.x}px",'top':"#{position.y}px"}, {duration: time, queue: true}
       else
