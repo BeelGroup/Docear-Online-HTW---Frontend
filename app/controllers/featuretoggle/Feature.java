@@ -32,7 +32,8 @@ public enum Feature {
     NODE_CONTROLS("enables node controls to edit/add/delete nodes "),
     FOLD_NODE("enables to fold/unfold nodes "),
     FEEDBACK("enables a feedback dialog for the user"),
-    USER_PROFILE("enables the user profile");
+    USER_PROFILE("enables the user profile"),
+    SERVER_SYNC("synchronizes all changes in the frontend with the backend");
 
     String description;
     boolean isEnabled = false;
