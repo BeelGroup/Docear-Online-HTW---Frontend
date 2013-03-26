@@ -210,7 +210,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       @
 
       
-    resizeTree: ($node, height)->
+    resizeTree: ($node, height, currentZoom = -1)->
+      if currentZoom == -1
+        currentZoom = getCurrentZoomAmount($node.closest('.node.root'))
+      
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
       if($($parentsChildren).children('.node').size() > 1)
@@ -234,11 +237,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
           
         setTimeout(->
           $.each($parentsChildren.children('.node'), (index, $node)->
-            updateTree($node)
+            updateTree $node, currentZoom
           )
         , document.fadeDuration)
         
-        @resizeTree $parent, height
+        @resizeTree $parent, height, currentZoom
         
         
     
