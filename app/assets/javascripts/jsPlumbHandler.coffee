@@ -1,19 +1,34 @@
 isTest = $("body").hasClass("test-mode")
 
-connectNodes = (sourceIdentifier, targetIdentifier) -> 
-  $connectionContainer = $(targetIdentifier).children('.connection')
+getCurrentZoomAmount = ($element)->
+  zoom = 1
+
+  if !$.browser.msie 
+    zoomAttributes = []
+    zoomAttributes.push $($element).css('-webkit-transform')
+    zoomAttributes.push $($element).css('-o-transform')
+    zoomAttributes.push $($element).css('-moz-transform')
+    zoomAttributes.push $($element).css('-ms-transform')
+    
+    for attr in zoomAttributes
+      if attr != 'none' and attr != undefined
+        startSub = attr.indexOf("(")+1
+        zoom = parseFloat(attr.substr(startSub).split(',')[0].trim())
+        break
+  return zoom
   
-  $($connectionContainer).svg('destroy');
+connectNodes = (sourceIdentifier, targetIdentifier, zoom = 1) ->
+  $connectionContainer = $(targetIdentifier).children('.connection')
   
   sourceWidth = $(sourceIdentifier).outerWidth()
   sourceHeight = $(sourceIdentifier).outerHeight()
-  sourceLeft = $(sourceIdentifier).offset().left
-  sourceTop = $(sourceIdentifier).offset().top
+  sourceLeft = $(sourceIdentifier).offset().left/zoom
+  sourceTop = $(sourceIdentifier).offset().top/zoom
 
   targetHeight = $(targetIdentifier).outerHeight()
   targetWidth = $(targetIdentifier).outerWidth()
-  targetLeft = $(targetIdentifier).offset().left
-  targetTop = $(targetIdentifier).offset().top
+  targetLeft = $(targetIdentifier).offset().left/zoom
+  targetTop = $(targetIdentifier).offset().top/zoom
 
   strokeWidth = document.graph.defaultWidth
   strokeColor = document.graph.defaultColor
@@ -100,6 +115,7 @@ connectNodes = (sourceIdentifier, targetIdentifier) ->
     control2Y = connection.endY + Math.min(middleX, middleY)
   
   if Raphael.svg
+    $($connectionContainer).svg('destroy');
     $($connectionContainer).svg()
     svg = $($connectionContainer).svg('get'); 
     path = svg.createPath();
@@ -107,6 +123,7 @@ connectNodes = (sourceIdentifier, targetIdentifier) ->
     bezierControls = [[middleX, connection.startY, middleX, connection.startY, middleX, control1Y],[middleX, control1Y, middleX, control2Y, middleX, control2Y],[middleX, connection.endY, middleX, connection.endY, connection.endX, connection.endY]]
     pathNode = svg.path(null, path.move(connection.startX, connection.startY).curveC(bezierControls), {fill: 'none', stroke: strokeColor, strokeWidth: strokeWidth}, true)
   else
+    $($connectionContainer).empty()
     pathString = """M#{connection.startX},#{connection.startY}C#{middleX},#{connection.startY} #{middleX},#{connection.startY} #{middleX},#{control1Y} #{middleX},#{control1Y} #{middleX},#{control2Y} #{middleX},#{control2Y} #{middleX},#{connection.endY} #{middleX},#{connection.endY} #{connection.endX},#{connection.endY}"""
     
     # even if size of $connectionContainer is 1 DOM element must be passed via ".get(0)"
@@ -114,9 +131,11 @@ connectNodes = (sourceIdentifier, targetIdentifier) ->
     pathNode = paper.path(pathString).attr({
       "stroke" : strokeColor
       "stroke-width" : strokeWidth
+      "fill" : "None"
+      "fill-opacity": "0"
     })  
     
-updateTree = ($node)->
+updateTree = ($node, currentZoom)->
   $parent = $($node).parent().closest('.node')
-  connectNodes($parent, $node)
+  connectNodes($parent, $node, currentZoom)
   
