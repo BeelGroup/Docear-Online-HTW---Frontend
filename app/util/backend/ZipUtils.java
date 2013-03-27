@@ -1,9 +1,5 @@
 package util.backend;
 
-import org.apache.commons.io.FileUtils;
-
-import play.Logger;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import play.Logger;
 
 public class ZipUtils
 {
