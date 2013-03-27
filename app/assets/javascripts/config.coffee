@@ -12,3 +12,5 @@ document.navigation.key.selectNextBrother = 40
 document.navigation.key.fold = 32
 
 document.fadeDuration = 0
+
+document.strgPressed = false
