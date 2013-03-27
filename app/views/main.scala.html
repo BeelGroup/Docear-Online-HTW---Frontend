@@ -5,12 +5,6 @@
 @import controllers.featuretoggle.Feature.enabledFeatures
 @import scala.collection.JavaConversions._
 
-<!--
-    @Application.debugInfo().map { entry =>
-        @entry._1=@entry._2
-    }
--->
-
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
         <li @if(relativeUrl == request.uri ) {class="active"}>
@@ -44,6 +38,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<!--
+	    @Application.debugInfo().map { entry =>
+	        @entry._1=@entry._2
+	    }
+	-->
     <meta charset="utf-8">
     <title>@title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
