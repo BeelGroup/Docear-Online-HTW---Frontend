@@ -152,7 +152,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	@Override
 	public Promise<String> createNode(final String mapId, final String parentNodeId) {
 		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
-		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId);
+		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId,username());
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
@@ -192,7 +192,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		final String mapId = getMindMapIdInFreeplane(addNodeRequestJson.get("mapId").asText());
 		final String parentNodeId = addNodeRequestJson.get("parentNodeId").asText();
 		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
-		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId);
+		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId,username());
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
@@ -214,7 +214,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		
 		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+nodeJson);
-		ChangeNodeRequest request = new ChangeNodeRequest(mapId,nodeJson);
+		ChangeNodeRequest request = new ChangeNodeRequest(mapId,nodeJson,username());
 
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);
@@ -236,7 +236,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		final String mapId = getMindMapIdInFreeplane(removeNodeRequestJson.get("mapId").asText());
 		final String nodeId = removeNodeRequestJson.get("nodeId").asText();
 		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
-		RemoveNodeRequest request = new RemoveNodeRequest(mapId,nodeId);
+		RemoveNodeRequest request = new RemoveNodeRequest(mapId,nodeId,username());
 
 		ActorRef remoteActor = getRemoteActor();
 		remoteActor.tell(request, remoteActor);
@@ -337,6 +337,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return remoteActor;
 	}
 
-
+	/**
+	 * 
+	 * @return name of currently logged in user
+	 */
+	private String username() {
+		return controllers.User.getCurrentUser().getUsername();
+	}
 
 }

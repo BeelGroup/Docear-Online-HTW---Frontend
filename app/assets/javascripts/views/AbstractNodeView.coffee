@@ -83,19 +83,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         if isVisible
           if childrenHeight > nodeHeight
             @resizeTree $node, diff
-          $children.fadeOut(document.fadeDuration, ->
-            $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
-            jsPlumb.repaintEverything()
-          )
+          $children.fadeOut(document.fadeDuration)
         else
           if childrenHeight > nodeHeight
             @resizeTree $node, -diff
-
-          $children.find('svg').hide()
-          $children.fadeIn(document.fadeDuration, ->
-            $node.parent().closest('.children').children('._jsPlumb_endpoint').show()
-            jsPlumb.repaintEverything()
-          )
+          $children.fadeIn(document.fadeDuration)
         
     changeNodeText: ->
       $node = $("#"+@model.id)
@@ -138,8 +130,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
       $node.animate {
         top: '-='+(postHeight-preHeight)/2
-      }, document.fadeDuration, ->
-        jsPlumb.repaintEverything()
+      }, document.fadeDuration
     
 
     # [Debugging] 
@@ -219,7 +210,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       @
 
       
-    resizeTree: ($node, height)->
+    resizeTree: ($node, height, currentZoom = -1)->
+      if currentZoom == -1
+        currentZoom = getCurrentZoomAmount($node.closest('.node.root'))
+      
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
       if($($parentsChildren).children('.node').size() > 1)
@@ -231,7 +225,8 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       
         $node.animate({
           top: '-='+(height/2)
-        }, document.fadeDuration)
+        }, 
+        duration: document.fadeDuration)
       
         $nextBrother = $($node).next('.node')
         while $nextBrother.size() > 0
@@ -239,8 +234,16 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
             top: '-='+(height)
           }, document.fadeDuration)
           $nextBrother = $($nextBrother).next('.node')
-        @resizeTree $parent, height
-
+          
+        setTimeout(->
+          $.each($parentsChildren.children('.node'), (index, $node)->
+            updateTree $node, currentZoom
+          )
+        , document.fadeDuration)
+        
+        @resizeTree $parent, height, currentZoom
+        
+        
     
     alignControls: (model, recursive = false)->
       nodes = [model]
@@ -256,6 +259,8 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         
         if $($node).children('.children').children('.node').size() == 0
           $($fold).hide()
+        else
+          $($fold).show()
         
         $($fold).click (event)->
           currentNodeId = $(this).closest('.node').attr('id')

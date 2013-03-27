@@ -1,9 +1,5 @@
 package services.backend.mindmap;
 
-import play.Configuration;
-import play.Play;
-
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +7,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import play.Configuration;
+import play.Play;
 
 //TODO backend team, what is the task of this class?
 //TODO Play Framework is stateless don't keep state there

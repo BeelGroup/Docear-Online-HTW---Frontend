@@ -5,19 +5,13 @@
 @import controllers.featuretoggle.Feature.enabledFeatures
 @import scala.collection.JavaConversions._
 
-<!--
-    @Application.debugInfo().map { entry =>
-        @entry._1=@entry._2
-    }
--->
-
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
         <li @if(relativeUrl == request.uri ) {class="active"}>
           @if(relativeUrl != null) {
-            <a href="@relativeUrl" id="@linkId" class="@linkClass">
+            <a href="@relativeUrl" @if(linkId != "" ){id="@linkId"} class="@linkClass">
           }else{
-            <div class="@linkClass" id="@linkId">
+            <div class="@linkClass" @if(linkId != "" ){id="@linkId"}>
           }
                 @if(glyphicon != "") {<i class="@glyphicon icon-white"></i>}
                 @label
@@ -44,6 +38,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<!--
+	    @Application.debugInfo().map { entry =>
+	        @entry._1=@entry._2
+	    }
+	-->
     <meta charset="utf-8">
     <title>@title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -111,7 +110,7 @@
         @content
         
         
-        <div id="feedback-button"><a href="#feedbackDialog" class="feedback-button" data-toggle="modal"><img src="/assets/images/feedback.png" /></a></div>
+        <div id="feedback-button"><a href="#feedbackDialog" class="feedback-button" data-toggle="modal"><img src="/assets/images/feedback.png" alt="feedback"/></a></div>
         @dialogs.feedback()
         <!--
         <footer>

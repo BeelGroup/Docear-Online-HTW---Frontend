@@ -12,21 +12,22 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       $(window).on('resize', @resizeViewport)
 
     positionNodes:()->
-      jsPlumb.reset()
+
       @rootView = new RootNodeView @rootNode
-      
+
       # create and append new html 
       @$rootHtml = $(@rootView.render().el).html()
       @canvas.getElement().append @$rootHtml      
       @rootView.alignControls @rootView.model, true
+
+      @rootView.refreshDom()
       
       @rootView.connectChildren()
+      
       @rootView.centerInContainer()
-      @rootView.refreshDom()
-      jsPlumb.repaintEverything()
+      
       @canvas.setRootView(@rootView)
-      @rootView.setChildPositions()
-
+      
 
     resizeViewport:=>
       console.log 'resize'
@@ -62,6 +63,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @rootNode.set 'rightChildren', rightNodes
 
       @positionNodes()
+      
       @canvas.center()
       
       setTimeout( => 

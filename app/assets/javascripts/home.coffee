@@ -2,10 +2,8 @@ require ['views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/Ca
 
   if $('#mindmap-container').size() > 0
 
-    initializeJsPlumb()
-
     $('#mindmap-container').fadeIn()
-
+    
     mapView = new MapView('mindmap-viewport')
     mapView.renderAndAppendTo($('#mindmap-container'))
     router = new  DocearRouter(mapView)

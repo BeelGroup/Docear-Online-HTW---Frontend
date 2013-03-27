@@ -14,3 +14,8 @@ document.navigation.key.fold = 32
 document.fadeDuration = 0
 
 document.strgPressed = false
+
+document.graph = {}
+document.graph.defaultColor = '#487698'
+document.graph.defaultWidth = 2
+
