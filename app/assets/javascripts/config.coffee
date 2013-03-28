@@ -16,3 +16,5 @@ document.fadeDuration = 0
 document.graph = {}
 document.graph.defaultColor = '#487698'
 document.graph.defaultWidth = 2
+
+document.currentZoom = 1

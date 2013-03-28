@@ -1,20 +1,9 @@
 isTest = $("body").hasClass("test-mode")
 
 getCurrentZoomAmount = ($element)->
-  zoom = 1
-
-  if !$.browser.msie 
-    zoomAttributes = []
-    zoomAttributes.push $($element).css('-webkit-transform')
-    zoomAttributes.push $($element).css('-o-transform')
-    zoomAttributes.push $($element).css('-moz-transform')
-    zoomAttributes.push $($element).css('-ms-transform')
-    
-    for attr in zoomAttributes
-      if attr != 'none' and attr != undefined
-        startSub = attr.indexOf("(")+1
-        zoom = parseFloat(attr.substr(startSub).split(',')[0].trim())
-        break
+  zoom = document.currentZoom
+  if $.browser.msie and $.browser.version < 9
+    zoom = 1
   return zoom
   
 connectNodes = (sourceIdentifier, targetIdentifier, zoom = 1) ->
