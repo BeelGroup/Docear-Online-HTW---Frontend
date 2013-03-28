@@ -99,7 +99,10 @@ connectNodes = (sourceIdentifier, targetIdentifier, zoom = 1) ->
 
     
 
-  $connectionContainer.css(  'left', """#{connectionContainer.x}px""")
+  if isRight
+    $connectionContainer.css(  'left', """#{connectionContainer.x}px""")
+  else
+    $connectionContainer.css(  'right', """-#{connectionContainer.width}px""")
   $connectionContainer.css(   'top', """#{connectionContainer.y}px""")
   $connectionContainer.css( 'width', """#{connectionContainer.width}px""")
   $connectionContainer.css( 'height', """#{Math.max(connectionContainer.height, 15)}px""")

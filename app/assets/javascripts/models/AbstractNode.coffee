@@ -25,6 +25,7 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       @set 'previouslySelected', false
       @set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
       @set 'lastAddedChild', 'undefined'
+      @set 'connectionUpdated', 0
       
       ## THROW events on all (also possible: save/update/change)
       #@on 'all', (event) -> console.log "Event: " + event
@@ -132,4 +133,7 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       root = @getRoot()
       root.get 'mapId'
  
+    updateConnection: ()->
+      @set 'connectionUpdated', (@get('connectionUpdated')+1)
+      
   module.exports = AbstractNode
