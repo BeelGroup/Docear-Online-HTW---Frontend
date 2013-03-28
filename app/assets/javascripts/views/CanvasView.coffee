@@ -16,20 +16,38 @@ define ->
 
     moreEvents:()=>
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
-        $viewport = @$el.parent()          
-        x = event.pageX - $viewport.offset().left - $viewport.width()/2
-        y = event.pageY - $viewport.offset().top - $viewport.height()/2
-        shift = 'x': x, 'y': y
-        if deltaY > 0 then @zoomIn(event, shift) else @zoomOut(event, shift)
-        event.preventDefault() 
+        console.log document.strgPressed
+        if document.strgPressed is on
+          $viewport = @$el.parent()          
+          x = event.pageX - $viewport.offset().left - $viewport.width()/2
+          y = event.pageY - $viewport.offset().top - $viewport.height()/2
+          shift = 'x': x, 'y': y
+          if deltaY > 0 then @zoomIn(event, shift) else @zoomOut(event, shift)
+          event.preventDefault() 
 
       $(document).keydown (event)=>
-        if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
-          if event.keyCode == 27
-            @centerViewTo @rootView.model
-            @rootView.model.set 'selected', true
-          else
-            @rootView.userKeyInput event
+        code = @getKeycode(event)
+        if code is document.navigation.key.strg
+          document.strgPressed = on
+          #if(event.preventDefault) event.preventDefault()
+          #else event.returnValue=false
+          #return false
+        else
+          if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
+            if event.keyCode == 27
+              @centerViewTo @rootView.model
+              @rootView.model.set 'selected', true
+            else
+              @rootView.userKeyInput event
+
+       $(document).keyup (event)=>
+        if @getKeycode(event) is document.navigation.key.strg
+          document.strgPressed = off
+
+
+
+    getKeycode:(event)->
+      code = if event.keyCode == 0 then event.charCode  else event.keyCode
 
 
     checkBoundaries:->
