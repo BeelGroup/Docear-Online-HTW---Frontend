@@ -256,7 +256,7 @@ define ->
 
     setRootView:(@rootView)->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false)
-      #@rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
+      @rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
       
       @zoomAmount = 100   
       @currentMapSize = @rootView.getTotalSize()
@@ -265,12 +265,12 @@ define ->
 
     
     foldNode:(@selectedNode)->
-      @$overlay = @$el.parent().parent().find(".loading-map-overlay")
-      @$overlay.fadeIn(200, =>
-        $selectedNode = $('#'+(@selectedNode.get 'id'))
-        @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
-        @$overlay.fadeOut(400)
-      )
+      #@$overlay = @$el.parent().parent().find(".loading-map-overlay")
+      #@$overlay.fadeIn(200, =>
+      $selectedNode = $('#'+(@selectedNode.get 'id'))
+      @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
+      #  @$overlay.fadeOut(400)
+      #)
       
 
     centerViewTo:(selectedNode, shiftInAnyCase = true)->
