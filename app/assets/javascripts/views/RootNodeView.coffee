@@ -129,7 +129,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
-              $("##{@model.get 'id'}").trigger 'newFoldedNode', selectedNode
+              selectedNode.fold()
         else
           @model.set 'selected', true
 
