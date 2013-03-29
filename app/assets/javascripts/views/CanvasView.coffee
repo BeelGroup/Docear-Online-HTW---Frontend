@@ -180,6 +180,8 @@ define ->
       if(typeof @rootView != "undefined")
         console.log "zoom:#{amount}%"
 
+        document.currentZoom = amount/100
+        
         @previousMapSize.x = @currentMapSize.x
         @previousMapSize.y = @currentMapSize.y
         @currentMapSize.x = @totalMapsize.x * amount/100
@@ -279,21 +281,14 @@ define ->
       @previousMapSize = @rootView.getTotalSize()
       @checkBoundaries()
 
-
+    
     foldNode:(@selectedNode)->
-      @$overlay = @$el.parent().parent().find(".loading-map-overlay")
-      @$overlay.fadeIn(200, =>
-        oldZoomAmount = @zoomAmount
-        @zoomAmount = 100
-        @zoom(@zoomAmount, false)
-        $selectedNode = $('#'+(@selectedNode.get 'id'))
-        @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
-        #TODO: check size after fold
-        #@checkBoundaries()
-        @zoomAmount = oldZoomAmount
-        @zoom(@zoomAmount, false)
-        @$overlay.fadeOut(400)
-      )
+      #@$overlay = @$el.parent().parent().find(".loading-map-overlay")
+      #@$overlay.fadeIn(200, =>
+      $selectedNode = $('#'+(@selectedNode.get 'id'))
+      @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
+      #  @$overlay.fadeOut(400)
+      #)
       
 
     centerViewTo:(selectedNode, shiftInAnyCase = true)->
