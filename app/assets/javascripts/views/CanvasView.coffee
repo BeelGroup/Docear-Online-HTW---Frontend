@@ -16,14 +16,14 @@ define ->
 
     moreEvents:()=>
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
-        console.log document.strgPressed
-        if document.strgPressed is on
-          $viewport = @$el.parent()          
-          x = event.pageX - $viewport.offset().left - $viewport.width()/2
-          y = event.pageY - $viewport.offset().top - $viewport.height()/2
-          shift = 'x': x, 'y': y
-          if deltaY > 0 then @zoomIn(event, shift) else @zoomOut(event, shift)
-          event.preventDefault() 
+        #console.log document.strgPressed
+        #if document.strgPressed is on
+        $viewport = @$el.parent()          
+        x = event.pageX - $viewport.offset().left - $viewport.width()/2
+        y = event.pageY - $viewport.offset().top - $viewport.height()/2
+        shift = 'x': x, 'y': y
+        if deltaY > 0 then @zoomIn(event, shift) else @zoomOut(event, shift)
+        event.preventDefault() 
 
       $(document).keydown (event)=>
         code = @getKeycode(event)
@@ -179,9 +179,9 @@ define ->
     zoom:(amount, animate = true)=>
       if(typeof @rootView != "undefined")
         console.log "zoom:#{amount}%"
-
-        document.currentZoom = amount/100
         
+        document.currentZoom = amount/100
+
         @previousMapSize.x = @currentMapSize.x
         @previousMapSize.y = @currentMapSize.y
         @currentMapSize.x = @totalMapsize.x * amount/100
@@ -198,10 +198,8 @@ define ->
         @center()
 
     repositionViewportOnZoom:(zoomIn)->   
-
       xGrow = @totalMapsize.x * @zoomAmount - @totalMapsize.x * @oldZoomAmount
       yGrow = @totalMapsize.y * @zoomAmount - @totalMapsize.y * @oldZoomAmount
-
 
       pos = @getPosition()
       xRelDist = (Math.abs(pos.x) / @size) * 2 
@@ -211,7 +209,7 @@ define ->
        x: xGrow/100 * xRelDist
        y: yGrow/100 * yRelDist
 
-      quadrant = @getQuadrant() 
+      quadrant = @getQuadrant()
 
       if quadrant == 1
         @move pos= x: -diff.x, y: diff.y, true, 100
@@ -280,9 +278,6 @@ define ->
       @previousMapSize = @rootView.getTotalSize()
       @checkBoundaries()
 
-    
-
-      
 
     centerViewTo:(selectedNode, shiftInAnyCase = true)->
       $element = $("##{selectedNode.id}")
