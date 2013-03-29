@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeControlsView'], (nodeModel, SyncedView, NodeEditView, NodeControlsView) ->
+define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeControlsView', 'views/ConnectionView'], (nodeModel, SyncedView, NodeEditView, NodeControlsView, ConnectionView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -8,6 +8,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
     subViews: {}
     horizontalSpacer: 20
     verticalSpacer: 10
+    connection: null
 
     fieldMap:
       '#nodeText': "nodeText"
@@ -132,7 +133,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
     
-
+      
     # [Debugging] 
     printModel: ->      
       ##console.log @model.toJSON()
@@ -172,7 +173,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       @$el.append(@model.get 'purehtml')
       controls = new NodeControlsView(@model, @$el)
       controls.renderAndAppendToNode()
-
+      
+      if @model.get('parent') != undefined and @model.get('parent') != null
+        @connection = new ConnectionView(@model.get('parent'), @model)
+        @connection.renderAndAppendToNode(@$el)
+        
 
     #TODO: add translate
 
@@ -210,10 +215,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       @
 
       
-    resizeTree: ($node, height, currentZoom = -1)->
-      if currentZoom == -1
-        currentZoom = getCurrentZoomAmount($node.closest('.node.root'))
-      
+    resizeTree: ($node, height)->
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
       if($($parentsChildren).children('.node').size() > 1)
@@ -235,13 +237,14 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
           }, document.fadeDuration)
           $nextBrother = $($nextBrother).next('.node')
           
+        # to make it visible inside the timeout
+        parent = @model.get 'parent'
         setTimeout(->
-          $.each($parentsChildren.children('.node'), (index, $node)->
-            updateTree $node, currentZoom
-          )
+          for child in parent.get('children')
+            child.updateConnection()
         , document.fadeDuration)
         
-        @resizeTree $parent, height, currentZoom
+        @resizeTree $parent, height
         
         
     

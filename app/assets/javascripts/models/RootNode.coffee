@@ -48,4 +48,12 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       else
         addRightChild child
 
+    updateAllConnections: ->
+      nodes = []
+      nodes = $.merge(nodes, @get('children').slice()  )
+      # used to be recursive via child.getSelectedNode() but could create mem problems
+      while node = nodes.shift()
+        node.updateConnection()
+        nodes = $.merge(nodes, node.get('children').slice()  )
+      
   module.exports = RootNode

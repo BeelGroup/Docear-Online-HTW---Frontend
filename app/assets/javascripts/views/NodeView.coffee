@@ -74,11 +74,12 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
         
         lastChild = null
         for child in $children
-          totalChildrenHeight += heightOfChildren[$(child).attr('id')] + @verticalSpacer
+          id = $(child).attr('id')
+          totalChildrenHeight += heightOfChildren[id] + @verticalSpacer
           
           if lastChild == null
             currentTop = -$(child).outerHeight()/2
-          currentTop += heightOfChildren[$(child).attr('id')]/2
+          currentTop += heightOfChildren[id]/2
           $(child).css('top', currentTop)
           
           if sideOfTree == 'left'
@@ -88,19 +89,23 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
             $(child).addClass('right')	
             $(child).css('left', @horizontalSpacer) 
           lastChild = child
-          currentTop += heightOfChildren[$(child).attr('id')]/2 + @verticalSpacer
+          currentTop += heightOfChildren[id]/2 + @verticalSpacer
+          
         # to correct the addition on the last run we subtract the last added height
         currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
         totalChildrenWidth += @horizontalSpacer
-        $(childrenContainer).css('top', -(totalChildrenHeight/2 - elementHeight/2))
-        $(childrenContainer).css('height', Math.max(totalChildrenHeight, elementHeight))
-        $(childrenContainer).css('width', totalChildrenWidth)
-          
+
+        left = elementWidth
         if sideOfTree == 'left'
-          #$(childrenContainer).css('left', -elementWidth+'px')
-          $(childrenContainer).css('left', -totalChildrenWidth+'px')
-        else
-          $(childrenContainer).css('left', elementWidth+'px');	
+          left = -totalChildrenWidth
+        top = -(totalChildrenHeight/2 - elementHeight/2)
+        height = Math.max(totalChildrenHeight, elementHeight)
+        width = totalChildrenWidth
+
+        $(childrenContainer).css('left', left+'px')
+        $(childrenContainer).css('top', top)
+        $(childrenContainer).css('height', height)
+        $(childrenContainer).css('width', width)
         
       [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 

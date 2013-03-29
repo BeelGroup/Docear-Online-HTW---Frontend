@@ -29,19 +29,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       height
       
     connectChildren: ->
-      @recursiveConnectNodes $(@$el).find('.rightChildren:first')
-      @recursiveConnectNodes $(@$el).find('.leftChildren:first')
-
-
-    recursiveConnectNodes: (childrenContainer)->
-      parent = $(childrenContainer).parent()
-      children = childrenContainer.children('.node')
-      if $(children).size() > 0
-        $.each(children, (index, child)=>
-          connectNodes "#"+parent.attr('id'), "#"+$(child).attr('id')
-          @recursiveConnectNodes $(child).children('.children:first')
-        ) 
-
+      @model.updateAllConnections()
 
     getTotalSize:()->
       $me = $('#'+@model.get 'id')
