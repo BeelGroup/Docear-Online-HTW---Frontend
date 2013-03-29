@@ -94,10 +94,9 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       positions
 
     userKeyInput: (event)->
-      if event.keyCode == 0
-        code = event.charCode
-      else
-        code = event.keyCode
+    
+      code = if event.keyCode == 0 then event.charCode  else event.keyCode
+
       if (code) in document.navigation.key.allowed
         selectedNode = @model.getSelectedNode()
         if selectedNode != null
@@ -118,7 +117,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
-              $("##{@model.get 'id'}").trigger 'newFoldedNode', selectedNode
+              selectedNode.fold()
         else
           @model.set 'selected', true
 

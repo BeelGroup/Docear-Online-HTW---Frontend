@@ -16,6 +16,8 @@ define ->
 
     moreEvents:()=>
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
+        #console.log document.strgPressed
+        #if document.strgPressed is on
         $viewport = @$el.parent()          
         x = event.pageX - $viewport.offset().left - $viewport.width()/2
         y = event.pageY - $viewport.offset().top - $viewport.height()/2
@@ -24,12 +26,28 @@ define ->
         event.preventDefault() 
 
       $(document).keydown (event)=>
-        if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
-          if event.keyCode == 27
-            @centerViewTo @rootView.model
-            @rootView.model.set 'selected', true
-          else
-            @rootView.userKeyInput event
+        code = @getKeycode(event)
+        if code is document.navigation.key.strg
+          document.strgPressed = on
+          #if(event.preventDefault) event.preventDefault()
+          #else event.returnValue=false
+          #return false
+        else
+          if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
+            if event.keyCode == 27
+              @centerViewTo @rootView.model
+              @rootView.model.set 'selected', true
+            else
+              @rootView.userKeyInput event
+
+       $(document).keyup (event)=>
+        if @getKeycode(event) is document.navigation.key.strg
+          document.strgPressed = off
+
+
+
+    getKeycode:(event)->
+      code = if event.keyCode == 0 then event.charCode  else event.keyCode
 
 
     checkBoundaries:->
@@ -76,7 +94,28 @@ define ->
     calculateBrowserZoom:->
       @browserZoom = Math.round(window.outerWidth / window.innerWidth * 100)/100
 
+    updateDragBoundaries:->
+      @$el.draggable "option", "containment", @getUpdatedDragBoundaries()
+
+    getUpdatedDragBoundaries:->
+      dragBoundaries =
+        x1: -@size+@$el.parent().width()+@$el.parent().offset().left
+        y1: -@size+@$el.parent().height()+@$el.parent().offset().top
+        x2: @$el.parent().offset().left
+        y2: @$el.parent().offset().top
+
+      [dragBoundaries.x1, dragBoundaries.y1, dragBoundaries.x2, dragBoundaries.y2]
+
     afterAppend:()->
+
+      dragBoundaries =
+        x1: -@size-@$el.parent().width()
+        y1: -@size-@$el.parent().height()
+        x2: @$el.parent().offset().left
+        y2: @$el.parent().offset().top
+
+      console.log dragBoundaries
+
       if $.browser.chrome
         @$el.draggable
           start:(evt, ui)=>
@@ -100,19 +139,14 @@ define ->
             else
               @$el.trigger 'dragging'
 
-
             @dragCounter++
 
+
+      @$el.draggable 
           cancel: "a.ui-icon, .inner-node, :input"
-          containment: @$el.parent().attr('id')
           cursor: "move"
           handle: @id
-      else
-        @$el.draggable
-          cancel: "a.ui-icon, .inner-node, :input"
-          containment: @$el.parent().attr('id')
-          cursor: "move"
-          handle: @id
+          containment: @getUpdatedDragBoundaries()
 
 
     move:(delta, animated = true, time = 200)->
@@ -161,9 +195,9 @@ define ->
     zoom:(amount, animate = true)=>
       if(typeof @rootView != "undefined")
         console.log "zoom:#{amount}%"
-
-        document.currentZoom = amount/100
         
+        document.currentZoom = amount/100
+
         @previousMapSize.x = @currentMapSize.x
         @previousMapSize.y = @currentMapSize.y
         @currentMapSize.x = @totalMapsize.x * amount/100
@@ -171,7 +205,7 @@ define ->
         
         @rootView.scale amount/100, true
         @$el.trigger 'zoom', amount/100
-        5500
+
 
     zoomCenter:()=>
       if(typeof @rootView != "undefined")
@@ -179,11 +213,10 @@ define ->
         @zoom(@zoomAmount)
         @center()
 
-    repositionViewportOnZoom:(zoomIn)->   
 
+    repositionViewportOnZoom:(zoomIn)->   
       xGrow = @totalMapsize.x * @zoomAmount - @totalMapsize.x * @oldZoomAmount
       yGrow = @totalMapsize.y * @zoomAmount - @totalMapsize.y * @oldZoomAmount
-
 
       pos = @getPosition()
       xRelDist = (Math.abs(pos.x) / @size) * 2 
@@ -193,7 +226,7 @@ define ->
        x: xGrow/100 * xRelDist
        y: yGrow/100 * yRelDist
 
-      quadrant = @getQuadrant() 
+      quadrant = @getQuadrant()
 
       if quadrant == 1
         @move pos= x: -diff.x, y: diff.y, true, 100
@@ -250,28 +283,18 @@ define ->
         canvasPivot = @canvasPivot()
         # left upper corner
         canvasPivot.x += @$el.parent().width()  / 2
-        canvasPivot.y += @$el.parent().height()  / 2
+        canvasPivot.y += @$el.parent().height() / 2
         @moveTo canvasPivot, true
 
 
     setRootView:(@rootView)->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false)
-      @rootView.getElement().on 'newFoldedNode', (event, selectedNode)=> @foldNode(selectedNode)
       
       @zoomAmount = 100   
       @currentMapSize = @rootView.getTotalSize()
       @previousMapSize = @rootView.getTotalSize()
       @checkBoundaries()
 
-    
-    foldNode:(@selectedNode)->
-      #@$overlay = @$el.parent().parent().find(".loading-map-overlay")
-      #@$overlay.fadeIn(200, =>
-      $selectedNode = $('#'+(@selectedNode.get 'id'))
-      @selectedNode.set 'folded', $selectedNode.children('.children').is(':visible')
-      #  @$overlay.fadeOut(400)
-      #)
-      
 
     centerViewTo:(selectedNode, shiftInAnyCase = true)->
       $element = $("##{selectedNode.id}")

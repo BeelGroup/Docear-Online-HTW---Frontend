@@ -10,11 +10,15 @@ document.navigation.key.selectRightChild = 39
 document.navigation.key.selectPrevBrother = 38
 document.navigation.key.selectNextBrother = 40
 document.navigation.key.fold = 32
+document.navigation.key.strg = 17
 
 document.fadeDuration = 0
+
+document.strgPressed = false
 
 document.graph = {}
 document.graph.defaultColor = '#487698'
 document.graph.defaultWidth = 2
 
 document.currentZoom = 1
+

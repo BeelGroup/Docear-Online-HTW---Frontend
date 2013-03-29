@@ -6,6 +6,10 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel  
       @set 'children', []
       @set 'parent', parent
+
+    fold:()->
+      $nodeToFold = $('#'+(@get 'id'))
+      @set 'folded', $nodeToFold.children('.children').is(':visible')
       
     addChild: (id, text)->
       newChild = new Node(id, false, text, false,0,0,0,0,false, @)

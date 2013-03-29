@@ -149,6 +149,10 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         width:  width+'px'
         height: height+'px'
 
+      console.log typeof @canvas isnt 'undefined'
+      if typeof @canvas isnt 'undefined'
+        @canvas.updateDragBoundaries()
+
 
     render:(@forceFullscreen)->
       @$el.parent().fadeIn()

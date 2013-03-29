@@ -9,12 +9,12 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       @set 'rightChildren', []
       @set 'mapId', mapId
 
+      # will be catched in canvasView
       @bind 'change:selectedNode', => 
         if @get('selectedNode') != null
           $("##{@get 'id' }").trigger 'newSelectedNode', @get 'selectedNode'
 
-          
-    
+ 
     # overwriting getter @get 'children' since we RootNode does not have a children attr
     get: (attr)->
       if attr == 'children'
