@@ -94,7 +94,28 @@ define ->
     calculateBrowserZoom:->
       @browserZoom = Math.round(window.outerWidth / window.innerWidth * 100)/100
 
+    updateDragBoundaries:->
+      @$el.draggable "option", "containment", @getUpdatedDragBoundaries()
+
+    getUpdatedDragBoundaries:->
+      dragBoundaries =
+        x1: -@size+@$el.parent().width()+@$el.parent().offset().left
+        y1: -@size+@$el.parent().height()+@$el.parent().offset().top
+        x2: @$el.parent().offset().left
+        y2: @$el.parent().offset().top
+
+      [dragBoundaries.x1, dragBoundaries.y1, dragBoundaries.x2, dragBoundaries.y2]
+
     afterAppend:()->
+
+      dragBoundaries =
+        x1: -@size-@$el.parent().width()
+        y1: -@size-@$el.parent().height()
+        x2: @$el.parent().offset().left
+        y2: @$el.parent().offset().top
+
+      console.log dragBoundaries
+
       if $.browser.chrome
         @$el.draggable
           start:(evt, ui)=>
@@ -118,19 +139,14 @@ define ->
             else
               @$el.trigger 'dragging'
 
-
             @dragCounter++
 
+
+      @$el.draggable 
           cancel: "a.ui-icon, .inner-node, :input"
-          containment: @$el.parent().attr('id')
           cursor: "move"
           handle: @id
-      else
-        @$el.draggable
-          cancel: "a.ui-icon, .inner-node, :input"
-          containment: @$el.parent().attr('id')
-          cursor: "move"
-          handle: @id
+          containment: @getUpdatedDragBoundaries()
 
 
     move:(delta, animated = true, time = 200)->
@@ -189,13 +205,14 @@ define ->
         
         @rootView.scale amount/100, true
         @$el.trigger 'zoom', amount/100
-        5500
+
 
     zoomCenter:()=>
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
         @zoom(@zoomAmount)
         @center()
+
 
     repositionViewportOnZoom:(zoomIn)->   
       xGrow = @totalMapsize.x * @zoomAmount - @totalMapsize.x * @oldZoomAmount
@@ -266,7 +283,7 @@ define ->
         canvasPivot = @canvasPivot()
         # left upper corner
         canvasPivot.x += @$el.parent().width()  / 2
-        canvasPivot.y += @$el.parent().height()  / 2
+        canvasPivot.y += @$el.parent().height() / 2
         @moveTo canvasPivot, true
 
 

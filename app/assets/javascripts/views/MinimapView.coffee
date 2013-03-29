@@ -193,6 +193,22 @@ define ->
       $minimapViewport = @$el.find('.minimap-viewport')
       mouseX = event.pageX - @$el.offset().left
       mouseY = event.pageY - @$el.offset().top
+
+      halfViewportOuterWidth  = $minimapViewport.outerWidth()/2
+      halfViewportWidth  = $minimapViewport.width()/2
+      halfViewportOuterHeight = $minimapViewport.outerHeight()/2
+      halfViewportHeight = $minimapViewport.height()/2
+
+      if mouseX < halfViewportOuterWidth
+        mouseX = halfViewportWidth
+      else if mouseX > (@$el.width() - halfViewportOuterWidth)
+        mouseX = @$el.width() - halfViewportOuterWidth
+
+      if mouseY < halfViewportOuterHeight
+        mouseY = halfViewportHeight
+      else if mouseY > @$el.height() - halfViewportOuterHeight
+        mouseY = @$el.height() - halfViewportOuterHeight
+
       xPos = @relatedCanvas.width()  * ((mouseX - $minimapViewport.width() / 2) / @$el.width()  * 100) / 100  
       yPos = @relatedCanvas.height() * ((mouseY - $minimapViewport.height() / 2) / @$el.height() * 100) / 100        
       @updateRelatedCanvasPosition(xPos, yPos, true)
