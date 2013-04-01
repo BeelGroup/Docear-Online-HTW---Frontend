@@ -12,11 +12,9 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       $(window).on('resize', @resizeViewport)
 
     positionNodes:()->
-
       @rootView = new RootNodeView @rootNode
+      @$rootHtml = $(@rootView.render().el)
 
-      # create and append new html 
-      @$rootHtml = $(@rootView.render().el).html()
       @canvas.getElement().append @$rootHtml      
       @rootView.alignControls @rootView.model, true
 
@@ -73,6 +71,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       @rootView.getElement().on 'newFoldAction', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
+
       @$el.parent().find(".loading-map-overlay").fadeOut()
       @rootNode
 

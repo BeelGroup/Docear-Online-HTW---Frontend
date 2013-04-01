@@ -9,6 +9,14 @@ body{
     background-color: @docear-light-blue
 }
 
+
+
+.invisible
+{
+    display: none;
+}
+
+
 .docear-test 
 {
     background: @docear-dark-blue; 
@@ -164,31 +172,41 @@ body{
     white-space: nowrap;
 }
 
-.mindmap-canvas .node .inner-node .action-fold,
-.mindmap-canvas  .node .inner-node .controls 
+
+
+.mindmap-canvas .root .inner-node .action-fold.right,
+.mindmap-canvas .node.right .inner-node .action-fold 
 {
+    right: -9px;
+    top: 50%;
     position: absolute;
+}
+
+.mindmap-canvas .root .inner-node .action-fold.left,
+.mindmap-canvas .node.left .inner-node .action-fold 
+{
+    left: -9px;
+    top: 50%;
+    position: absolute;
+}
+
+
+.mindmap-canvas .node .inner-node .action-fold
+{
+    width: 18px;
+    height: auto;
+}
+
+
+.mindmap-canvas .node .inner-node .action-fold.collapse-icon
+{
     display: none;
 }
 
-.mindmap-canvas .node .inner-node .action-fold.icon-plus-sign
-{
-    display: block;
-}
-
-.mindmap-canvas .node.right .inner-node .action-fold 
-{
-    right: -7px;
-}
-
-.mindmap-canvas .node.left .inner-node .action-fold 
-{
-    left: -7px;
-}
 
 .mindmap-canvas .node .inner-node:hover > .action-fold,
-.mindmap-canvas .node.selected > .inner-node > .action-fold,
 .mindmap-canvas .node .inner-node:hover > .controls,
+.mindmap-canvas .node.selected > .inner-node > .action-fold,
 .mindmap-canvas .node.selected > .inner-node > .controls 
 {
     display: block;

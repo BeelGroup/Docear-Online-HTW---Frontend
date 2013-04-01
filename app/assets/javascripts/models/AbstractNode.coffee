@@ -43,7 +43,7 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
 
       @bind 'change:folded', =>
         rootID = @get('rootNodeModel').get 'id'
-        $("##{rootID}").trigger 'newFoldAction'  
+        $("##{rootID}").trigger 'newFoldAction'
 
 
       @bind 'change',(node, changes)->
@@ -57,6 +57,10 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
 
     # will be set to /map/json/id, when fetch() or update() will be called
     urlRoot: '/map/json/' #TODO replace with jsRoutes command
+
+    fold:()->
+      $nodeToFold = $('#'+(@get 'id'))
+      @set 'folded', $nodeToFold.children('.children').is(':visible')
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy

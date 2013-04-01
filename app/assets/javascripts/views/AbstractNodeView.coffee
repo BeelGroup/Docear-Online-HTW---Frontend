@@ -3,12 +3,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
   
   class AbstractNodeView extends SyncedView
 
-    tagName: 'div'
-    className: 'node' 
     subViews: {}
     horizontalSpacer: 20
     verticalSpacer: 10
     connection: null
+
 
     fieldMap:
       '#nodeText': "nodeText"
@@ -17,45 +16,58 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         toModel: 'PosToModel'
         toForm: 'PosToForm'
 
-    # define events -> here u can pass informations to the model
-    events: 
-      'click': (event)-> @selectNode(event)
-      'click .changeable': 'lockModel'
-      'click .action-show': 'printModel'
-      'click .action-change': 'modificateModel'
-      #'click .action-fold': -> @foldModel()
       
-    constructor: (@model) ->
+    constructor: () ->
       super()
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@changeFoldedStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
-      
+      @addEvents()
+
+
+    addEvents:()->
+      @$el.click (event)=> 
+        @handleClick(event)
+        event.stopPropagation()
+        false
+
+
+    handleClick:(event)->
+      if $(event.target).hasClass 'action-select'
+        @selectNode()
+      if $(event.target).hasClass 'action-fold-all'
+        @model.set 'folded', @$el.children('.children').is(':visible')
+
     selectNode:()->
-      console.log 'test'
+      @model.set 'selected', true          
+
 
     PosToModel: ->
       # TODO: Event will not be called on change
       @model.set 'xPos', @$el.css 'left'
       @model.set 'yPos', @$el.css 'top'
 
+
     PosToForm: ->
       x = (@model.get 'Pos').x
       y = (@model.get 'Pos').y
-      node = $('#'+@model.get 'id')
+      node = @$el #$('#'+@model.get 'id')
 
       node.css
         'left'    : x + 'px'
         'top'     : y + 'px'
 
+
     getElement:()->
-      $('#'+@model.get 'id')
+      @$el #$('#'+@model.get 'id')
+
 
     lockModel: ->
       # will be replaced by username
       @model.lock 'me'
       console.log 'locked'
+
 
     changeLockStatus: ->
       if @model.get 'locked' 
@@ -64,17 +76,18 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       else
         @$('.changeable').removeAttr('disabled')
     
+
     changeSelectStatus: ->
-      $('#'+@model.id).toggleClass('selected')
+      @$el.toggleClass('selected')
       
+
     changeFoldedStatus: ->
-      $node = $("#"+@model.id)
+      $node = @$el
       $children = $($node).children('.children')
       isVisible = $children.is(':visible')
       
       $fold = $node.children('.inner-node').children('.action-fold')
-      $fold.toggleClass 'icon-minus-sign'
-      $fold.toggleClass 'icon-plus-sign'
+      $fold.toggleClass 'invisible'
       
       childrenHeight = $children.outerHeight()
       nodeHeight = $node.outerHeight()
@@ -90,8 +103,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
             @resizeTree $node, -diff
           $children.fadeIn(document.fadeDuration)
         
+
     changeNodeText: ->
-      $node = $("#"+@model.id)
+      $node = @$el
       $childrenContainer = $node.children('.children:first')
       
       preWidth = $node.outerWidth()
@@ -133,17 +147,13 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
     
-      
-    # [Debugging] 
-    printModel: ->      
-      ##console.log @model.toJSON()
-
-      
+     
     foldModel: ->
-      $('#'+@model.id).toggleClass('selected')
-      isVisible = $('#'+@model.id).children('.children').is(':visible')
+      @$el.toggleClass('selected')
+      isVisible = @$el.children('.children').is(':visible')
       @model.set 'folded', isVisible
       
+
     # [Debugging] model modification
     modificateModel: -> 
       @model.set 'nodeText', Math.random()   
@@ -154,12 +164,14 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       else
         @model.lock 'Mr. P'
      
+
     subView: (view, autoRender = false) ->
       # if model is set, use its id OR a unique random id
       viewId = view.model?.id or String(Math.random() * new Date().getTime())
       # add view to subviews
       @subViews[viewId] = view
       view
+
 
     getRenderData: ->
     # if the model is already set, parse it to json
@@ -179,42 +191,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         @connection.renderAndAppendToNode(@$el)
         
 
-    #TODO: add translate
-
     scale:(amount)->
-      
-      #possibilities = document.body.style
-
-      #if($.inArray('WebkitTransform', possibilities) or 
-      #   $.inArray('MozTransform', inpossibilities) or 
-      #   $.inArray('OTransform', possibilities) or 
-      #   $.inArray('transform', possibilities))
-
-      #  @getElement().css
-      #    '-moz-transform'    : "scale(#{amount})"  #/* Firefox */
-      #    '-webkit-transform' : "scale(#{amount})"  #/* Safari and Chrome */
-      #    '-ms-transform'     : "scale(#{amount})"  #/* IE 9 */
-      #    '-o-transform'      : "scale(#{amount})"  #/* Opera */  
-
-      
-
       @getElement().zoomTo({targetsize:amount*(@$el.outerWidth()/@$el.parent().width()), duration:600, root: @getElement().parent()});
       
-
-
-    render: ->
-      @$el.html @template @getRenderData()
-      # render the subviews
-      @$el.attr('id', @model.get 'id')
-      @$el.attr('folded', @model.get 'folded')
-      for viewId, view of @subViews
-        html = view.render().el
-        $(html).appendTo(@el)
-      # extend the ready rendered htlm element
-      @afterRender()
-      @
-
-      
+    
     resizeTree: ($node, height)->
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
@@ -245,9 +225,8 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         , document.fadeDuration)
         
         @resizeTree $parent, height
-        
-        
-    
+
+
     alignControls: (model, recursive = false)->
       nodes = [model]
       while node = nodes.shift()
@@ -263,11 +242,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         if $($node).children('.children').children('.node').size() == 0
           $($fold).hide()
           
-        $($fold).click (event)->
-          currentNodeId = $(this).closest('.node').attr('id')
-          #isVisible = $('#'+currentNodeId).children('.children').is(':visible')
-          #model.findById(currentNodeId).set 'folded', isVisible
-          model.findById(currentNodeId).fold()
 
         $newNode = $($controls).children('.action-new-node')
         $($newNode).click (event)->
@@ -283,11 +257,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
           nodeEditView = new NodeEditView(node)
           nodeEditView.renderAndAppendTo($mindmapCanvas)
           
-        $($innerNode).click (event)->
-          $currentNode = $(this).closest('.node')
-          currentNodeId = $($currentNode).attr('id')
-          currentNode = model.findById(currentNodeId)
-          currentNode.set 'selected', true
+
           
       
       

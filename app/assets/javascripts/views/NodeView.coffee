@@ -3,21 +3,26 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
   
   class NodeView extends AbstractNodeView
 
+    tagName: 'div'
+    className: 'node' 
     template: Handlebars.templates['Node']
+    id: 99
 
-    constructor: (model) ->
-      super model
+    constructor:(@model) ->
+      @id = @model.get 'id'
+      super()
 
 
     recursiveRender: (parent, nodes)->
       $.each(nodes, (index, node)=>
         nodeView = new NodeView(node)
-        $nodeHtml = $($(nodeView.render().el))
-        $(parent).append($nodeHtml)
+        nodeHtml = nodeView.render().el
+        console.log nodeHtml
+        $(parent).append(nodeHtml)
         
         children = node.get 'children'
         if children != undefined
-          @recursiveRender($nodeHtml.find('.children:first'), children)
+          @recursiveRender($(nodeHtml).find('.children:first'), children)
       )      
     
     changeChildren: ->
@@ -26,7 +31,7 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       newChild = @model.get 'lastAddedChild'
       nodeView = new NodeView(newChild)
       $nodeHtml = $($(nodeView.render().el))
-      $node = $('#'+@model.id)
+      $node = @$el
       
       $node.children('.children').append($nodeHtml)
       
@@ -51,7 +56,7 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       topCenter = $element.position().top + $element.height() / 2
       top: topCenter, left: leftCenter
 
-    
+
     alignChildrenofElement:(childrenContainer, sideOfTree, i = 1) ->
       element = $(childrenContainer).parent()
       $children = $(childrenContainer).children('.node')
@@ -64,7 +69,7 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       currentTop = 0
       
       totalChildrenHeight = 0
-      totalChildrenWidth = 0;
+      totalChildrenWidth = 0
       if $children.length > 0
         for child in $children
           childSize = @alignChildrenofElement($(child).children('.children'), sideOfTree, i+1)
@@ -110,6 +115,19 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
+    render: ->
+      @$el.html @template @getRenderData()
+      # render the subviews
+      
+      @$el.attr('folded', @model.get 'folded')
+      for viewId, view of @subViews
+        html = view.render().el
+        $(html).appendTo(@el)
+      # extend the ready rendered htlm element
+      @afterRender()
+      @
+
+
     destroy: ->
       @model?.off null, null, @
 
@@ -125,10 +143,6 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       done()
 
 
-    
-    
-
-      
 
 
   module.exports = NodeView

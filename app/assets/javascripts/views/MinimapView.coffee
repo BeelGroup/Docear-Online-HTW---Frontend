@@ -32,8 +32,8 @@ define ->
       @ratio = @relatedCanvas.width() / @maxWidth
 
 
-
     element:-> @$el
+
 
     resize:()=>
       @ratio = @relatedCanvas.width() / @maxWidth
@@ -56,6 +56,7 @@ define ->
       @minimapViewport.css
         'width' : @minimapViewportOriginWidth
         'height': @minimapViewportOriginHeight
+
 
     resizeMiniViewport:(event, @scaleAmount, reset)=>
       possibilities = document.body.style

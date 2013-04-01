@@ -12,7 +12,7 @@ document.navigation.key.selectNextBrother = 40
 document.navigation.key.fold = 32
 document.navigation.key.strg = 17
 
-document.fadeDuration = 0
+document.fadeDuration = 100
 
 document.strgPressed = false
 

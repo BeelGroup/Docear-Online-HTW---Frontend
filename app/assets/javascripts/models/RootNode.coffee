@@ -12,6 +12,7 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       # will be catched in canvasView
       @bind 'change:selectedNode', => 
         if @get('selectedNode') != null
+          # catched in canvasview -> center to selected node if necessary
           $("##{@get 'id' }").trigger 'newSelectedNode', @get 'selectedNode'
 
  
@@ -20,8 +21,8 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       if attr == 'children'
         return @getChildren()
       Backbone.Model.prototype.get.call(this, attr);
-  
-      
+
+
     getChildren: ->
       children = []
       children = $.merge(children, @get('leftChildren').slice()  )

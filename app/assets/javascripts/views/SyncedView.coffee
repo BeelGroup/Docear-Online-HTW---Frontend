@@ -3,8 +3,10 @@ define ->
 
   class SyncedView extends Backbone.View
       
-    constructor:->
+
+    constructor:()->
       super()
+      
 
     delegateEvents: (events) ->
       if @model?
@@ -19,7 +21,7 @@ define ->
     delegateFormSync: (selector, field) ->
       $(@el).delegate selector, "change", (e) =>
         @syncFormToModel e, selector, field
-      
+
 
     delegateModelSync: (selector, field) ->
       delegateMethod = () ->

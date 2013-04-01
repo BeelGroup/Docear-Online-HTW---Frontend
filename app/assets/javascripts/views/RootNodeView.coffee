@@ -3,27 +3,50 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
   
   class RootNodeView extends NodeView
 
+    
+    tagName: 'div'
     template: Handlebars.templates['RootNode']
 
     constructor: (model) ->
       super model
-      model.bind 'change:property1', -> alert("change pty1")
       @lastScaleAmount = 1
       @currentScale = 100
       @scaleAmount = 1.0
 
+    addEvents:()->
+      @$el.click (event)=> 
+        @handleClick(event)
+        @handleRootClick(event)
+        event.stopPropagation()
+        false
+
+    handleRootClick:(event)->
+      if $(event.target).hasClass 'action-fold-right'
+        @changeFoldedStatus 'right' 
+      else if $(event.target).hasClass 'action-fold-left'
+        @changeFoldedStatus 'left'
+        
+
     collapsFoldedNodes:()->      
       foldedNodes = $('.node.folded')
       $(foldedNodes).children('.children').hide()
-      $(foldedNodes).find("i.fold").toggleClass('icon-minus-sign')
-      $(foldedNodes).find("i.fold").toggleClass('icon-plus-sign')
+
+
+    changeFoldedStatus:(side)->
+      if side is 'left' or side is 'both'
+        @$el.children('.inner-node').children('.action-fold.left').toggleClass('invisible')
+        @$el.children('.leftChildren').fadeToggle(document.fadeDuration)
+      if side is 'right' or side is 'both'
+        @$el.children('.inner-node').children('.action-fold.right').toggleClass('invisible')
+        @$el.children('.rightChildren').fadeToggle(document.fadeDuration)
+
 
     #
     # Refresh the mind map an reposition the dom elements
     #
     refreshDom: () ->
-      height1 = @alignChildrenofElement($('#'+@model.get 'id').children('.leftChildren:first'), 'left')
-      height2 = @alignChildrenofElement($('#'+@model.get 'id').children('.rightChildren:first'), 'right')
+      height1 = @alignChildrenofElement(@$el.children('.leftChildren:first'), 'left')
+      height2 = @alignChildrenofElement(@$el.children('.rightChildren:first'), 'right')
       height = (height1 > height2) ? height1 : height2
       
       height
@@ -32,7 +55,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       @model.updateAllConnections()
 
     getTotalSize:()->
-      $me = $('#'+@model.get 'id')
+      $me = @$el #$('#'+@model.get 'id')
 
       sizeOfLeftChilds=
         x: $me.children('.rightChildren:first').outerWidth()
@@ -60,8 +83,8 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
 
 
     setChildPositions: ->
-      $me = $('#'+@model.get 'id')
-      canvas = $me.parent().parent()
+      $me = @$el
+      canvas = $me.parent()
 
       leftChilds = new Array()
       rightChilds = new Array()
@@ -93,8 +116,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
           )
       positions
 
-    userKeyInput: (event)->
-    
+    userKeyInput: (event)->   
       code = if event.keyCode == 0 then event.charCode  else event.keyCode
 
       if (code) in document.navigation.key.allowed
@@ -165,10 +187,10 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       false
 
     centerInContainer: ->
-      node = $('#'+@model.get 'id')
+      node = @$el
 
-      posX = $(node).parent().parent().width()  / 2  - $(node).outerWidth()  / 2
-      posY = $(node).parent().parent().height() / 2  - $(node).outerHeight() / 2
+      posX = $(node).parent().width()  / 2  - $(node).outerWidth()  / 2
+      posY = $(node).parent().height() / 2  - $(node).outerHeight() / 2
       
       node.css 'left', posX + 'px'
       node.css 'top' , posY + 'px'
@@ -210,13 +232,13 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         scaleDiff = 0
         if @lastScaleAmount != amount
           if amount > @lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
-          @getElement().parent().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+          @getElement().effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
           @lastScaleAmount = amount
           @currentScale += scaleDiff
 
-
     render: ->
       @$el.html @template @getRenderData()
+      @$el.addClass('root')
       @recursiveRender $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
       @recursiveRender $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren')
       

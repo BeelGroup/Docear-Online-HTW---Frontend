@@ -8,8 +8,8 @@ define ->
     template: Handlebars.templates['NodeEdit']
 
     events:
-      "click .overlay"     : "hideEditView"
-      "click .cancel"     : "hideEditView"
+      "click .overlay"  : "hideEditView"
+      "click .cancel"   : "hideEditView"
       "click .save"     : "saveChanges"
  
     constructor:(@nodeModel)->
