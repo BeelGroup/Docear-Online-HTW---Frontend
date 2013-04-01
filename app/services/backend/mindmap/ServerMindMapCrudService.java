@@ -30,6 +30,7 @@ import org.docear.messages.Messages.ListenToUpdateOccurrenceRespone;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
 import org.docear.messages.Messages.OpenMindMapRequest;
+import org.docear.messages.Messages.OpenMindMapResponse;
 import org.docear.messages.Messages.RemoveNodeRequest;
 import org.docear.messages.exceptions.MapNotFoundException;
 import org.springframework.context.annotation.Profile;
@@ -76,11 +77,31 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => sending request to freeplane");
 
 		try {
-			final Future<Object> future = ask(remoteActor, new MindmapAsJsonRequest(mindmapId,nodeCount), defaultTimeoutInMillis);
-			final Promise<Object> prom = Akka.asPromise(future);
+			//			final Promise<String> promise = Akka.asPromise(ask(remoteActor, new MindmapAsJsonRequest(mindmapId,nodeCount), defaultTimeoutInMillis)).map(new Function<Object, String>() {
+			//				@Override
+			//				public String apply(Object responseObj) throws Throwable {
+			//					Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
+			//					final MindmapAsJsonReponse response = (MindmapAsJsonReponse)responseObj;
+			//					final String jsonString = response.getJsonString();
+			//					Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : "+jsonString.substring(0, 10));
+			//					return jsonString;
+			//				}
+			//			}).recover(new Function<Throwable, String>() {
+			//
+			//				@Override
+			//				public String apply(Throwable t) throws Throwable {
+			//					if(t instanceof MapNotFoundException) {
+			//						Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...",t);
+			//						serverIdToMapIdMap.remove(id);
+			//						return mindMapAsJsonString(id,nodeCount).get();
+			//					} else {
+			//						throw new RuntimeException(t);
+			//					}
+			//				}
+			//			});
+			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new MindmapAsJsonRequest(mindmapId,nodeCount), defaultTimeoutInMillis));
 
-			
-			final MindmapAsJsonReponse response = (MindmapAsJsonReponse)prom.get();
+			final MindmapAsJsonReponse response = (MindmapAsJsonReponse)promise.get();
 			Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
 			final String jsonString = response.getJsonString();
 			Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : "+jsonString.substring(0, 10));
@@ -95,31 +116,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			}
 		}
 
-		//		Promise<String> promise = Akka.asPromise(future).map(
-		//				new Function<Object, String>() {
-		//					@Override
-		//					public String apply(Object message) throws Throwable {
-		//						Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
-		//						final MindmapAsJsonReponse response = (MindmapAsJsonReponse)message;
-		//						final String jsonString = response.getJsonString();
-		//						Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : "+jsonString.substring(0, 10));
-		//						return jsonString;
-		//					}
-		//				}).recover(new Function<Throwable, String>() {
-		//					@Override
-		//					public String apply(Throwable t) throws Throwable {
-		//						if(t instanceof MapNotFoundException) {
-		//							Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...",t);
-		//							serverIdToMapIdMap.remove(id);
-		//							return mindMapAsJsonString(id,nodeCount).get();
-		//						} else {
-		//							Logger.error("ServerMindMapCrudService.mindMapAsJsonString => unexpected Exception! ",t);
-		//							throw t;
-		//						}
-		//					}
-		//				});
-		//
-		//		return promise;
+
 	}
 
 	@Override
@@ -303,42 +300,13 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			//send file to server and put in map
 			serverIdToMapIdMap.put(mapId, mmId);
 			final ActorRef remoteActor = getRemoteActor();
-			remoteActor.tell(new OpenMindMapRequest(fileContentAsString,fileName), null);
-			return true;
-			//			final Future<Object> future = 
-			//					ask(remoteActor, new OpenMindMapRequest(fileContentAsString,fileName), defaultTimeoutInMillis);
-			//					.map(new Mapper<Object, Boolean>() {
-			//						@Override
-			//						public Boolean apply(Object parameter) {
-			//							return true;
-			//						}
-			//					}, system.dispatcher())
-			//					.recover(new Recover<Boolean>() {
-			//
-			//						@Override
-			//						public Boolean recover(Throwable arg0) throws Throwable {
-			//							return false;
-			//						}
-			//
-			//					}, system.dispatcher());
-
-
-			//			return Akka.asPromise(future).map(new Function<Object, Boolean>() {
-			//
-			//				@Override
-			//				public Boolean apply(Object response) throws Throwable {
-			//
-			//					return ((OpenMindMapResponse)response).getSuccess();
-			//				}
-			//			})
-			//			.recover(new Function<Throwable, Boolean>() {
-			//
-			//				@Override
-			//				public Boolean apply(Throwable arg0) throws Throwable {
-			//					return false;
-			//				}
-			//			})
-			//			.get();
+			try {
+				final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new OpenMindMapRequest(fileContentAsString,fileName), defaultTimeoutInMillis));
+				final OpenMindMapResponse response = (OpenMindMapResponse)promise.get();
+				return response.getSuccess();
+			} catch (Throwable t) {
+				return false;
+			}
 
 		} catch (FileNotFoundException e) {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
