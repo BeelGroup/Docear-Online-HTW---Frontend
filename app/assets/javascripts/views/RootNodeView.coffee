@@ -179,10 +179,11 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
           $brother = $($selectedNode).prev('.node')
         if $($brother).size() > 0
           id = $($brother).attr('id')
-          selectedNode.get('parent').findById(id).set 'selected', true
-          #selectedNode.get('parent').findById(id).set 'previouslySelected', true
-          #selectedNode.set 'selected', false
-          #selectedNode.set 'previouslySelected', false
+          brother = selectedNode.get('parent').findById(id)
+          brother.set 'selected', true
+          brother.set 'previouslySelected', true
+          selectedNode.set 'selected', false
+          selectedNode.set 'previouslySelected', false
           return true
       false
 
