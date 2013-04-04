@@ -36,14 +36,25 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
     handleClick:(event)->
       if $(event.target).hasClass 'action-select'
         @selectNode()
-      if $(event.target).hasClass 'action-fold-all'
+      else if $(event.target).hasClass 'action-fold-all'
         console.log 'fold DOM target: '
         console.log event.target
         console.log 'fold id: '+@model.get 'id'
         @model.set 'folded', @$el.children('.children').is(':visible')
+      else
+        @selectNone()
 
     selectNode:()->
-      @model.set 'selected', true          
+      @model.set 'selected', true  
+
+    selectNone:()->
+      console.log 'select none'
+
+      currentlySelected = @model.get('rootNodeModel').get 'selectedNode'
+
+      if (typeof(currentlySelected) isnt 'undefined') and currentlySelected isnt null
+        currentlySelected.set 'selected', false
+      @model.get('rootNodeModel').set 'selectedNode', null      
 
 
     PosToModel: ->
