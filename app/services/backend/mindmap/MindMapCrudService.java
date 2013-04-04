@@ -1,10 +1,14 @@
 package services.backend.mindmap;
 
 import java.io.IOException;
+import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
 
 import org.codehaus.jackson.JsonNode;
+import org.docear.messages.exceptions.MapNotFoundException;
+import org.docear.messages.exceptions.NodeNotFoundException;
+import org.docear.messages.exceptions.NodeNotLockedByUserException;
 
 import play.libs.F.Promise;
 
@@ -19,15 +23,19 @@ public interface MindMapCrudService {
      * @param addNodeRequestJson {"mapId":"THE_ID","parentNodeId":"PARENT_ID"}
      * @return the generated node
      */
-    Promise<JsonNode> addNode(JsonNode addNodeRequestJson);
+   	@Deprecated
+    Promise<String> addNode(JsonNode addNodeRequestJson);
     
+   	Promise<Boolean> requestLock(String mapId, String nodeId, String userName);
+   	Promise<Boolean> releaseLock(String mapId, String nodeId, String userName);
+   	
     /**
      * Creates and adds a node to a map on the given parent 
      * @param mapId
      * @param parentNodeId
      * @return the generated node
      */
-    Promise<String> createNode(String mapId, String parentNodeId);
+    Promise<String> createNode(String mapId, String parentNodeId, String username);
     
     /**
      * Get Node
@@ -42,15 +50,16 @@ public interface MindMapCrudService {
     
     /**
      * 
-     * @param changeNodeRequestJson {"mapId":"THE_ID","node":{...node object with atributes to change...}}
+     * @return List with updates done as json
      */
-    void changeNode(String mapId, String nodeJson);
+    Promise<String> changeNode(String mapId, String nodeId, Map<String,Object> attributeValueMap, String username)
+    	throws MapNotFoundException, NodeNotLockedByUserException, NodeNotFoundException;
     
     /**
      * 
      * @param removeNodeRequestJson {"mapId":"THE_ID","nodeId":"NODE_ID"}
      */
-    void removeNode(JsonNode removeNodeRequestJson);
+    void removeNode(String mapId, String nodeId, String username);
     
     
 }

@@ -23,6 +23,8 @@ DELETE	/map/:mapId/node/:nodeId	@controllers.MindMap.deleteNode(mapId: String, n
 
 POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
 POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
+POST	/map/:mapId/requestLock		@controllers.MindMap.requestLock(mapId: String)
+POST	/map/:mapId/releaseLock		@controllers.MindMap.releaseLock(mapId: String)
 
 GET		/map/:mapId/listen			@controllers.MindMap.listenForUpdates(mapId: String)
 

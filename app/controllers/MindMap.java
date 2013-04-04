@@ -1,12 +1,22 @@
 package controllers;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
-import models.frontend.ChangeNodeData;
+import models.frontend.formdata.ChangeNodeData;
+import models.frontend.formdata.ReleaseLockData;
+import models.frontend.formdata.RequestLockData;
 
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.docear.messages.exceptions.MapNotFoundException;
+import org.docear.messages.exceptions.NodeNotFoundException;
+import org.docear.messages.exceptions.NodeNotLockedByUserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +32,8 @@ import services.backend.mindmap.MindMapCrudService;
 @Component
 public class MindMap extends Controller {
 	private final static Form<ChangeNodeData> changeNodeForm = Form.form(ChangeNodeData.class);
+	private final static Form<RequestLockData> requestLockForm = Form.form(RequestLockData.class);
+	private final static Form<ReleaseLockData> releaseLockForm = Form.form(ReleaseLockData.class);
 
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
@@ -31,8 +43,8 @@ public class MindMap extends Controller {
 		Logger.debug("MindMap.map <- mapId="+mapId+ "; nodeCount: "+nodeCount);
 		if(!mapId.equals("welcome") && !User.isAuthenticated())
 			return unauthorized();
-		
-		
+
+
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(mapId,nodeCount);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override
@@ -43,16 +55,65 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
+	@Deprecated
 	public Result addNode() {
 		Logger.debug("MindMap.addNode <- body="+request().body());
 		JsonNode addNodeJSON = request().body().asJson();
-		final F.Promise<JsonNode> addNodePromise = mindMapCrudService.addNode(addNodeJSON);
-		return async(addNodePromise.map(new F.Function<JsonNode, Result>() {
+		final F.Promise<String> addNodePromise = mindMapCrudService.addNode(addNodeJSON);
+		return async(addNodePromise.map(new F.Function<String, Result>() {
 			@Override
-			public Result apply(JsonNode node) throws Throwable {
+			public Result apply(String node) throws Throwable {
 				return ok(node);
 			}
 		}));
+	}
+
+	public Result requestLock(final String mapId) {
+		final Form<RequestLockData> filledForm = requestLockForm.bindFromRequest();
+		Logger.debug("MindMap.requestLock => mapId="+mapId+", form="+filledForm.toString());
+
+		if(filledForm.hasErrors())
+			return badRequest(filledForm.errorsAsJson());
+		else {
+			final RequestLockData data = filledForm.get();
+			final String nodeId = data.getNodeId();
+			final F.Promise<Boolean> promise = mindMapCrudService.requestLock(mapId, nodeId, username());
+			return async(promise.map(new Function<Boolean, Result>() {
+
+				@Override
+				public Result apply(Boolean success) throws Throwable {
+					if(success) {
+						return ok();
+					} else {
+						return forbidden();
+					}
+				}
+			}));	
+		}
+	}
+
+	public Result releaseLock(final String mapId) {
+		final Form<ReleaseLockData> filledForm = releaseLockForm.bindFromRequest();
+		Logger.debug("MindMap.requestLock => mapId="+mapId+", form="+filledForm.toString());
+
+		if(filledForm.hasErrors())
+			return badRequest(filledForm.errorsAsJson());
+		else {
+			final ReleaseLockData data = filledForm.get();
+			final String nodeId = data.getNodeId();
+			final F.Promise<Boolean> promise = mindMapCrudService.releaseLock(mapId, nodeId, username());
+			return async(promise.map(new Function<Boolean, Result>() {
+
+				@Override
+				public Result apply(Boolean success) throws Throwable {
+					if(success) {
+						return ok();
+					} else {
+						return forbidden();
+					}
+				}
+			}));	
+		}
 	}
 
 	@Security.Authenticated(Secured.class)
@@ -61,7 +122,7 @@ public class MindMap extends Controller {
 		Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
 
 		final String parentNodeId = bodyEntries.get("parentNodeId")[0];
-		final F.Promise<String> addNodePromise = mindMapCrudService.createNode(mapId, parentNodeId);
+		final F.Promise<String> addNodePromise = mindMapCrudService.createNode(mapId, parentNodeId, username());
 		return async(addNodePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String node) throws Throwable {
@@ -88,12 +149,30 @@ public class MindMap extends Controller {
 		final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
 		Logger.debug("MindMap.changeNode => mapId="+mapId+", form="+filledForm.toString());
 
+		try {
 		if(filledForm.hasErrors())
 			return badRequest(filledForm.errorsAsJson());
 		else {
-			final String nodeJson = filledForm.get().getNodeJson();
-			mindMapCrudService.changeNode(mapId, nodeJson);
+			final ChangeNodeData data = filledForm.get();
+			final String nodeId = data.getNodeId();
+			final TypeReference<HashMap<String,Object>> typeRef 
+	          = new TypeReference<HashMap<String,Object>>() {}; 
+			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
+			mindMapCrudService.changeNode(mapId, nodeId,map, username());
 			return ok();	
+		}
+		} catch (JsonMappingException e) {
+			return internalServerError();
+		} catch (JsonParseException e) {
+			return internalServerError();
+		} catch (IOException e) {
+			return internalServerError();
+		} catch (MapNotFoundException e) {
+			return badRequest("map not found on server");
+		} catch (NodeNotLockedByUserException e) {
+			return badRequest("User has no lock on node");
+		} catch (NodeNotFoundException e) {
+			return badRequest("node does not exist");
 		}
 	}
 
@@ -114,5 +193,13 @@ public class MindMap extends Controller {
 					return status(NOT_MODIFIED);
 			}
 		}));
+	}
+	
+	/**
+	 * 
+	 * @return name of currently logged in user
+	 */
+	private String username() {
+		return controllers.User.getCurrentUser().getUsername();
 	}
 }

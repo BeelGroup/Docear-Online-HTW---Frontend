@@ -19,14 +19,14 @@ public class ServerMindmapMap {
 	private final Map<String, Set<String>> serverMapIdMap;
 	private final Map<String, String> mapIdServerMap;
 	private final int maxMapsPerServer;
-	private final int initialPort;
+	//private final int initialPort;
     private static ServerMindmapMap INSTANCE;
 
 	private ServerMindmapMap(int maxMapsPerServer, int initialPort) {
 		serverMapIdMap = Collections.synchronizedMap(new HashMap<String, Set<String>>());
 		mapIdServerMap = Collections.synchronizedMap(new HashMap<String, String>());
 		this.maxMapsPerServer = maxMapsPerServer;
-		this.initialPort = initialPort;
+		//this.initialPort = initialPort;
 	}
 
     public static ServerMindmapMap getInstance() {

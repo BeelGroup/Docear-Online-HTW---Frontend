@@ -1,11 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
-
-import com.google.common.collect.Maps;
 import info.schleichardt.play2.mailplugin.Mailer;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -33,6 +30,8 @@ import play.cache.Cache;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
+
+import com.google.common.collect.Maps;
 
 public class Application extends Controller {
     public static final String LOGGED_ERROR_CACHE_PREFIX = "logged.error.";
