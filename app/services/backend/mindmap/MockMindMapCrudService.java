@@ -24,12 +24,11 @@ import play.libs.F.Promise;
 public class MockMindMapCrudService implements MindMapCrudService {
 
 	@Override
-	public Promise<String> mindMapAsJsonString(String id, Integer nodeCount)
-			throws DocearServiceException, IOException {
+	public Promise<String> mindMapAsJsonString(String id, Integer nodeCount) throws DocearServiceException, IOException {
 		String result = null;
 
 		try {
-			result = FileUtils.readFileToString(new File(Play.application().path()+"/conf/rest/v1/map/" + id + ".json"));
+			result = FileUtils.readFileToString(new File(Play.application().path() + "/conf/rest/v1/map/" + id + ".json"));
 			if (result == null) {
 				throw new IOException("there is no map with id" + id);
 			}
@@ -44,7 +43,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		try {
 			Random ran = new Random();
 			int id = ran.nextInt() * ran.nextInt();
-			String result = "{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}";
+			String result = "{\"id\":\"ID_" + id + "\",\"nodeText\":\"New Mock Node\"}";
 
 			return Promise.pure(result);
 		} catch (Exception e) {
@@ -59,9 +58,9 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			ObjectMapper mapper = new ObjectMapper();
 			Random ran = new Random();
 			int id = ran.nextInt() * ran.nextInt();
-			JsonNode node = mapper.readTree("{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}");
+			JsonNode node = mapper.readTree("{\"id\":\"ID_" + id + "\",\"nodeText\":\"New Mock Node\"}");
 
-			//TODO mock
+			// TODO mock
 			return Promise.pure("");// Promise.pure(node);
 		} catch (Exception e) {
 			return null;
@@ -71,7 +70,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	@Override
 	public Promise<String> getNode(String mapId, String nodeId, Integer nodeCount) {
 		try {
-			String result = "{\"id\":\""+nodeId+"\",\"nodeText\":\"Mock Node\"}";
+			String result = "{\"id\":\"" + nodeId + "\",\"nodeText\":\"Mock Node\"}";
 
 			return Promise.pure(result);
 		} catch (Exception e) {
@@ -80,10 +79,8 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> changeNode(String mapId, String nodeId,
-			Map<String, Object> attributeValueMap, String username)
-					throws MapNotFoundException, NodeNotLockedByUserException,
-					NodeNotFoundException {
+	public Promise<String> changeNode(String mapId, String nodeId, Map<String, Object> attributeValueMap, String username) throws MapNotFoundException, NodeNotLockedByUserException,
+			NodeNotFoundException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -95,15 +92,19 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> requestLock(String mapId, String nodeId,
-			String userName) {
+	public Promise<Boolean> requestLock(String mapId, String nodeId, String userName) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Promise<Boolean> releaseLock(String mapId, String nodeId,
-			String userName) {
+	public Promise<String> fetchUpdatesSinceRevision(String mapId, Integer revision, String username) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Promise<Boolean> releaseLock(String mapId, String nodeId, String userName) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -27,6 +27,7 @@ POST	/map/:mapId/requestLock		@controllers.MindMap.requestLock(mapId: String)
 POST	/map/:mapId/releaseLock		@controllers.MindMap.releaseLock(mapId: String)
 
 GET		/map/:mapId/listen			@controllers.MindMap.listenForUpdates(mapId: String)
+GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
 
 POST	/map/addNode			@controllers.MindMap.addNode()
 

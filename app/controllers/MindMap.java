@@ -115,6 +115,19 @@ public class MindMap extends Controller {
 			}));	
 		}
 	}
+	
+	@Security.Authenticated(Secured.class)
+	public Result fetchUpdatesSinceRevision(String mapId, Integer revision) {
+		Logger.debug("MindMap.fetchUpdatesSinceRevision <- mapId="+mapId+ "; revision: "+revision);
+
+		final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(mapId, revision, username());
+		return async(updatePromise.map(new F.Function<String, Result>() {
+			@Override
+			public Result apply(String updates) throws Throwable {
+				return ok(updates);
+			}
+		}));
+	}
 
 	@Security.Authenticated(Secured.class)
 	public Result createNode(final String mapId) {

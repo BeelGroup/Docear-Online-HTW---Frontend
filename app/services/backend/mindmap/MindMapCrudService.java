@@ -26,8 +26,9 @@ public interface MindMapCrudService {
    	@Deprecated
     Promise<String> addNode(JsonNode addNodeRequestJson);
     
-   	Promise<Boolean> requestLock(String mapId, String nodeId, String userName);
-   	Promise<Boolean> releaseLock(String mapId, String nodeId, String userName);
+   	Promise<Boolean> requestLock(String mapId, String nodeId, String username);
+   	Promise<Boolean> releaseLock(String mapId, String nodeId, String username);
+   	Promise<String> fetchUpdatesSinceRevision(String mapId, Integer revision, String username);
    	
     /**
      * Creates and adds a node to a map on the given parent 
