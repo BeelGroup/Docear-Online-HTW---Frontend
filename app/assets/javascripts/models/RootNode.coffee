@@ -13,7 +13,7 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       @bind 'change:selectedNode', => 
         if @get('selectedNode') isnt null and (typeof(@get('selectedNode')) isnt 'undefined')
           # catched in canvasview -> center to selected node if necessary
-          console.log @get('selectedNode')
+          #console.log @get('selectedNode')
           $("##{@get 'id' }").trigger 'newSelectedNode', @get 'selectedNode'
 
  

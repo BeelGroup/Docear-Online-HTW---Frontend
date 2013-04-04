@@ -34,19 +34,24 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
 
     handleClick:(event)->
+
+      #isInnerNode = @$el.parents().classList.contains('inner-node')
+      #console.log 'result: '
+      #console.log isInnerNode
       if $(event.target).hasClass 'action-select'
         @selectNode()
-      else if $(event.target).hasClass 'action-fold-all'
+      #else
+      #  @selectNone()
+
+      if $(event.target).hasClass 'action-fold-all'
         console.log 'fold DOM target: '
         console.log event.target
         console.log 'fold id: '+@model.get 'id'
         console.log 'childs are visible: '+@$el.children('.children').is(':visible')
         @model.set 'folded', @$el.children('.children').is(':visible')
-      else
-        @selectNone()
 
     selectNode:()->
-      @model.set 'selected', true  
+      @model.set 'selected', true
 
     selectNone:()->
       console.log 'select none'
