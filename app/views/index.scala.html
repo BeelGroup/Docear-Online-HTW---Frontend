@@ -1,10 +1,6 @@
 @(credentialsForm: Form[models.frontend.Credentials])
 
-@additionalJavaScripts() = {
-<script src='@routes.Assets.at("javascripts/home.js")'></script>
-}
-
-@main("Login", additionalBodyClasses = "login-page", additionalBodyJavaScripts = additionalJavaScripts()) {
+@main("Login", additionalBodyClasses = "login-page") {
     <div class="row-fluid">
         <div class="span4" style="float: left; margin-left: 70px;">
             <div data-spy="affix" data-offset-top="0" class="affix">
