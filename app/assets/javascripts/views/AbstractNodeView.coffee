@@ -37,6 +37,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       if $(event.target).hasClass 'action-select'
         @selectNode()
       if $(event.target).hasClass 'action-fold-all'
+        console.log 'fold DOM target: '
+        console.log event.target
+        console.log 'fold id: '+@model.get 'id'
         @model.set 'folded', @$el.children('.children').is(':visible')
 
     selectNode:()->
