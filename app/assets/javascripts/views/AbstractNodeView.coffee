@@ -40,6 +40,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         console.log 'fold DOM target: '
         console.log event.target
         console.log 'fold id: '+@model.get 'id'
+        console.log 'childs are visible: '+@$el.children('.children').is(':visible')
         @model.set 'folded', @$el.children('.children').is(':visible')
       else
         @selectNone()
