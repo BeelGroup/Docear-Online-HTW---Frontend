@@ -18,11 +18,14 @@ import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages.AddNodeRequest;
 import org.docear.messages.Messages.AddNodeResponse;
 import org.docear.messages.Messages.ChangeNodeRequest;
+import org.docear.messages.Messages.ChangeNodeResponse;
 import org.docear.messages.Messages.GetNodeRequest;
 import org.docear.messages.Messages.GetNodeResponse;
 import org.docear.messages.Messages.ListenToUpdateOccurrenceRequest;
@@ -31,8 +34,14 @@ import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
 import org.docear.messages.Messages.OpenMindMapRequest;
 import org.docear.messages.Messages.OpenMindMapResponse;
-import org.docear.messages.Messages.RemoveNodeRequest;
+import org.docear.messages.Messages.ReleaseLockRequest;
+import org.docear.messages.Messages.ReleaseLockResponse;
+import org.docear.messages.Messages.RequestLockRequest;
+import org.docear.messages.Messages.RequestLockResponse;
 import org.docear.messages.exceptions.MapNotFoundException;
+import org.docear.messages.exceptions.NodeAlreadyLockedException;
+import org.docear.messages.exceptions.NodeNotFoundException;
+import org.docear.messages.exceptions.NodeNotLockedByUserException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -56,7 +65,6 @@ import com.typesafe.config.ConfigFactory;
 public class ServerMindMapCrudService implements MindMapCrudService {
 	private Map<String, String> serverIdToMapIdMap = new HashMap<String, String>();
 	private final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
-	private final ObjectMapper objectMapper = new ObjectMapper();
 	private ActorSystem system;
 	private ActorRef remoteActor;
 	private final long defaultTimeoutInMillis = 20000;//Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
@@ -170,9 +178,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> createNode(final String mapId, final String parentNodeId) {
+	public Promise<String> createNode(final String mapId, final String parentNodeId, String username) {
 		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
-		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId,username());
+		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId,username);
 
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
@@ -181,7 +189,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			@Override
 			public String apply(Object responseMessage) throws Throwable {
 				AddNodeResponse response = (AddNodeResponse)responseMessage;
-				return response.getNode().toString();
+				return response.getMapUpdate();
 			}
 		});
 		return promise;
@@ -207,59 +215,107 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 
 	@Override
-	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {
+	public Promise<String> addNode(JsonNode addNodeRequestJson) {
 
-		final String mapId = getMindMapIdInFreeplane(addNodeRequestJson.get("mapId").asText());
-		final String parentNodeId = addNodeRequestJson.get("parentNodeId").asText();
-		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
-		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId,username());
-
-		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
-
-		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
-			@Override
-			public JsonNode apply(Object responseMessage) throws Throwable {
-				AddNodeResponse response = (AddNodeResponse)responseMessage;
-				JsonNode node = objectMapper.readTree(response.getNode());
-				return node;
-			}
-		});
-		return promise;
-	}
-
-
-	@Override
-	public void changeNode(String mapId, String nodeJson) {
-
-
-		Logger.debug("mapId: "+mapId+"; nodeAsJsonString: "+nodeJson);
-		ChangeNodeRequest request = new ChangeNodeRequest(mapId,nodeJson,username());
-
-		ActorRef remoteActor = getRemoteActor();
-		remoteActor.tell(request, remoteActor);
+		//		final String mapId = getMindMapIdInFreeplane(addNodeRequestJson.get("mapId").asText());
+		//		final String parentNodeId = addNodeRequestJson.get("parentNodeId").asText();
+		//		Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
+		//		AddNodeRequest request = new AddNodeRequest(mapId,parentNodeId,username());
+		//
+		//		ActorRef remoteActor = getRemoteActor();
 		//		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
-		//		
-		//		Promise<JsonNode> promise = Akka.asPromise(future).map(new Function<Object, JsonNode>() {
+		//
+		//		Promise<String> promise = Akka.asPromise(future).map(new Function<Object, String>() {
 		//			@Override
-		//			public JsonNode apply(Object responseMessage) throws Throwable {
-		//				ChangeNodeResponse response = (AddNodeResponse)responseMessage;
-		//				JsonNode node = objectMapper.readTree(response.getNode());
-		//				return node;
+		//			public String apply(Object responseMessage) throws Throwable {
+		//				AddNodeResponse response = (AddNodeResponse)responseMessage;
+		//				return response.getMapUpdate();
 		//			}
 		//		});
-		//return promise;
+		return null;//promise;
+	}
+
+
+	@Override
+	public Promise<String> changeNode(String mapId, String nodeId, Map<String,Object> attributeValueMap, String username) 
+			throws MapNotFoundException, NodeNotFoundException, NodeNotLockedByUserException {
+
+
+		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId+"; attributeMap: "+attributeValueMap.toString());
+		ChangeNodeRequest request = new ChangeNodeRequest(mapId,nodeId,attributeValueMap,username);
+
+		ActorRef remoteActor = getRemoteActor();
+		try {
+			final Promise<Object> promise = Akka.asPromise(ask(remoteActor,request,defaultTimeoutInMillis));
+			final ChangeNodeResponse response = (ChangeNodeResponse) promise.get();
+
+			final String updatesListJson = new ObjectMapper().writeValueAsString(response.getMapUpdates());
+
+			return Promise.pure(updatesListJson);
+		} catch (JsonGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	@Override
-	public void removeNode(JsonNode removeNodeRequestJson) {
-		final String mapId = getMindMapIdInFreeplane(removeNodeRequestJson.get("mapId").asText());
-		final String nodeId = removeNodeRequestJson.get("nodeId").asText();
-		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
-		RemoveNodeRequest request = new RemoveNodeRequest(mapId,nodeId,username());
+	public void removeNode(String mapId, String nodeId, String username) {
+		//		final String mapId = getMindMapIdInFreeplane(removeNodeRequestJson.get("mapId").asText());
+		//		final String nodeId = removeNodeRequestJson.get("nodeId").asText();
+		//		Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
+		//		RemoveNodeRequest request = new RemoveNodeRequest(mapId,nodeId,username());
+		//
+		//		ActorRef remoteActor = getRemoteActor();
+		//		remoteActor.tell(request, remoteActor);
+	}
 
-		ActorRef remoteActor = getRemoteActor();
-		remoteActor.tell(request, remoteActor);
+	@Override
+	public Promise<Boolean> requestLock(String mapId, String nodeId,
+			String username) {
+		Logger.debug("ServerMindMapCrudService.requestLock => mapId: "+mapId+"; nodeId: "+nodeId+"; username: "+username);
+
+		try {
+			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new RequestLockRequest(mapId,nodeId,username), defaultTimeoutInMillis));
+			final RequestLockResponse response = (RequestLockResponse)promise.get();
+			return Promise.pure(response.getLockGained());
+
+		} catch (Throwable t) {
+			if(t instanceof MapNotFoundException 
+					|| t instanceof NodeAlreadyLockedException
+					|| t instanceof NodeNotFoundException) {
+				return Promise.pure(false);
+			} else {
+				throw new RuntimeException(t);
+			}
+		}		
+	}
+
+	@Override
+	public Promise<Boolean> releaseLock(String mapId, String nodeId,
+			String username) {
+		Logger.debug("ServerMindMapCrudService.releaseLock => mapId: "+mapId+"; nodeId: "+nodeId+"; username: "+username);
+
+		try {
+			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new ReleaseLockRequest(mapId,nodeId,username), defaultTimeoutInMillis));
+			final ReleaseLockResponse response = (ReleaseLockResponse)promise.get();
+			return Promise.pure(response.getLockReleased());
+
+		} catch (Throwable t) {
+			if(t instanceof MapNotFoundException 
+					|| t instanceof NodeNotFoundException) {
+				return Promise.pure(false);
+			} else {
+				throw new RuntimeException(t);
+			}
+		}
 	}
 
 	private Boolean sendMapToDocearInstance(String mapId) throws NoUserLoggedInException {
@@ -367,12 +423,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return remoteActor;
 	}
 
-	/**
-	 * 
-	 * @return name of currently logged in user
-	 */
-	private String username() {
-		return controllers.User.getCurrentUser().getUsername();
-	}
+	//	/**
+	//	 * 
+	//	 * @return name of currently logged in user
+	//	 */
+	//	private String username() {
+	//		return controllers.User.getCurrentUser().getUsername();
+	//	}
 
 }

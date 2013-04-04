@@ -2,6 +2,7 @@ package services.backend.mindmap;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Random;
 
 import models.backend.exceptions.DocearServiceException;
@@ -9,6 +10,9 @@ import models.backend.exceptions.DocearServiceException;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.docear.messages.exceptions.MapNotFoundException;
+import org.docear.messages.exceptions.NodeNotFoundException;
+import org.docear.messages.exceptions.NodeNotLockedByUserException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -34,9 +38,9 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		}
 		return Promise.pure(result);
 	}
-	
+
 	@Override
-	public Promise<String> createNode(String mapId, String parentNodeId) {
+	public Promise<String> createNode(String mapId, String parentNodeId, String username) {
 		try {
 			Random ran = new Random();
 			int id = ran.nextInt() * ran.nextInt();
@@ -48,20 +52,22 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
-	public Promise<JsonNode> addNode(JsonNode addNodeRequestJson) {
+	public Promise<String> addNode(JsonNode addNodeRequestJson) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			Random ran = new Random();
 			int id = ran.nextInt() * ran.nextInt();
 			JsonNode node = mapper.readTree("{\"id\":\"ID_"+id+"\",\"nodeText\":\"New Mock Node\"}");
 
-			return Promise.pure(node);
+			//TODO mock
+			return Promise.pure("");// Promise.pure(node);
 		} catch (Exception e) {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public Promise<String> getNode(String mapId, String nodeId, Integer nodeCount) {
 		try {
@@ -74,17 +80,34 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public void changeNode(String mapId, String nodeJson) {
+	public Promise<String> changeNode(String mapId, String nodeId,
+			Map<String, Object> attributeValueMap, String username)
+					throws MapNotFoundException, NodeNotLockedByUserException,
+					NodeNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeNode(String mapId, String nodeId, String username) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void removeNode(JsonNode removeNodeRequestJson) {
-		//nothing to do here
-
+	public Promise<Boolean> requestLock(String mapId, String nodeId,
+			String userName) {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
+
+	@Override
+	public Promise<Boolean> releaseLock(String mapId, String nodeId,
+			String userName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	@Override
 	public Promise<Boolean> listenForUpdates(String mapId) {
 		// TODO Auto-generated method stub
