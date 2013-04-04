@@ -205,11 +205,11 @@ define ->
         @$el.trigger 'zoom', amount/100
 
 
-    zoomCenter:()=>
+    zoomCenter:(selectRoot = true)=>
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
         @zoom(@zoomAmount)
-        @center(true)
+        @center(selectRoot)
 
 
     repositionViewportOnZoom:(zoomIn)->   

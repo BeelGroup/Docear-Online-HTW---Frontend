@@ -39,6 +39,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
     loadMap: (@mapId) ->
       if typeof @rootView != 'undefined'
         # remove old html elements
+        @canvas.zoomCenter(false)
         @rootView.getElement().remove();
       console.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.map(@mapId).url
