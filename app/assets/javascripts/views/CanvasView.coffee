@@ -35,8 +35,7 @@ define ->
         else
           if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
             if event.keyCode == 27
-              @centerViewTo @rootView.model
-              @rootView.model.set 'selected', true
+              @center(true)
             else
               @rootView.userKeyInput event
 
@@ -107,7 +106,6 @@ define ->
       [dragBoundaries.x1, dragBoundaries.y1, dragBoundaries.x2, dragBoundaries.y2]
 
     afterAppend:()->
-
       dragBoundaries =
         x1: -@size-@$el.parent().width()
         y1: -@size-@$el.parent().height()
@@ -211,7 +209,7 @@ define ->
       if(typeof @rootView != "undefined")
         @zoomAmount = 100
         @zoom(@zoomAmount)
-        @center()
+        @center(true)
 
 
     repositionViewportOnZoom:(zoomIn)->   
@@ -272,13 +270,13 @@ define ->
         x: (@size / 2) * -1
         y: (@size / 2) * -1
 
-    center:->
+    center:(selectRoot = false)->
       if typeof(@rootView) != 'undefined'
-        if @rootView.model.get 'selected'
-          @centerViewTo @rootView.model
-        else
-          # will throw an event which is cached by this class 
+        if (not @rootView.model.get 'selected') and selectRoot
           @rootView.model.set 'selected', true
+
+        @centerViewTo @rootView.model
+          # will throw an event which is cached by this class 
       else
         canvasPivot = @canvasPivot()
         # left upper corner

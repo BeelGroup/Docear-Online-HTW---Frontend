@@ -172,8 +172,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
 
-      @canvas.center()
-
       @addLoadingOverlay()
 
     renderMap:(mapId)->
