@@ -37,6 +37,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       if $(event.target).hasClass 'action-select'
         @selectNode()
       if $(event.target).hasClass 'action-fold-all'
+        console.log 'fold DOM target: '
+        console.log event.target
+        console.log 'fold id: '+@model.get 'id'
         @model.set 'folded', @$el.children('.children').is(':visible')
 
     selectNode:()->
@@ -96,11 +99,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         diff = childrenHeight - nodeHeight
         if isVisible
           if childrenHeight > nodeHeight
-            @resizeTree $node, diff
+            @resizeTree $node, @model, diff
           $children.fadeOut(document.fadeDuration)
         else
           if childrenHeight > nodeHeight
-            @resizeTree $node, -diff
+            @resizeTree $node, @model, -diff
           $children.fadeIn(document.fadeDuration)
         
 
@@ -136,7 +139,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         if preHeight > childrenHeight
           diff = childrenHeight - preHeight
       if diff != 0
-        @resizeTree $node, -diff
+        @resizeTree $node, @model, -diff
       
       $childrenContainer.animate {
         left: '+='+diffWidth
@@ -195,7 +198,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       @getElement().zoomTo({targetsize:amount*(@$el.outerWidth()/@$el.parent().width()), duration:600, root: @getElement().parent()});
       
     
-    resizeTree: ($node, height)->
+    resizeTree: ($node, nodeModel, height)->
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
       if($($parentsChildren).children('.node').size() > 1)
@@ -218,13 +221,13 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
           $nextBrother = $($nextBrother).next('.node')
           
         # to make it visible inside the timeout
-        parent = @model.get 'parent'
+        parent = nodeModel.get 'parent'
         setTimeout(->
           for child in parent.get('children')
             child.updateConnection()
         , document.fadeDuration)
         
-        @resizeTree $parent, height
+        @resizeTree $parent, parent, height
 
 
     alignControls: (model, recursive = false)->
