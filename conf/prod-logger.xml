@@ -1,7 +1,7 @@
 <configuration>
     <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/var/log/play-frontend/application.log</file>
+        <file>/var/log/play-frontend/application-info.log</file>
         
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>INFO</level>
@@ -9,7 +9,7 @@
 		
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>/var/log/play-frontend/application.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <fileNamePattern>/var/log/play-frontend/application-info.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
@@ -23,10 +23,10 @@
     </appender>
     
     <appender name="FILE_DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/var/log/play-frontend/debug.log</file>
+        <file>/var/log/play-frontend/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>/var/log/play-frontend/debug.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <fileNamePattern>/var/log/play-frontend/application.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
