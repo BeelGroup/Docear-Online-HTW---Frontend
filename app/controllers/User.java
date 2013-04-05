@@ -48,6 +48,7 @@ public class User extends Controller {
                     final boolean authenticationSuccessful = accessToken != null;
                     if (authenticationSuccessful) {
                         setAuthenticatedSession(credentials, accessToken);
+                        Logger.info("User '"+credentials.getUsername()+"' logged in succesfully.");
                         return redirect(routes.Application.index());
                     } else {
                         filledForm.reject("The credentials don't match any user.");
