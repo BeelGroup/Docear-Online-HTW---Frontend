@@ -27,14 +27,11 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
 
     addEvents:()->
-      @$el.mousedown ->
-        document.wasDragged = false
-
       @$el.click (event)=> 
         @handleClick(event)
         event.stopPropagation()
         false
-
+        
 
     handleClick:(event)->
 
