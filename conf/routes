@@ -19,12 +19,12 @@ GET		/map/:mapId/json			@controllers.MindMap.map(mapId: String, nodeCount : Inte
 GET		/maps			    		@controllers.User.mapListFromDB()
 
 GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
-DELETE	/map/:mapId/node/:nodeId	@controllers.MindMap.deleteNode(mapId: String, nodeId: String)
 
-POST	/map/:mapId/createNode		@controllers.MindMap.createNode(mapId: String)
-POST	/map/:mapId/changeNode		@controllers.MindMap.changeNode(mapId: String)
-POST	/map/:mapId/requestLock		@controllers.MindMap.requestLock(mapId: String)
-POST	/map/:mapId/releaseLock		@controllers.MindMap.releaseLock(mapId: String)
+DELETE	/map/:mapId/node/delete			@controllers.MindMap.deleteNode(mapId: String)
+POST	/map/:mapId/node/create			@controllers.MindMap.createNode(mapId: String)
+POST	/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
+POST	/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
+POST	/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
 
 GET		/map/:mapId/listen			@controllers.MindMap.listenForUpdates(mapId: String)
 GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
