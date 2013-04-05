@@ -7,6 +7,7 @@ import java.util.Map;
 import models.backend.exceptions.DocearServiceException;
 import models.frontend.formdata.ChangeNodeData;
 import models.frontend.formdata.ReleaseLockData;
+import models.frontend.formdata.RemoveNodeData;
 import models.frontend.formdata.RequestLockData;
 
 import org.codehaus.jackson.JsonParseException;
@@ -27,6 +28,7 @@ import services.backend.mindmap.MindMapCrudService;
 
 @Component
 public class MindMap extends Controller {
+	private final static Form<RemoveNodeData> removeNodeForm = Form.form(RemoveNodeData.class);
 	private final static Form<ChangeNodeData> changeNodeForm = Form.form(ChangeNodeData.class);
 	private final static Form<RequestLockData> requestLockForm = Form.form(RequestLockData.class);
 	private final static Form<ReleaseLockData> releaseLockForm = Form.form(ReleaseLockData.class);
@@ -159,9 +161,27 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result deleteNode(final String mapId, final String nodeId) {
-		Logger.debug("MindMap.deleteNode <- mapId="+mapId+", nodeId="+nodeId);
-		return TODO;
+	public Result deleteNode(final String mapId) {		
+		final Form<RemoveNodeData> filledForm = removeNodeForm.bindFromRequest();
+		Logger.debug("MindMap.deleteNode => mapId="+mapId+", form="+filledForm.toString());
+
+		if(filledForm.hasErrors())
+			return badRequest(filledForm.errorsAsJson());
+		else {
+			final RemoveNodeData data = filledForm.get();
+			final String nodeId = data.getNodeId();
+			final F.Promise<Boolean> promise = mindMapCrudService.removeNode(mapId, nodeId, username());
+			return async(promise.map(new Function<Boolean, Result>() {
+				@Override
+				public Result apply(Boolean success) throws Throwable {
+					if(success) {
+						return ok();
+					} else {
+						return forbidden();
+					}
+				}
+			}));	
+		}
 	}
 
 	public Result listenForUpdates(final String mapId) {

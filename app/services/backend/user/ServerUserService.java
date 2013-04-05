@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.libs.F;
-import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.libs.WS.Response;

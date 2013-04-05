@@ -55,7 +55,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public void removeNode(String mapId, String nodeId, String username) {
+	public Promise<Boolean> removeNode(String mapId, String nodeId, String username) {
 		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/256");
 	}
 
