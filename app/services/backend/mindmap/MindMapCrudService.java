@@ -57,9 +57,10 @@ public interface MindMapCrudService {
 
 	/**
 	 * 
-	 * @param removeNodeRequestJson {"mapId":"THE_ID","nodeId":"NODE_ID"}
+	 * Sends request to remove a node in a map
+	 * @return true on success
 	 */
-	void removeNode(String mapId, String nodeId, String username);
+	Promise<Boolean> removeNode(String mapId, String nodeId, String username);
 
 
 }

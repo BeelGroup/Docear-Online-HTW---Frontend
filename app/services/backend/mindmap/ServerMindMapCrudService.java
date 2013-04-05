@@ -41,6 +41,8 @@ import org.docear.messages.Messages.OpenMindMapRequest;
 import org.docear.messages.Messages.OpenMindMapResponse;
 import org.docear.messages.Messages.ReleaseLockRequest;
 import org.docear.messages.Messages.ReleaseLockResponse;
+import org.docear.messages.Messages.RemoveNodeRequest;
+import org.docear.messages.Messages.RemoveNodeResponse;
 import org.docear.messages.Messages.RequestLockRequest;
 import org.docear.messages.Messages.RequestLockResponse;
 import org.docear.messages.exceptions.MapNotFoundException;
@@ -247,7 +249,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	@Override
 	public Promise<String> changeNode(String mapId, String nodeId, Map<String, Object> attributeValueMap, String username) {
 		Logger.debug("ServerMindMapCrudService.changeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());
-
 		//check that user has right to access map, throws UnauthorizedEception on failure
 		hasCurrentUserMapAccessRights(mapId);
 
@@ -271,16 +272,24 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public void removeNode(String mapId, String nodeId, String username) {
-		// final String mapId =
-		// getMindMapIdInFreeplane(removeNodeRequestJson.get("mapId").asText());
-		// final String nodeId = removeNodeRequestJson.get("nodeId").asText();
-		// Logger.debug("mapId: "+mapId+"; nodeId: "+nodeId);
-		// RemoveNodeRequest request = new
-		// RemoveNodeRequest(mapId,nodeId,username());
-		//
-		// ActorRef remoteActor = getRemoteActor();
-		// remoteActor.tell(request, remoteActor);
+	public Promise<Boolean> removeNode(String mapId, String nodeId, String username) {
+		Logger.debug("ServerMindMapCrudService.removeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; username: "+username);
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+		
+		try {
+			final ActorRef remoteActor = getRemoteActor();
+			final Promise<Object> promise = Akka.asPromise(ask(remoteActor,new RemoveNodeRequest(mapId,nodeId,username),defaultTimeoutInMillis));
+			final RemoveNodeResponse response = (RemoveNodeResponse)promise.get();
+			return Promise.pure(response.getDeleted());
+				
+		} catch (Throwable t) {
+			if(t instanceof MapNotFoundException) {				
+				Logger.error("ServerMindMapCrudService.removeNode => map not open");
+			}
+			
+			throw new RuntimeException("Error while deleting node!",t);
+		}
 	}
 
 	@Override
