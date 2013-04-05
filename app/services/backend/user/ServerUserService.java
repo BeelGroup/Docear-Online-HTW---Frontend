@@ -13,6 +13,7 @@ import models.backend.UserMindmapInfo;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import play.Logger;
 import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
@@ -48,24 +49,38 @@ public class ServerUserService implements UserService {
 		if(user == null) {
 			throw new NullPointerException("user cannot be null");
 		}
+		Logger.debug("ServerUserService.getListOfMindMapsFromUser => user: "+user.getUsername());
 
 		String docearServerAPIURL = "https://api.docear.org/user";
-		final Promise<WS.Response> accessTokenPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
+		final Promise<WS.Response> mindmapInfoPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/")
 				.setHeader("accessToken", user.getAccessToken()).get();
-		return accessTokenPromise.map(new Function<WS.Response, List<UserMindmapInfo>>() {
-			@Override
-			public List<UserMindmapInfo> apply(WS.Response response) throws Throwable {
-				BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
-				List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
-				for ( String line; (line = br.readLine()) != null; ){
-					String[] strings = line.split("\\|#\\|");
+		WS.Response response = mindmapInfoPromise.get();
+		
+		Logger.debug("ServerUserService.getListOfMindMapsFromUser => response received");
+		BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
+		List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
+		for ( String line; (line = br.readLine()) != null; ){
+			String[] strings = line.split("\\|#\\|");
 
-					UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
-					infos.add(info);
-				}
-				return Arrays.asList(infos.toArray(new UserMindmapInfo[0]));
-			}
-		});
+			UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
+			infos.add(info);
+		}
+		return Promise.pure(Arrays.asList(infos.toArray(new UserMindmapInfo[0])));
+//		return mindmapInfoPromise.map(new Function<WS.Response, List<UserMindmapInfo>>() {
+//			@Override
+//			public List<UserMindmapInfo> apply(WS.Response response) throws Throwable {
+//				Logger.debug("ServerUserService.getListOfMindMapsFromUser => response received");
+//				BufferedReader br = new BufferedReader (new StringReader(response.getBody().toString()));
+//				List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
+//				for ( String line; (line = br.readLine()) != null; ){
+//					String[] strings = line.split("\\|#\\|");
+//
+//					UserMindmapInfo info = new UserMindmapInfo(strings[0], strings[1], strings[2], strings[3], strings[4]);
+//					infos.add(info);
+//				}
+//				return Arrays.asList(infos.toArray(new UserMindmapInfo[0]));
+//			}
+//		});
 	}
 
 }

@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
+import models.backend.exceptions.UnauthorizedException;
 import models.frontend.LoggedError;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +32,7 @@ import play.Play;
 import play.cache.Cache;
 import play.libs.Json;
 import play.mvc.Action;
+import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import configuration.SpringConfiguration;
@@ -108,6 +110,13 @@ public class Global extends GlobalSettings {
         So the error gets an ID, stored with that ID in the cache and the redirected action has a
         HTTP context and can restore the exceptions from the cache and use the standard templates.
          */
+        
+        //check if exception needs special handling
+        final Throwable realThrowable = throwable.getCause();
+        if(realThrowable instanceof UnauthorizedException) {
+        	return Controller.badRequest("You are not allowed to access that map!");
+        }
+        //default handling
         final String errorId = UUID.randomUUID().toString();
         Cache.set(LOGGED_ERROR_CACHE_PREFIX + errorId, new LoggedError(requestHeader, throwable), loggedErrorExpirationInSeconds);
         if (Play.application().isDev()) {

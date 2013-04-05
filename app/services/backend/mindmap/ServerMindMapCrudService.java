@@ -8,14 +8,17 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import models.backend.User;
+import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
+import models.backend.exceptions.UnauthorizedException;
 
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonGenerationException;
@@ -43,7 +46,7 @@ import org.docear.messages.Messages.RequestLockResponse;
 import org.docear.messages.exceptions.MapNotFoundException;
 import org.docear.messages.exceptions.NodeAlreadyLockedException;
 import org.docear.messages.exceptions.NodeNotFoundException;
-import org.docear.messages.exceptions.NodeNotLockedByUserException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -55,12 +58,16 @@ import play.libs.Akka;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
+import play.mvc.Controller;
 import scala.concurrent.Future;
+import services.backend.user.UserService;
 import util.backend.ZipUtils;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 
 import com.typesafe.config.ConfigFactory;
+
+import controllers.Secured;
 
 @Profile("backendProd")
 @Component
@@ -71,14 +78,19 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	private ActorRef remoteActor;
 	private final long defaultTimeoutInMillis = 20000;// Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
 
+	@Autowired
+	private UserService userService;
+
 	@Override
-	public Promise<String> mindMapAsJsonString(final String id, final Integer nodeCount) throws DocearServiceException, IOException {
-		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mapId: " + id);
+	public Promise<String> mindMapAsJsonString(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
+		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mapId: " + mapId);
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
 
 		// hack, because we use 'wrong' ids at the moment because of docear
 		// server ids
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => converting serverId to mindmapId");
-		final String mindmapId = getMindMapIdInFreeplane(id);
+		final String mindmapId = getMindMapIdInFreeplane(mapId);
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mindmapId: " + mindmapId);
 
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => getting remote actor");
@@ -87,32 +99,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => sending request to freeplane");
 
 		try {
-			// final Promise<String> promise = Akka.asPromise(ask(remoteActor,
-			// new MindmapAsJsonRequest(mindmapId,nodeCount),
-			// defaultTimeoutInMillis)).map(new Function<Object, String>() {
-			// @Override
-			// public String apply(Object responseObj) throws Throwable {
-			// Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
-			// final MindmapAsJsonReponse response =
-			// (MindmapAsJsonReponse)responseObj;
-			// final String jsonString = response.getJsonString();
-			// Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : "+jsonString.substring(0,
-			// 10));
-			// return jsonString;
-			// }
-			// }).recover(new Function<Throwable, String>() {
-			//
-			// @Override
-			// public String apply(Throwable t) throws Throwable {
-			// if(t instanceof MapNotFoundException) {
-			// Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...",t);
-			// serverIdToMapIdMap.remove(id);
-			// return mindMapAsJsonString(id,nodeCount).get();
-			// } else {
-			// throw new RuntimeException(t);
-			// }
-			// }
-			// });
 			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new MindmapAsJsonRequest(mindmapId, nodeCount), defaultTimeoutInMillis));
 
 			final MindmapAsJsonReponse response = (MindmapAsJsonReponse) promise.get();
@@ -123,8 +109,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		} catch (Throwable e) {
 			if (e instanceof MapNotFoundException) {
 				Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...", e);
-				serverIdToMapIdMap.remove(id);
-				return mindMapAsJsonString(id, nodeCount);
+				serverIdToMapIdMap.remove(mapId);
+				return mindMapAsJsonString(mapId, nodeCount);
 			} else {
 				throw new RuntimeException(e);
 			}
@@ -133,13 +119,16 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> listenForUpdates(String serverMapId) {
+	public Promise<Boolean> listenForUpdates(String mapId) {
 		// refuse if map is not open
-		if (!serverIdToMapIdMap.containsKey(serverMapId)) {
+		if (!serverIdToMapIdMap.containsKey(mapId)) {
 			return Promise.pure(false);
 		}
 
-		final String mindmapId = getMindMapIdInFreeplane(serverMapId);
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+
+		final String mindmapId = getMindMapIdInFreeplane(mapId);
 		final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(mindmapId);
 
 		Future<Object> future = ask(getRemoteActor(), request, 120000); // two
@@ -162,16 +151,16 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	 * returns docear mapid In case the map is not loaded on a server, it gets
 	 * automatically pushed to freeplane
 	 * 
-	 * @param id
+	 * @param mapId
 	 * @return
 	 */
-	private String getMindMapIdInFreeplane(final String id) {
-		Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: " + id);
-		String mindmapId = serverIdToMapIdMap.get(id);
+	private String getMindMapIdInFreeplane(final String mapId) {
+		Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: " + mapId);
+		String mindmapId = serverIdToMapIdMap.get(mapId);
 		if (mindmapId == null) { // if not hosted, send to a server
-			Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id " + id + " not open. Sending to freeplane...");
+			Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id " + mapId + " not open. Sending to freeplane...");
 			try {
-				final boolean success = sendMapToDocearInstance(id);
+				final boolean success = sendMapToDocearInstance(mapId);
 				if (!success) {
 					throw new RuntimeException("problem sending mindmap to Docear");
 				}
@@ -179,22 +168,26 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => No user logged in! ", e);
 				throw new RuntimeException("No user logged in", e);
 			}
-			mindmapId = serverIdToMapIdMap.get(id);
+			mindmapId = serverIdToMapIdMap.get(mapId);
 		}
 
-		Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: " + id + "; MapId: " + mindmapId);
+		Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: " + mapId + "; MapId: " + mindmapId);
 		return mindmapId;
 	}
 
 	@Override
 	public Promise<String> createNode(final String mapId, final String parentNodeId, String username) {
 		Logger.debug("mapId: " + mapId + "; parentNodeId: " + parentNodeId);
-		AddNodeRequest request = new AddNodeRequest(mapId, parentNodeId, username);
 
-		ActorRef remoteActor = getRemoteActor();
-		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
 
-		Promise<String> promise = Akka.asPromise(future).map(new Function<Object, String>() {
+		final AddNodeRequest request = new AddNodeRequest(mapId, parentNodeId, username);
+
+		final ActorRef remoteActor = getRemoteActor();
+		final Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
+
+		final Promise<String> promise = Akka.asPromise(future).map(new Function<Object, String>() {
 			@Override
 			public String apply(Object responseMessage) throws Throwable {
 				AddNodeResponse response = (AddNodeResponse) responseMessage;
@@ -207,8 +200,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	@Override
 	public Promise<String> getNode(final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("getNode => mapId: " + mapId + "; nodeId: " + nodeId + ", nodeCount: " + nodeCount);
-		final GetNodeRequest request = new GetNodeRequest(mapId, nodeId, nodeCount);
 
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+
+		final GetNodeRequest request = new GetNodeRequest(mapId, nodeId, nodeCount);
 		ActorRef remoteActor = getRemoteActor();
 		Future<Object> future = ask(remoteActor, request, defaultTimeoutInMillis);
 
@@ -249,14 +245,16 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> changeNode(String mapId, String nodeId, Map<String, Object> attributeValueMap, String username) throws MapNotFoundException, NodeNotFoundException,
-	NodeNotLockedByUserException {
+	public Promise<String> changeNode(String mapId, String nodeId, Map<String, Object> attributeValueMap, String username) {
+		Logger.debug("ServerMindMapCrudService.changeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());
 
-		Logger.debug("mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());
-		ChangeNodeRequest request = new ChangeNodeRequest(mapId, nodeId, attributeValueMap, username);
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
 
-		ActorRef remoteActor = getRemoteActor();
-		try {
+		try {		
+			final ChangeNodeRequest request = new ChangeNodeRequest(mapId, nodeId, attributeValueMap, username);
+			final ActorRef remoteActor = getRemoteActor();
+
 			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, request, defaultTimeoutInMillis));
 			final ChangeNodeResponse response = (ChangeNodeResponse) promise.get();
 
@@ -264,17 +262,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 			return Promise.pure(updatesListJson);
 		} catch (JsonGenerationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException("Problem reading updates from response", e);
 		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException("Problem reading updates from response", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException("Problem reading updates from response", e);
 		}
-
-		return null;
 	}
 
 	@Override
@@ -295,6 +288,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		Logger.debug("ServerMindMapCrudService.fetchUpdatesSinceRevision " +
 				"=> mapId: " + mapId + "; revision: " + revision + "; username: " + username);
 
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+		
 		try {
 			//TODO use username for security
 			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new FetchMindmapUpdatesRequest(mapId, revision), defaultTimeoutInMillis));
@@ -314,6 +310,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	public Promise<Boolean> requestLock(String mapId, String nodeId, String username) {
 		Logger.debug("ServerMindMapCrudService.requestLock => mapId: " + mapId + "; nodeId: " + nodeId + "; username: " + username);
 
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+		
 		try {
 			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new RequestLockRequest(mapId, nodeId, username), defaultTimeoutInMillis));
 			final RequestLockResponse response = (RequestLockResponse) promise.get();
@@ -332,6 +331,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	public Promise<Boolean> releaseLock(String mapId, String nodeId, String username) {
 		Logger.debug("ServerMindMapCrudService.releaseLock => mapId: " + mapId + "; nodeId: " + nodeId + "; username: " + username);
 
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+		
 		try {
 			final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new ReleaseLockRequest(mapId, nodeId, username), defaultTimeoutInMillis));
 			final ReleaseLockResponse response = (ReleaseLockResponse) promise.get();
@@ -351,6 +353,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		InputStream in = null;
 		String fileName = null;
 
+		//check that user has right to access map, throws UnauthorizedEception on failure
+		hasCurrentUserMapAccessRights(mapId);
+		
 		try {
 			if (mapId.length() == 1 || mapId.equals("welcome")) { // test/welcome
 				// map
@@ -448,6 +453,40 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		// }
 
 		return remoteActor;
+	}
+
+	/**
+	 * @throws UnauthorizedException 
+	 * @param mapId
+	 * @return true or throws {@link UnauthorizedException}
+	 */
+	private boolean hasCurrentUserMapAccessRights(String mapId) {
+		//check for demo and welcome map
+		if(mapId.length() == 1 || mapId.equals("welcome"))
+			return true;
+
+		try {
+			Logger.debug("ServerMindMapCrudService.hasCurrentUserMapAccessRights => mapId:"+mapId);
+			List<UserMindmapInfo> infos = userService.getListOfMindMapsFromUser(controllers.User.getCurrentUser()).get();
+
+			Logger.debug("ServerMindMapCrudService.hasCurrentUserMapAccessRights => loaded mapInfos. Count: "+infos.size());
+			boolean canAccess = false;
+			for(UserMindmapInfo info : infos) {
+				if(info.mmIdOnServer.equals(mapId)) {
+					canAccess = true;
+					break;
+				}
+			}
+
+			if(!canAccess) {
+				Logger.warn("User '"+Controller.session(Secured.SESSION_KEY_USERNAME)+"' tried to access a map he/she does not own!");
+				throw new UnauthorizedException("User tried to access not owned map");
+			}
+			return canAccess;
+
+		} catch (IOException e) {
+			throw new RuntimeException("Cannot access Docear server!", e);
+		}
 	}
 
 	// /**

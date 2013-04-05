@@ -1,6 +1,7 @@
 package controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import models.backend.UserMindmapInfo;
@@ -70,6 +71,15 @@ public class User extends Controller {
                 return ok(Json.toJson(maps));
             }
         }));
+    }
+    
+    public List<UserMindmapInfo> getMindmapInfosOfLoggedInUser() throws IOException {
+    	final models.backend.User user = getCurrentUser();
+    	if(user == null)
+    		return new ArrayList<UserMindmapInfo>();
+    	
+    	final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(getCurrentUser());
+    	return listOfMindMapsFromUser.get();
     }
 
     private void setAuthenticatedSession(Credentials credentials, String accessToken) {
