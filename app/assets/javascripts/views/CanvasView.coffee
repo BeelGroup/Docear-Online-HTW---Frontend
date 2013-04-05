@@ -154,6 +154,8 @@ define ->
           cursor: "move"
           handle: @id
           containment: @getUpdatedDragBoundaries()
+          drag:->
+            document.wasDragged = true
 
 
     move:(delta, animated = true, time = 200)->
