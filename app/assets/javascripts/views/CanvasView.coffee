@@ -121,6 +121,15 @@ define ->
 
       console.log dragBoundaries
 
+      @$el.draggable 
+          cancel: "a.ui-icon, .inner-node, :input"
+          cursor: "move"
+          handle: @id
+          containment: @getUpdatedDragBoundaries()
+          drag:->
+            document.wasDragged = true
+
+            
       if $.browser.chrome
         @$el.draggable
           start:(evt, ui)=>
@@ -149,13 +158,7 @@ define ->
 
 
 
-      @$el.draggable 
-          cancel: "a.ui-icon, .inner-node, :input"
-          cursor: "move"
-          handle: @id
-          containment: @getUpdatedDragBoundaries()
-          drag:->
-            document.wasDragged = true
+
 
 
     move:(delta, animated = true, time = 200)->
