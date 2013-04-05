@@ -9,14 +9,10 @@ import models.frontend.formdata.ChangeNodeData;
 import models.frontend.formdata.ReleaseLockData;
 import models.frontend.formdata.RequestLockData;
 
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.docear.messages.exceptions.MapNotFoundException;
-import org.docear.messages.exceptions.NodeNotFoundException;
-import org.docear.messages.exceptions.NodeNotLockedByUserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,8 +37,9 @@ public class MindMap extends Controller {
 	//cannot be secured, because we load the welcome map
 	public Result map(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId="+mapId+ "; nodeCount: "+nodeCount);
+		//check if welcome map or user authenticated
 		if(!mapId.equals("welcome") && !User.isAuthenticated())
-			return unauthorized();
+			return redirect(routes.Application.index());
 
 
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(mapId,nodeCount);
@@ -50,20 +47,6 @@ public class MindMap extends Controller {
 			@Override
 			public Result apply(String mindMap) throws Throwable {
 				return ok(mindMap);
-			}
-		}));
-	}
-
-	@Security.Authenticated(Secured.class)
-	@Deprecated
-	public Result addNode() {
-		Logger.debug("MindMap.addNode <- body="+request().body());
-		JsonNode addNodeJSON = request().body().asJson();
-		final F.Promise<String> addNodePromise = mindMapCrudService.addNode(addNodeJSON);
-		return async(addNodePromise.map(new F.Function<String, Result>() {
-			@Override
-			public Result apply(String node) throws Throwable {
-				return ok(node);
 			}
 		}));
 	}
@@ -158,11 +141,10 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result changeNode(final String mapId) {
+	public Result changeNode(final String mapId) throws JsonParseException, JsonMappingException, IOException {
 		final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
 		Logger.debug("MindMap.changeNode => mapId="+mapId+", form="+filledForm.toString());
 
-		try {
 		if(filledForm.hasErrors())
 			return badRequest(filledForm.errorsAsJson());
 		else {
@@ -173,19 +155,6 @@ public class MindMap extends Controller {
 			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
 			mindMapCrudService.changeNode(mapId, nodeId,map, username());
 			return ok();	
-		}
-		} catch (JsonMappingException e) {
-			return internalServerError();
-		} catch (JsonParseException e) {
-			return internalServerError();
-		} catch (IOException e) {
-			return internalServerError();
-		} catch (MapNotFoundException e) {
-			return badRequest("map not found on server");
-		} catch (NodeNotLockedByUserException e) {
-			return badRequest("User has no lock on node");
-		} catch (NodeNotFoundException e) {
-			return badRequest("node does not exist");
 		}
 	}
 
@@ -206,6 +175,15 @@ public class MindMap extends Controller {
 					return status(NOT_MODIFIED);
 			}
 		}));
+	}
+	
+	/**
+	 * @deprecated use {@link #createNode(String)} instead
+	 */
+	@Security.Authenticated(Secured.class)
+	@Deprecated
+	public Result addNode() {
+		return badRequest("Deprecated! Use "+routes.MindMap.createNode("NODE_ID").toString()+" instead");
 	}
 	
 	/**
