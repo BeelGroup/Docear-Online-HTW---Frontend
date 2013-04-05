@@ -23,6 +23,12 @@ define ['models/AbstractNode'],  (AbstractNode) ->
         return @getChildren()
       Backbone.Model.prototype.get.call(this, attr);
 
+    selectNone:->
+      currentlySelected = @.get 'selectedNode'
+
+      if (typeof(currentlySelected) isnt 'undefined') and currentlySelected isnt null
+        currentlySelected.set 'selected', false
+      @set 'selectedNode', null    
 
     getChildren: ->
       children = []

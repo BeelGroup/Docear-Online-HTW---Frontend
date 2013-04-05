@@ -6,12 +6,19 @@ define ->
     tagName: 'div'
     className: 'mindmap-canvas'
 
+    events:
+      'mousedown': (event)-> document.wasDragged = false
+      'mouseup': (event)-> if not document.wasDragged then @rootView.model.selectNone()
 
     constructor:(@id)->
       super()
       @size = @minSize = 3000
       @zoomAmount = 100
       @calculateBrowserZoom()
+
+    setDragStat:->
+      
+
 
 
     moreEvents:()=>
@@ -122,8 +129,9 @@ define ->
               @fallback = true
             else
               @fallback = false
-            @dragCounter = 0          
+            @dragCounter = 0       
           drag:(evt,ui)=>
+            document.wasDragged = true
             if(@fallback)
               ui.position.top = Math.round(ui.position.top / @browserZoom )
               ui.position.left = Math.round(ui.position.left / @browserZoom )
@@ -138,6 +146,7 @@ define ->
               @$el.trigger 'dragging'
 
             @dragCounter++
+
 
 
       @$el.draggable 

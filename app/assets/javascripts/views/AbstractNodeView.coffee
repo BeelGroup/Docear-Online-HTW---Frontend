@@ -27,6 +27,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
 
     addEvents:()->
+      @$el.mousedown ->
+        document.wasDragged = false
+
       @$el.click (event)=> 
         @handleClick(event)
         event.stopPropagation()
@@ -35,13 +38,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
     handleClick:(event)->
 
-      #isInnerNode = @$el.parents().classList.contains('inner-node')
-      #console.log 'result: '
-      #console.log isInnerNode
-      if $(event.target).hasClass 'action-select'
-        @selectNode()
-      #else
-      #  @selectNone()
+      if @isInnerNode $(event.target)
+        @selectNode() 
+      else if not document.wasDragged  
+        @selectNone()
 
       if $(event.target).hasClass 'action-fold-all'
         console.log 'fold DOM target: '
@@ -53,15 +53,17 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
     selectNode:()->
       @model.set 'selected', true
 
+    isInnerNode:($target)->
+      if $target.parents().hasClass('inner-node') or $target.hasClass('inner-node') 
+        true 
+      else 
+        false
+
+
     selectNone:()->
       console.log 'select none'
-
-      currentlySelected = @model.get('rootNodeModel').get 'selectedNode'
-
-      if (typeof(currentlySelected) isnt 'undefined') and currentlySelected isnt null
-        currentlySelected.set 'selected', false
-      @model.get('rootNodeModel').set 'selectedNode', null      
-
+      @model.get('rootNodeModel').selectNone()
+    
 
     PosToModel: ->
       # TODO: Event will not be called on change
