@@ -1,13 +1,6 @@
 package services.backend.mindmap;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Random;
-
 import models.backend.exceptions.DocearServiceException;
-
-import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.exceptions.MapNotFoundException;
@@ -15,9 +8,13 @@ import org.docear.messages.exceptions.NodeNotFoundException;
 import org.docear.messages.exceptions.NodeNotLockedByUserException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
-import play.Play;
 import play.libs.F.Promise;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Random;
+
+import static util.Input.resourceToString;
 
 @Profile("backendMock")
 @Component
@@ -25,17 +22,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 
 	@Override
 	public Promise<String> mindMapAsJsonString(String id, Integer nodeCount) throws DocearServiceException, IOException {
-		String result = null;
-
-		try {
-			result = FileUtils.readFileToString(new File(Play.application().path() + "/conf/rest/v1/map/" + id + ".json"));
-			if (result == null) {
-				throw new IOException("there is no map with id" + id);
-			}
-
-		} finally {
-		}
-		return Promise.pure(result);
+        return Promise.pure(resourceToString("rest/v1/map/" + id + ".json"));
 	}
 
 	@Override

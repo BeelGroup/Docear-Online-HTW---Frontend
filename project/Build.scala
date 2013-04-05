@@ -94,6 +94,7 @@ object ApplicationBuild extends Build {
         IO.write(file, gitInfos)
         Seq(file)
       }
+      , requireJs += "main.js"
     )
 
 }

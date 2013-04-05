@@ -37,7 +37,7 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       @bind 'change:selected', =>
         if(@get('selected'))
           currentlySelected = @get('rootNodeModel').get 'selectedNode'
-          if(typeof(currentlySelected) != 'undefined')
+          if (typeof(currentlySelected) isnt 'undefined') and currentlySelected isnt null
             currentlySelected.set 'selected', false
           @get('rootNodeModel').set 'selectedNode', @
 

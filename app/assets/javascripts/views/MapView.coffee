@@ -39,6 +39,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
     loadMap: (@mapId) ->
       if typeof @rootView != 'undefined'
         # remove old html elements
+        @canvas.zoomCenter(false)
         @rootView.getElement().remove();
       console.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.map(@mapId).url
@@ -171,8 +172,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
-
-      @canvas.center()
 
       @addLoadingOverlay()
 

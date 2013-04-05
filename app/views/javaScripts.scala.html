@@ -9,8 +9,6 @@
 <script src='@routes.Assets.at("javascripts/json2.js")'></script>
 <script src='@routes.Assets.at("javascripts/backbone.js")'></script>
 <script src='@routes.Assets.at("javascripts/jquery.transformAnimate.js")'></script>
-
-
 <script src='@routes.Assets.at("javascripts/raphael-min.js")'></script>
 
 @* the at sign and asterisks marks comments in templates
@@ -23,15 +21,11 @@
    keep the full js to precompile with sbt/play
 *@
 <script src='@routes.Assets.at("javascripts/handlebars-1.0.rc.1.js")'></script>
-<script src='@routes.Assets.at("javascripts/require.js")'></script>
-<script src='@routes.Assets.at("javascripts/load.js")'></script>
 <script src='@routes.Assets.at("javascripts/views/templates.pre.min.js")'></script>
-
-
+@helper.requireJs(core = routes.Assets.at("javascripts/require.js").url, module = routes.Assets.at("javascripts/main").url)
 <script src='@routes.Assets.at("javascripts/config.js")'></script>
-<script src='@routes.Assets.at("javascripts/main.js")'></script>
-
+<script src='@routes.Assets.at("javascripts/load.js")'></script>
+<script src='@routes.Assets.at("javascripts/script.js")'></script>
 <script src='@routes.Assets.at("javascripts/jquery.json-2.4.min.js")'></script>
-
 <script src='@routes.Assets.at("javascripts/jquery.svg.min.js")'></script>
 <script src='@routes.Assets.at("javascripts/jquery.svganim.min.js")'></script>
