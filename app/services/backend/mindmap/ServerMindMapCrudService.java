@@ -157,10 +157,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	 * @return
 	 */
 	private String getMindMapIdInFreeplane(final String mapId) {
-		Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: " + mapId);
+		Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: " + mapId);
 		String mindmapId = serverIdToMapIdMap.get(mapId);
 		if (mindmapId == null) { // if not hosted, send to a server
-			Logger.info("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id " + mapId + " not open. Sending to freeplane...");
+			Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id " + mapId + " not open. Sending to freeplane...");
 			try {
 				final boolean success = sendMapToDocearInstance(mapId);
 				if (!success) {
@@ -173,7 +173,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			mindmapId = serverIdToMapIdMap.get(mapId);
 		}
 
-		Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: " + mapId + "; MapId: " + mindmapId);
+		Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: " + mapId + "; MapId: " + mindmapId);
 		return mindmapId;
 	}
 
