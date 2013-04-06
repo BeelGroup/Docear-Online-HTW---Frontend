@@ -58,7 +58,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
 
     selectNone:()->
-      console.log 'select none'
       @model.get('rootNodeModel').selectNone()
     
 
@@ -202,12 +201,22 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
 
     afterRender: ->
       @$el.append(@model.get 'purehtml')
-      controls = new NodeControlsView(@model, @$el)
-      controls.renderAndAppendToNode()
       
-      if @model.get('parent') != undefined and @model.get('parent') != null
+      if @model.get('parent') isnt undefined and @model.get('parent') isnt null
         @connection = new ConnectionView(@model.get('parent'), @model)
         @connection.renderAndAppendToNode(@$el)
+
+      @alignButtons()
+
+      @controls = new NodeControlsView(@model)
+      @controls.renderAndAppendToNode(@)
+
+
+    alignButtons:->
+      $fold = @$el.children('.inner-node').children('.action-fold')
+
+      height = (@$el.outerHeight()/2 - $fold.outerHeight()/2)
+      $fold.css('top', height+"px")
         
 
     scale:(amount)->
@@ -245,40 +254,5 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         
         @resizeTree $parent, parent, height
 
-
-    alignControls: (model, recursive = false)->
-      nodes = [model]
-      while node = nodes.shift()
-        $node = $('#'+node.id)
-        if recursive
-          nodes = $.merge(nodes, node.get('children').slice()  )
-        $innerNode = $($node).children('.inner-node')
-        $fold = $($innerNode).children('.action-fold')
-        $controls = $($innerNode).children('.controls')
-        $($fold).css('top', ($($innerNode).outerHeight()/2 - $($fold).outerHeight()/2)+"px")
-        $($controls).css('left', ($($innerNode).outerWidth()-$($controls).outerWidth())/2+"px")
-        
-        if $($node).children('.children').children('.node').size() == 0
-          $($fold).hide()
-          
-
-        $newNode = $($controls).children('.action-new-node')
-        $($newNode).click (event)->
-          currentNodeId = $(this).closest('.node').attr('id')
-          # dummy
-          model.findById(currentNodeId).createAndAddChild()
-        
-        $edit = $($controls).children('.action-edit')
-        $($edit).click (event)->
-          $node = $(this).closest('.node')
-          node = model.findById($node.attr('id'))
-          $mindmapCanvas = $(this).closest('.mindmap-canvas')
-          nodeEditView = new NodeEditView(node)
-          nodeEditView.renderAndAppendTo($mindmapCanvas)
-          
-
-          
-      
-      
-
+    
   module.exports = AbstractNodeView

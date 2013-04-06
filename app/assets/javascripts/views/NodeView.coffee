@@ -14,17 +14,17 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
 
 
     recursiveRender: (parent, nodes)->
-      $.each(nodes, (index, node)=>
+      $.each nodes, (index, node)=>
         nodeView = new NodeView(node)
-        nodeHtml = nodeView.render().el
-        console.log nodeHtml
-        $(parent).append(nodeHtml)
-        
+        nodeView.renderAndAppendTo(parent)
+
         children = node.get 'children'
-        if children != undefined
-          @recursiveRender($(nodeHtml).find('.children:first'), children)
-      )      
-    
+        if children isnt undefined and children.length > 0
+          @recursiveRender(nodeView.getElement().find('.children:first'), children)
+        else
+          nodeView.getElement().find('.action-fold').hide()
+
+
     changeChildren: ->
       ## TODO -> render and align new child
       console.log "TODO: render child"
@@ -123,10 +123,12 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       for viewId, view of @subViews
         html = view.render().el
         $(html).appendTo(@el)
-      # extend the ready rendered htlm element
-      @afterRender()
+      # extend the ready rendered htlm element    
       @
 
+    renderAndAppendTo:($element)->
+      $element.append(@render().$el)
+      @afterRender()
 
     destroy: ->
       @model?.off null, null, @

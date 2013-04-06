@@ -16,10 +16,6 @@ define ->
       @zoomAmount = 100
       @calculateBrowserZoom()
 
-    setDragStat:->
-      
-
-
 
     moreEvents:()=>
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
@@ -119,8 +115,6 @@ define ->
         x2: @$el.parent().offset().left
         y2: @$el.parent().offset().top
 
-      console.log dragBoundaries
-
       @$el.draggable 
           cancel: "a.ui-icon, .inner-node, :input"
           cursor: "move"
@@ -129,7 +123,7 @@ define ->
           drag:->
             document.wasDragged = true
 
-            
+      # overwrite settings, if chrome is used      
       if $.browser.chrome
         @$el.draggable
           start:(evt, ui)=>
