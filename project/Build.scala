@@ -76,6 +76,11 @@ object ApplicationBuild extends Build {
      }
    }
 
+  lazy val nativeRequireJSinstalled = {
+    import scala.sys.process._
+    "which r.js".! == 0
+  }
+
     val main = play.Project(appName, appVersion, appDependencies).settings(
       coffeescriptOptions := Seq("bare")//coffee script code will not be wrapped in an anonymous function, necessary for tests
      // , resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots" //commented out because sonatype is offline on 21.03.2013 12:28
@@ -95,6 +100,17 @@ object ApplicationBuild extends Build {
         Seq(file)
       }
       , requireJs += "main.js"
+      , requireNativePath := {
+        //TODO windows users can integrate their performance improvements as well
+        val pathOption = System.getProperty("os.name") match {
+          case "Linux" if nativeRequireJSinstalled => Option("r.js")
+          case _ => None
+        }
+        println("using native requireJS: " + pathOption.isDefined)
+        if (!pathOption.isDefined)
+          println("you can setup native requireJS support as root with: npm install -g requirejs")
+        pathOption
+      }
     )
 
 }
