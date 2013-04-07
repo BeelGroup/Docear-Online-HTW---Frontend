@@ -14,7 +14,7 @@ import play.test.TestBrowser;
 import base.DocearHttpTest;
 
 public class GeneralTest extends DocearHttpTest{
-    
+    /*
     @Test
     public void initPageTest() {
         runInBrowser( new Callback<TestBrowser>() {
@@ -35,7 +35,7 @@ public class GeneralTest extends DocearHttpTest{
             	assertThat(menu.findElement(By.linkText("Help")).getAttribute("href")).isEqualTo(url("/help"));
             }
         });
-    }
+    }*/
     
     @Test
     public void initMapTest() {
@@ -52,6 +52,7 @@ public class GeneralTest extends DocearHttpTest{
             	//Check if exactly one root node exists
             	List<WebElement> rootNodes = driver.findElements(By.className("root"));
             	assertThat(rootNodes.size()).isEqualTo(1);
+            
             	
             	if (rootNodes.size() == 1){
             		WebElement rootNode = rootNodes.get(0);
@@ -60,9 +61,11 @@ public class GeneralTest extends DocearHttpTest{
             		//Check for one collection of left children
             		assertThat(rootNode.findElements(By.className("leftChildren")).size()).isEqualTo(1);
             		//Check for node content
-            		//assertThat(rootNode.findElement(By.xpath("./div[@class='inner-node action-select']/div[@class='content action-select'"))
-            		assertThat(rootNode.findElement(By.cssSelector("css=div[class='inner-node.action-select'] > div[class='content.action-select']")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
+            		//assertThat(rootNode.findElement(By.xpath("//div[@class='inner-node']/div[@class='content']")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
+            		assertThat(rootNode.findElement(By.cssSelector("css=div.'inner-node' > div.'content'")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
+            		//assertThat(rootNode.findElement(By.cssSelector("css=div.content.action-select")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             	}
+            	
             	
             	//Check if all nodes are available
             	assertThat(driver.findElements(By.className("node left")).size()).isEqualTo(11);
