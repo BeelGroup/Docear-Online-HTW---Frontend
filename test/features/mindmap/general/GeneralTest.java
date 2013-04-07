@@ -14,7 +14,7 @@ import play.test.TestBrowser;
 import base.DocearHttpTest;
 
 public class GeneralTest extends DocearHttpTest{
-    /*
+    
     @Test
     public void initPageTest() {
         runInBrowser( new Callback<TestBrowser>() {
@@ -28,14 +28,12 @@ public class GeneralTest extends DocearHttpTest{
             	
             	//Check menu
             	WebElement menu = driver.findElement(By.className("menu-container"));
-            	
-            	WebElement imprint = menu.findElement(By.linkText("Imprint"));
-            	play.Logger.debug(imprint.toString());
+            	//Check links to Help and Imprint
             	assertThat(menu.findElement(By.linkText("Imprint")).getAttribute("href")).isEqualTo("http://www.docear.org/imprint/");
             	assertThat(menu.findElement(By.linkText("Help")).getAttribute("href")).isEqualTo(url("/help"));
             }
         });
-    }*/
+    }
     
     @Test
     public void initMapTest() {
@@ -46,8 +44,8 @@ public class GeneralTest extends DocearHttpTest{
             	driver.get(rootURL());
             	
             	//Check if no node is selected
-            	List<WebElement> deleteLinks = driver.findElements(By.className("selected"));
-            	assertThat(deleteLinks).isEmpty();
+            	List<WebElement> selectedNodes = driver.findElements(By.className("selected"));
+            	assertThat(selectedNodes).isEmpty();
             	
             	//Check if exactly one root node exists
             	List<WebElement> rootNodes = driver.findElements(By.className("root"));
@@ -60,8 +58,8 @@ public class GeneralTest extends DocearHttpTest{
             		assertThat(rootNode.findElements(By.className("rightChildren")).size()).isEqualTo(1);
             		//Check for one collection of left children
             		assertThat(rootNode.findElements(By.className("leftChildren")).size()).isEqualTo(1);
-            		//Check for node content
             		
+            		//Check for node content
             		//assertThat(rootNode.findElement(By.xpath("//div[@class='inner-node']/div[@class='content']")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             		assertThat(rootNode.findElement(By.cssSelector("div.root > div.inner-node > div.content")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             	}
