@@ -9,23 +9,45 @@ define ->
 
     events:
       "click .action-edit"     : "actionEdit"
-      "click .action-new-node"     : "actionNewNode"
-      "click .action-share"     : "actionShare"
+      "click .action-new-node" : "actionNewNode"
+      "click .action-share"    : "actionShare"
  
     constructor:(@nodeModel, @$node)->
       super()    
 
     actionEdit: (event)->
-      console.log "edit"
+      console.log "edit @ "+@nodeView.model.get 'id'
+      # call functions via @nodeView
+      ###
+      $edit = $($controls).children('.action-edit')
+      $($edit).click (event)->
+        $node = $(this).closest('.node')
+        node = model.findById($node.attr('id'))
+        $mindmapCanvas = $(this).closest('.mindmap-canvas')
+        nodeEditView = new NodeEditView(node)
+        nodeEditView.renderAndAppendTo($mindmapCanvas)
+      ###
       
     actionNewNode: (event)->
-      console.log "newNode"
+      console.log "newNode @ "+@nodeView.model.get 'id'
+      # call functions via @nodeView
+      ###
+        $newNode = $($controls).children('.action-new-node')
+        $($newNode).click (event)->
+          currentNodeId = $(this).closest('.node').attr('id')
+          # dummy
+          model.findById(currentNodeId).createAndAddChild()
+      ###
     
     actionShare: (event)->
-      console.log "share"
+      console.log "share @ "+@nodeView.model.get 'id'
+      # call functions via @nodeView
     
-    renderAndAppendToNode:()->
-      @$node.find('.node:first').children('.inner-node').append(@render().el)
+    renderAndAppendToNode:(@nodeView)->
+      $element = @nodeView.$el.children('.inner-node')
+      $element.append(@render().el)
+      width = (@nodeView.getElement().outerWidth()/2 - @$el.outerWidth())#@$el.outerWidth()/2)
+      @$el.css('left', width+"px")
       @
       
 

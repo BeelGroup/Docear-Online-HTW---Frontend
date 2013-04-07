@@ -240,6 +240,12 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
     render: ->
       @$el.html @template @getRenderData()
       @$el.addClass('root')
+
+      @
+
+    # USE THIS FUNCTION instead of render
+    renderAndAppendTo:($element)->
+      $element.append @render().el 
       @recursiveRender $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
       @recursiveRender $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren')
       
@@ -250,8 +256,6 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       
       # extend the ready rendered htlm element
       @afterRender()
-      @
-
 
 
   module.exports = RootNodeView

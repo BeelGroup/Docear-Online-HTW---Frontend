@@ -13,10 +13,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
     positionNodes:()->
       @rootView = new RootNodeView @rootNode
-      @$rootHtml = $(@rootView.render().el)
-
-      @canvas.getElement().append @$rootHtml      
-      @rootView.alignControls @rootView.model, true
+      @rootView.renderAndAppendTo(@canvas.getElement())
 
       @rootView.refreshDom()
       
@@ -28,8 +25,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       
 
     resizeViewport:=>
-      console.log 'resize'
-
       @updateWidthAndHeight()
       if typeof @minimap != 'undefined'
         @minimap.setViewportSize()
@@ -149,7 +144,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         width:  width+'px'
         height: height+'px'
 
-      console.log typeof @canvas isnt 'undefined'
       if typeof @canvas isnt 'undefined'
         @canvas.updateDragBoundaries()
 

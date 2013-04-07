@@ -1,12 +1,12 @@
 <div class='children'></div>
-<div class='inner-node action-select'>
-  <div class='content action-select {{#if isHTML}}isHTML{{/if}}'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
+<div class='inner-node'>
+  <div class='content {{#if isHTML}}isHTML{{/if}}'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
   {{#if foldable}}
     <div class='action-fold collapse-icon'>
-      <img class='action-fold-all action-select' src="/assets/images/icon_minus.svg">
+      <img class='action-fold-all' src="/assets/images/icon_minus.svg">
     </div>
     <div class='action-fold expand-icon invisible'>
-      <img class='action-fold-all action-select' src="/assets/images/icon_plus.svg">
+      <img class='action-fold-all' src="/assets/images/icon_plus.svg">
     </div>
   {{/if}} 
 </div>
