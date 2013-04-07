@@ -61,15 +61,15 @@ public class GeneralTest extends DocearHttpTest{
             		//Check for one collection of left children
             		assertThat(rootNode.findElements(By.className("leftChildren")).size()).isEqualTo(1);
             		//Check for node content
+            		
             		//assertThat(rootNode.findElement(By.xpath("//div[@class='inner-node']/div[@class='content']")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
-            		assertThat(rootNode.findElement(By.cssSelector("css=div.'inner-node' > div.'content'")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
-            		//assertThat(rootNode.findElement(By.cssSelector("css=div.content.action-select")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
+            		assertThat(rootNode.findElement(By.cssSelector("div.root > div.inner-node > div.content")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             	}
             	
             	
             	//Check if all nodes are available
-            	assertThat(driver.findElements(By.className("node left")).size()).isEqualTo(11);
-            	assertThat(driver.findElements(By.className("node right")).size()).isEqualTo(10);
+            	assertThat(driver.findElements(By.cssSelector("div.node.left")).size()).isEqualTo(11);
+            	assertThat(driver.findElements(By.cssSelector("div.node.right")).size()).isEqualTo(10);
             	
             }
         });
