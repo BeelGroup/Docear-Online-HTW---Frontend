@@ -1,37 +1,26 @@
 package features.mindmap.node;
 
-import java.util.List;
-
-import base.DocearHttpTest;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.google.common.base.Predicate;
+import org.junit.Ignore;
 import org.junit.Test;
+
 import play.libs.F;
 import play.test.TestBrowser;
+import base.DocearTest;
 
-import javax.annotation.Nullable;
+public class VisualizationTest extends DocearTest {
 
-import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.fest.assertions.fluentlenium.FluentLeniumAssertions.assertThat;
-import static org.fest.assertions.Assertions.assertThat;
-
-public class VisualizationTest extends DocearHttpTest {
-
+	/**
+	 * @deprecated Use Selenium Test instead
+	 */
     @Test
+    @Ignore
+    @Deprecated
     public void testText() throws Exception {
         runInBrowser(new F.Callback<TestBrowser>() {
             @Override
             @SuppressWarnings("unchecked") //type system is in fluentlenium library broken
             public void invoke(final TestBrowser testBrowser) throws Throwable {     		
-            	WebClient webClient = webClient();
+            	/*WebClient webClient = webClient();
 
 				HtmlPage page = webClient.getPage(url("/"));
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000);
@@ -56,7 +45,7 @@ public class VisualizationTest extends DocearHttpTest {
 
 				List nodes = page.getByXPath("//div[contains(@class, 'node')]");
 				
-				assertThat(nodes.size()).isGreaterThan(0);
+				assertThat(nodes.size()).isGreaterThan(0);*/
 			}
         });
     }

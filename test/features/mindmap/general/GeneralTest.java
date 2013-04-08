@@ -6,21 +6,18 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.List;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import play.libs.F.Callback;
 import play.test.TestBrowser;
-import base.DocearHttpTest;
+import base.DocearTest;
 
-public class GeneralTest extends DocearHttpTest{
+public class GeneralTest extends DocearTest{
     
     @Test
     public void initPageTest() {
         runInBrowser( new Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
-            	WebDriver driver = getDriver(browser);
-            	
             	driver.get(rootURL());
             	
             	//Check Title
@@ -39,8 +36,6 @@ public class GeneralTest extends DocearHttpTest{
     public void initMapTest() {
         runInBrowser( new Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
-            	WebDriver driver = getDriver(browser);
-            	
             	driver.get(rootURL());
             	
             	//Check if no node is selected
@@ -50,7 +45,6 @@ public class GeneralTest extends DocearHttpTest{
             	//Check if exactly one root node exists
             	List<WebElement> rootNodes = driver.findElements(By.className("root"));
             	assertThat(rootNodes.size()).isEqualTo(1);
-            
             	
             	if (rootNodes.size() == 1){
             		WebElement rootNode = rootNodes.get(0);

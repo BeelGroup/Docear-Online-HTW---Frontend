@@ -4,22 +4,18 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import base.DocearHttpTest;
-
 import play.libs.F.Callback;
 import play.test.TestBrowser;
+import base.DocearTest;
 
-public class FoldingTest extends DocearHttpTest{
-	/*@Test
+public class FoldingTest extends DocearTest{
+	@Test
 	public void initTest() {
 		runInBrowser(new Callback<TestBrowser>() {
 			public void invoke(TestBrowser browser) {
-				WebDriver driver = getDriver(browser);
-
 				driver.get(rootURL());
 
 				WebElement rootNode = driver.findElement(By.className("root"));
@@ -35,8 +31,6 @@ public class FoldingTest extends DocearHttpTest{
 	public void mouseOverTest() {
 		runInBrowser(new Callback<TestBrowser>() {
 			public void invoke(TestBrowser browser) {
-				WebDriver driver = getDriver(browser);
-
 				driver.get(rootURL());
 
 				WebElement rootNode = driver.findElement(By.className("root"));
@@ -51,14 +45,12 @@ public class FoldingTest extends DocearHttpTest{
 				assertThat(rootNode.findElements(By.cssSelector("div.root > div.expand-icon.invisible")).size()).isEqualTo(2);
 			}
 		});
-	}*/
+	}
 	
 	@Test
 	public void selectNodeWithFoldIconsTest() {
 		runInBrowser(new Callback<TestBrowser>() {
-			public void invoke(TestBrowser browser) {
-				WebDriver driver = getDriver(browser);
-
+			public void invoke(TestBrowser browser) {			
 				driver.get(rootURL());
 
 				WebElement rootNode = driver.findElement(By.className("root"));
@@ -83,8 +75,6 @@ public class FoldingTest extends DocearHttpTest{
 	public void selectNodeWithoutFoldIconsTest() {
 		runInBrowser(new Callback<TestBrowser>() {
 			public void invoke(TestBrowser browser) {
-				WebDriver driver = getDriver(browser);
-
 				driver.get(rootURL());
 
 				WebElement rootNode = driver.findElement(By.className("root"));

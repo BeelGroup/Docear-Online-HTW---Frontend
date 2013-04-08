@@ -1,30 +1,26 @@
 package features.mindmap.node;
 
-import static org.fest.assertions.Assertions.assertThat;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
 import play.libs.F;
 import play.test.TestBrowser;
+import base.DocearTest;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+public class LoginTest extends DocearTest {
 
-import base.DocearHttpTest;
-
-public class LoginTest extends DocearHttpTest {
-
+	/**
+	 * @deprecated Use Selenium Test instead
+	 */
     @Test
+    @Ignore
+    @Deprecated
     public void loginLogoutTest() throws Exception {
         runInBrowser(new F.Callback<TestBrowser>() {
             @Override
             @SuppressWarnings("unchecked") //type system is in fluentlenium library broken
-            public void invoke(final TestBrowser testBrowser) throws Throwable {            	WebClient webClient = webClient();
+            public void invoke(final TestBrowser testBrowser) throws Throwable {            	
+            	/*WebClient webClient = webClient();
 				HtmlPage page = webClient.getPage(url("/"));
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000);
 	
@@ -46,7 +42,7 @@ public class LoginTest extends DocearHttpTest {
 				page = logout.click();
 				webClient.waitForBackgroundJavaScriptStartingBefore(defaultWait() * 1000);
 				
-				assertThat(page.getElementById("login-form")).isNotNull();
+				assertThat(page.getElementById("login-form")).isNotNull();*/
 				
             }
         });

@@ -1,3 +1,4 @@
+import org.junit.Ignore;
 import org.junit.Test;
 import play.libs.F;
 import play.test.TestBrowser;
@@ -9,6 +10,7 @@ import static play.test.Helpers.*;
 
 public class QUnitBridge {
     @Test
+    @Ignore
     public void runInBrowser() {
         running(testServer(3333), HTMLUNIT, new F.Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
