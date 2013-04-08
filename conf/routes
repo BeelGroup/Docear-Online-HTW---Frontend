@@ -12,8 +12,6 @@ GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public"
 
 POST	/feedback					controllers.Application.feedback()
 
-GET     /qunit                      controllers.QUnit.testAll()
-
 # Mindmap
 GET		/map/:mapId/json			@controllers.MindMap.map(mapId: String, nodeCount : Integer ?= -1)
 GET		/maps			    		@controllers.User.mapListFromDB()
