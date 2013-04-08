@@ -13,7 +13,7 @@ object ApplicationBuild extends Build {
     val appVersion      = "0.1-SNAPSHOT"
 
     val appDependencies = {
-      val seleniumVersion = "2.29.1"
+      val seleniumVersion = "2.31.0"
       Seq(
         "junit" % "junit-dep" % "4.11" % "test"
         , "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.0.2"
