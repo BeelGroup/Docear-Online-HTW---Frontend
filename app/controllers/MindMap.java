@@ -6,6 +6,7 @@ import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
 import models.frontend.formdata.ChangeNodeData;
+import models.frontend.formdata.CreateNodeData;
 import models.frontend.formdata.ReleaseLockData;
 import models.frontend.formdata.RemoveNodeData;
 import models.frontend.formdata.RequestLockData;
@@ -28,6 +29,7 @@ import services.backend.mindmap.MindMapCrudService;
 
 @Component
 public class MindMap extends Controller {
+	private final static Form<CreateNodeData> createNodeForm = Form.form(CreateNodeData.class);
 	private final static Form<RemoveNodeData> removeNodeForm = Form.form(RemoveNodeData.class);
 	private final static Form<ChangeNodeData> changeNodeForm = Form.form(ChangeNodeData.class);
 	private final static Form<RequestLockData> requestLockForm = Form.form(RequestLockData.class);
@@ -100,7 +102,7 @@ public class MindMap extends Controller {
 			}));	
 		}
 	}
-	
+
 	@Security.Authenticated(Secured.class)
 	public Result fetchUpdatesSinceRevision(String mapId, Integer revision) {
 		Logger.debug("MindMap.fetchUpdatesSinceRevision <- mapId="+mapId+ "; revision: "+revision);
@@ -116,17 +118,21 @@ public class MindMap extends Controller {
 
 	@Security.Authenticated(Secured.class)
 	public Result createNode(final String mapId) {
-		Logger.debug("MindMap.createNode <- mapId="+mapId+", body="+request().body().asText());
-		Map<String, String[]> bodyEntries = request().body().asFormUrlEncoded();
+		final Form<CreateNodeData> filledForm = createNodeForm.bindFromRequest();
+		Logger.debug("MindMap.createNode <- mapId="+mapId+", form="+filledForm.toString());
 
-		final String parentNodeId = bodyEntries.get("parentNodeId")[0];
-		final F.Promise<String> addNodePromise = mindMapCrudService.createNode(mapId, parentNodeId, username());
-		return async(addNodePromise.map(new F.Function<String, Result>() {
-			@Override
-			public Result apply(String node) throws Throwable {
-				return ok(node);
-			}
-		}));
+		if(filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final String parentNodeId = filledForm.get().getParentNodeId();
+			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(mapId, parentNodeId, username());
+			return async(addNodePromise.map(new F.Function<String, Result>() {
+				@Override
+				public Result apply(String node) throws Throwable {
+					return ok(node);
+				}
+			}));
+		}
 	}
 
 	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
@@ -153,10 +159,15 @@ public class MindMap extends Controller {
 			final ChangeNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 			final TypeReference<HashMap<String,Object>> typeRef 
-	          = new TypeReference<HashMap<String,Object>>() {}; 
+			= new TypeReference<HashMap<String,Object>>() {}; 
 			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
-			mindMapCrudService.changeNode(mapId, nodeId,map, username());
-			return ok();	
+			final F.Promise<String> promise = mindMapCrudService.changeNode(mapId, nodeId,map, username());
+			return async(promise.map(new Function<String, Result>() {
+				@Override
+				public Result apply(String json) throws Throwable {
+					return ok(json);
+				}
+			}));	
 		}
 	}
 
@@ -196,7 +207,7 @@ public class MindMap extends Controller {
 			}
 		}));
 	}
-	
+
 	/**
 	 * @deprecated use {@link #createNode(String)} instead
 	 */
@@ -205,7 +216,7 @@ public class MindMap extends Controller {
 	public Result addNode() {
 		return badRequest("Deprecated! Use "+routes.MindMap.createNode("NODE_ID").toString()+" instead");
 	}
-	
+
 	/**
 	 * 
 	 * @return name of currently logged in user
