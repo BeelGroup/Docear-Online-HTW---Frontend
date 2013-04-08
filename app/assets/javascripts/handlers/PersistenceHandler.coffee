@@ -8,7 +8,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         'Node': jsRoutes.controllers.MindMap.changeNode().url
       },
       'create': {
-        'Node': jsRoutes.controllers.MindMap.addNode().url
+        'Node': jsRoutes.controllers.MindMap.createNode().url
       },
       'delete': {
         'Node': jsRoutes.controllers.MindMap.deleteNode().url
