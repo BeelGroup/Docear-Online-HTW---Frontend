@@ -5,6 +5,7 @@ import static play.test.Helpers.testServer;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -34,8 +35,6 @@ public abstract class DocearTest {
 	public static void getBrowserInfo() {
 		final String driverAlias = System.getProperties().getProperty("selenium.browser", "FIREFOX");
 
-		play.Logger.error(driverAlias);
-		
 		if (driverAlias.equals("IE")
 				&& System.getProperty("os.name").startsWith("Windows")) {
 			createIE();
@@ -44,6 +43,8 @@ public abstract class DocearTest {
 		} else {
 			createFirefox();
 		}
+		driver.manage().window().maximize();
+		driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 	}
 
 	private static void createIE() {
