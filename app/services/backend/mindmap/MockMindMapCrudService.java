@@ -11,7 +11,6 @@ import java.util.concurrent.Callable;
 
 import models.backend.exceptions.DocearServiceException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.annotation.Profile;

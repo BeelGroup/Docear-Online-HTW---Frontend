@@ -72,7 +72,7 @@ public class MindMap extends Controller {
 					if(success) {
 						return ok();
 					} else {
-						return forbidden();
+						return status(PRECONDITION_FAILED);
 					}
 				}
 			}));	
@@ -96,7 +96,7 @@ public class MindMap extends Controller {
 					if(success) {
 						return ok();
 					} else {
-						return forbidden();
+						return status(PRECONDITION_FAILED);
 					}
 				}
 			}));	
@@ -188,7 +188,7 @@ public class MindMap extends Controller {
 					if(success) {
 						return ok();
 					} else {
-						return forbidden();
+						return status(PRECONDITION_FAILED);
 					}
 				}
 			}));	

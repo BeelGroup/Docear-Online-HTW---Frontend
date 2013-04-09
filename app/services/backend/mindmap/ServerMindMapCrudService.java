@@ -108,9 +108,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			final String jsonString = response.getJsonString();
 			Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : " + jsonString.substring(0, 10));
 			return Promise.pure(jsonString);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			if (e instanceof MapNotFoundException) {
-				Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...", e);
+				//Logger.warn("ServerMindMapCrudService.mindMapAsJsonString => Map expected on server, but was not present. Reopening...", e);
 				serverIdToMapIdMap.remove(mapId);
 				return mindMapAsJsonString(mapId, nodeCount);
 			} else {
@@ -327,11 +327,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			final RequestLockResponse response = (RequestLockResponse) promise.get();
 			return Promise.pure(response.getLockGained());
 
-		} catch (Throwable t) {
-			if (t instanceof MapNotFoundException || t instanceof NodeAlreadyLockedException || t instanceof NodeNotFoundException) {
+		} catch (Exception e) {
+			if (e instanceof MapNotFoundException || e instanceof NodeAlreadyLockedException || e instanceof NodeNotFoundException) {
 				return Promise.pure(false);
 			} else {
-				throw new RuntimeException(t);
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -348,11 +348,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			final ReleaseLockResponse response = (ReleaseLockResponse) promise.get();
 			return Promise.pure(response.getLockReleased());
 
-		} catch (Throwable t) {
-			if (t instanceof MapNotFoundException || t instanceof NodeNotFoundException) {
+		} catch (Exception e) {
+			if (e instanceof MapNotFoundException || e instanceof NodeNotFoundException) {
 				return Promise.pure(false);
 			} else {
-				throw new RuntimeException(t);
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -404,7 +404,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				final Promise<Object> promise = Akka.asPromise(ask(remoteActor, new OpenMindMapRequest(fileContentAsString, fileName), defaultTimeoutInMillis));
 				final OpenMindMapResponse response = (OpenMindMapResponse) promise.get();
 				return response.getSuccess();
-			} catch (Throwable t) {
+			} catch (Exception e) {
 				return false;
 			}
 
