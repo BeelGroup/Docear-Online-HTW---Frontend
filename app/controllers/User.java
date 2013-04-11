@@ -37,7 +37,7 @@ public class User extends Controller {
 	public Result login() {
         final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
         Result result;
-
+        
         if (filledForm.hasErrors()) {
             result = badRequest(views.html.index.render(filledForm));
         } else {
