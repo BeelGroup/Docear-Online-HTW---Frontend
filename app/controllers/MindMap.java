@@ -136,7 +136,7 @@ public class MindMap extends Controller {
 	}
 
 	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
-		Logger.debug("MindMap.createNode <- mapId="+mapId+", nodeId="+nodeId+", nodeCount= "+nodeCount);
+		Logger.debug("MindMap.getNode <- mapId="+mapId+", nodeId="+nodeId+", nodeCount= "+nodeCount);
 		if(!mapId.equals("welcome") && !User.isAuthenticated())
 			return unauthorized();
 		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(mapId, nodeId,nodeCount);
@@ -161,6 +161,7 @@ public class MindMap extends Controller {
 			final TypeReference<HashMap<String,Object>> typeRef 
 			= new TypeReference<HashMap<String,Object>>() {}; 
 			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
+			//Logger.debug(map.get("attributes").getClass().getSimpleName());
 			final F.Promise<String> promise = mindMapCrudService.changeNode(mapId, nodeId,map, username());
 			return async(promise.map(new Function<String, Result>() {
 				@Override

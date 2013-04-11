@@ -1,5 +1,5 @@
 package models.backend.exceptions;
 
 @SuppressWarnings("serial")
-public class DocearServiceException extends Exception {
+public class DocearServiceException extends RuntimeException {
 }

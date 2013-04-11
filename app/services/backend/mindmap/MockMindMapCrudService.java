@@ -41,7 +41,6 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-
 	@Override
 	public Promise<String> getNode(String mapId, String nodeId, Integer nodeCount) {
 		try {
@@ -98,7 +97,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 				return true;
 			}
 		});
-		
+
 		return promise;
 	}
 
