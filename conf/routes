@@ -21,6 +21,7 @@ GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId
 DELETE	/map/:mapId/node/delete			@controllers.MindMap.deleteNode(mapId: String)
 POST	/map/:mapId/node/create			@controllers.MindMap.createNode(mapId: String)
 POST	/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
+POST	/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
 POST	/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
 POST	/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
 

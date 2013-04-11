@@ -35,6 +35,8 @@ import org.docear.messages.Messages.ListenToUpdateOccurrenceRespone;
 import org.docear.messages.Messages.MindMapRequest;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
+import org.docear.messages.Messages.MoveNodeToRequest;
+import org.docear.messages.Messages.MoveNodeToResponse;
 import org.docear.messages.Messages.OpenMindMapRequest;
 import org.docear.messages.Messages.OpenMindMapResponse;
 import org.docear.messages.Messages.ReleaseLockRequest;
@@ -249,6 +251,22 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				} catch (IOException e) {
 					throw new RuntimeException("Problem reading updates from response", e);
 				}
+			}
+		});
+	}
+	
+	@Override
+	public Promise<Boolean> moveNodeTo(String mapId, String newParentNodeId, String nodetoMoveId, Integer newIndex) {
+		Logger.debug("ServerMindMapCrudService.moveNodeTo => mapId: " + mapId + "; newParentNodeId: "+newParentNodeId+"; nodeId: " + nodetoMoveId + "; newIndex: " + newIndex);
+		
+		final MoveNodeToRequest request = new MoveNodeToRequest(mapId, newParentNodeId, nodetoMoveId, newIndex);
+		
+		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
+
+			@Override
+			public Promise<Boolean> perform(Promise<Object> promise) {
+				final MoveNodeToResponse response = (MoveNodeToResponse) promise.get();
+				return Promise.pure(response.getSuccess());
 			}
 		});
 	}

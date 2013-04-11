@@ -55,6 +55,7 @@ public interface MindMapCrudService {
 	 */
 	Promise<String> changeNode(String mapId, String nodeId, Map<String,Object> attributeValueMap, String username);
 
+	Promise<Boolean> moveNodeTo(String mapId, String newParentNodeId, String nodetoMoveId, Integer newIndex);
 	/**
 	 * 
 	 * Sends request to remove a node in a map

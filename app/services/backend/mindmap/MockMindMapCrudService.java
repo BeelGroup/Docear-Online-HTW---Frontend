@@ -66,6 +66,11 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	@Override
+	public Promise<Boolean> moveNodeTo(String mapId, String newParentNodeId, String nodeId, Integer newIndex) {
+		return Promise.pure(true);
+	}
 
 	@Override
 	public Promise<Boolean> removeNode(String mapId, String nodeId, String username) {
