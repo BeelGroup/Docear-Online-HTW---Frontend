@@ -104,11 +104,4 @@ public class MockMindMapCrudService implements MindMapCrudService {
 
 		return promise;
 	}
-
-//	@Override
-//	public Promise<String> addNode(JsonNode addNodeRequestJson) {
-//		throw new RuntimeException("Deprecated method! Use changeNode(String,String,String) instead.");
-//	}
-
-
 }

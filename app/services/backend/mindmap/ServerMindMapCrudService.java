@@ -202,33 +202,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return promise;
 	}
 
-//	@Override
-//	@Deprecated
-//	public Promise<String> addNode(JsonNode addNodeRequestJson) {
-//
-//		// final String mapId =
-//		// getMindMapIdInFreeplane(addNodeRequestJson.get("mapId").asText());
-//		// final String parentNodeId =
-//		// addNodeRequestJson.get("parentNodeId").asText();
-//		// Logger.debug("mapId: "+mapId+"; parentNodeId: "+parentNodeId);
-//		// AddNodeRequest request = new
-//		// AddNodeRequest(mapId,parentNodeId,username());
-//		//
-//		// ActorRef remoteActor = getRemoteActor();
-//		// Future<Object> future = ask(remoteActor, request,
-//		// defaultTimeoutInMillis);
-//		//
-//		// Promise<String> promise = Akka.asPromise(future).map(new
-//		// Function<Object, String>() {
-//		// @Override
-//		// public String apply(Object responseMessage) throws Throwable {
-//		// AddNodeResponse response = (AddNodeResponse)responseMessage;
-//		// return response.getMapUpdate();
-//		// }
-//		// });
-//		return null;// promise;
-//	}
-
 	@Override
 	public Promise<String> changeNode(String mapId, String nodeId, Map<String, Object> attributeValueMap, String username) {
 		Logger.debug("ServerMindMapCrudService.changeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());

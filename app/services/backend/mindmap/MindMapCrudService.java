@@ -16,13 +16,6 @@ public interface MindMapCrudService {
 	 */
 	Promise<String> mindMapAsJsonString(String mapId,Integer nodeCount) throws DocearServiceException, IOException;
 
-
-//	/**
-//	 * @deprecated redundant, use {@link #createNode(String, String, String)}
-//	 */
-//	@Deprecated
-//	Promise<String> addNode(JsonNode addNodeRequestJson);
-
 	Promise<Boolean> requestLock(String mapId, String nodeId, String username);
 	Promise<Boolean> releaseLock(String mapId, String nodeId, String username);
 	Promise<String> fetchUpdatesSinceRevision(String mapId, Integer revision, String username);
