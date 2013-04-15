@@ -11,7 +11,6 @@ import java.util.concurrent.Callable;
 
 import models.backend.exceptions.DocearServiceException;
 
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -106,10 +105,10 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		return promise;
 	}
 
-	@Override
-	public Promise<String> addNode(JsonNode addNodeRequestJson) {
-		throw new RuntimeException("Deprecated method! Use changeNode(String,String,String) instead.");
-	}
+//	@Override
+//	public Promise<String> addNode(JsonNode addNodeRequestJson) {
+//		throw new RuntimeException("Deprecated method! Use changeNode(String,String,String) instead.");
+//	}
 
 
 }

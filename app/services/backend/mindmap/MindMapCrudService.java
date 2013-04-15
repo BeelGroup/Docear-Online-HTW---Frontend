@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
-
-import org.codehaus.jackson.JsonNode;
-
 import play.libs.F.Promise;
 
 public interface MindMapCrudService {
@@ -20,11 +17,11 @@ public interface MindMapCrudService {
 	Promise<String> mindMapAsJsonString(String mapId,Integer nodeCount) throws DocearServiceException, IOException;
 
 
-	/**
-	 * @deprecated redundant, use {@link #createNode(String, String, String)}
-	 */
-	@Deprecated
-	Promise<String> addNode(JsonNode addNodeRequestJson);
+//	/**
+//	 * @deprecated redundant, use {@link #createNode(String, String, String)}
+//	 */
+//	@Deprecated
+//	Promise<String> addNode(JsonNode addNodeRequestJson);
 
 	Promise<Boolean> requestLock(String mapId, String nodeId, String username);
 	Promise<Boolean> releaseLock(String mapId, String nodeId, String username);
