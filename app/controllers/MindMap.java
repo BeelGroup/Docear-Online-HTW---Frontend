@@ -55,6 +55,22 @@ public class MindMap extends Controller {
 			}
 		}));
 	}
+	
+	public Result mapXml(final String mapId) throws DocearServiceException, IOException {
+		Logger.debug("MindMap.map <- mapId=" + mapId);
+		// check if welcome map or user authenticated
+		if (!mapId.equals("welcome") && !User.isAuthenticated())
+			return redirect(routes.Application.index());
+
+		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(mapId);
+		
+		return async(mindMapPromise.map(new F.Function<String, Result>() {
+			@Override
+			public Result apply(String mindMap) throws Throwable {
+				return ok(mindMap);
+			}
+		}));
+	}
 
 	public Result requestLock(final String mapId) {
 		final Form<RequestLockData> filledForm = requestLockForm.bindFromRequest();

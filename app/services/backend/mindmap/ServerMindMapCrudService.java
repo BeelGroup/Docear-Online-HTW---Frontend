@@ -34,6 +34,8 @@ import org.docear.messages.Messages.ListenToUpdateOccurrenceRespone;
 import org.docear.messages.Messages.MindMapRequest;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
+import org.docear.messages.Messages.MindmapAsXmlRequest;
+import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.Messages.MoveNodeToRequest;
 import org.docear.messages.Messages.MoveNodeToResponse;
 import org.docear.messages.Messages.OpenMindMapRequest;
@@ -47,6 +49,7 @@ import org.docear.messages.Messages.RequestLockResponse;
 import org.docear.messages.exceptions.MapNotFoundException;
 import org.docear.messages.exceptions.NodeAlreadyLockedException;
 import org.docear.messages.exceptions.NodeNotFoundException;
+import org.docear.messages.exceptions.NodeNotLockedByUserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -102,7 +105,34 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		});
 	}
 
+	@Override
+	public Promise<String> mindMapAsXmlString(String mapId) throws DocearServiceException, IOException {
+		Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => mapId: " + mapId);
 
+		final MindmapAsXmlRequest request = new MindmapAsXmlRequest(mapId);
+
+		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
+			@Override
+			public Promise<String> perform(Promise<Object> promise) {
+				try {
+					final MindmapAsXmlResponse response = (MindmapAsXmlResponse) promise.get();
+					Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => response received");
+					String xmlString = new ObjectMapper().writeValueAsString(response);
+
+					Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => returning map as xml string : " + xmlString.substring(0, 10));
+					return Promise.pure(xmlString);
+
+				} catch (JsonGenerationException e) {
+					throw new RuntimeException(e);
+				} catch (JsonMappingException e) {
+					throw new RuntimeException(e);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+
+			}
+		});
+	}
 
 	@Override
 	public Promise<Boolean> listenForUpdates(final String mapId) {
@@ -110,66 +140,70 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		// two minutes for longpolling
 		final long twoMinutesInMillis = 120000;
-		return performActionOnMindMap(request, twoMinutesInMillis, 
-				new ActionOnMindMap<Boolean>() {
+		return performActionOnMindMap(request, twoMinutesInMillis, new ActionOnMindMap<Boolean>() {
 
 			@Override
 			public Promise<Boolean> perform(Promise<Object> promise) {
-				return promise
-						.map(new Function<Object, Boolean>() {
+				return promise.map(new Function<Object, Boolean>() {
 
-							@Override
-							public Boolean apply(Object arg0) throws Throwable {
-								final ListenToUpdateOccurrenceRespone response = (ListenToUpdateOccurrenceRespone) arg0;
-								return response.getResult();
-							}
-						}).recover(new Function<Throwable, Boolean>() {
-							
-							@Override
-							public Boolean apply(Throwable t) throws Throwable {
-								/* When map was not found, something must have happened since the last interaction
-								 * Probably the laptop was in standby and tries now to reconnect, which should result
-								 * in a reload.
-								 * When the frontend tries to load updates, the map will be send to a server
-								 */
-								if(t instanceof MapNotFoundException) {
-									return true;
-								}
-								return false;
-							}
-						});
+					@Override
+					public Boolean apply(Object arg0) throws Throwable {
+						final ListenToUpdateOccurrenceRespone response = (ListenToUpdateOccurrenceRespone) arg0;
+						return response.getResult();
+					}
+				}).recover(new Function<Throwable, Boolean>() {
+
+					@Override
+					public Boolean apply(Throwable t) throws Throwable {
+						/*
+						 * When map was not found, something must have happened
+						 * since the last interaction Probably the laptop was in
+						 * standby and tries now to reconnect, which should
+						 * result in a reload. When the frontend tries to load
+						 * updates, the map will be send to a server
+						 */
+						if (t instanceof MapNotFoundException) {
+							return true;
+						}
+						return false;
+					}
+				});
 
 			}
 		});
 	}
 
-	//	/**
-	//	 * returns docear mapid In case the map is not loaded on a server, it gets
-	//	 * automatically pushed to freeplane
-	//	 * 
-	//	 * @param mapId
-	//	 * @return
-	//	 */
-	//	private String getMindMapIdInFreeplane(final String mapId) {
-	//		Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: " + mapId);
-	//		String mindmapId = serverIdToMapIdMap.get(mapId);
-	//		if (mindmapId == null) { // if not hosted, send to a server
-	//			Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id " + mapId + " not open. Sending to freeplane...");
-	//			try {
-	//				final boolean success = sendMindMapToServer(mapId);
-	//				if (!success) {
-	//					throw new RuntimeException("problem sending mindmap to Docear");
-	//				}
-	//			} catch (NoUserLoggedInException e) {
-	//				Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => No user logged in! ", e);
-	//				throw new RuntimeException("No user logged in", e);
-	//			}
-	//			mindmapId = serverIdToMapIdMap.get(mapId);
-	//		}
+	// /**
+	// * returns docear mapid In case the map is not loaded on a server, it gets
+	// * automatically pushed to freeplane
+	// *
+	// * @param mapId
+	// * @return
+	// */
+	// private String getMindMapIdInFreeplane(final String mapId) {
+	// Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: "
+	// + mapId);
+	// String mindmapId = serverIdToMapIdMap.get(mapId);
+	// if (mindmapId == null) { // if not hosted, send to a server
+	// Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id "
+	// + mapId + " not open. Sending to freeplane...");
+	// try {
+	// final boolean success = sendMindMapToServer(mapId);
+	// if (!success) {
+	// throw new RuntimeException("problem sending mindmap to Docear");
+	// }
+	// } catch (NoUserLoggedInException e) {
+	// Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => No user logged in! ",
+	// e);
+	// throw new RuntimeException("No user logged in", e);
+	// }
+	// mindmapId = serverIdToMapIdMap.get(mapId);
+	// }
 	//
-	//		Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: " + mapId + "; MapId: " + mindmapId);
-	//		return mindmapId;
-	//	}
+	// Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: "
+	// + mapId + "; MapId: " + mindmapId);
+	// return mindmapId;
+	// }
 
 	@Override
 	public Promise<String> createNode(final String mapId, final String parentNodeId, String username) {
@@ -226,13 +260,13 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			}
 		});
 	}
-	
+
 	@Override
 	public Promise<Boolean> moveNodeTo(String mapId, String newParentNodeId, String nodetoMoveId, Integer newIndex) {
-		Logger.debug("ServerMindMapCrudService.moveNodeTo => mapId: " + mapId + "; newParentNodeId: "+newParentNodeId+"; nodeId: " + nodetoMoveId + "; newIndex: " + newIndex);
-		
+		Logger.debug("ServerMindMapCrudService.moveNodeTo => mapId: " + mapId + "; newParentNodeId: " + newParentNodeId + "; nodeId: " + nodetoMoveId + "; newIndex: " + newIndex);
+
 		final MoveNodeToRequest request = new MoveNodeToRequest(mapId, newParentNodeId, nodetoMoveId, newIndex);
-		
+
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 
 			@Override
@@ -296,7 +330,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 			@Override
 			public Promise<Boolean> handleException(Throwable t) {
-				if(t instanceof NodeAlreadyLockedException || t instanceof NodeNotFoundException) {
+				if (t instanceof NodeAlreadyLockedException || t instanceof NodeNotFoundException) {
 					return Promise.pure(false);
 				}
 				return super.handleException(t);
@@ -319,7 +353,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 			@Override
 			public Promise<Boolean> handleException(Throwable t) {
-				if(t instanceof NodeNotFoundException) {
+				if (t instanceof NodeNotFoundException) {
 					return Promise.pure(false);
 				}
 				return super.handleException(t);
@@ -342,10 +376,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	private <A> Promise<A> performActionOnMindMap(final MindMapRequest message, final long timeoutInMillis, final ActionOnMindMap<A> actionOnMindMap) {
 		Logger.debug("ServerMindMapCrudService.performActionOnMindMap => message type: " + message.getClass().getSimpleName());
 		final String mapId = message.getMapId();
-		
-		//Save the user for the current request
+
+		// Save the user for the current request
 		final User user = user();
-		// check that user has right to access map, throws UnauthorizedException on failure
+		// check that user has right to access map, throws UnauthorizedException
+		// on failure
 		hasUserMapAccessRights(user, mapId);
 
 		Promise<A> result = null;
@@ -355,11 +390,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			result = actionOnMindMap.perform(promise);
 		} catch (Exception e) {
 			Logger.debug("ServerMindMapCrudService.performActionOnMindMap => Exception catched! Type: " + e.getClass().getSimpleName());
-			//check if exception is handled by action
+			// check if exception is handled by action
 			result = actionOnMindMap.handleException(e);
-			Logger.debug("ServerMindMapCrudService.performActionOnMindMap => Exception handled by action: "+(result != null));
+			Logger.debug("ServerMindMapCrudService.performActionOnMindMap => Exception handled by action: " + (result != null));
 
-			if(result == null) { //exception was not handled by action
+			if (result == null) { // exception was not handled by action
 				if (e instanceof MapNotFoundException) {
 					// Map was closed on server, reopen and perform action again
 					Logger.info("ServerMindMapCrudService.performActionOnMindMap => mind map was not present in freeplane. Reopening...");
@@ -368,6 +403,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 					Logger.debug("ServerMindMapCrudService.performActionOnMindMap => re-sending request to freeplane");
 					final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
 					result = actionOnMindMap.perform(promise);
+				} else if (e instanceof NodeNotLockedByUserException) {
+					// TODO correct handling
+					throw new RuntimeException(e);
 				} else {
 					throw new RuntimeException(e);
 				}
@@ -455,8 +493,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-
-
 	/**
 	 * @throws UnauthorizedException
 	 * @param mapId
@@ -490,7 +526,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			throw new RuntimeException("Cannot access Docear server!", e);
 		}
 	}
-	
+
 	private static User user() {
 		return controllers.User.getCurrentUser();
 	}

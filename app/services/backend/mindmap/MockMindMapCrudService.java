@@ -11,6 +11,7 @@ import java.util.concurrent.Callable;
 
 import models.backend.exceptions.DocearServiceException;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,11 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	@Override
 	public Promise<String> mindMapAsJsonString(String id, Integer nodeCount) throws DocearServiceException, IOException {
 		return Promise.pure(resourceToString("rest/v1/map/" + id + ".json"));
+	}
+	
+	@Override
+	public Promise<String> mindMapAsXmlString(String mapId) throws DocearServiceException, IOException {
+		throw new NotImplementedException();
 	}
 
 	@Override

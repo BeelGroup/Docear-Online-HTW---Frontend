@@ -14,6 +14,7 @@ POST	/feedback					controllers.Application.feedback()
 
 # Mindmap
 GET		/map/:mapId/json			@controllers.MindMap.map(mapId: String, nodeCount : Integer ?= -1)
+GET		/map/:mapId/xml				@controllers.MindMap.mapXml(mapId: String)
 GET		/maps			    		@controllers.User.mapListFromDB()
 
 GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
@@ -32,6 +33,7 @@ GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevisio
 # User
 GET 	/login						controllers.Application.index()
 POST	/login						@controllers.User.login()
+POST	/rest/login					@controllers.User.loginRest()
 
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()

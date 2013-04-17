@@ -15,6 +15,8 @@ public interface MindMapCrudService {
 	 * @return mind map as json string
 	 */
 	Promise<String> mindMapAsJsonString(String mapId,Integer nodeCount) throws DocearServiceException, IOException;
+	Promise<String> mindMapAsXmlString(String mapId) throws DocearServiceException, IOException;
+	
 
 	Promise<Boolean> requestLock(String mapId, String nodeId, String username);
 	Promise<Boolean> releaseLock(String mapId, String nodeId, String username);

@@ -62,6 +62,34 @@ public class User extends Controller {
         return result;
     }
 	
+	public Result loginRest() {
+        final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
+        Result result;
+        
+        if (filledForm.hasErrors()) {
+            result = badRequest(views.html.index.render(filledForm));
+        } else {
+            final Credentials credentials = filledForm.get();
+            final F.Promise<String> tokenPromise = userService.authenticate(credentials.getUsername(), credentials.getPassword());
+            result = async(tokenPromise.map(new F.Function<String, Result>() {
+                @Override
+                public Result apply(String accessToken) throws Throwable {
+                    final boolean authenticationSuccessful = accessToken != null;
+                    if (authenticationSuccessful) {
+                        setAuthenticatedSession(credentials, accessToken);
+                        Logger.info("User '"+credentials.getUsername()+"' logged in succesfully.");
+                        return ok();
+                    } else {
+                        filledForm.reject("The credentials don't match any user.");
+                        Logger.debug(credentials.getUsername() + " is unauthorized");
+                        return unauthorized(views.html.index.render(filledForm));
+                    }
+                }
+            }));
+        }
+        return result;
+    }
+	
     @Security.Authenticated(Secured.class)
 	public Result mapListFromDB() throws IOException, DocearServiceException {
         final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(getCurrentUser());
