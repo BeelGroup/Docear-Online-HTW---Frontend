@@ -246,8 +246,8 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
     # USE THIS FUNCTION instead of render
     renderAndAppendTo:($element)->
       $element.append @render().el 
-      @recursiveRender $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
-      @recursiveRender $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren')
+      @recursiveRender @, $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
+      @recursiveRender @, $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren')
       
       # render the subviews
       for viewId, view of @subViews
@@ -255,7 +255,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         $(html).appendTo(@el)
       
       # extend the ready rendered htlm element
-      @afterRender()
+      @afterAppend()
 
 
   module.exports = RootNodeView

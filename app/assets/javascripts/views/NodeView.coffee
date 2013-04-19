@@ -1,4 +1,4 @@
-define ['views/AbstractNodeView'], (AbstractNodeView) ->
+define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView'], (AbstractNodeView, ConnectionView, NodeControlsView) ->
   module = ->
   
   class NodeView extends AbstractNodeView
@@ -13,16 +13,11 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
       super()
 
 
-    recursiveRender: (parent, nodes)->
+    recursiveRender: (parentView, parent, nodes)->
       $.each nodes, (index, node)=>
         nodeView = new NodeView(node)
         nodeView.renderAndAppendTo(parent)
-
-        children = node.get 'children'
-        if children isnt undefined and children.length > 0
-          @recursiveRender(nodeView.getElement().find('.children:first'), children)
-        else
-          nodeView.getElement().find('.action-fold').hide()
+        
 
 
     changeChildren: ->
@@ -49,8 +44,8 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
         $parent.children('.children:first').append($child)
         connectNodes $parent, $child
       )
-      
-      
+
+
     getCenterCoordinates: ($element) ->
       leftCenter = $element.position().left + $element.width() / 2
       topCenter = $element.position().top + $element.height() / 2
@@ -112,23 +107,42 @@ define ['views/AbstractNodeView'], (AbstractNodeView) ->
         $(childrenContainer).css('height', height)
         $(childrenContainer).css('width', width)
         
+
       [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
     render: ->
       @$el.html @template @getRenderData()
-      # render the subviews
-      
+      console.log @$el.height()
       @$el.attr('folded', @model.get 'folded')
-      for viewId, view of @subViews
-        html = view.render().el
-        $(html).appendTo(@el)
-      # extend the ready rendered htlm element    
+
+      @$el.append(@model.get 'purehtml')
+
+      if @model.get('parent') isnt undefined and @model.get('parent') isnt null
+        @connection = new ConnectionView(@model.get('parent'), @model)
+        @connection.renderAndAppendToNode(@$el)
+
+      @controls = new NodeControlsView(@model)
+      @controls.renderAndAppendToNode(@)
+
       @
+
+
+    afterAppend: ->
+      @alignButtons()
+      @initialFoldStatus()
+
 
     renderAndAppendTo:($element)->
       $element.append(@render().$el)
-      @afterRender()
+
+      children = @model.get 'children'
+      if children isnt undefined and children.length > 0
+        @recursiveRender(@, @$el.find('.children:first'), children)
+      else
+        @$el.find('.action-fold').hide()
+
+      @afterAppend()
 
     destroy: ->
       @model?.off null, null, @

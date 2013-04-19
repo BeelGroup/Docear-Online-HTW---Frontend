@@ -38,9 +38,11 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @rootView.getElement().remove();
       console.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.map(@mapId).url
-      @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
-        $.get(@href, @createJSONMap, "json")
-      )
+      #@$el.parent().find(".loading-map-overlay").fadeIn(400, =>
+      #  $.get(@href, @createJSONMap, "json")
+      #)
+      $.get(@href, @createJSONMap, "json")
+      
       
 
     createJSONMap: (data)=>
@@ -56,19 +58,19 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         rightNodes = getRecursiveChildren(data.root.rightChildren, @rootNode, @rootNode)
         @rootNode.set 'rightChildren', rightNodes
 
-      @positionNodes()
-      
+        #debugger
+      @positionNodes() 
       @canvas.center()
       
       setTimeout( => 
-        @minimap.drawMiniNodes @rootView.setChildPositions(), true
+        @minimap.drawMiniNodes @rootView.setChildPositions(), @
       , 500)
 
       @rootView.getElement().on 'newFoldAction', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
-      @$el.parent().find(".loading-map-overlay").fadeOut()
+      #@$el.parent().find(".loading-map-overlay").fadeOut()
       @rootNode
 
 

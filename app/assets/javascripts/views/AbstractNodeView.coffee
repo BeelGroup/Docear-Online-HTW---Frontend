@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeControlsView', 'views/ConnectionView'], (nodeModel, SyncedView, NodeEditView, NodeControlsView, ConnectionView) ->
+define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, SyncedView, NodeEditView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -21,7 +21,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       super()
       @model.bind "change:locked",@changeLockStatus , @   
       @model.bind "change:selected",@changeSelectStatus , @   
-      @model.bind "change:folded",@changeFoldedStatus , @
+      @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
       @addEvents()
 
@@ -41,11 +41,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
         @selectNone()
 
       if $(event.target).hasClass 'action-fold-all'
-        console.log 'fold DOM target: '
-        console.log event.target
-        console.log 'fold id: '+@model.get 'id'
-        console.log 'childs are visible: '+@$el.children('.children').is(':visible')
-        @model.set 'folded', @$el.children('.children').is(':visible')
+        @model.set 'folded', not @model.get 'folded' 
 
     selectNode:()->
       @model.set 'selected', true
@@ -99,27 +95,45 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
       @$el.toggleClass('selected')
       
 
-    changeFoldedStatus: ->
-      $node = @$el
-      $children = $($node).children('.children')
-      isVisible = $children.is(':visible')
-      
-      $fold = $node.children('.inner-node').children('.action-fold')
-      $fold.toggleClass 'invisible'
-      
-      childrenHeight = $children.outerHeight()
-      nodeHeight = $node.outerHeight()
-      
-      if $children.children('.node').size() > 0
-        diff = childrenHeight - nodeHeight
-        if isVisible
-          if childrenHeight > nodeHeight
-            @resizeTree $node, @model, diff
-          $children.fadeOut(document.fadeDuration)
-        else
-          if childrenHeight > nodeHeight
-            @resizeTree $node, @model, -diff
-          $children.fadeIn(document.fadeDuration)
+    initialFoldStatus:()-> 
+      shouldBeVisible = !@model.get('folded')
+      @updateFS(shouldBeVisible, true, true)
+     
+    updateFoldStatus:()->
+      shouldBeVisible = !@model.get('folded')
+      domVisible = @$el.children('.children').is ':visible'
+      @updateFS(shouldBeVisible, domVisible, false)
+
+    updateFS:(shouldBeVisible, domVisible, initial)->
+      #console.log 'shouldBeVisible: '+shouldBeVisible
+      #console.log 'domVisible: '+domVisible
+      #console.log 'uptodate: '+(shouldBeVisible is domVisible)
+
+      if shouldBeVisible isnt domVisible
+        
+        $children = @$el.children('.children')
+        $myself = @$el.children('.inner-node')
+        
+        $nodesToFold = @$el.children('.inner-node').children('.action-fold')
+        vari = $children.fadeToggle(document.fadeDuration)
+        
+        childrenHeight = $children.outerHeight()
+        nodeHeight = $myself.outerHeight()
+
+        console.log childrenHeight
+        console.log nodeHeight
+        console.log $myself.html()
+        
+        if $children.children('.node').size() > 0
+          diff = childrenHeight - nodeHeight
+          if(@model.get 'folded')
+            if childrenHeight > nodeHeight
+              @resizeTree @$el, @model, diff
+            #$children.fadeIn(document.fadeDuration)
+          else
+            if childrenHeight > nodeHeight
+              @resizeTree @$el, @model, -diff
+            #$children.fadeToggle(document.fadeDuration)
         
 
     changeNodeText: ->
@@ -168,8 +182,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
      
     foldModel: ->
       @$el.toggleClass('selected')
-      isVisible = @$el.children('.children').is(':visible')
-      @model.set 'folded', isVisible
+      @model.set 'folded', not @model.get 'folded'
       
 
     # [Debugging] model modification
@@ -198,18 +211,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView', 'views/NodeCont
     # otherwise pass an empty JSON
       else
         {}
-
-    afterRender: ->
-      @$el.append(@model.get 'purehtml')
-      
-      if @model.get('parent') isnt undefined and @model.get('parent') isnt null
-        @connection = new ConnectionView(@model.get('parent'), @model)
-        @connection.renderAndAppendToNode(@$el)
-
-      @alignButtons()
-
-      @controls = new NodeControlsView(@model)
-      @controls.renderAndAppendToNode(@)
 
 
     alignButtons:->
