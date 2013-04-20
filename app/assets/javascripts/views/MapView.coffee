@@ -38,10 +38,10 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @rootView.getElement().remove();
       console.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.map(@mapId).url
-      #@$el.parent().find(".loading-map-overlay").fadeIn(400, =>
-      #  $.get(@href, @createJSONMap, "json")
-      #)
-      $.get(@href, @createJSONMap, "json")
+      @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
+        $.get(@href, @createJSONMap, "json")
+      )
+
       
       
 
@@ -70,7 +70,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
-      #@$el.parent().find(".loading-map-overlay").fadeOut()
+      @$el.parent().find(".loading-map-overlay").fadeOut()
       @rootNode
 
 
@@ -100,9 +100,31 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         'background-repeat' : 'no-repeat' 
         'background-attachment' : 'fixed' 
         'background-position'   : 'center' 
-
-      $(div).hide()
       @$el.parent().append div
+
+      console.log $(div).height()
+
+
+      wrap = document.createElement("div")
+      $(wrap).css
+        'text-align': 'center'
+        'padding-top': $(div).height()/2 + 20 + 'px'
+
+      #button = document.createElement("div")
+      #button.className = "btn btn-primary btn-medium"
+      #button.id = "cancel-loading"
+
+      link = document.createElement("a")
+      link.className = "btn btn-primary btn-medium"
+      $(link).attr 'href','/#welcome'
+      $(link).html "cancel"
+
+      #$(button).append(link)
+      $(wrap).append(link)  
+      $(div).append(wrap)
+
+      $("#cancel-loading").on 'click', -> document.cancel_loading = true
+      $(div).hide()
 
 
     renderAndAppendTo:($element, forceFullscreen = true)->

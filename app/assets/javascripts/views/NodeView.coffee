@@ -14,9 +14,10 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
 
     recursiveRender: (parentView, parent, nodes)->
-      $.each nodes, (index, node)=>
-        nodeView = new NodeView(node)
-        nodeView.renderAndAppendTo(parent)
+      if not document.cancel_loading
+        $.each nodes, (index, node)=>
+          nodeView = new NodeView(node)
+          nodeView.renderAndAppendTo(parent)
         
 
 
