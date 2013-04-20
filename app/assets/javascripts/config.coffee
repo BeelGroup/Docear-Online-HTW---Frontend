@@ -1,3 +1,5 @@
+document.devmode = true
+
 document.zoomStep = 20
 document.maxZoom = 200
 document.minZoom = 20
