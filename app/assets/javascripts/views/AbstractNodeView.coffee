@@ -113,16 +113,19 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         
         $children = @$el.children('.children')
         $myself = @$el.children('.inner-node')
-        
+
         $nodesToFold = @$el.children('.inner-node').children('.action-fold')
-        vari = $children.fadeToggle(document.fadeDuration)
-        
+        $nodesToFold.toggleClass 'invisible'
+
+        #if initial
+          #$nodesToFold.css 'top', '11px'
+          #console.log $nodesToFold.css 'top'
+                  
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
 
-        console.log childrenHeight
-        console.log nodeHeight
-        console.log $myself.html()
+        #console.log childrenHeight
+        #console.log nodeHeight
         
         if $children.children('.node').size() > 0
           diff = childrenHeight - nodeHeight
@@ -135,6 +138,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
               @resizeTree @$el, @model, -diff
             #$children.fadeToggle(document.fadeDuration)
         
+        $children.fadeToggle(document.fadeDuration)
+
+
 
     changeNodeText: ->
       $node = @$el

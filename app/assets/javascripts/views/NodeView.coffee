@@ -113,7 +113,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
     render: ->
       @$el.html @template @getRenderData()
-      console.log @$el.height()
+      #console.log @$el.height()
       @$el.attr('folded', @model.get 'folded')
 
       @$el.append(@model.get 'purehtml')
@@ -130,11 +130,11 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
     afterAppend: ->
       @alignButtons()
-      @initialFoldStatus()
 
 
     renderAndAppendTo:($element)->
-      $element.append(@render().$el)
+      @render()
+      $element.append(@$el)
 
       children = @model.get 'children'
       if children isnt undefined and children.length > 0
@@ -142,6 +142,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
       else
         @$el.find('.action-fold').hide()
 
+      @initialFoldStatus()
       @afterAppend()
 
     destroy: ->
