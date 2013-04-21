@@ -117,13 +117,17 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       link = document.createElement("a")
       link.className = "btn btn-primary btn-medium"
       $(link).attr 'href','/#welcome'
+      link.id = "cancel-loading"
       $(link).html "cancel"
 
       #$(button).append(link)
       $(wrap).append(link)  
       $(div).append(wrap)
 
-      $("#cancel-loading").on 'click', -> document.cancel_loading = true
+      $("#cancel-loading").on 'click', -> 
+        document.cancel_loading = true
+        document.location.reload(true)
+        document.log 'cancel loading'
       $(div).hide()
 
 
