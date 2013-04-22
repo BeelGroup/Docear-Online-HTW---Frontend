@@ -2,8 +2,11 @@ package features.mindmap.general;
 
 
 import static org.fest.assertions.Assertions.assertThat;
+import static helper.Assertions.*;
 
 import java.util.List;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -15,10 +18,11 @@ import base.DocearTest;
 public class GeneralTest extends DocearTest{
     
     @Test
+    @Ignore
     public void initPageTest() {
         runInBrowser( new Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
-            	driver.get(rootURL());
+            	gotoRoot();
             	
             	//Check Title
             	assertThat(driver.getTitle()).isEqualTo("Login");
@@ -33,14 +37,16 @@ public class GeneralTest extends DocearTest{
     }
     
     @Test
+    @Ignore
     public void initMapTest() {
         runInBrowser( new Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
-            	driver.get(rootURL());
+            	gotoRoot();
             	
             	//Check if no node is selected
             	List<WebElement> selectedNodes = driver.findElements(By.className("selected"));
             	assertThat(selectedNodes).isEmpty();
+            	assertElementExistsNot(driver, By.className("selected"));
             	
             	//Check if exactly one root node exists
             	List<WebElement> rootNodes = driver.findElements(By.className("root"));
@@ -49,20 +55,18 @@ public class GeneralTest extends DocearTest{
             	if (rootNodes.size() == 1){
             		WebElement rootNode = rootNodes.get(0);
             		//Check for one collection of right children
-            		assertThat(rootNode.findElements(By.className("rightChildren")).size()).isEqualTo(1);
+            		assertElementExistsOnce(rootNode, By.className("rightChildren"));
             		//Check for one collection of left children
-            		assertThat(rootNode.findElements(By.className("leftChildren")).size()).isEqualTo(1);
+            		assertElementExistsOnce(rootNode, By.className("leftChildren"));
             		
             		//Check for node content
             		//assertThat(rootNode.findElement(By.xpath("//div[@class='inner-node']/div[@class='content']")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             		assertThat(rootNode.findElement(By.cssSelector("div.root > div.inner-node > div.content")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             	}
             	
-            	
             	//Check if all nodes are available
-            	assertThat(driver.findElements(By.cssSelector("div.node.left")).size()).isEqualTo(11);
-            	assertThat(driver.findElements(By.cssSelector("div.node.right")).size()).isEqualTo(10);
-            	
+            	assertElementCountEquals(driver, By.cssSelector("div.node.left"), 11);
+            	assertElementCountEquals(driver, By.cssSelector("div.node.right"), 10);
             }
         });
     }

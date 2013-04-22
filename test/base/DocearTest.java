@@ -5,9 +5,13 @@ import static play.test.Helpers.testServer;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.concurrent.TimeUnit;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.MethodRule;
@@ -16,10 +20,10 @@ import org.junit.runners.model.Statement;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
 
+import play.Configuration;
+import play.Play;
 import play.libs.F;
 import play.test.TestBrowser;
 
@@ -27,39 +31,12 @@ public abstract class DocearTest {
 	
 	@Rule
     public ScreenshotTestRule screenshotTestRule = new ScreenshotTestRule();
-
-	private static Class<? extends WebDriver> driverClass;
+	
 	protected static WebDriver driver;
-
+	
 	@BeforeClass
-	public static void getBrowserInfo() {
-		final String driverAlias = System.getProperties().getProperty("selenium.browser", "FIREFOX");
-
-		if (driverAlias.equals("IE")
-				&& System.getProperty("os.name").startsWith("Windows")) {
-			createIE();
-		} else if (driverAlias.equals("CHROME")) {
-			createChrome();
-		} else {
-			createFirefox();
-		}
-		driver.manage().window().maximize();
-		driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-	}
-
-	private static void createIE() {
-		driver = new InternetExplorerDriver();
-		driverClass = InternetExplorerDriver.class;
-	}
-
-	private static void createChrome(){
-		driver = new ChromeDriver();
-		driverClass = ChromeDriver.class;
-	}
-
-	private static void createFirefox() {
-		driver = new FirefoxDriver();
-		driverClass = FirefoxDriver.class;
+	public static void setUp(){
+		
 	}
 	
 	/**
@@ -81,8 +58,15 @@ public abstract class DocearTest {
 	 * http://localhost:3333/
 	 * @return the complete URL with the path.
 	 */
-	protected String rootURL() {
-		return "http://localhost:" + port();
+	protected static void gotoRoot() {
+		if (driver == null){
+			driver = BrowserManager.getWebDriver();
+		}
+		driver.get(url("/"));
+	}
+	
+	protected static void gotoURL(String path) {
+		driver.get(url(path));
 	}
 	
 	/*
@@ -93,21 +77,35 @@ public abstract class DocearTest {
 		return 9000;
 	}
 
-
-	@AfterClass
-	public static void closeDriver() {
-		driver.close();
-	}
-
 	protected void runInBrowser(final F.Callback<TestBrowser> callback) {
-		running(testServer(port()), driverClass, callback);
+		running(testServer(port()), BrowserManager.getDriverClass(), callback);
 	}
 	
 	protected void runInServer(final Runnable runnable) {
 		running(testServer(port()), runnable);
 	}
 	
+	protected boolean requiredFeatureEnabled(String requiredFeature){
+		List<String> lst = new LinkedList<String>();
+		lst.add(requiredFeature);
+		return requiredFeaturesEnabled(lst);
+	}
+	
+	protected boolean requiredFeaturesEnabled(List<String> requiredFeatures){
+		Configuration featureConf = Play.application().configuration().getConfig("application.features");
+        Set<String> availableFeatures = featureConf.keys();
+		for (String feature : requiredFeatures) {
+			if (!availableFeatures.contains(feature) || !featureConf.getBoolean(feature)){
+				return false;
+			}
+			//Assume.assumeTrue("Required Feature '"+feature+"' is not enabled in Config.",availableFeatures.contains(feature) && featureConf.getBoolean(feature));
+        }
+		return true;
+	}
+	
 	class ScreenshotTestRule implements MethodRule {
+		private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+		
 		@Override
 	    public Statement apply(final Statement statement, final FrameworkMethod frameworkMethod, final Object o) {
 	        return new Statement() {
@@ -116,20 +114,26 @@ public abstract class DocearTest {
 	                try {
 	                    statement.evaluate();
 	                } catch (Throwable t) {
-	                    captureScreenshot(frameworkMethod.getName());
-	                    throw t; // rethrow to allow the failure to be reported to JUnit
+	                	if (BrowserManager.getDriverClass().equals(FirefoxDriver.class)){
+	                		captureScreenshot(frameworkMethod.getName());
+	                	}
+	                	//rethrow exception for JUnit
+	                    throw t; 
 	                }
 	            }
 	 
 	            public void captureScreenshot(String fileName) {
 	                try {
-	                    new File("test-reports/").mkdirs(); // Insure directory is there
-	                    FileOutputStream out = new FileOutputStream("test-reports/" + System.currentTimeMillis() + "_" + fileName + ".png");
-	                    out.write(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
+	                    new File("test-reports").mkdirs(); // Insure directory is there
+	                    FileOutputStream out = new FileOutputStream("test-reports/" + currTime() + "_" + fileName + ".png");
+	                    out.write(((TakesScreenshot) BrowserManager.getWebDriver()).getScreenshotAs(OutputType.BYTES));
 	                    out.close();
-	                } catch (Exception e) {
-	                    // No need to crash the tests if the screenshot fails
-	                }
+	                } catch (Exception e) { }
+	            }
+	            
+	            private String currTime() {
+	                Date date = new Date(System.currentTimeMillis());
+	                return formatter.format(date);
 	            }
 	        };
 	    }

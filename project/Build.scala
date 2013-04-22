@@ -6,6 +6,7 @@ import org.eclipse.jgit.util.FS
 import sbt._
 import sbt.Keys._
 import play.Project._
+import System._
 
 object ApplicationBuild extends Build {
 
@@ -20,6 +21,7 @@ object ApplicationBuild extends Build {
         , "commons-lang" % "commons-lang" % "2.6"
         , "org.springframework" % "spring-context" % "3.1.2.RELEASE"
         , "cglib" % "cglib" % "2.2.2"
+        , "org.seleniumhq.selenium" % "selenium-java" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
         , "org.seleniumhq.selenium" % "selenium-firefox-driver" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
         , "org.seleniumhq.selenium" % "selenium-chrome-driver" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
         , "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % seleniumVersion % "test"
@@ -37,6 +39,8 @@ object ApplicationBuild extends Build {
         , "info.schleichardt" %% "play-2-mailplugin" % "0.9-SNAPSHOT"
       )
     }
+    
+    System.setProperty("browser", "FIREFOX")
 
     val handlebarsOptions = SettingKey[Seq[String]]("ember-options")
     val handlebarsEntryPoints = SettingKey[PathFinder]("ember-entry-points")
@@ -106,10 +110,17 @@ object ApplicationBuild extends Build {
           case "Linux" if nativeRequireJSinstalled => Option("r.js")
           case _ => None
         }
+        println(System.getProperty("browser", "DEFAULT"))
+        System.setProperty("browser", "FIREFOX")
+        println(System.getProperty("browser", "DEFAULT"))
         println("using native requireJS: " + pathOption.isDefined)
         if (!pathOption.isDefined)
           println("you can setup native requireJS support as root with: npm install -g requirejs")
         pathOption
+        //println("Before")
+        //println(System.getProperty("browser"))
+        //System.setProperty("browser", "FIREFOX")
+        //println(System.getProperty("browser"))
       }
     )
 

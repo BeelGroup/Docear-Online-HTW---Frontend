@@ -1,20 +1,20 @@
-{"id": "1356028229786583868496464674928919.mm", "isReadonly": "false", "root": {
+{"id": "1356028229786583868496464674928919.mm", "isReadonly": false, "root": {
     "id": "ID_1723255651",
     "nodeText": "test_5 = MapID ; 5.mm = Title",
-    "isHtml": "false",
-    "folded": "false",
+    "isHtml": false,
+    "folded": false,
     "rightChildren": [
         {
             "id": "ID_767081088",
             "nodeText": "right_L1P0_Links",
-            "isHtml": "false",
-            "folded": "false",
+            "isHtml": false,
+            "folded": false,
             "children": [
                 {
                     "id": "ID_559224261",
                     "nodeText": "right_L2P00_URL http://www.google.com",
-                    "isHtml": "false",
-                    "folded": "false",
+                    "isHtml": false,
+                    "folded": false,
                     "hGap": "0",
                     "shiftY": "0",
                     "attributes": null
@@ -22,8 +22,8 @@
                 {
                     "id": "ID_1773571247",
                     "nodeText": "right_L2P01_NodeLink_ToParent",
-                    "isHtml": "false",
-                    "folded": "false",
+                    "isHtml": false,
+                    "folded": false,
                     "hGap": "0",
                     "shiftY": "0",
                     "attributes": null
@@ -36,14 +36,14 @@
         {
             "id": "ID_261056359",
             "nodeText": "right_L1P1_EdgeStyle",
-            "isHtml": "false",
-            "folded": "false",
+            "isHtml": false,
+            "folded": false,
             "children": [
                 {
                     "id": "ID_388757377",
                     "nodeText": "right_L2P10_sameEdgeStyle",
-                    "isHtml": "false",
-                    "folded": "false",
+                    "isHtml": false,
+                    "folded": false,
                     "hGap": "160",
                     "shiftY": "0",
                     "attributes": null
@@ -51,8 +51,8 @@
                 {
                     "id": "ID_1694248792",
                     "nodeText": "right_L2P11_differentEdgeStyle",
-                    "isHtml": "false",
-                    "folded": "false",
+                    "isHtml": false,
+                    "folded": false,
                     "hGap": "150",
                     "shiftY": "60",
                     "attributes": null
@@ -60,8 +60,8 @@
                 {
                     "id": "ID_695389559",
                     "nodeText": "right_L2P12_differentEdgeWidth",
-                    "isHtml": "false",
-                    "folded": "false",
+                    "isHtml": false,
+                    "folded": false,
                     "hGap": "150",
                     "shiftY": "60",
                     "attributes": null

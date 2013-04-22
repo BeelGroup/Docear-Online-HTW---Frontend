@@ -3,7 +3,6 @@ package assets;
 import static org.fest.assertions.Assertions.assertThat;
 import static play.mvc.Http.Status.OK;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import play.libs.WS;
@@ -11,7 +10,6 @@ import base.DocearTest;
 
 public class HandlebarsDeployTest extends DocearTest {
     @Test
-    @Ignore
     public void testDeploymentOfNodeHandlebar() throws Exception {
         runInServer(new Loader());
     }
