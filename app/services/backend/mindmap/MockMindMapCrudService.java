@@ -12,7 +12,6 @@ import java.util.concurrent.Callable;
 import models.backend.exceptions.DocearServiceException;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -25,12 +24,17 @@ import play.libs.F.Promise;
 public class MockMindMapCrudService implements MindMapCrudService {
 
 	@Override
-	public Promise<String> mindMapAsJsonString(String id, Integer nodeCount) throws DocearServiceException, IOException {
+	public Promise<String> mindMapAsJsonString(String source, String username, String id, Integer nodeCount) throws DocearServiceException, IOException {
 		return Promise.pure(resourceToString("rest/v1/map/" + id + ".json"));
+	}
+	
+	@Override
+	public Promise<String> mindMapAsXmlString(String source, String username, String mapId) throws DocearServiceException, IOException {
+		throw new NotImplementedException();
 	}
 
 	@Override
-	public Promise<String> createNode(String mapId, String parentNodeId, String username) {
+	public Promise<String> createNode(String source, String username, String mapId, String parentNodeId) {
 		try {
 			Random ran = new Random();
 			int id = ran.nextInt() * ran.nextInt();
@@ -42,9 +46,8 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-
 	@Override
-	public Promise<String> getNode(String mapId, String nodeId, Integer nodeCount) {
+	public Promise<String> getNode(String source, String username, String mapId, String nodeId, Integer nodeCount) {
 		try {
 			String result = "{\"id\":\"" + nodeId + "\",\"nodeText\":\"Mock Node\"}";
 
@@ -55,7 +58,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> changeNode(String mapId, String nodeId, Map<String, Object> attributeValueMap, String username) {
+	public Promise<String> changeNode(String source, String username, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
 		try {
 			final ObjectMapper om = new ObjectMapper();
 			final List<String> updates = new ArrayList<String>();
@@ -68,30 +71,35 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
-	public Promise<Boolean> removeNode(String mapId, String nodeId, String username) {
+	public Promise<Boolean> moveNodeTo(String source, String username, String mapId, String newParentNodeId, String nodeId, Integer newIndex) {
 		return Promise.pure(true);
 	}
 
 	@Override
-	public Promise<Boolean> requestLock(String mapId, String nodeId, String userName) {
+	public Promise<Boolean> removeNode(String source, String username, String mapId, String nodeId) {
 		return Promise.pure(true);
 	}
 
 	@Override
-	public Promise<String> fetchUpdatesSinceRevision(String mapId, Integer revision, String username) {
+	public Promise<Boolean> requestLock(String source, String username, String mapId, String nodeId) {
+		return Promise.pure(true);
+	}
+
+	@Override
+	public Promise<String> fetchUpdatesSinceRevision(String source, String username, String mapId, Integer revision) {
 		final String updates = "{\"currentRevision\":"+revision+4+",\"orderedUpdates\":[\"{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":\"online-demo\"}\",\"{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"folded\",\"value\":true}\",\"{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"nodeText\",\"value\":\"New Text\"}\",\"{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":null}\"]}";
 		return Promise.pure(updates);
 	}
 
 	@Override
-	public Promise<Boolean> releaseLock(String mapId, String nodeId, String userName) {
+	public Promise<Boolean> releaseLock(String source, String username, String mapId, String nodeId) {
 		return Promise.pure(true);
 	}
 
 	@Override
-	public Promise<Boolean> listenForUpdates(String mapId) {
+	public Promise<Boolean> listenForUpdates(String source, String username, String mapId) {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -99,14 +107,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 				return true;
 			}
 		});
-		
+
 		return promise;
 	}
-
-	@Override
-	public Promise<String> addNode(JsonNode addNodeRequestJson) {
-		throw new RuntimeException("Deprecated method! Use changeNode(String,String,String) instead.");
-	}
-
-
 }

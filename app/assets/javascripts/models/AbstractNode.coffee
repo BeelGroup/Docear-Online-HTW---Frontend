@@ -9,8 +9,11 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
 
     constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel) ->
       super()    
+      
+      if folded is 'true' then parsedFoldStatus = true else parsedFoldStatus = false
+      @set 'folded', parsedFoldStatus
+
       @set 'id', id
-      @set 'folded', folded
       @set 'nodeText', nodeText
       @set 'isHTML', isHTML
       @set 'xPos', xPos
@@ -43,6 +46,7 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
 
       @bind 'change:folded', =>
         rootID = @get('rootNodeModel').get 'id'
+        # is catched in mapview to update mininodes in minimap
         $("##{rootID}").trigger 'newFoldAction'
 
 
@@ -58,15 +62,12 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
     # will be set to /map/json/id, when fetch() or update() will be called
     urlRoot: '/map/json/' #TODO replace with jsRoutes command
 
-    fold:()->
-      $nodeToFold = $('#'+(@get 'id'))
-      @set 'folded', $nodeToFold.children('.children').is(':visible')
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy
       @set 'locked', true
  
-
+ 
     unlock: ->
       @set 'locked', false
 

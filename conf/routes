@@ -14,6 +14,7 @@ POST	/feedback					controllers.Application.feedback()
 
 # Mindmap
 GET		/map/:mapId/json			@controllers.MindMap.map(mapId: String, nodeCount : Integer ?= -1)
+GET		/map/:mapId/xml				@controllers.MindMap.mapXml(mapId: String)
 GET		/maps			    		@controllers.User.mapListFromDB()
 
 GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
@@ -21,17 +22,18 @@ GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId
 DELETE	/map/:mapId/node/delete			@controllers.MindMap.deleteNode(mapId: String)
 POST	/map/:mapId/node/create			@controllers.MindMap.createNode(mapId: String)
 POST	/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
+POST	/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
 POST	/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
 POST	/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
 
 GET		/map/:mapId/listen			@controllers.MindMap.listenForUpdates(mapId: String)
 GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
 
-POST	/map/addNode			@controllers.MindMap.addNode()
 
 # User
 GET 	/login						controllers.Application.index()
 POST	/login						@controllers.User.login()
+POST	/rest/login					@controllers.User.loginRest()
 
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()

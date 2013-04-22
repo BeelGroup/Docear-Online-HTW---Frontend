@@ -92,7 +92,7 @@ object ApplicationBuild extends Build {
       , templatesImport += "views.TemplateUtil._"
       , handlebarsEntryPoints <<= (sourceDirectory in Compile)(base => base / "assets" / "javascripts" / "views" / "templates" ** "*.handlebars")
       , handlebarsOptions := Seq.empty[String]
-      , resourceGenerators in Compile <+= HandlebarsPrecompileTask("handlebars-1.0.rc.1.js")
+      , resourceGenerators in Compile <+= HandlebarsPrecompileTask("handlebars-min-1.0.beta.js")
       , logBuffered in Test := false
       , parallelExecution in Test := false
       , testOptions in Test += Tests.Argument("sequential", "true")
