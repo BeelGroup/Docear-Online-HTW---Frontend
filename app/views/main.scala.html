@@ -57,7 +57,7 @@
     <![endif]-->
 </head>
 
-<body style="min-width: 1000px;" class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")'>
+<body style="min-width: 1000px;" class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")' data-logging-strategy="@Play.configuration.getString("javascript.logging.strategy")">
 
 	@*<div class="navbar navbar-inverse navbar-static-top">
 	<div class="navbar-inner">
