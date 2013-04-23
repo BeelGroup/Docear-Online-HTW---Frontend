@@ -3,7 +3,7 @@ package services.backend.mindmap;
 import play.libs.F.Promise;
 
 abstract class ActionOnMindMap<T> {
-	public abstract Promise<T> perform(Promise<Object> promise);
+	public abstract Promise<T> perform(Promise<Object> promise) throws Exception;
 	
 	/**
 	 * Possibility to react on an exception. Similar to recover at promise
