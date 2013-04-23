@@ -55,18 +55,16 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       @model.updateAllConnections()
 
     getTotalSize:()->
-      $me = @$el #$('#'+@model.get 'id')
-
       sizeOfLeftChilds=
-        x: $me.children('.rightChildren:first').outerWidth()
-        y: $me.children('.rightChildren:first').outerHeight()
+        x: @$el.children('.rightChildren:first').outerWidth()
+        y: @$el.children('.rightChildren:first').outerHeight()
 
       sizeOfRightChilds=
-        x: $me.children('.leftChildren:first').outerWidth()
-        y: $me.children('.leftChildren:first').outerHeight()
+        x: @$el.children('.leftChildren:first').outerWidth()
+        y: @$el.children('.leftChildren:first').outerHeight()
 
-      leftSize = $me.outerWidth() / 2 + sizeOfLeftChilds.x
-      rightSize = $me.outerWidth() / 2 + sizeOfRightChilds.x
+      leftSize = @$el.outerWidth() / 2 + sizeOfLeftChilds.x
+      rightSize = @$el.outerWidth() / 2 + sizeOfRightChilds.x
 
       if sizeOfLeftChilds.y > sizeOfRightChilds.y
         height = sizeOfLeftChilds.y
@@ -74,7 +72,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         height = sizeOfRightChilds.y
 
       totalSizes=
-        x: sizeOfLeftChilds.x + $me.outerWidth() + sizeOfRightChilds.x
+        x: sizeOfLeftChilds.x + @$el.outerWidth() + sizeOfRightChilds.x
         y: height
         xRight: rightSize
         xLeft : leftSize
@@ -83,8 +81,8 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
 
 
     setChildPositions: ->
-      $me = @$el
-      canvas = $me.parent()
+      @$el = @$el
+      canvas = @$el.parent()
 
       leftChilds = new Array()
       rightChilds = new Array()
@@ -92,13 +90,13 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       # root
       @positions=
         pos:
-          left: ($me.offset().left + ($me.width() / 2) - $(canvas).offset().left) 
-          top: ($me.offset().top + ($me.height() / 2) - $(canvas).offset().top)
-        width: $me.width()
-        height: $me.height() 
+          left: (@$el.offset().left + (@$el.width() / 2) - $(canvas).offset().left) 
+          top: (@$el.offset().top + (@$el.height() / 2) - $(canvas).offset().top)
+        width: @$el.width()
+        height: @$el.height() 
         display: 'block'
-        leftChilds: @childPositions $me.find('.leftChildren:first'), leftChilds, canvas
-        rightChilds: @childPositions $me.find('.rightChildren:first'), rightChilds, canvas 
+        leftChilds: @childPositions @$el.find('.leftChildren:first'), leftChilds, canvas
+        rightChilds: @childPositions @$el.find('.rightChildren:first'), rightChilds, canvas 
       @positions
 
     childPositions: (childrenContainer, positions, canvas)->
@@ -246,6 +244,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
     # USE THIS FUNCTION instead of render
     renderAndAppendTo:($element)->
       $element.append @render().el 
+      @alignButtons()
       @recursiveRender @, $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
       @recursiveRender @, $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren')
       
@@ -254,8 +253,6 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         html = view.render().el
         $(html).appendTo(@el)
       
-      # extend the ready rendered htlm element
-      @afterAppend()
 
 
   module.exports = RootNodeView

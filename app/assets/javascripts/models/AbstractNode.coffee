@@ -10,8 +10,8 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
     constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel) ->
       super()    
       
-      if folded is 'true' then parsedFoldStatus = true else parsedFoldStatus = false
-      @set 'folded', parsedFoldStatus
+      #if folded is 'true' then parsedFoldStatus = true else parsedFoldStatus = false
+      @set 'folded', folded
 
       @set 'id', id
       @set 'nodeText', nodeText

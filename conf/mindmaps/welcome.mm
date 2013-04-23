@@ -80,8 +80,7 @@
 <node TEXT="Move down to the next children of the parent" ID="ID_559790644" CREATED="1363699702384" MODIFIED="1363699716680"/>
 </node>
 <node TEXT="Space" ID="ID_1707668757" CREATED="1363699718581" MODIFIED="1363699721142">
-<node TEXT="Fold / Unfold the children of the selected node" ID="ID_218714963" CREATED="1363699721152" MODIFIED="1363699758910"/>
+
 </node>
-</node>
-</node>
+</node</node>
 </map>

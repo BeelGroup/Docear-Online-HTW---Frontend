@@ -69,7 +69,7 @@ define ->
     resize:(size)->
       if size != @size
         @size = size
-        console.log 'Resize canvas to: '+ @size + ' px'
+        document.log 'Resize canvas to: '+ @size + ' px'
 
         curWidth = @$el.width()
         curHeight = @$el.height()
@@ -200,7 +200,7 @@ define ->
 
     zoom:(amount, animate = true)=>
       if(typeof @rootView != "undefined")
-        console.log "zoom:#{amount}%"
+        document.log "zoom:#{amount}%"
         
         document.currentZoom = amount/100
 

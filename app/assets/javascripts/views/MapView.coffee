@@ -36,7 +36,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         # remove old html elements
         @canvas.zoomCenter(false)
         @rootView.getElement().remove();
-      console.log "call: loadMap #{mapId} (MapController)"
+      #document.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.map(@mapId).url
       @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
         $.get(@href, @createJSONMap, "json")
@@ -101,8 +101,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         'background-attachment' : 'fixed' 
         'background-position'   : 'center' 
       @$el.parent().append div
-
-      console.log $(div).height()
 
 
       wrap = document.createElement("div")
