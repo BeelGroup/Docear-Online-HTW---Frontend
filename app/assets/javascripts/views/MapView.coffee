@@ -37,7 +37,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @canvas.zoomCenter(false)
         @rootView.getElement().remove();
       console.log "call: loadMap #{mapId} (MapController)"
-      @href = jsRoutes.controllers.MindMap.map(@mapId).url
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
       @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
         $.get(@href, @createJSONMap, "json")
       )
