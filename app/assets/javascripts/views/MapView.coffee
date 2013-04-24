@@ -82,11 +82,10 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         children.push newChild
       else if childrenData != undefined
         for child in childrenData
-          if child.nodeText != ""
-            newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root)
-            if child.children != undefined
-              newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
-            children.push newChild
+          newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root)
+          if child.children != undefined
+            newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
+          children.push newChild
       children
 
 
