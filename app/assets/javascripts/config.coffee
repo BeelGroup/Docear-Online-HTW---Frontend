@@ -15,6 +15,8 @@ document.navigation.key.fold = 32
 document.navigation.key.strg = 17
 
 document.fadeDuration = 150
+document.scrollStep = 20
+document.scrollDuration = 50
 
 document.strgPressed = false
 

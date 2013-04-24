@@ -89,7 +89,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
             children.push newChild
       children
 
-    toggleLoadingOverlay:->
 
     addLoadingOverlay:->
       div = document.createElement("div")
@@ -102,15 +101,10 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         'background-position'   : 'center' 
       @$el.parent().append div
 
-
       wrap = document.createElement("div")
       $(wrap).css
         'text-align': 'center'
         'padding-top': $(div).height()/2 + 20 + 'px'
-
-      #button = document.createElement("div")
-      #button.className = "btn btn-primary btn-medium"
-      #button.id = "cancel-loading"
 
       link = document.createElement("a")
       link.className = "btn btn-primary btn-medium"
