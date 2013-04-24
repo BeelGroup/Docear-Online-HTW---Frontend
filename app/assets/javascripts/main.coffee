@@ -8,7 +8,6 @@ require ['views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/Ca
       
       mapView = new MapView('mindmap-viewport')
       if $.browser.msie and $.browser.version < 9
-        console.log 'uncool!'
         mapView.renderAndAppendTo($('#mindmap-container'), false)
       else
         mapView.renderAndAppendTo($('#mindmap-container'))

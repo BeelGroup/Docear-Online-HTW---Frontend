@@ -93,8 +93,9 @@ require [],  () ->
       }
     }, 'json')
     false
-  
-  if $("body").hasClass("login-page")
+
+  if document.body.className.match("login-page")
     $("#username").focus()
-  else if $("body").hasClass('is-authenticated')
+  else if document.body.className.match('is-authenticated')
+    console.log 'load user maps'
     loadUserMaps()
