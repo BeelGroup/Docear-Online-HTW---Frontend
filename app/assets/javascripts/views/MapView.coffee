@@ -22,13 +22,12 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       @rootView.centerInContainer()
       
       @canvas.setRootView(@rootView)
-      
+
 
     resizeViewport:=>
       @updateWidthAndHeight()
       if typeof @minimap != 'undefined'
         @minimap.setViewportSize()
-
 
 
     loadMap: (@mapId) ->
@@ -38,12 +37,11 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @rootView.getElement().remove();
       #document.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
+      document.log 'href:'+@href
       @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
         $.get(@href, @createJSONMap, "json")
       )
 
-      
-      
 
     createJSONMap: (data)=>
       $('#current-mindmap-name').text(data.name)
