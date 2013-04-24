@@ -25,7 +25,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         @changeFoldedStatus 'right' 
       else if $(event.target).hasClass 'action-fold-left'
         @changeFoldedStatus 'left'
-        
+
 
     collapsFoldedNodes:()->      
       foldedNodes = $('.node.folded')
@@ -41,9 +41,8 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
         @$el.children('.rightChildren').fadeToggle(document.fadeDuration)
 
 
-    #
-    # Refresh the mind map an reposition the dom elements
-    #
+
+    # Refresh the mind map and reposition the dom elements
     refreshDom: () ->
       height1 = @alignChildrenofElement(@$el.children('.leftChildren:first'), 'left')
       height2 = @alignChildrenofElement(@$el.children('.rightChildren:first'), 'right')
@@ -137,7 +136,7 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
-              selectedNode.fold()
+              selectedNode.set 'folded', not selectedNode.get 'folded' 
         else
           @model.set 'selected', true
 

@@ -106,9 +106,14 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
         $(childrenContainer).css('top', top)
         $(childrenContainer).css('height', height)
         $(childrenContainer).css('width', width)
-        
 
-      [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
+
+      if $(element).attr('folded') is 'true'
+        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
+
+        [Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
+      else
+        [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
     render: ->
