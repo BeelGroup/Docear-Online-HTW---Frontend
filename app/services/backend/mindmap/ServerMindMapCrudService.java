@@ -18,8 +18,6 @@ import models.backend.exceptions.NoUserLoggedInException;
 import models.backend.exceptions.UnauthorizedException;
 
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages.AddNodeRequest;
 import org.docear.messages.Messages.AddNodeResponse;
@@ -95,12 +93,14 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
-			public Promise<String> perform(Promise<Object> promise) {
+			public Promise<String> perform(Promise<Object> promise) throws Exception {
+
 				final MindmapAsJsonReponse response = (MindmapAsJsonReponse) promise.get();
 				Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
 				final String jsonString = response.getJsonString();
 				Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => returning map as json string : " + jsonString.substring(0, 10));
 				return Promise.pure(jsonString);
+
 			}
 		});
 	}
@@ -113,23 +113,13 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
-			public Promise<String> perform(Promise<Object> promise) {
-				try {
-					final MindmapAsXmlResponse response = (MindmapAsXmlResponse) promise.get();
-					Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => response received");
-					String xmlString = new ObjectMapper().writeValueAsString(response);
+			public Promise<String> perform(Promise<Object> promise) throws Exception {
+				final MindmapAsXmlResponse response = (MindmapAsXmlResponse) promise.get();
+				Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => response received");
+				String xmlString = new ObjectMapper().writeValueAsString(response);
 
-					Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => returning map as xml string : " + xmlString.substring(0, 10));
-					return Promise.pure(xmlString);
-
-				} catch (JsonGenerationException e) {
-					throw new RuntimeException(e);
-				} catch (JsonMappingException e) {
-					throw new RuntimeException(e);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-
+				Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => returning map as xml string : " + xmlString.substring(0, 10));
+				return Promise.pure(xmlString);
 			}
 		});
 	}
@@ -143,7 +133,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return performActionOnMindMap(request, twoMinutesInMillis, new ActionOnMindMap<Boolean>() {
 
 			@Override
-			public Promise<Boolean> perform(Promise<Object> promise) {
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
 				return promise.map(new Function<Object, Boolean>() {
 
 					@Override
@@ -173,38 +163,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		});
 	}
 
-	// /**
-	// * returns docear mapid In case the map is not loaded on a server, it gets
-	// * automatically pushed to freeplane
-	// *
-	// * @param mapId
-	// * @return
-	// */
-	// private String getMindMapIdInFreeplane(final String mapId) {
-	// Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => idOnServer: "
-	// + mapId);
-	// String mindmapId = serverIdToMapIdMap.get(mapId);
-	// if (mindmapId == null) { // if not hosted, send to a server
-	// Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => Map for server id "
-	// + mapId + " not open. Sending to freeplane...");
-	// try {
-	// final boolean success = sendMindMapToServer(mapId);
-	// if (!success) {
-	// throw new RuntimeException("problem sending mindmap to Docear");
-	// }
-	// } catch (NoUserLoggedInException e) {
-	// Logger.error("ServerMindMapCrudService.getMindMapIdInFreeplane => No user logged in! ",
-	// e);
-	// throw new RuntimeException("No user logged in", e);
-	// }
-	// mindmapId = serverIdToMapIdMap.get(mapId);
-	// }
-	//
-	// Logger.debug("ServerMindMapCrudService.getMindMapIdInFreeplane => ServerId: "
-	// + mapId + "; MapId: " + mindmapId);
-	// return mindmapId;
-	// }
-
 	@Override
 	public Promise<String> createNode(String source, String username, final String mapId, final String parentNodeId) {
 		Logger.debug("mapId: " + mapId + "; parentNodeId: " + parentNodeId);
@@ -213,7 +171,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		final Promise<String> promise = performActionOnMindMap(request, new ActionOnMindMap<String>() {
 
 			@Override
-			public Promise<String> perform(Promise<Object> promise) {
+			public Promise<String> perform(Promise<Object> promise) throws Exception {
 				final AddNodeResponse response = (AddNodeResponse) promise.get();
 				return Promise.pure(response.getMapUpdate());
 			}
@@ -229,7 +187,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		final Promise<String> promise = performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
-			public Promise<String> perform(Promise<Object> promise) {
+			public Promise<String> perform(Promise<Object> promise) throws Exception {
 				return Promise.pure(((GetNodeResponse) promise.get()).getNode());
 			}
 		});
@@ -245,18 +203,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 
 			@Override
-			public Promise<String> perform(Promise<Object> promise) {
-				try {
-					final ChangeNodeResponse response = (ChangeNodeResponse) promise.get();
-					return Promise.pure(new ObjectMapper().writeValueAsString(response.getMapUpdates()));
-
-				} catch (JsonGenerationException e) {
-					throw new RuntimeException("Problem reading updates from response", e);
-				} catch (JsonMappingException e) {
-					throw new RuntimeException("Problem reading updates from response", e);
-				} catch (IOException e) {
-					throw new RuntimeException("Problem reading updates from response", e);
-				}
+			public Promise<String> perform(Promise<Object> promise) throws Exception {
+				final ChangeNodeResponse response = (ChangeNodeResponse) promise.get();
+				return Promise.pure(new ObjectMapper().writeValueAsString(response.getMapUpdates()));
 			}
 		});
 	}
@@ -270,7 +219,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 
 			@Override
-			public Promise<Boolean> perform(Promise<Object> promise) {
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
 				final MoveNodeToResponse response = (MoveNodeToResponse) promise.get();
 				return Promise.pure(response.getSuccess());
 			}
@@ -285,7 +234,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 
 			@Override
-			public Promise<Boolean> perform(Promise<Object> promise) {
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
 				final RemoveNodeResponse response = (RemoveNodeResponse) promise.get();
 				return Promise.pure(response.getDeleted());
 			}
@@ -299,19 +248,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
-			public Promise<String> perform(Promise<Object> promise) {
-				try {
-					final FetchMindmapUpdatesResponse response = (FetchMindmapUpdatesResponse) promise.get();
-					final String json = new ObjectMapper().writeValueAsString(response);
-					return Promise.pure(json);
-
-				} catch (JsonGenerationException e) {
-					throw new RuntimeException("Problem reading updates from response", e);
-				} catch (JsonMappingException e) {
-					throw new RuntimeException("Problem reading updates from response", e);
-				} catch (IOException e) {
-					throw new RuntimeException("Problem reading updates from response", e);
-				}
+			public Promise<String> perform(Promise<Object> promise) throws Exception {
+				final FetchMindmapUpdatesResponse response = (FetchMindmapUpdatesResponse) promise.get();
+				final String json = new ObjectMapper().writeValueAsString(response);
+				return Promise.pure(json);
 			}
 		});
 	}
@@ -320,10 +260,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	public Promise<Boolean> requestLock(String source, String username, String mapId, String nodeId) {
 		Logger.debug("ServerMindMapCrudService.requestLock => mapId: " + mapId + "; nodeId: " + nodeId + "; username: " + username);
 		final RequestLockRequest request = new RequestLockRequest(source, username, mapId, nodeId);
-Logger.debug("username: "+request.getUsername());
+		Logger.debug("username: " + request.getUsername());
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 			@Override
-			public Promise<Boolean> perform(Promise<Object> promise) {
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
 				final RequestLockResponse response = (RequestLockResponse) promise.get();
 				return Promise.pure(response.getLockGained());
 			}
@@ -346,7 +286,7 @@ Logger.debug("username: "+request.getUsername());
 
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 			@Override
-			public Promise<Boolean> perform(Promise<Object> promise) {
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
 				final ReleaseLockResponse response = (ReleaseLockResponse) promise.get();
 				return Promise.pure(response.getLockReleased());
 			}
@@ -379,8 +319,8 @@ Logger.debug("username: "+request.getUsername());
 
 		// Save the user for the current request
 		final User user = user();
-		// check that user has right to access map, throws UnauthorizedException
-		// on failure
+		// check that user has right to access map
+		// throws UnauthorizedException on failure
 		hasUserMapAccessRights(user, mapId);
 
 		Promise<A> result = null;
@@ -396,13 +336,18 @@ Logger.debug("username: "+request.getUsername());
 
 			if (result == null) { // exception was not handled by action
 				if (e instanceof MapNotFoundException) {
+					final MapNotFoundException exception = (MapNotFoundException) e;
 					// Map was closed on server, reopen and perform action again
 					Logger.info("ServerMindMapCrudService.performActionOnMindMap => mind map was not present in freeplane. Reopening...");
-					final String mapIdNotFound = ((MapNotFoundException) e).getMapId();
-					sendMindMapToServer(message.getSource(),message.getUsername(),mapIdNotFound);
+					final String mapIdNotFound = exception.getMapId();
+					sendMindMapToServer(message.getSource(), message.getUsername(), mapIdNotFound);
 					Logger.debug("ServerMindMapCrudService.performActionOnMindMap => re-sending request to freeplane");
 					final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
-					result = actionOnMindMap.perform(promise);
+					try {
+						result = actionOnMindMap.perform(promise);
+					} catch (Exception e2) {
+						throw new RuntimeException("erverMindMapCrudService.performActionOnMindMap => Second attempt failed. ", e2);
+					}
 				} else if (e instanceof NodeNotLockedByUserException) {
 					// TODO correct handling
 					throw new RuntimeException(e);
@@ -415,10 +360,6 @@ Logger.debug("username: "+request.getUsername());
 		return result;
 	}
 
-	private Promise<Object> sendMessageToServer(Object message) {
-		return sendMessageToServer(message, defaultTimeoutInMillis);
-	}
-
 	private Promise<Object> sendMessageToServer(Object message, long timeoutInMillis) {
 		return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
 	}
@@ -429,13 +370,15 @@ Logger.debug("username: "+request.getUsername());
 		String fileName = null;
 
 		try {
-			if (mapId.length() == 1 || mapId.equals("welcome")) { // test/welcome
-				// map
+			// test & welcome maps
+			if (mapId.length() == 1 || mapId.equals("welcome")) {
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo/welcome map, loading from resources");
 				in = Play.application().resourceAsStream("mindmaps/" + mapId + ".mm");
 				fileName = mapId + ".mm";
-			} else { // map from user account
-				User user = controllers.User.getCurrentUser();
+			}
+			// map from user account
+			else {
+				final User user = user();
 				if (user == null)
 					throw new NoUserLoggedInException();
 
@@ -445,34 +388,34 @@ Logger.debug("username: "+request.getUsername());
 
 				fileName = outfileName.toString();
 				if (in == null) {
-					Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map with serverId: " + mapId + " not found on docear server.");
+					Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map with serverId: " + mapId + " was not in zip file.");
 					throw new FileNotFoundException("Map not found");
 				}
-				// Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map file: "+file.getAbsolutePath());
 			}
 
+			// copy map data to a string
 			StringWriter writer = new StringWriter();
 			IOUtils.copy(in, writer);
 			final String fileContentAsString = writer.toString();
 
-			// send file to server and put in set
+			// send file to server and put in open maps set
 			openMapIds.add(mapId);
 
 			final OpenMindMapRequest request = new OpenMindMapRequest(source, username, mapId, fileContentAsString, fileName);
-			try {
-				final Promise<Object> promise = sendMessageToServer(request);
-				final OpenMindMapResponse response = (OpenMindMapResponse) promise.get();
-				return response.getSuccess();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
 
-		} catch (FileNotFoundException e) {
-			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
-			throw new RuntimeException("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file");
+			return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
+				@Override
+				public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
+					;
+					final OpenMindMapResponse response = (OpenMindMapResponse) promise.get();
+					return Promise.pure(response.getSuccess());
+				}
+
+			}).get();
+
 		} catch (IOException e) {
 			Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
-			throw new RuntimeException("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file");
+			throw new RuntimeException("ServerMindMapCrudService.sendMapToDocearInstance => can't find mindmap file", e);
 		} finally {
 			IOUtils.closeQuietly(in);
 		}
@@ -483,13 +426,14 @@ Logger.debug("username: "+request.getUsername());
 		final String docearServerAPIURL = "https://api.docear.org/user";
 		final String resource = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/" + mmIdOnServer;
 		Logger.debug("getMindMapFileFromDocearServer => calling URL: '" + resource + "'");
-		Logger.debug(user.getAccessToken());
 		WS.Response response = WS.url(resource).setHeader("accessToken", user.getAccessToken()).get().get();
 
 		if (response.getStatus() == 200) {
 			return ZipUtils.getMindMapInputStream(response.getBodyAsStream(), outFileName);
+		} else if (response.getStatus() == 403) {
+			throw new UnauthorizedException("User tried to access not owned map");
 		} else {
-			return null;
+			throw new RuntimeException("Problem retrieving map from docear server. Status: " + response.getStatus() + " - " + response.getStatusText());
 		}
 	}
 

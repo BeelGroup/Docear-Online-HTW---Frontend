@@ -41,7 +41,7 @@ public class MindMap extends Controller {
 	private MindMapCrudService mindMapCrudService;
 
 	// cannot be secured, because we load the welcome map
-	public Result map(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
+	public Result mapAsJson(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId + "; nodeCount: " + nodeCount);
 		// check if welcome map or user authenticated
 		if (!mapId.equals("welcome") && !User.isAuthenticated())
@@ -56,7 +56,7 @@ public class MindMap extends Controller {
 		}));
 	}
 
-	public Result mapXml(final String mapId) throws DocearServiceException, IOException {
+	public Result mapAsXml(final String mapId) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId);
 		// check if welcome map or user authenticated
 		if (!mapId.equals("welcome") && !User.isAuthenticated())

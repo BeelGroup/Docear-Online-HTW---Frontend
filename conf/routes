@@ -13,8 +13,8 @@ GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public"
 POST	/feedback					controllers.Application.feedback()
 
 # Mindmap
-GET		/map/:mapId/json			@controllers.MindMap.map(mapId: String, nodeCount : Integer ?= -1)
-GET		/map/:mapId/xml				@controllers.MindMap.mapXml(mapId: String)
+GET		/map/:mapId/json			@controllers.MindMap.mapAsJson(mapId: String, nodeCount : Integer ?= -1)
+GET		/map/:mapId/xml				@controllers.MindMap.mapAsXml(mapId: String)
 GET		/maps			    		@controllers.User.mapListFromDB()
 
 GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
