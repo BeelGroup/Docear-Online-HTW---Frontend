@@ -23,7 +23,6 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
     changeChildren: ->
       ## TODO -> render and align new child
-      console.log "TODO: render child"
       newChild = @model.get 'lastAddedChild'
       nodeView = new NodeView(newChild)
       $nodeHtml = $($(nodeView.render().el))
@@ -107,14 +106,19 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
         $(childrenContainer).css('top', top)
         $(childrenContainer).css('height', height)
         $(childrenContainer).css('width', width)
-        
 
-      [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
+
+      if $(element).attr('folded') is 'true'
+        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
+
+        [Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
+      else
+        [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
     render: ->
       @$el.html @template @getRenderData()
-      #console.log @$el.height()
+
       @$el.attr('folded', @model.get 'folded')
 
       @$el.append(@model.get 'purehtml')
@@ -129,14 +133,11 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
       @
 
 
-    afterAppend: ->
-      @alignButtons()
-
 
     renderAndAppendTo:($element)->
       @render()
       $element.append(@$el)
-
+      @alignButtons()
       children = @model.get 'children'
       if children isnt undefined and children.length > 0
         @recursiveRender(@, @$el.find('.children:first'), children)
@@ -144,7 +145,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
         @$el.find('.action-fold').hide()
 
       @initialFoldStatus()
-      @afterAppend()
+
 
     destroy: ->
       @model?.off null, null, @

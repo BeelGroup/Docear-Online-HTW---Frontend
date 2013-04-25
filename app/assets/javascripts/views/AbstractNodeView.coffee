@@ -80,7 +80,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
     lockModel: ->
       # will be replaced by username
       @model.lock 'me'
-      console.log 'locked'
+      document.log 'locked'
 
 
     changeLockStatus: ->
@@ -105,9 +105,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       @updateFS(shouldBeVisible, domVisible, false)
 
     updateFS:(shouldBeVisible, domVisible, initial)->
-      #console.log 'shouldBeVisible: '+shouldBeVisible
-      #console.log 'domVisible: '+domVisible
-      #console.log 'uptodate: '+(shouldBeVisible is domVisible)
+      #document.log 'shouldBeVisible: '+shouldBeVisible
+      #document.log 'domVisible: '+domVisible
+      #document.log 'uptodate: '+(shouldBeVisible is domVisible)
 
       if shouldBeVisible isnt domVisible
         
@@ -120,23 +120,17 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         #if initial
           #$nodesToFold.css 'top', '11px'
           #console.log $nodesToFold.css 'top'
-                  
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
-
-        #console.log childrenHeight
-        #console.log nodeHeight
         
         if $children.children('.node').size() > 0
           diff = childrenHeight - nodeHeight
           if(@model.get 'folded')
             if childrenHeight > nodeHeight
               @resizeTree @$el, @model, diff
-            #$children.fadeIn(document.fadeDuration)
           else
             if childrenHeight > nodeHeight
               @resizeTree @$el, @model, -diff
-            #$children.fadeToggle(document.fadeDuration)
         
         $children.fadeToggle(document.fadeDuration)
 

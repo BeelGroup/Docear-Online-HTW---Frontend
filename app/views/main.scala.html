@@ -56,8 +56,9 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 </head>
-
-<body style="min-width: 1000px;" class='@("test-mode".when(Play.isTest)) @if(isAuthenticated){is-authenticated} else {is-not-authenticated} @additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")'>
+<!-- TODO: check, if jsLogginng is set in application.conf -->
+<body style="min-width: 1000px;" 
+class= '@("test-mode".when(Play.isTest))@if(isAuthenticated){is-authenticated}else{is-not-authenticated}, js-logging@additionalBodyClasses' data-application-features='@enabledFeatures.asScala.mkString(" ")' >
 
 	@*<div class="navbar navbar-inverse navbar-static-top">
 	<div class="navbar-inner">

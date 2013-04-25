@@ -19,22 +19,17 @@ define ->
 
     moreEvents:()=>
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
-        #console.log document.strgPressed
-        #if document.strgPressed is on
-        $viewport = @$el.parent()          
-        x = event.pageX - $viewport.offset().left - $viewport.width()/2
-        y = event.pageY - $viewport.offset().top - $viewport.height()/2
-        shift = 'x': x, 'y': y
-        if deltaY > 0 then @zoomIn(event, shift) else @zoomOut(event, shift)
-        event.preventDefault() 
+        if document.strgPressed is off
+          if deltaY > 0 then dir = 1 else dir = -1 
+          @move({x: 0, y: document.scrollStep*dir}, false, document.scrollDuration)
+          event.preventDefault() 
 
       $(document).keydown (event)=>
         code = @getKeycode(event)
         if code is document.navigation.key.strg
           document.strgPressed = on
-          #if(event.preventDefault) event.preventDefault()
-          #else event.returnValue=false
-          #return false
+          document.log 'strg on'
+
         else
           if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
             if event.keyCode == 27
@@ -45,6 +40,7 @@ define ->
        $(document).keyup (event)=>
         if @getKeycode(event) is document.navigation.key.strg
           document.strgPressed = off
+          document.log 'strg off'
 
 
 
@@ -69,7 +65,7 @@ define ->
     resize:(size)->
       if size != @size
         @size = size
-        console.log 'Resize canvas to: '+ @size + ' px'
+        document.log 'Resize canvas to: '+ @size + ' px'
 
         curWidth = @$el.width()
         curHeight = @$el.height()
@@ -190,7 +186,7 @@ define ->
         @zoom(@zoomAmount)
        
 
-    zoomOut:(event, shift)=>
+    zoomOut:(event)=>
       if(@zoomAmount-document.zoomStep >= document.minZoom)
         @oldZoomAmount = @zoomAmount
         @zoomAmount -= document.zoomStep
@@ -200,7 +196,7 @@ define ->
 
     zoom:(amount, animate = true)=>
       if(typeof @rootView != "undefined")
-        console.log "zoom:#{amount}%"
+        document.log "zoom:#{amount}%"
         
         document.currentZoom = amount/100
 

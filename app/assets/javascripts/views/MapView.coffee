@@ -22,7 +22,7 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       @rootView.centerInContainer()
       
       @canvas.setRootView(@rootView)
-      
+
 
     resizeViewport:=>
       @updateWidthAndHeight()
@@ -30,22 +30,21 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @minimap.setViewportSize()
 
 
-
     loadMap: (@mapId) ->
       if typeof @rootView != 'undefined'
         # remove old html elements
         @canvas.zoomCenter(false)
         @rootView.getElement().remove();
-      console.log "call: loadMap #{mapId} (MapController)"
+      #document.log "call: loadMap #{mapId} (MapController)"
       @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
+      document.log 'href:'+@href
       @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
         $.get(@href, @createJSONMap, "json")
       )
 
-      
-      
 
     createJSONMap: (data)=>
+      document.log data, 'console'
       $('#current-mindmap-name').text(data.name)
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
       @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
@@ -82,14 +81,12 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         children.push newChild
       else if childrenData != undefined
         for child in childrenData
-          if child.nodeText != ""
-            newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root)
-            if child.children != undefined
-              newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
-            children.push newChild
+          newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root)
+          if child.children != undefined
+            newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
+          children.push newChild
       children
 
-    toggleLoadingOverlay:->
 
     addLoadingOverlay:->
       div = document.createElement("div")
@@ -102,17 +99,10 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         'background-position'   : 'center' 
       @$el.parent().append div
 
-      console.log $(div).height()
-
-
       wrap = document.createElement("div")
       $(wrap).css
         'text-align': 'center'
         'padding-top': $(div).height()/2 + 20 + 'px'
-
-      #button = document.createElement("div")
-      #button.className = "btn btn-primary btn-medium"
-      #button.id = "cancel-loading"
 
       link = document.createElement("a")
       link.className = "btn btn-primary btn-medium"

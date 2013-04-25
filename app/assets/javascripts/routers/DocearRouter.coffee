@@ -3,16 +3,13 @@ define [],() ->
   
   class DocearRouter extends Backbone.Router
 
-
     ## splat parameter (*) (regex)
     ## reg ex example: '/^(.*?)$/' : 'doIt'
     routes:
       'map/:mapId': 'loadMap'
       'doSomathingWithMap/:id/*action':  'resource'
-      #'*path': 'notFound'
+      '*path': 'notFound'
 
-
-    doIt:(id, action) -> console.log "do #{action} with map #{id}"  
 
     constructor:(@mapController)->
       super()
@@ -22,8 +19,8 @@ define [],() ->
     loadMap: (mapId)->
       @mapController.renderMap mapId
 
-    #notFound:()->
-    #  console.log 'Route not found'
+    notFound:()->
+      document.log 'Route not found', 'warn'
 
 
 
