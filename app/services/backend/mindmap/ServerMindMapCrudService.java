@@ -2,6 +2,7 @@ package services.backend.mindmap;
 
 import static akka.pattern.Patterns.ask;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -384,13 +385,15 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 				final StringBuilder outfileName = new StringBuilder();
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is real map, loading from docear server");
-				in = getMindMapInputStreamFromDocearServer(user, mapId, outfileName);
-
-				fileName = outfileName.toString();
-				if (in == null) {
+				final byte[] filebytes = getMindMapInputStreamFromDocearServer(user, mapId, outfileName);
+				
+				if (filebytes == null) {
 					Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map with serverId: " + mapId + " was not in zip file.");
 					throw new FileNotFoundException("Map not found");
 				}
+				
+				fileName = outfileName.toString();
+				in = new ByteArrayInputStream(filebytes);
 			}
 
 			// copy map data to a string
@@ -421,7 +424,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-	private static InputStream getMindMapInputStreamFromDocearServer(final User user, final String mmIdOnServer, final StringBuilder outFileName) throws IOException {
+	private static byte[] getMindMapInputStreamFromDocearServer(final User user, final String mmIdOnServer, final StringBuilder outFileName) throws IOException {
 
 		final String docearServerAPIURL = "https://api.docear.org/user";
 		final String resource = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/" + mmIdOnServer;
