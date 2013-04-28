@@ -44,7 +44,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
 
     createJSONMap: (data)=>
-      document.log data, 'console'
       $('#current-mindmap-name').text(data.name)
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
       @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
