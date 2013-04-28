@@ -117,8 +117,8 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
       
     drawConnection: ()->
       $connectionContainer = $(@$targetNode).children('.connection:first')
-      strokeWidth = document.graph.defaultWidth
-      strokeColor = document.graph.defaultColor
+      strokeWidth = (@targetModel.get 'edgeStyle').width
+      strokeColor = (@targetModel.get 'edgeStyle').color
       
       middleX = @connection.endX/2
       isTop = @absoluteSourceEndpoint.y > @absoluteTargetEndpoint.y
