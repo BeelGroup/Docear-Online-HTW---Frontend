@@ -11,6 +11,7 @@ import models.backend.User;
 import models.backend.UserMindmapInfo;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.mockito.internal.stubbing.answers.DoesNothing;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +77,22 @@ public class ServerUserService extends UserService {
 	
 	@Override
 	public Boolean isValid(User user) {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/308");
+		/**
+		 * TODO get a route from Stefan to validate if user is valid
+		 * At the moment the method tries to get a not existent map from docear server
+		 * Every code instead of 401 means that the user exists.
+		 */
+		final String docearServerAPIURL = "https://api.docear.org/user";
+		final String url = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/-1";
+		final Promise<WS.Response> mindmapInfoPromise = WS.url(url).setHeader("accessToken", user.getAccessToken()).get();
+		WS.Response response = mindmapInfoPromise.get();
+		
+		final int status = response.getStatus();
+		if(status == 401) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 }
