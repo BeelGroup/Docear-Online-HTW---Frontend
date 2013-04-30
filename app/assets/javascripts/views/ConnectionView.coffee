@@ -118,7 +118,9 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
     drawConnection: ()->
       $connectionContainer = $(@$targetNode).children('.connection:first')
       strokeWidth = (@targetModel.get 'edgeStyle').width
-      strokeColor = (@targetModel.get 'edgeStyle').color
+
+      intColor = (@targetModel.get 'edgeStyle').color
+      strokeColor = @rgbToHex(intColor)
       
       middleX = @connection.endX/2
       isTop = @absoluteSourceEndpoint.y > @absoluteTargetEndpoint.y
@@ -150,7 +152,26 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
           "stroke" : strokeColor
           "stroke-width" : strokeWidth
         })
-    
+
+
+    ###
+      this functions parses int color values zu hex strings
+      for more informations have a look here:
+        http://developer.android.com/reference/android/graphics/Color.html#red(int)
+
+      examples:
+        -16777216 will be translated to black (#000000)
+        -16776961 will be translated to blue (#0000ff)
+    ###
+    rgbToHex:(intColor) ->
+      red = (intColor >> 16) & 0xFF
+      green = (intColor >> 8) & 0xFF
+      blue = intColor & 0xFF
+      "#" + @componentToHex(red) + @componentToHex(green) + @componentToHex(blue);
+
+    componentToHex:(c)-> 
+      hex = c.toString(16);
+      if hex.length is 1 then "0" + hex else hex
     
     renderAndAppendToNode:($target)->
       $($target).append(@render().el)

@@ -121,6 +121,8 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
 
     renderAndAppendTo:($element, forceFullscreen = true)->
+      if $.browser.msie and $.browser.version < 9 then forceFullscreen = false 
+
       $element.append(@el)
       @render(forceFullscreen)
       @renderSubviews()

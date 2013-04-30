@@ -30,8 +30,6 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
       @set 'lastAddedChild', 'undefined'
       @set 'connectionUpdated', 0
       
-      ## THROW events on all (also possible: save/update/change)
-      #@on 'all', (event) -> console.log "Event: " + event
       @sup = AbstractNode.__super__
 
       @set 'persistenceHandler', (new PersistenceHandler())
@@ -58,9 +56,6 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
           $.each changes.changes, (attr, value)->
             if attr in attributesToPersist
               persistenceHandler.persistChanges node, changes
-
-    # will be set to /map/json/id, when fetch() or update() will be called
-    urlRoot: '/map/json/' #TODO replace with jsRoutes command
 
 
     lock: (lockedBy) ->

@@ -14,8 +14,8 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       if edgeStyle is undefined or edgeStyle is null
         edgeStyle = (@get 'parent').get 'edgeStyle'
 
-      document.log 'toDo: translate color in Node.coffee: 18'
-      edgeStyle.color = document.graph.defaultColor
+      #document.log 'toDo: translate color in Node.coffee: 18'
+      #edgeStyle.color = document.graph.defaultColor
       @set 'edgeStyle', edgeStyle
 
       
