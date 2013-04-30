@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import models.backend.exceptions.UnauthorizedException;
+import models.backend.exceptions.UserNotFoundException;
 import models.frontend.LoggedError;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +36,9 @@ import play.mvc.Action;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import views.html.defaultpages.unauthorized;
 import configuration.SpringConfiguration;
+import controllers.Secured;
 import controllers.routes;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.FeatureComparator;
@@ -115,6 +118,8 @@ public class Global extends GlobalSettings {
         final Throwable realThrowable = throwable.getCause();
         if(realThrowable instanceof UnauthorizedException) {
         	return Controller.badRequest("You are not allowed to access that map!");
+        } else if (realThrowable instanceof UserNotFoundException) {
+        	return Controller.unauthorized();
         }
         //default handling
         final String errorId = UUID.randomUUID().toString();

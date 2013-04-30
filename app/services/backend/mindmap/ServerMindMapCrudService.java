@@ -480,8 +480,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-	private static User user() {
-		return controllers.User.getCurrentUser();
+	private User user() {
+		return userService.getCurrentUser();
 	}
 
 }

@@ -27,6 +27,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
+import services.backend.user.UserService;
 
 @Component
 public class MindMap extends Controller {
@@ -39,12 +40,14 @@ public class MindMap extends Controller {
 
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
+	@Autowired
+	private UserService userService;
 
 	// cannot be secured, because we load the welcome map
 	public Result mapAsJson(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId + "; nodeCount: " + nodeCount);
 		// check if welcome map or user authenticated
-		if (!mapId.equals("welcome") && !User.isAuthenticated())
+		if (!mapId.equals("welcome") && !userService.isAuthenticated())
 			return redirect(routes.Application.index());
 
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(source(), username(), mapId, nodeCount);
@@ -59,7 +62,7 @@ public class MindMap extends Controller {
 	public Result mapAsXml(final String mapId) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId);
 		// check if welcome map or user authenticated
-		if (!mapId.equals("welcome") && !User.isAuthenticated())
+		if (!mapId.equals("welcome") && !userService.isAuthenticated())
 			return redirect(routes.Application.index());
 
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(source(), username(), mapId);
@@ -154,7 +157,7 @@ public class MindMap extends Controller {
 
 	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("MindMap.getNode <- mapId=" + mapId + ", nodeId=" + nodeId + ", nodeCount= " + nodeCount);
-		if (!mapId.equals("welcome") && !User.isAuthenticated())
+		if (!mapId.equals("welcome") && !userService.isAuthenticated())
 			return unauthorized();
 		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(source(), username(), mapId, nodeId, nodeCount);
 		return async(addNodePromise.map(new F.Function<String, Result>() {
@@ -267,7 +270,7 @@ public class MindMap extends Controller {
 	 * @return name of currently logged in user
 	 */
 	private String username() {
-		final models.backend.User user = User.getCurrentUser();
+		final models.backend.User user = userService.getCurrentUser();
 		if (user != null)
 			return user.getUsername();
 		else

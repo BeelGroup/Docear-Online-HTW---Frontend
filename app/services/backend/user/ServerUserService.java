@@ -19,10 +19,11 @@ import play.libs.F;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.libs.WS.Response;
+import controllers.Session;
 
 @Profile("DocearWebserviceUserService")
 @Component
-public class ServerUserService implements UserService {
+public class ServerUserService extends UserService {
 
 	@Override
 	public Promise<String> authenticate(String username, String password) {
@@ -72,6 +73,29 @@ public class ServerUserService implements UserService {
 	@Override
 	public Promise<List<Long>> getListOfProjectIdsFromUser(User user) {
 		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/305");
+	}
+	
+	@Override
+	public Boolean isValid(User user) {
+		//check if cache has info
+		Boolean valid = Session.isValid(user);
+		if(valid != null)
+			return valid;
+		
+		/**
+		 * TODO get a route from Stefan to validate if user is valid
+		 * At the moment the method tries to get a not existent map from docear server
+		 * Every code instead of 401 means that the user exists.
+		 */
+		final String docearServerAPIURL = "https://api.docear.org/user";
+		final String url = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/-1";
+		final Promise<WS.Response> mindmapInfoPromise = WS.url(url).setHeader("accessToken", user.getAccessToken()).get();
+		WS.Response response = mindmapInfoPromise.get();
+		
+		final int status = response.getStatus();
+		valid = (status != 401);
+		Session.setValid(user, valid);
+		return valid;
 	}
 
 }
