@@ -5,7 +5,7 @@
 # Home page
 GET     /favicon.ico                controllers.Assets.at(path="/public", file="images/favicon.ico")
 GET     /robots.txt                 controllers.Assets.at(path="/public", file="robots.txt")
-GET     /                           controllers.Application.index()
+GET     /                           @controllers.Application.index()
 GET     /error/:errorId             controllers.Application.error(errorId: String)
 GET	    /help						controllers.Application.help()
 GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public", file="mindmaps/example1.json")
@@ -39,7 +39,7 @@ GET		/project/:projectId/updates/:revision		@controllers.ProjectController.getUp
 
 
 # User
-GET 	/login						controllers.Application.index()
+#GET 	/login						controllers.Application.index()
 POST	/login						@controllers.User.login()
 POST	/user/login					@controllers.User.loginRest()
 GET		/user/maps		    		@controllers.User.mapListFromDB()

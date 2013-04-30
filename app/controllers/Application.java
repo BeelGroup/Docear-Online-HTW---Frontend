@@ -22,6 +22,8 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.Play;
@@ -30,18 +32,24 @@ import play.cache.Cache;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
+import services.backend.user.UserService;
 
 import com.google.common.collect.Maps;
 
+@Component
 public class Application extends Controller {
     public static final String LOGGED_ERROR_CACHE_PREFIX = "logged.error.";
     public static final Form<FeedbackFormData> feedbackForm = form(FeedbackFormData.class);
     
 
-	/** displays current mind map drawing 
-	 * @throws EmailException */
-	public static Result index() {
-		if(User.isAuthenticated()) {
+    @Autowired
+    private UserService userService;
+    
+	/** 
+	 * displays current mind map drawing 
+	 */
+	public Result index() {
+		if(userService.isAuthenticated()) {
 			return ok(views.html.home.render());
 		} else {
 			return ok(views.html.index.render(User.credentialsForm));

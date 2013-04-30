@@ -22,7 +22,7 @@ import play.libs.WS.Response;
 
 @Profile("DocearWebserviceUserService")
 @Component
-public class ServerUserService implements UserService {
+public class ServerUserService extends UserService {
 
 	@Override
 	public Promise<String> authenticate(String username, String password) {
@@ -72,6 +72,11 @@ public class ServerUserService implements UserService {
 	@Override
 	public Promise<List<Long>> getListOfProjectIdsFromUser(User user) {
 		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/305");
+	}
+	
+	@Override
+	public Boolean isValid(User user) {
+		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/308");
 	}
 
 }
