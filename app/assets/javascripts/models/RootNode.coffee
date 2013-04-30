@@ -2,12 +2,14 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   module = ->
   
   class RootNode extends AbstractNode
-    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked, mapId, rootNodeView = @) ->
+    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked, mapId, edgeStyle,rootNodeView = @) ->
       super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeView
       @set 'containerID', containerID
       @set 'leftChildren', []
       @set 'rightChildren', []
       @set 'mapId', mapId
+
+      @setEdgestyle edgeStyle
 
       # will be catched in canvasView
       @bind 'change:selectedNode', => 
@@ -16,7 +18,17 @@ define ['models/AbstractNode'],  (AbstractNode) ->
           #console.log @get('selectedNode')
           $("##{@get 'id' }").trigger 'newSelectedNode', @get 'selectedNode'
 
+
+    setEdgestyle: (edgeStyle) ->
+      # set default values in root
+      if edgeStyle is undefined or edgeStyle is null
+        edgeStyle = {width: document.graph.defaultWidth, color: document.graph.defaultColor}
+
+      #document.log 'toDo: translate color in RootNode.coffee: 27'
+      #edgeStyle.color = document.graph.defaultColor
+      @set 'edgeStyle', edgeStyle
  
+
     # overwriting getter @get 'children' since we RootNode does not have a children attr
     get: (attr)->
       if attr == 'children'

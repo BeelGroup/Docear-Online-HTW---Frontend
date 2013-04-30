@@ -123,13 +123,14 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
       @$el.append(@model.get 'purehtml')
 
+      # in first step: from roon to its childs
       if @model.get('parent') isnt undefined and @model.get('parent') isnt null
         @connection = new ConnectionView(@model.get('parent'), @model)
         @connection.renderAndAppendToNode(@$el)
 
       @controls = new NodeControlsView(@model)
       @controls.renderAndAppendToNode(@)
-
+    
       @
 
 

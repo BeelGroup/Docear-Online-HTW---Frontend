@@ -14,7 +14,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       '.node' :
         field: 'Pos'
         toModel: 'PosToModel'
-        toForm: 'PosToForm'
+        toForm: 'PosToForm' 
 
       
     constructor: () ->

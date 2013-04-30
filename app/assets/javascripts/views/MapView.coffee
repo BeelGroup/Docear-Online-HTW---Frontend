@@ -44,10 +44,9 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
 
     createJSONMap: (data)=>
-      document.log data, 'console'
       $('#current-mindmap-name').text(data.name)
       #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
-      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId) 
+      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId, data.root.edgeStyle) 
       document.rootID = data.root.id
       if data.root.leftChildren != undefined
         leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode, @rootNode)
@@ -77,11 +76,11 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       children = []
       if childrenData.id != undefined && childrenData.id != null
         #id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked
-        newChild = new NodeModel(childrenData.id, childrenData.folded, childrenData.nodeText, childrenData.isHtml,0,0,0,0,false, parent, root)
+        newChild = new NodeModel(childrenData.id, childrenData.folded, childrenData.nodeText, childrenData.isHtml,0,0,0,0,false, parent, root, childrenData.edgeStyle)
         children.push newChild
       else if childrenData != undefined
         for child in childrenData
-          newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root)
+          newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root, child.edgeStyle)
           if child.children != undefined
             newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
           children.push newChild
@@ -122,6 +121,8 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
 
     renderAndAppendTo:($element, forceFullscreen = true)->
+      if $.browser.msie and $.browser.version < 9 then forceFullscreen = false 
+
       $element.append(@el)
       @render(forceFullscreen)
       @renderSubviews()
