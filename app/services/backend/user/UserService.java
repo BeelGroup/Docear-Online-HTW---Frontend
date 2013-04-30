@@ -8,7 +8,6 @@ import java.util.List;
 import models.backend.User;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.UserNotFoundException;
-import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Controller;
 import controllers.Session;
@@ -35,7 +34,6 @@ public abstract class UserService {
 	public User getCurrentUser() {
 		final String accessToken = Controller.request().getQueryString("accessToken");
 		final String username = Controller.request().getQueryString("username");
-		Logger.debug("accessToken: " + accessToken + "; username: " + username);
 		if (accessToken != null && username != null) {
 			final User user = new User(username, accessToken);
 			if (isValid(user))

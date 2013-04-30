@@ -8,7 +8,6 @@ import org.apache.commons.lang.Validate;
 
 import play.Logger;
 import play.cache.Cache;
-import services.backend.user.UserService;
 
 public class Session {
 
@@ -32,14 +31,15 @@ public class Session {
         return user;
     }
 	
-	public static boolean isValid(User user, UserService userService) {
+	public static Boolean isValid(User user) {
 		final String key = CACHE_KEY_VALID+user.getUsername()+"."+user.getAccessToken();
-		Boolean valid = (Boolean) Cache.get(CACHE_KEY_VALID+user.getUsername()+"."+user.getAccessToken()); 
-        if(valid == null) {
-        	valid = userService.isValid(user);
-        	Cache.set(key, valid);
-        }
+		Boolean valid = (Boolean) Cache.get(key);
         return valid;
+	}
+	
+	public static void setValid(User user, boolean isValid) {
+		final String key = CACHE_KEY_VALID+user.getUsername()+"."+user.getAccessToken();
+		Cache.set(key, isValid);
 	}
 
 }

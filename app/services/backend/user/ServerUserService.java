@@ -11,7 +11,6 @@ import models.backend.User;
 import models.backend.UserMindmapInfo;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.mockito.internal.stubbing.answers.DoesNothing;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +19,7 @@ import play.libs.F;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.libs.WS.Response;
+import controllers.Session;
 
 @Profile("DocearWebserviceUserService")
 @Component
@@ -77,6 +77,11 @@ public class ServerUserService extends UserService {
 	
 	@Override
 	public Boolean isValid(User user) {
+		//check if cache has info
+		Boolean valid = Session.isValid(user);
+		if(valid != null)
+			return valid;
+		
 		/**
 		 * TODO get a route from Stefan to validate if user is valid
 		 * At the moment the method tries to get a not existent map from docear server
@@ -88,11 +93,9 @@ public class ServerUserService extends UserService {
 		WS.Response response = mindmapInfoPromise.get();
 		
 		final int status = response.getStatus();
-		if(status == 401) {
-			return false;
-		} else {
-			return true;
-		}
+		valid = (status != 401);
+		Session.setValid(user, valid);
+		return valid;
 	}
 
 }

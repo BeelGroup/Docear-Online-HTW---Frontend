@@ -2,14 +2,10 @@ package controllers;
 
 import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.joda.time.DateTime.now;
-import models.backend.User;
-import models.backend.exceptions.UserNotFoundException;
 
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.joda.time.MutableDateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.Play;
@@ -17,9 +13,7 @@ import play.mvc.Http;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security;
-import services.backend.user.UserService;
 
-@Component
 public class Secured extends Security.Authenticator {
 	public static final String SESSION_KEY_USERNAME = "username";
 	public static final String SESSION_KEY_TIMEOUT = "session-timeout";
@@ -27,26 +21,18 @@ public class Secured extends Security.Authenticator {
 	public static final String QUERY_ACCESS_TOKEN = "accessToken";
 	public static final String QUERY_USERNAME = "username";
 
-	@Autowired
-	private UserService userService;
-
 	@Override
 	public String getUsername(Context ctx) {
 		String username = null;
 
-		try {
-			username = checkForAuthenticationWithAccessToken(ctx);
-		} catch (UserNotFoundException e) {
-			// attempt to login with non existent user
-			return null;
-		}
+		username = checkForAuthenticationWithAccessToken(ctx);
 		if (username == null) {
 			username = checkForAuthenticationWithSession(ctx);
 		}
 		return username;
 	}
 
-	private String checkForAuthenticationWithAccessToken(Context ctx) throws UserNotFoundException {
+	private String checkForAuthenticationWithAccessToken(Context ctx) {
 		final String accessToken = ctx.request().getQueryString(QUERY_ACCESS_TOKEN);
 		final String username = ctx.request().getQueryString(QUERY_USERNAME);
 		if (accessToken != null && username != null)
