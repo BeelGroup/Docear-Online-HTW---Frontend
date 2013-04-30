@@ -82,7 +82,7 @@ public class User extends Controller {
                     } else {
                         filledForm.reject("The credentials don't match any user.");
                         Logger.debug(credentials.getUsername() + " is unauthorized");
-                        return unauthorized(views.html.index.render(filledForm));
+                        return unauthorized();
                     }
                 }
             }));
@@ -90,7 +90,7 @@ public class User extends Controller {
         return result;
     }
 	
-    @Security.Authenticated(Secured.class)
+	@Security.Authenticated(Secured.class)
 	public Result mapListFromDB() throws IOException, DocearServiceException {
         final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(getCurrentUser());
         return async(listOfMindMapsFromUser.map(new F.Function<List<UserMindmapInfo>, Result>() {
@@ -100,6 +100,19 @@ public class User extends Controller {
             }
         }));
     }
+    
+	@Security.Authenticated(Secured.class)
+	public Result projectIdListFromDB() throws IOException {
+        final Promise<List<Long>> listOfMindMapsFromUser = userService.getListOfProjectIdsFromUser(getCurrentUser());
+        return async(listOfMindMapsFromUser.map(new F.Function<List<Long>, Result>() {
+            @Override
+            public Result apply(List<Long> projectIds) throws Throwable {
+                return ok(Json.toJson(projectIds));
+            }
+        }));
+    }
+    
+    
     
     public List<UserMindmapInfo> getMindmapInfosOfLoggedInUser() throws IOException {
     	final models.backend.User user = getCurrentUser();

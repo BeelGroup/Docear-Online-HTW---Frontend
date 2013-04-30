@@ -18,4 +18,6 @@ public interface UserService {
     Promise<String> authenticate(String username, String password);
 	
     Promise<List<UserMindmapInfo>> getListOfMindMapsFromUser(User user) throws IOException;
+    
+    Promise<List<Long>> getListOfProjectIdsFromUser(User user);
 }

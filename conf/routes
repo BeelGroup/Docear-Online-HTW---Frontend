@@ -15,7 +15,7 @@ POST	/feedback					controllers.Application.feedback()
 # Mindmap
 GET		/map/:mapId/json			@controllers.MindMap.mapAsJson(mapId: String, nodeCount : Integer ?= -1)
 GET		/map/:mapId/xml				@controllers.MindMap.mapAsXml(mapId: String)
-GET		/maps			    		@controllers.User.mapListFromDB()
+
 
 GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
 
@@ -26,14 +26,24 @@ POST	/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
 POST	/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
 POST	/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
 
-GET		/map/:mapId/listen			@controllers.MindMap.listenForUpdates(mapId: String)
+GET		/map/:mapId/listen				@controllers.MindMap.listenForUpdates(mapId: String)
 GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
+
+# Projects
+GET		/project/:projectId/list					@controllers.ProjectController.listProject(projectId: Long)
+GET		/project/:projectId/folder/*path			@controllers.ProjectController.listFolder(projectId: Long, path: String)
+GET		/project/:projectId/file/*path				@controllers.ProjectController.getFile(projectId: Long, path: String)
+
+GET		/project/:projectId/listen					@controllers.ProjectController.listenForUpdates(projectId: Long)
+GET		/project/:projectId/updates/:revision		@controllers.ProjectController.getUpdatesSince(projectId: Long, revision: Integer)
 
 
 # User
 GET 	/login						controllers.Application.index()
 POST	/login						@controllers.User.login()
-POST	/rest/login					@controllers.User.loginRest()
+POST	/user/login					@controllers.User.loginRest()
+GET		/user/maps		    		@controllers.User.mapListFromDB()
+GET		/user/projects				@controllers.User.projectIdListFromDB()
 
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()

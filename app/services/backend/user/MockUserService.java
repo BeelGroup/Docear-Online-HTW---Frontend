@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import play.libs.F.Promise;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -37,5 +38,12 @@ public class MockUserService implements UserService{
 				new UserMindmapInfo("4", "4", "Dec 19, 2012 6:38:31 PM", "/not/available", "4.mm"),
 				new UserMindmapInfo("5", "5", "Dec 05, 2012 6:38:31 PM", "/not/available", "5.mm")
 				));
+	}
+	
+	@Override
+	public Promise<List<Long>> getListOfProjectIdsFromUser(User user) {
+		List<Long> list = new ArrayList<Long>();
+		list.add(1L);
+		return Promise.pure(list);
 	}
 }

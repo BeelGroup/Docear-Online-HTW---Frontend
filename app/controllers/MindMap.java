@@ -244,8 +244,8 @@ public class MindMap extends Controller {
 		return async(mindMapCrudService.listenForUpdates(source(), username(), mapId).map(new Function<Boolean, Result>() {
 
 			@Override
-			public Result apply(Boolean arg0) throws Throwable {
-				if (arg0)
+			public Result apply(Boolean hasChanged) throws Throwable {
+				if (hasChanged)
 					return ok();
 				else
 					return status(NOT_MODIFIED);
