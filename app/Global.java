@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import models.backend.exceptions.UnauthorizedException;
+import models.backend.exceptions.UserNotFoundException;
 import models.frontend.LoggedError;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +36,9 @@ import play.mvc.Action;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import views.html.defaultpages.unauthorized;
 import configuration.SpringConfiguration;
+import controllers.Secured;
 import controllers.routes;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.FeatureComparator;
@@ -106,6 +109,7 @@ public class Global extends GlobalSettings {
     public Result onError(Http.RequestHeader requestHeader, Throwable throwable) {
         Logger.error("can't answer request properly", throwable);
         /*
+        For Play 2.0.4:
         Here is no HTTP context available to use the standard templates.
         So the error gets an ID, stored with that ID in the cache and the redirected action has a
         HTTP context and can restore the exceptions from the cache and use the standard templates.
@@ -115,6 +119,8 @@ public class Global extends GlobalSettings {
         final Throwable realThrowable = throwable.getCause();
         if(realThrowable instanceof UnauthorizedException) {
         	return Controller.badRequest("You are not allowed to access that map!");
+        } else if (realThrowable instanceof UserNotFoundException) {
+        	return Controller.unauthorized();
         }
         //default handling
         final String errorId = UUID.randomUUID().toString();

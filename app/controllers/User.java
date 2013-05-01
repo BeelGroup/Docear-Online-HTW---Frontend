@@ -29,114 +29,117 @@ import static play.data.Form.form;
 @Component
 public class User extends Controller {
 
-    public static final Form<Credentials> credentialsForm = form(Credentials.class);
+	public static final Form<Credentials> credentialsForm = form(Credentials.class);
 
 	@Autowired
-    private UserService userService;
-	
+	private UserService userService;
+
 	public Result login() {
-        final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
-        Result result;
-        
-        if (filledForm.hasErrors()) {
-            result = badRequest(views.html.index.render(filledForm));
-        } else {
-            final Credentials credentials = filledForm.get();
-            final F.Promise<String> tokenPromise = userService.authenticate(credentials.getUsername(), credentials.getPassword());
-            result = async(tokenPromise.map(new F.Function<String, Result>() {
-                @Override
-                public Result apply(String accessToken) throws Throwable {
-                    final boolean authenticationSuccessful = accessToken != null;
-                    if (authenticationSuccessful) {
-                        setAuthenticatedSession(credentials, accessToken);
-                        Logger.info("User '"+credentials.getUsername()+"' logged in succesfully.");
-                        return redirect(routes.Application.index());
-                    } else {
-                        filledForm.reject("The credentials don't match any user.");
-                        Logger.debug(credentials.getUsername() + " is unauthorized");
-                        return unauthorized(views.html.index.render(filledForm));
-                    }
-                }
-            }));
-        }
-        return result;
-    }
-	
+		final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
+		Result result;
+
+		if (filledForm.hasErrors()) {
+			result = badRequest(views.html.index.render(filledForm));
+		} else {
+			final Credentials credentials = filledForm.get();
+			final F.Promise<String> tokenPromise = userService.authenticate(credentials.getUsername(), credentials.getPassword());
+			result = async(tokenPromise.map(new F.Function<String, Result>() {
+				@Override
+				public Result apply(String accessToken) throws Throwable {
+					final boolean authenticationSuccessful = accessToken != null;
+					if (authenticationSuccessful) {
+						setAuthenticatedSession(credentials, accessToken);
+						Logger.info("User '" + credentials.getUsername() + "' logged in succesfully.");
+						return redirect(routes.Application.index());
+					} else {
+						filledForm.reject("The credentials don't match any user.");
+						Logger.debug(credentials.getUsername() + " is unauthorized");
+						return unauthorized(views.html.index.render(filledForm));
+					}
+				}
+			}));
+		}
+		return result;
+	}
+
 	public Result loginRest() {
-        final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
-        Result result;
-        
-        if (filledForm.hasErrors()) {
-            result = badRequest(views.html.index.render(filledForm));
-        } else {
-            final Credentials credentials = filledForm.get();
-            final F.Promise<String> tokenPromise = userService.authenticate(credentials.getUsername(), credentials.getPassword());
-            result = async(tokenPromise.map(new F.Function<String, Result>() {
-                @Override
-                public Result apply(String accessToken) throws Throwable {
-                    final boolean authenticationSuccessful = accessToken != null;
-                    if (authenticationSuccessful) {
-                        setAuthenticatedSession(credentials, accessToken);
-                        Logger.info("User '"+credentials.getUsername()+"' logged in succesfully.");
-                        return ok();
-                    } else {
-                        filledForm.reject("The credentials don't match any user.");
-                        Logger.debug(credentials.getUsername() + " is unauthorized");
-                        return unauthorized(views.html.index.render(filledForm));
-                    }
-                }
-            }));
-        }
-        return result;
-    }
-	
-    @Security.Authenticated(Secured.class)
+		final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
+		Result result;
+
+		if (filledForm.hasErrors()) {
+			result = badRequest(views.html.index.render(filledForm));
+		} else {
+			final Credentials credentials = filledForm.get();
+			final F.Promise<String> tokenPromise = userService.authenticate(credentials.getUsername(), credentials.getPassword());
+			result = async(tokenPromise.map(new F.Function<String, Result>() {
+				@Override
+				public Result apply(String accessToken) throws Throwable {
+					final boolean authenticationSuccessful = accessToken != null;
+					if (authenticationSuccessful) {
+						setAuthenticatedSession(credentials, accessToken);
+						Logger.info("User '" + credentials.getUsername() + "' logged in succesfully.");
+						return ok();
+					} else {
+						filledForm.reject("The credentials don't match any user.");
+						Logger.debug(credentials.getUsername() + " is unauthorized");
+						return unauthorized();
+					}
+				}
+			}));
+		}
+		return result;
+	}
+
+	@Security.Authenticated(Secured.class)
 	public Result mapListFromDB() throws IOException, DocearServiceException {
-        final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(getCurrentUser());
-        return async(listOfMindMapsFromUser.map(new F.Function<List<UserMindmapInfo>, Result>() {
-            @Override
-            public Result apply(List<UserMindmapInfo> maps) throws Throwable {
-                return ok(Json.toJson(maps));
-            }
-        }));
-    }
-    
-    public List<UserMindmapInfo> getMindmapInfosOfLoggedInUser() throws IOException {
-    	final models.backend.User user = getCurrentUser();
-    	if(user == null)
-    		return new ArrayList<UserMindmapInfo>();
-    	
-    	final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(getCurrentUser());
-    	return listOfMindMapsFromUser.get();
-    }
+		final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(user());
+		return async(listOfMindMapsFromUser.map(new F.Function<List<UserMindmapInfo>, Result>() {
+			@Override
+			public Result apply(List<UserMindmapInfo> maps) throws Throwable {
+				return ok(Json.toJson(maps));
+			}
+		}));
+	}
 
-    private void setAuthenticatedSession(Credentials credentials, String accessToken) {
-        Session.createSession(credentials.getUsername(), accessToken);
-        session(SESSION_KEY_USERNAME, credentials.getUsername());
-        session(SESSION_KEY_TIMEOUT, createTimeoutTimestamp().toString());
-    }
+	@Security.Authenticated(Secured.class)
+	public Result projectIdListFromDB() throws IOException {
+		final Promise<List<Long>> listOfMindMapsFromUser = userService.getListOfProjectIdsFromUser(user());
+		return async(listOfMindMapsFromUser.map(new F.Function<List<Long>, Result>() {
+			@Override
+			public Result apply(List<Long> projectIds) throws Throwable {
+				return ok(Json.toJson(projectIds));
+			}
+		}));
+	}
 
-    @Security.Authenticated(Secured.class)
-    public Result logout() {
-        session().clear();
-        return redirect(routes.Application.index());
-    }
+	public List<UserMindmapInfo> getMindmapInfosOfLoggedInUser() throws IOException {
+		final models.backend.User user = user();
+		if (user == null)
+			return new ArrayList<UserMindmapInfo>();
 
-    @Security.Authenticated(Secured.class)
-    public Result profile() {
-        return TODO;
-    }
+		final Promise<List<UserMindmapInfo>> listOfMindMapsFromUser = userService.getListOfMindMapsFromUser(user());
+		return listOfMindMapsFromUser.get();
+	}
+
+	private void setAuthenticatedSession(Credentials credentials, String accessToken) {
+		Session.createSession(credentials.getUsername(), accessToken);
+		session(SESSION_KEY_USERNAME, credentials.getUsername());
+		session(SESSION_KEY_TIMEOUT, createTimeoutTimestamp().toString());
+	}
+
+	@Security.Authenticated(Secured.class)
+	public Result logout() {
+		session().clear();
+		return redirect(routes.Application.index());
+	}
+
+	@Security.Authenticated(Secured.class)
+	public Result profile() {
+		return TODO;
+	}
 	
-    public static boolean isAuthenticated() {
-    	return getCurrentUser() != null;
-    }
-    
-	/**
-	 * 
-	 * @return User or null if non is logged-in
-	 */
-    public static models.backend.User getCurrentUser() {
-        return Session.getUser(session(SESSION_KEY_USERNAME));
-    }
-	
+	private models.backend.User user() {
+		return userService.getCurrentUser();
+	}
+
 }

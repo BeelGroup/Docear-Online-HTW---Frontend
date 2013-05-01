@@ -89,7 +89,7 @@ class HandlebarsCompiler(handlebarsJsFilename: String) {
       1, null)
 
     // load ember
-    val emberFile = findFile(handlebarsJsFilename).getOrElse(throw new Exception("handlebars: could not find " + handlebarsJsFilename))
+    val emberFile = findFile(handlebarsJsFilename).getOrElse(throw new HandlebarsJavaScriptFileNotFoundException("The handlebars template precompiler cannot find the file " + handlebarsJsFilename + ". Set the correct Handlebars JavaScript file in Build.scala with 'resourceGenerators in Compile <+= HandlebarsPrecompileTask(\"the-filename-of-handlebars-in-public-folder.js\")'"))
     ctx.evaluateString(scope, Path(emberFile).string, handlebarsJsFilename, 1, null)
 
     val precompileFunction = scope.get("precompile", scope).asInstanceOf[Function]
@@ -152,6 +152,7 @@ var template = Handlebars.template, templates = Handlebars.templates = Handlebar
             None)
         }
 
+      case e: HandlebarsJavaScriptFileNotFoundException => throw e
       case e =>
         throw CompilationException(
           "unexpected exception during Ember compilation (file=%s, options=%s, ember=%s): %s".format(
@@ -170,3 +171,5 @@ case class CompilationException(message: String, file: File, atLine: Option[Int]
   def input = scalax.file.Path(file).path
   def sourceName = file.getAbsolutePath.toString
 }
+
+class HandlebarsJavaScriptFileNotFoundException(message: String) extends FileNotFoundException(message)

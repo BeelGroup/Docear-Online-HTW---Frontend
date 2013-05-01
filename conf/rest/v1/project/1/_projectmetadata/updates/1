@@ -1,0 +1,11 @@
+{
+  "type":"AddEntry",
+  "username":"user",
+  "source":"PC",
+  "parentFolder":"/mindmaps",
+  "newEntry":{
+    "name":"5.mm",
+    "type":"File",
+    "path":"/mindmaps/5.mm"
+  }
+}

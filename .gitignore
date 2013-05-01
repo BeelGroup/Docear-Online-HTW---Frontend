@@ -48,3 +48,4 @@ tmp
 /nbproject/private/
 h2
 conf/evolutions/default/2.sql
+test-reports

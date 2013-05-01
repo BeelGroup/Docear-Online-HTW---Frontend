@@ -1,18 +1,22 @@
 package configuration;
 
-import controllers.MindMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.ConfigurableEnvironment;
+
 import play.Configuration;
 import play.Logger;
 import play.Play;
+import controllers.MindMap;
 
-import static org.apache.commons.lang.BooleanUtils.isTrue;
-
-@ComponentScan({"controllers", "services", "services.backend.mindmap"})//add here packages containing @Component annotated classes
+/**
+ * 
+ * Configuration for Spring Dependency Injection.
+ * (Switch between mock and prod implementations)
+ */
+@ComponentScan({"controllers", "services", "services.backend.mindmap", "services.backend.project"})//add here packages containing @Component annotated classes
 public class SpringConfiguration {
 
 

@@ -117,11 +117,9 @@ object ApplicationBuild extends Build {
         if (!pathOption.isDefined)
           println("you can setup native requireJS support as root with: npm install -g requirejs")
         pathOption
-        //println("Before")
-        //println(System.getProperty("browser"))
-        //System.setProperty("browser", "FIREFOX")
-        //println(System.getProperty("browser"))
       }
+      , javacOptions ++= Seq("-Xlint:-options")
+      , javacOptions ++= Seq("-Xlint:deprecation")
     )
 
 }

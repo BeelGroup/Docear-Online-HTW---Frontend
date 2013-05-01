@@ -22,7 +22,7 @@
       * `sbt eclipse` #Eclipse
       * `sbt idea` #IntelliJ IDEA
       * Netbeans: http://www.playframework.org/documentation/2.1.0/IDE
-* run unit tests in batch mode: `sbt test`
+* run unit tests in batch mode: `sbt "test-only base.TestSuite"`
 * don't use CSS directly, use [less](http://lesscss.org/) in the folder app/assets/stylesheets
 * don't use JavaScript directly, use [CoffeeScript](http://coffeescript.org/) in the folder app/assets/javascripts
 * [Debugging](https://github.com/Docear/HTW-Frontend/blob/master/dev-doc/debug.md)

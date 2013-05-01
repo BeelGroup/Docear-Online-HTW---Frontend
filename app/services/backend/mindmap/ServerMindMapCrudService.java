@@ -71,6 +71,12 @@ import controllers.Secured;
 
 @Profile("backendProd")
 @Component
+/**
+ * 
+ * production implementation of MindmapCrudService interface.
+ * Handles communication with Freeplane
+ *
+ */
 public class ServerMindMapCrudService implements MindMapCrudService {
 	private Set<String> openMapIds = new HashSet<String>();
 	private final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
@@ -474,8 +480,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-	private static User user() {
-		return controllers.User.getCurrentUser();
+	private User user() {
+		return userService.getCurrentUser();
 	}
 
 }
