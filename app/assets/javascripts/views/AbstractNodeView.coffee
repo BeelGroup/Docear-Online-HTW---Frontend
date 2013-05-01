@@ -34,7 +34,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         
 
     handleClick:(event)->
-
       if @isInnerNode $(event.target)
         @selectNode() 
       else if not document.wasDragged  
@@ -97,18 +96,14 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
     initialFoldStatus:()-> 
       shouldBeVisible = !@model.get('folded')
-      @updateFS(shouldBeVisible, true, true)
+      @updateFS(shouldBeVisible, true)
      
     updateFoldStatus:()->
       shouldBeVisible = !@model.get('folded')
       domVisible = @$el.children('.children').is ':visible'
-      @updateFS(shouldBeVisible, domVisible, false)
+      @updateFS(shouldBeVisible, domVisible)
 
-    updateFS:(shouldBeVisible, domVisible, initial)->
-      #document.log 'shouldBeVisible: '+shouldBeVisible
-      #document.log 'domVisible: '+domVisible
-      #document.log 'uptodate: '+(shouldBeVisible is domVisible)
-
+    updateFS:(shouldBeVisible, domVisible)->
       if shouldBeVisible isnt domVisible
         
         $children = @$el.children('.children')
@@ -117,9 +112,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         $nodesToFold = @$el.children('.inner-node').children('.action-fold')
         $nodesToFold.toggleClass 'invisible'
 
-        #if initial
-          #$nodesToFold.css 'top', '11px'
-          #console.log $nodesToFold.css 'top'
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
         
@@ -133,7 +125,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
               @resizeTree @$el, @model, -diff
         
         $children.fadeToggle(document.fadeDuration)
-
 
 
     changeNodeText: ->

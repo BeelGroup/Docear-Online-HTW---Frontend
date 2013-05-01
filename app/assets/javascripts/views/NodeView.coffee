@@ -20,7 +20,6 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
           nodeView.renderAndAppendTo(parent)
         
 
-
     changeChildren: ->
       ## TODO -> render and align new child
       newChild = @model.get 'lastAddedChild'

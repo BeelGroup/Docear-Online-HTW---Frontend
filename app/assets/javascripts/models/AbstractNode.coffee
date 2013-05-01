@@ -2,39 +2,16 @@
 abstract class
 ###
 
-define ['handlers/PersistenceHandler'], (PersistenceHandler)->
+define [], ()->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
 
-    constructor: (id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeModel) ->
+    constructor:->
       super()    
-      
-      #if folded is 'true' then parsedFoldStatus = true else parsedFoldStatus = false
-      @set 'folded', folded
 
-      @set 'id', id
-      @set 'nodeText', nodeText
-      @set 'isHTML', isHTML
-      @set 'xPos', xPos
-      @set 'yPos', yPos
-      @set 'hGap', hGap
-      @set 'shiftY', shiftY
-      @set 'locked', locked
 
-      @set 'rootNodeModel', rootNodeModel
-      
-      @set 'selected', false
-      @set 'previouslySelected', false
-      @set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
-      @set 'lastAddedChild', 'undefined'
-      @set 'connectionUpdated', 0
-      
-      @sup = AbstractNode.__super__
-
-      @set 'persistenceHandler', (new PersistenceHandler())
-      @set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
-      
+    activateListeners:->
       @bind 'change:selected', =>
         if(@get('selected'))
           currentlySelected = @get('rootNodeModel').get 'selectedNode'
@@ -56,7 +33,6 @@ define ['handlers/PersistenceHandler'], (PersistenceHandler)->
           $.each changes.changes, (attr, value)->
             if attr in attributesToPersist
               persistenceHandler.persistChanges node, changes
-
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy

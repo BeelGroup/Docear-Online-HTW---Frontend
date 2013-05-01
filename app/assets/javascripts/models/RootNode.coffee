@@ -2,21 +2,20 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   module = ->
   
   class RootNode extends AbstractNode
-    constructor: (id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked, mapId, edgeStyle,rootNodeView = @) ->
-      super id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked, rootNodeView
-      @set 'containerID', containerID
-      @set 'leftChildren', []
-      @set 'rightChildren', []
-      @set 'mapId', mapId
+    constructor:->
+      super()
+      @sup = RootNode.__super__
 
-      @setEdgestyle edgeStyle
 
+    activateListeners:->
       # will be catched in canvasView
+      #  -> center to selected node if necessary
       @bind 'change:selectedNode', => 
         if @get('selectedNode') isnt null and (typeof(@get('selectedNode')) isnt 'undefined')
-          # catched in canvasview -> center to selected node if necessary
-          #console.log @get('selectedNode')
           $("##{@get 'id' }").trigger 'newSelectedNode', @get 'selectedNode'
+
+      # call function in super class      
+      @sup.activateListeners.apply @
 
 
     setEdgestyle: (edgeStyle) ->
@@ -24,8 +23,6 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       if edgeStyle is undefined or edgeStyle is null
         edgeStyle = {width: document.graph.defaultWidth, color: document.graph.defaultColor}
 
-      #document.log 'toDo: translate color in RootNode.coffee: 27'
-      #edgeStyle.color = document.graph.defaultColor
       @set 'edgeStyle', edgeStyle
  
 

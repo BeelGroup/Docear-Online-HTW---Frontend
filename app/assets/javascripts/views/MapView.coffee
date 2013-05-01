@@ -1,4 +1,4 @@
-define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
+define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
   module = ->
 
   class MapView extends Backbone.View
@@ -11,18 +11,6 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
       super()
       $(window).on('resize', @resizeViewport)
 
-    positionNodes:()->
-      @rootView = new RootNodeView @rootNode
-      @rootView.renderAndAppendTo(@canvas.getElement())
-
-      @rootView.refreshDom()
-      
-      @rootView.connectChildren()
-      
-      @rootView.centerInContainer()
-      
-      @canvas.setRootView(@rootView)
-
 
     resizeViewport:=>
       @updateWidthAndHeight()
@@ -31,34 +19,39 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
 
 
     loadMap: (@mapId) ->
-      if typeof @rootView != 'undefined'
-        # remove old html elements
+      if @rootView isnt undefined
+        document.log 'delete old map'
         @canvas.zoomCenter(false)
-        @rootView.getElement().remove();
-      #document.log "call: loadMap #{mapId} (MapController)"
+        @rootView.getElement().remove()
+
+      document.log "call: loadMap #{mapId} (MapController)"
+
       @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
-      document.log 'href:'+@href
-      @$el.parent().find(".loading-map-overlay").fadeIn(400, =>
-        $.get(@href, @createJSONMap, "json")
-      )
 
-
-    createJSONMap: (data)=>
-      $('#current-mindmap-name').text(data.name)
-      #id, folded, nodeText, containerID, isHTML, xPos, yPos, hGap, shiftY, locked
-      @rootNode = new RootNodeModel(data.root.id, false, data.root.nodeText, "#{@id}_canvas" ,data.root.isHtml, 0,0,0,0,false,@mapId, data.root.edgeStyle) 
-      document.rootID = data.root.id
-      if data.root.leftChildren != undefined
-        leftNodes = getRecursiveChildren(data.root.leftChildren, @rootNode, @rootNode)
-        @rootNode.set 'leftChildren', leftNodes
+      # start loading after fadein
+      @$el.parent().find(".loading-map-overlay").fadeIn 400, =>
+        $.get(@href, @parseAndRenderMapByJsonData, "json")
       
-      if data.root.rightChildren != undefined
-        rightNodes = getRecursiveChildren(data.root.rightChildren, @rootNode, @rootNode)
-        @rootNode.set 'rightChildren', rightNodes
 
-        #debugger
-      @positionNodes() 
+
+    parseAndRenderMapByJsonData: (data)=>
+      $('#current-mindmap-name').text(data.name)
+      #document.rootID = data.root.id
+      
+      mapLoader = new MapLoader(data);
+
+      @rootView = new RootNodeView mapLoader.load()
+      @rootView.renderAndAppendTo(@canvas.getElement())
+
+      @rootView.centerInContainer()
+      @rootView.refreshDom()
+      @rootView.connectChildren()
+      @canvas.setRootView(@rootView)
       @canvas.center()
+
+      while current = mapLoader.load() isnt null
+        # here is work TODO
+        document.log 'still data to load'
       
       setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions(), @
@@ -68,23 +61,11 @@ define ['views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/Minim
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
+      # first part of map is loaded - fadeout
       @$el.parent().find(".loading-map-overlay").fadeOut()
       @rootNode
 
 
-    getRecursiveChildren = (childrenData, parent, root)->
-      children = []
-      if childrenData.id != undefined && childrenData.id != null
-        #id, folded, nodeText, isHTML, xPos, yPos, hGap, shiftY, locked
-        newChild = new NodeModel(childrenData.id, childrenData.folded, childrenData.nodeText, childrenData.isHtml,0,0,0,0,false, parent, root, childrenData.edgeStyle)
-        children.push newChild
-      else if childrenData != undefined
-        for child in childrenData
-          newChild = new NodeModel(child.id, child.folded, child.nodeText, child.isHtml,0,0,0,0,false, parent, root, child.edgeStyle)
-          if child.children != undefined
-            newChild.set 'children', getRecursiveChildren(child.children, newChild, root)
-          children.push newChild
-      children
 
 
     addLoadingOverlay:->
