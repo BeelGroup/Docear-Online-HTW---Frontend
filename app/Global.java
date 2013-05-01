@@ -109,6 +109,7 @@ public class Global extends GlobalSettings {
     public Result onError(Http.RequestHeader requestHeader, Throwable throwable) {
         Logger.error("can't answer request properly", throwable);
         /*
+        For Play 2.0.4:
         Here is no HTTP context available to use the standard templates.
         So the error gets an ID, stored with that ID in the cache and the redirected action has a
         HTTP context and can restore the exceptions from the cache and use the standard templates.
