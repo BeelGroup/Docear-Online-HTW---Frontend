@@ -45,7 +45,6 @@ public class Secured extends Security.Authenticator {
 	private String checkForAuthenticationWithSession(Context ctx) {
 		final Http.Session session = ctx.session();
 		final String accessToken = session.get(SESSION_KEY_ACCESS_TOKEN);
-		Logger.debug("at: "+accessToken);
 		String username = session.get(SESSION_KEY_USERNAME);
 		
 		if (username != null && sessionTimeoutOccurred(ctx)) {
@@ -59,17 +58,6 @@ public class Secured extends Security.Authenticator {
 		else
 			return null;
 	}
-
-//	private String checkForAuthenticationWithSession(Context ctx) {
-//		final Http.Session session = ctx.session();
-//		String username = session.get(SESSION_KEY_USERNAME);
-//		if (username != null && sessionTimeoutOccurred(ctx)) {
-//			Logger.debug("timeout for " + session.get(SESSION_KEY_USERNAME));
-//			session.clear();
-//			username = null;
-//		}
-//		return username;
-//	}
 
 	@Override
 	public Result onUnauthorized(Context ctx) {

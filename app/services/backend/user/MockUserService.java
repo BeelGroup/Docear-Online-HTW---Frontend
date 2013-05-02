@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import models.backend.User;
 import models.backend.UserMindmapInfo;
@@ -23,7 +22,7 @@ public class MockUserService extends UserService {
 	public Promise<String> authenticate(String username, String password) {
 		final boolean usernameCorrect = Arrays.asList("Jöran", "Julius", "Michael", "Florian", "Alex", "Paul", "Marcel", "Dimitri", "Volker").contains(username);
 		final boolean authenticated = usernameCorrect && "secret".equals(password);
-		return Promise.pure(authenticated ? username + "-token-" + UUID.randomUUID().toString() : null);
+		return Promise.pure(authenticated ? generateMockToken(username) : null);
 	}
 
 	@Override
@@ -46,7 +45,9 @@ public class MockUserService extends UserService {
 
 	@Override
 	public Boolean isValid(User user) {
-		if (user.getAccessToken().equals("1") && user.getUsername().equals("User1")) {
+		if (user.getAccessToken().equals(generateMockToken(user.getUsername()))) {
+			return true;
+		} else if (user.getAccessToken().equals("1") && user.getUsername().equals("User1")) {
 			return true;
 		} else if (user.getAccessToken().equals("2") && user.getUsername().equals("User2")) {
 			return true;
@@ -55,5 +56,8 @@ public class MockUserService extends UserService {
 		}
 	}
 
+	private String generateMockToken(String username) {
+		return username + "-token";
+	}
 
 }

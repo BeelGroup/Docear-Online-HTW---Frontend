@@ -123,7 +123,6 @@ public class User extends Controller {
 	}
 
 	private void setAuthenticatedSession(Credentials credentials, String accessToken) {
-		//Session.createSession(credentials.getUsername(), accessToken);
 		session(SESSION_KEY_USERNAME, credentials.getUsername());
 		session(SESSION_KEY_ACCESS_TOKEN, accessToken);
 		session(SESSION_KEY_TIMEOUT, createTimeoutTimestamp().toString());

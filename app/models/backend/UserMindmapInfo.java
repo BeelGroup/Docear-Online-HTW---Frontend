@@ -8,11 +8,11 @@ package models.backend;
  * To change this template use File | Settings | File Templates.
  */
 public class UserMindmapInfo {
-    public String mmIdOnServer;
-    public String mmIdInternal;
-    public String revision;
-    public String filePath;
-    public String fileName;
+    public final String mmIdOnServer;
+    public final String mmIdInternal;
+    public final String revision;
+    public final String filePath;
+    public final String fileName;
 
     public UserMindmapInfo(String mmIdOnServer, String mmIdInternal, String revision, String filePath, String fileName) {
         this.mmIdOnServer = mmIdOnServer;

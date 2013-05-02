@@ -9,7 +9,6 @@ import models.project.updates.AddEntryUpdate;
 import models.project.updates.ProjectUpdate;
 import models.project.updates.ProjectUpdate.Type;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
