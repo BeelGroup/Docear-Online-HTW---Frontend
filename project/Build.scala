@@ -29,10 +29,7 @@ object ApplicationBuild extends Build {
         , "com.novocode" % "junit-interface" % "0.9" % "test"
         , "org.reflections" % "reflections" % "0.9.8"//fix for error: NoSuchMethodError: com.google.common.cache.CacheBuilder.maximumSize(I)Lcom/google/common/cache/CacheBuilder;
         , "joda-time" % "joda-time" % "2.1"
-        , jdbc
         , javaCore
-        , javaJdbc
-        , javaEbean
         , "org.webjars" % "webjars-play" % "2.1.0"
         , "org.webjars" % "bootstrap" % "2.1.1"
         , "com.typesafe.akka" % "akka-remote_2.10" % "2.1.2"
