@@ -1,5 +1,11 @@
 package controllers;
 
+import static controllers.Secured.SESSION_KEY_ACCESS_TOKEN;
+import static controllers.Secured.SESSION_KEY_TIMEOUT;
+import static controllers.Secured.SESSION_KEY_USERNAME;
+import static controllers.Secured.createTimeoutTimestamp;
+import static play.data.Form.form;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,17 +20,12 @@ import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
 import play.libs.F;
-import play.libs.Json;
 import play.libs.F.Promise;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.user.UserService;
-
-import static controllers.Secured.SESSION_KEY_TIMEOUT;
-import static controllers.Secured.SESSION_KEY_USERNAME;
-import static controllers.Secured.createTimeoutTimestamp;
-import static play.data.Form.form;
 
 @Component
 public class User extends Controller {
@@ -122,8 +123,9 @@ public class User extends Controller {
 	}
 
 	private void setAuthenticatedSession(Credentials credentials, String accessToken) {
-		Session.createSession(credentials.getUsername(), accessToken);
+		//Session.createSession(credentials.getUsername(), accessToken);
 		session(SESSION_KEY_USERNAME, credentials.getUsername());
+		session(SESSION_KEY_ACCESS_TOKEN, accessToken);
 		session(SESSION_KEY_TIMEOUT, createTimeoutTimestamp().toString());
 	}
 

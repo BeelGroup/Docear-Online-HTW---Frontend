@@ -17,6 +17,7 @@ import play.mvc.Security;
 public class Secured extends Security.Authenticator {
 	public static final String SESSION_KEY_USERNAME = "username";
 	public static final String SESSION_KEY_TIMEOUT = "session-timeout";
+	public static final String SESSION_KEY_ACCESS_TOKEN = "at";
 	public static final String EPOCHE_START = "0000-01-01T00:00:00.000Z";
 	public static final String QUERY_ACCESS_TOKEN = "accessToken";
 	public static final String QUERY_USERNAME = "username";
@@ -25,14 +26,14 @@ public class Secured extends Security.Authenticator {
 	public String getUsername(Context ctx) {
 		String username = null;
 
-		username = checkForAuthenticationWithAccessToken(ctx);
+		username = checkForAuthenticationWithQueryString(ctx);
 		if (username == null) {
 			username = checkForAuthenticationWithSession(ctx);
 		}
 		return username;
 	}
 
-	private String checkForAuthenticationWithAccessToken(Context ctx) {
+	private String checkForAuthenticationWithQueryString(Context ctx) {
 		final String accessToken = ctx.request().getQueryString(QUERY_ACCESS_TOKEN);
 		final String username = ctx.request().getQueryString(QUERY_USERNAME);
 		if (accessToken != null && username != null)
@@ -40,17 +41,35 @@ public class Secured extends Security.Authenticator {
 		else
 			return null;
 	}
-
+	
 	private String checkForAuthenticationWithSession(Context ctx) {
 		final Http.Session session = ctx.session();
+		final String accessToken = session.get(SESSION_KEY_ACCESS_TOKEN);
+		Logger.debug("at: "+accessToken);
 		String username = session.get(SESSION_KEY_USERNAME);
+		
 		if (username != null && sessionTimeoutOccurred(ctx)) {
 			Logger.debug("timeout for " + session.get(SESSION_KEY_USERNAME));
 			session.clear();
 			username = null;
 		}
-		return username;
+		
+		if (accessToken != null && username != null)
+			return username;
+		else
+			return null;
 	}
+
+//	private String checkForAuthenticationWithSession(Context ctx) {
+//		final Http.Session session = ctx.session();
+//		String username = session.get(SESSION_KEY_USERNAME);
+//		if (username != null && sessionTimeoutOccurred(ctx)) {
+//			Logger.debug("timeout for " + session.get(SESSION_KEY_USERNAME));
+//			session.clear();
+//			username = null;
+//		}
+//		return username;
+//	}
 
 	@Override
 	public Result onUnauthorized(Context ctx) {
