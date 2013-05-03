@@ -24,11 +24,11 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
 
-      if data.root.leftChildren != undefined
+      if data.root.leftChildren isnt undefined
         leftNodes = @getRecursiveChildren(data.root.leftChildren, rootNode, rootNode)
         rootNode.set 'leftChildren', leftNodes
       
-      if data.root.rightChildren != undefined
+      if data.root.rightChildren isnt undefined
         rightNodes = @getRecursiveChildren(data.root.rightChildren, rootNode, rootNode)
         rootNode.set 'rightChildren', rightNodes
 
@@ -41,6 +41,9 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       node.set 'children', []
       node.set 'parent', parent
       node.set 'folded', data.folded
+      if data.childrenIds isnt undefined 
+        node.set 'childsToLoad', data.childrenIds
+      rootNode.addNodeToList node
 
       @setDefaults(node, rootNode, data)
       node.activateListeners()
@@ -76,20 +79,20 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
     getRecursiveChildren:(childrenData, parent, root)->
 
       children = []
-      if childrenData.id != undefined && childrenData.id != null
+      if childrenData isnt undefined and childrenData.id isnt undefined
         newChild = @createNodeByData(childrenData, root, parent)
         children.push newChild
-      else if childrenData != undefined
+      else if childrenData isnt undefined
         for child in childrenData
           newChild = @createNodeByData(child, root, parent)
-          if child.children != undefined
-            newChild.set 'children', @getRecursiveChildren(child.children, newChild, root)
+          newChild.set 'children', @getRecursiveChildren(child.children, newChild, root)
           children.push newChild
       children
 
 
     createNodeByText:(text)->  
-
+      # dont forget to add the new node to the list
+      # -> rootNode.addNodeToList node
 
 
   module.exports = NodeFactory

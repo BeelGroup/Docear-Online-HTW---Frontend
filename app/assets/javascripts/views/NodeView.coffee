@@ -13,7 +13,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
       super()
 
 
-    recursiveRender: (parentView, parent, nodes)->
+    recursiveRender: (parent, nodes)->
       if not document.cancel_loading
         $.each nodes, (index, node)=>
           nodeView = new NodeView(node)
@@ -80,6 +80,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
             currentTop = -$(child).outerHeight()/2
           currentTop += heightOfChildren[id]/2
           $(child).css('top', currentTop)
+
           
           if sideOfTree == 'left'
             $(child).addClass('left')
@@ -89,7 +90,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
             $(child).css('left', @horizontalSpacer) 
           lastChild = child
           currentTop += heightOfChildren[id]/2 + @verticalSpacer
-          
+
         # to correct the addition on the last run we subtract the last added height
         currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
         totalChildrenWidth += @horizontalSpacer
@@ -101,26 +102,26 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
         height = Math.max(totalChildrenHeight, elementHeight)
         width = totalChildrenWidth
 
+
+
         $(childrenContainer).css('left', left+'px')
         $(childrenContainer).css('top', top)
         $(childrenContainer).css('height', height)
         $(childrenContainer).css('width', width)
 
-
-      if $(element).attr('folded') is 'true'
-        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
-
-        [Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
+      if $(element).attr('folded') is 'true' and totalChildrenHeight <= 0
+        [elementHeight, totalChildrenWidth]
+        #diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
+        #console.log Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer
+        #[Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
       else
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
     render: ->
       @$el.html @template @getRenderData()
-
-      @$el.attr('folded', @model.get 'folded')
-
       @$el.append(@model.get 'purehtml')
+      @$el.attr('folded', @model.get 'folded')
 
       # in first step: from roon to its childs
       if @model.get('parent') isnt undefined and @model.get('parent') isnt null
@@ -140,7 +141,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
       @alignButtons()
       children = @model.get 'children'
       if children isnt undefined and children.length > 0
-        @recursiveRender(@, @$el.find('.children:first'), children)
+        @recursiveRender(@$el.find('.children:first'), children)
       else
         @$el.find('.action-fold').hide()
 

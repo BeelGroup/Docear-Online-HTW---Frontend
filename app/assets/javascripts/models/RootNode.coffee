@@ -4,8 +4,14 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   class RootNode extends AbstractNode
     constructor:->
       super()
+      @allNodes = new Array()
       @sup = RootNode.__super__
 
+    addNodeToList:(node)->
+      @allNodes.push node
+
+    getNodeList:->
+      @allNodes
 
     activateListeners:->
       # will be catched in canvasView
@@ -66,11 +72,14 @@ define ['models/AbstractNode'],  (AbstractNode) ->
         addRightChild child
 
     updateAllConnections: ->
-      nodes = []
-      nodes = $.merge(nodes, @get('children').slice()  )
+      #nodes = []
+      #nodes = $.merge(nodes, @get('children').slice()  )
       # used to be recursive via child.getSelectedNode() but could create mem problems
-      while node = nodes.shift()
+      #while node = @allNodes.shift()
+        #node.updateConnection()
+        #nodes = $.merge(nodes, node.get('children').slice()  )
+
+      for node in @allNodes
         node.updateConnection()
-        nodes = $.merge(nodes, node.get('children').slice()  )
       
   module.exports = RootNode

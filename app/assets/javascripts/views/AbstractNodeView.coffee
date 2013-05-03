@@ -111,7 +111,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
         $nodesToFold = @$el.children('.inner-node').children('.action-fold')
         $nodesToFold.toggleClass 'invisible'
-
+        @alignChildrenofElement 
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
         
