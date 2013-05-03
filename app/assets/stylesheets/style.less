@@ -286,18 +286,20 @@ mindmap-container{
     filter:alpha(opacity=0); /* For IE8 and earlier */
     cursor: default;
 }
+.transparent-overlay
+{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+}
 
 .edit-container 
 {
     position: absolute;
-    border-radius: 30px;
-    background-color: #FFFFFF;
-    border: 3px solid green;
     opacity:0.0;
     filter:alpha(opacity=0); /* For IE8 and earlier */
-    width: 300px;
-    height: 250px;
-    padding: 10px;
 }
 
 .dummy-node-container 
@@ -368,4 +370,19 @@ ul.nav .no-link {
 .connection 
 {
     position: absolute;
+}
+.node-editor {
+    position: absolute;
+    border: 2px solid @docear-blue;
+    border-radius: 20px 20px 20px 20px;
+    cursor: default;
+    padding: 10px;
+    white-space: nowrap;
+    background-color: #FFFFFF;
+}
+#node-editor {
+  opacity:0.0;
+  filter:alpha(opacity=0); /* For IE8 and earlier */
+  top: -100;
+  left: -100;
 }

@@ -1,4 +1,4 @@
-define ->
+define ['views/NodeEditView'], (NodeEditView) ->
   module = () ->
 
   class NodeControls extends Backbone.View
@@ -16,28 +16,17 @@ define ->
       super()    
 
     actionEdit: (event)->
-      console.log "edit @ "+@nodeView.model.get 'id'
-      # call functions via @nodeView
-      ###
-      $edit = $($controls).children('.action-edit')
-      $($edit).click (event)->
-        $node = $(this).closest('.node')
-        node = model.findById($node.attr('id'))
-        $mindmapCanvas = $(this).closest('.mindmap-canvas')
-        nodeEditView = new NodeEditView(node)
-        nodeEditView.renderAndAppendTo($mindmapCanvas)
-      ###
+      node = @nodeView.model
+      $node = @nodeView.$el
+
+      $mindmapCanvas = $($node).closest('body')
+      
+      nodeEditView = new NodeEditView(node, @nodeView)
+      nodeEditView.renderAndAppendTo($mindmapCanvas)
       
     actionNewNode: (event)->
       console.log "newNode @ "+@nodeView.model.get 'id'
-      # call functions via @nodeView
-      ###
-        $newNode = $($controls).children('.action-new-node')
-        $($newNode).click (event)->
-          currentNodeId = $(this).closest('.node').attr('id')
-          # dummy
-          model.findById(currentNodeId).createAndAddChild()
-      ###
+      @nodeView.model.createAndAddChild()
     
     actionShare: (event)->
       console.log "share @ "+@nodeView.model.get 'id'

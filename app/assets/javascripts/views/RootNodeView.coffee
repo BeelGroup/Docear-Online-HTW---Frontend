@@ -115,7 +115,6 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
 
     userKeyInput: (event)->   
       code = if event.keyCode == 0 then event.charCode  else event.keyCode
-
       if (code) in document.navigation.key.allowed
         selectedNode = @model.getSelectedNode()
         if selectedNode != null
@@ -139,7 +138,6 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
               selectedNode.set 'folded', not selectedNode.get 'folded' 
         else
           @model.set 'selected', true
-
         event.preventDefault()
       
     selectNextChild: (selectedNode, side = 'left')->
@@ -244,8 +242,8 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
     renderAndAppendTo:($element)->
       $element.append @render().el 
       @alignButtons()
-      @recursiveRender @, $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren')
-      @recursiveRender @, $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren')
+      @recursiveRender @, $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren'), @
+      @recursiveRender @, $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren'), @
       
       # render the subviews
       for viewId, view of @subViews

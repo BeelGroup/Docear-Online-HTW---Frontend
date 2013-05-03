@@ -8,37 +8,38 @@ define ->
     template: Handlebars.templates['NodeEdit']
 
     events:
-      "click .overlay"  : "hideEditView"
+      "click .transparent-overlay"  : "hideEditView"
       "click .cancel"   : "hideEditView"
       "click .save"     : "saveChanges"
  
-    constructor:(@nodeModel)->
+    constructor:(@nodeModel, @nodeView)->
       @$node = $('#'+@nodeModel.get('id'))
       super()    
 
     hideEditView: (event)->
+      @saveChanges event
+      
       $(@$el).fadeOut(document.fadeDuration, ->
         $(this).remove()
       )
       
     saveChanges: (event)->
-      @nodeModel.set 'nodeText', $(@$el.html).find('textarea.node-content').val()
-      @hideEditView()
+      @nodeModel.set 'isHTML', true
+      @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
       
     renderAndAppendTo:($element)->
       $element.append(@render().el)
       
       obj = $(@render().el)
-      $(obj).find('.overlay:first').animate({
+      $(obj).find('.transparent-overlay:first').animate({
         opacity: 0.4
       }, document.fadeDuration)
       
-      editContainer = $(obj).find('.edit-container:first')
-      editContainer.animate({
-        opacity: 1.0,
-        left: '-='+(editContainer.outerWidth() - @$node.outerWidth()) / 2,
-        top: '-='+(editContainer.outerHeight() - @$node.outerHeight()) / 2
-      }, document.fadeDuration)
+      $editContainer = $(obj).find('.node-editor:first')
+      $($editContainer).wysiwyg()
+      
+      $editContainer.html(@$node.children('.inner-node').children('.content').html())
+      $editContainer.offset(@$node.offset())
       @
       
 
@@ -47,14 +48,6 @@ define ->
       ec = $(@$el.html).find('.edit-container:first')
       ec.offset(@$node.offset())
       $(ec).find('.node-id:first').val(@$node.attr('id'))
-      $textarea = $(ec).find('textarea.node-content')
-      
-      $contentContainer = @$node.children('.inner-node').children('.content')
-      if $contentContainer.hasClass('isHTML')
-        $textarea.val($contentContainer.html())
-      else
-        $textarea.val($contentContainer.text())
-      $textarea.select()
       @
 
   module.exports = NodeEdit

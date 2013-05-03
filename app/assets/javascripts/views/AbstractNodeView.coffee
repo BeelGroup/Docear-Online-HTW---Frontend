@@ -145,9 +145,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       
       
       postHeight = $node.outerHeight()
-      diffWidth = $node.outerWidth() - preWidth
-      if $($node).hasClass('left')
-        diffWidth = -diffWidth
+      diffWidth = 0
+      if $($node).hasClass('right')
+        diffWidth = ($node.outerWidth() - preWidth)
       
       diff = 0
       if postHeight > childrenHeight
@@ -169,7 +169,13 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       $node.animate {
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
-    
+
+      model = @model
+      setTimeout(->
+        model.getRoot().updateAllConnections()
+      , document.fadeDuration*2)
+      
+      
      
     foldModel: ->
       @$el.toggleClass('selected')

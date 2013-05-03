@@ -13,11 +13,11 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
       super()
 
 
-    recursiveRender: (parentView, parent, nodes)->
+    recursiveRender: (parentView, parent, nodes, @rootView)->
       if not document.cancel_loading
         $.each nodes, (index, node)=>
           nodeView = new NodeView(node)
-          nodeView.renderAndAppendTo(parent)
+          nodeView.renderAndAppendTo(parent, rootView)
         
 
     changeChildren: ->
@@ -134,13 +134,13 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
 
 
-    renderAndAppendTo:($element)->
+    renderAndAppendTo:($element, rootView)->
       @render()
       $element.append(@$el)
       @alignButtons()
       children = @model.get 'children'
       if children isnt undefined and children.length > 0
-        @recursiveRender(@, @$el.find('.children:first'), children)
+        @recursiveRender(@, @$el.find('.children:first'), children, rootView)
       else
         @$el.find('.action-fold').hide()
 
