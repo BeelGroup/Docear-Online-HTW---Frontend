@@ -25,4 +25,12 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       values['mapId'] = @getCurrentMapId 'id'
       values['parentNodeId'] = @get('parent').get 'id'
       @get('persistenceHandler').persistNew(@, values)
+      
+      
+    move: (newParent, position = -1)->
+      document.log 'moving '+@get('id')+' to parent '+newParent.get('id')
+      #@get('parent').removeCild(@)
+      #newParent.addChild(@)
+      
+      
   module.exports = Node
