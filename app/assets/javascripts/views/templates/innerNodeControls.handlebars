@@ -6,6 +6,7 @@
   <a class='icon-file action-new-node'></a>
   {{/if}}
   <a class='icon-globe action-share'></a>
-  <a class='icon-comment action-show'></a>
-  <a class='icon-wrench action-change'></a>  
+  {{#if movable}}
+  <a class='icon-move action-move'></a>
+  {{/if}}
 {{/if}} 
