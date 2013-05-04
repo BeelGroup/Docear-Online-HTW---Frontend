@@ -44,18 +44,21 @@ define ->
 
       $toolbar = $(obj).find('.editor-toolbar:first')
       $toolbar.attr('data-target', '#'+editorId)
-      
+        
       offset = @$node.offset()
       
       $editContainer.html(@$node.children('.inner-node').children('.content').html())
       $editContainer.offset(offset)
       
-      $toolbar.offset(offset)
-      $toolbar.draggable({ handle: ".handle" });
-      $toolbar.animate({
-        left: '+='+($editContainer.outerWidth() + 20) #a little distance away from node
-        top: '-='+(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
-      })
+      if $.browser.msie and $.browser.version < 9
+        $toolbar.remove()
+      else
+        $toolbar.offset(offset)
+        $toolbar.draggable({ handle: ".handle" });
+        $toolbar.animate({
+          left: '+='+($editContainer.outerWidth() + 20) #a little distance away from node
+          top: '-='+(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
+        })
       
       @
       
