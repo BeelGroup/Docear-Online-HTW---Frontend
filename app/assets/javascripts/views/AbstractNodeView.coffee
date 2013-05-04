@@ -35,15 +35,18 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
     handleClick:(event)->
       if @isInnerNode $(event.target)
-        @selectNode() 
+        @selectNode(event) 
       else if not document.wasDragged  
-        @selectNone()
+        @selectNone(event)
 
       if $(event.target).hasClass 'action-fold-all'
         @model.set 'folded', not @model.get 'folded' 
 
-    selectNode:()->
-      @model.set 'selected', true
+    selectNode:(event)->
+      if @model.get 'selected' || $(@$el).hasClass('selected')
+        @controls.actionEdit(event)
+      else
+        @model.set 'selected', true
 
     isInnerNode:($target)->
       if $target.parents().hasClass('inner-node') or $target.hasClass('inner-node') 

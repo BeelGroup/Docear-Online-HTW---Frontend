@@ -8,7 +8,7 @@ define ->
 
     events:
       'mousedown': (event)-> document.wasDragged = false
-      'mouseup': (event)-> if not document.wasDragged then @rootView.model.selectNone()
+      # 'mouseup': if not document.wasDragged then @rootView.model.selectNone()
 
     constructor:(@id)->
       super()
