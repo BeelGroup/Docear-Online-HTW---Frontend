@@ -11,12 +11,15 @@ define ['views/NodeEditView'], (NodeEditView) ->
       "click .action-edit"     : "actionEdit"
       "click .action-new-node" : "actionNewNode"
       "click .action-share"    : "actionShare"
+      "click .action-move"    : "actionMove"
  
     constructor:(@nodeModel, @$node)->
       super()    
 
     actionEdit: (event)->
       node = @nodeView.model
+      node.set 'selected', true
+      
       $node = @nodeView.$el
 
       $mindmapCanvas = $($node).closest('body')
@@ -45,6 +48,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
           editable: ($.inArray('NODE_CONTROLS', document.features) > -1)
           editableText: ($.inArray('EDIT_NODE_TEXT', document.features) > -1)
           foldable: ($.inArray('FOLD_NODE', document.features) > -1)
+          movable: ($.inArray('MOVE_NODE', document.features) > -1)
           isRoot: (@nodeModel.constructor.name == 'RootNode')
       }
       @$el.html @template attrs

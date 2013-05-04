@@ -136,6 +136,15 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
     renderAndAppendTo:($element, rootView)->
       @render()
+      
+      $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });
+      $(@$el).find('.inner-node:first').droppable({
+        accept: '.node',
+        hoverClass: 'droppable-hover'
+        drop: ( event, ui )->
+          newParentId = $( this ).closest('.node').attr('id')
+      })
+      
       $element.append(@$el)
       @alignButtons()
       children = @model.get 'children'
