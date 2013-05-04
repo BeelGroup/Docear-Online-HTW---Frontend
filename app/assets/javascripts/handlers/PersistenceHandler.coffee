@@ -1,30 +1,38 @@
 define ['routers/DocearRouter'],  (DocearRouter) ->  
-  module = ->
+  module = () ->
   
-  class PersistenceHandler
+  class PersistenceHandler extends Backbone.Model
 
-    persistenceApi: {
-      'change': {
-        'Node': jsRoutes.controllers.MindMap.changeNode().url
-      },
-      'create': {
-        'Node': jsRoutes.controllers.MindMap.createNode().url
-      },
-      'delete': {
-        'Node': jsRoutes.controllers.MindMap.deleteNode().url
+    constructor: (mapId)->
+      super()
+      @mapId = mapId
+      console.log mapId
+      
+      @persistenceApi = {
+        'change': {
+          'Node': jsRoutes.controllers.MindMap.changeNode(mapId).url
+        },
+        'create': {
+          'Node': jsRoutes.controllers.MindMap.createNode(mapId).url
+        },
+        'delete': {
+          'Node': jsRoutes.controllers.MindMap.deleteNode(mapId).url
+        }
       }
-    }
 
-    persistChanges: (object, d)->
+    persistChanges: (object, changes)->
       objectName = object.constructor.name
       values = {}
       if @persistenceApi.change[objectName] != undefined
-        #TODO: only transfer changed values
-        for attribute in object.get('attributesToPersist')
-          values[attribute] = object.get attribute
-
-        params = {'json': $.toJSON(values)}
-        $.post(@persistenceApi.change[objectName], params)
+        
+        changesToPersist = false
+        $.each changes.changed, (attr, value)->
+          if attr in object.get('attributesToPersist')
+            values[attr] = object.get attr
+            changesToPersist = true
+        if changesToPersist
+          params = {'nodeId': object.get('id'), 'attributeValueMapJson': $.toJSON(values)}
+          $.post(@persistenceApi.change[objectName], params)
 
     persistNew: (object, params)->
       objectName = object.constructor.name
