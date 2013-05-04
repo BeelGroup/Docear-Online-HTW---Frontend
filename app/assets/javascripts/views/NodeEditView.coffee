@@ -8,7 +8,7 @@ define ->
     template: Handlebars.templates['NodeEdit']
 
     events:
-      "click .overlay"  : "hideEditView"
+      "click .edit-overlay"  : "hideEditView"
       "click .cancel"   : "hideEditView"
       "click .save"     : "saveChanges"
  
@@ -32,7 +32,7 @@ define ->
       $element.append(@render().el)
       
       obj = $(@render().el)
-      $(obj).find('.overlay:first').animate({
+      $(obj).find('.edit-overlay:first').animate({
         opacity: 0.4
       }, document.fadeDuration)
       
