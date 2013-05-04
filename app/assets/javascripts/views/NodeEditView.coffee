@@ -24,6 +24,7 @@ define ->
       )
       
     saveChanges: (event)->
+      $(@$el).find('.node-editor').cleanHtml()
       @nodeModel.set 'isHTML', true
       @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
       
