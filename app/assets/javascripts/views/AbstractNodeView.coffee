@@ -36,7 +36,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
     handleClick:(event)->
       if @isInnerNode $(event.target)
         @selectNode(event) 
-      else if (not document.wasDragged and $(event.target).parent().hasClass('.controls')) 
+      else if not(document.wasDragged or $(event.target).parent().hasClass('controls')) 
         @selectNone(event)
 
       if $(event.target).hasClass 'action-fold-all'
