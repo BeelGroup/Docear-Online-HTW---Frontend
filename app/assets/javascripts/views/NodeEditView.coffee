@@ -8,7 +8,7 @@ define ->
     template: Handlebars.templates['NodeEdit']
 
     events:
-      "click .transparent-overlay"  : "hideEditView"
+      "click .overlay"  : "hideEditView"
       "click .cancel"   : "hideEditView"
       "click .save"     : "saveChanges"
  
@@ -31,15 +31,31 @@ define ->
       $element.append(@render().el)
       
       obj = $(@render().el)
-      $(obj).find('.transparent-overlay:first').animate({
+      $(obj).find('.overlay:first').animate({
         opacity: 0.4
       }, document.fadeDuration)
       
       $editContainer = $(obj).find('.node-editor:first')
+      
+      editorId = 'editor-'+Date.now()
+      $editContainer.attr('id', editorId)
       $($editContainer).wysiwyg()
+
+      $toolbar = $(obj).find('.editor-toolbar:first')
+      $toolbar.attr('data-target', '#'+editorId)
+      
+      offset = @$node.offset()
       
       $editContainer.html(@$node.children('.inner-node').children('.content').html())
-      $editContainer.offset(@$node.offset())
+      $editContainer.offset(offset)
+      
+      $toolbar.offset(offset)
+      $toolbar.draggable({ handle: ".handle" });
+      $toolbar.animate({
+        left: '+='+($editContainer.outerWidth() + 20) #a little distance away from node
+        top: '-='+(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
+      })
+      
       @
       
 

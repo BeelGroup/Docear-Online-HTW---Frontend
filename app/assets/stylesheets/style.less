@@ -286,14 +286,6 @@ mindmap-container{
     filter:alpha(opacity=0); /* For IE8 and earlier */
     cursor: default;
 }
-.transparent-overlay
-{
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    bottom: 0px;
-    right: 0px;
-}
 
 .edit-container 
 {
@@ -371,7 +363,8 @@ ul.nav .no-link {
 {
     position: absolute;
 }
-.node-editor {
+.node-editor 
+{
     position: absolute;
     border: 2px solid @docear-blue;
     border-radius: 20px 20px 20px 20px;
@@ -380,9 +373,36 @@ ul.nav .no-link {
     white-space: nowrap;
     background-color: #FFFFFF;
 }
-#node-editor {
-  opacity:0.0;
-  filter:alpha(opacity=0); /* For IE8 and earlier */
-  top: -100;
-  left: -100;
+#node-editor 
+{
+    opacity:0.0;
+    filter:alpha(opacity=0); /* For IE8 and earlier */
+    top: -100;
+    left: -100;
+}
+.editor-toolbar 
+{
+    position: absolute;
+    width: 200px;
+    border-radius: 20px 20px 20px 20px;
+    background-color: #FFFFFF;
+    border: 2px solid @docear-blue;
+    padding: 0px;
+    padding-bottom: 10px;
+}
+.editor-toolbar .btn-group
+{
+    padding: 3px 10px;
+    margin-left: 5px;
+}
+.editor-toolbar .handle
+{
+    position: relative;
+    top: 0px;
+    left: opx;
+    border-radius: 20px 20px 0px 0px;
+    border-bottom: 2px solid @docear-light-blue;
+    margin-bottom: 10px;
+    background-color: @grey;
+    height: 20px;
 }
