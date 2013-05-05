@@ -43,7 +43,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         @model.set 'folded', not @model.get 'folded' 
 
     selectNode:(event)->
-      if ( @model.get 'selected' || $(@$el).hasClass('selected') )
+      if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') )
         @controls.actionEdit(event)
       @model.set 'selected', true
 
