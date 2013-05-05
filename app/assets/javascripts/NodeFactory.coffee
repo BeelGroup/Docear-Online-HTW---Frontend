@@ -73,7 +73,7 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       node.set 'connectionUpdated', 0
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
-      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
+      node.set 'attributesToPersist', ['nodeText', 'isHTML', 'locked']
 
       node.setEdgestyle(data.edgeStyle)
 
