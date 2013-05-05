@@ -48,10 +48,15 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       @model.set 'selected', true
 
     isInnerNode:($target)->
-      if $target.parent().hasClass('inner-node') or $target.hasClass('inner-node') 
-        true 
-      else 
-        false
+      $parent = $target
+      # range 1...20 is needed, if node-content is HTML and its dom is nested up to 20 levels deep
+      for i in [1...20]
+        if $parent.hasClass('inner-node')
+          return true
+        else if $parent.hasClass('controls')
+          return false
+        $parent = $parent.parent()
+      false
 
 
     selectNone:()->
