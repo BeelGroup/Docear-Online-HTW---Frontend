@@ -1,4 +1,4 @@
-define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
+define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeView, RootNode, NodeControlsView) ->
   module = ->
   
   class RootNodeView extends NodeView
@@ -236,6 +236,9 @@ define ['views/NodeView', 'models/RootNode'], (NodeView, RootNode) ->
       @$el.html @template @getRenderData()
       @$el.addClass('root')
 
+      @controls = new NodeControlsView(@model)
+      @controls.renderAndAppendToNode(@)
+      
       @
 
     # USE THIS FUNCTION instead of render

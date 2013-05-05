@@ -22,6 +22,8 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
 
     persistChanges: (object, changes)->
       objectName = object.constructor.name
+      if objectName == 'RootNode' 
+        objectName = 'Node'
       values = {}
       if @persistenceApi.change[objectName] != undefined
         
