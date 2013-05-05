@@ -25,8 +25,11 @@ define ->
       
     saveChanges: (event)->
       $(@$el).find('.node-editor').cleanHtml()
-      @nodeModel.set 'isHTML', true
-      @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
+      
+      newNodeText = $(@$el).find('.node-editor:first').html()
+      if newNodeText isnt @nodeModel.get('nodeText')
+        @nodeModel.set 'isHTML', true
+        @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
       
     renderAndAppendTo:($element)->
       $element.append(@render().el)
