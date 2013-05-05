@@ -53,7 +53,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       for i in [1...20]
         if $parent.hasClass('inner-node')
           return true
-        else if $parent.hasClass('controls')
+        else if $parent.hasClass('controls') or $parent.hasClass('action-fold')
           return false
         $parent = $parent.parent()
       false
