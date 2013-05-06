@@ -31,10 +31,29 @@ define ->
         @nodeModel.set 'isHTML', true
         @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
       
-    renderAndAppendTo:($element)->
-      $element.append(@render().el)
+    # found @ http://stackoverflow.com/questions/985272/jquery-selecting-text-in-an-element-akin-to-highlighting-with-your-mouse/987376#987376
+    selectText: (nodeId)->
+      doc = document
+      text = doc.getElementById(nodeId)
+      range = null
+      selection = null
+      if (doc.body.createTextRange) #ms
+        range = doc.body.createTextRange();
+        range.moveToElementText(text);
+        range.select();
+      else if (window.getSelection) #all others
+        selection = window.getSelection();    
+        range = doc.createRange();
+        range.selectNodeContents(text);
+        console.log range
+        selection.removeAllRanges();
+        selection.addRange(range);
       
+        
+    renderAndAppendTo:($element)->
       obj = $(@render().el)
+      $element.append(obj)
+      
       $(obj).find('.edit-overlay:first').animate({
         opacity: 0.4
       }, document.fadeDuration)
@@ -52,6 +71,8 @@ define ->
       
       $editContainer.html(@$node.children('.inner-node').children('.content').html())
       $editContainer.offset(offset)
+      
+      @selectText(editorId)
       
       if $.browser.msie and $.browser.version < 9
         $toolbar.remove()
