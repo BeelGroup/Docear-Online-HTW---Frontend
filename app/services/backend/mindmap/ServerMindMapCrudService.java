@@ -16,7 +16,8 @@ import models.backend.User;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
-import models.backend.exceptions.UnauthorizedException;
+import models.backend.exceptions.sendResult.PreconditionFailedException;
+import models.backend.exceptions.sendResult.UnauthorizedException;
 
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -356,8 +357,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 						throw new RuntimeException("erverMindMapCrudService.performActionOnMindMap => Second attempt failed. ", e2);
 					}
 				} else if (e instanceof NodeNotLockedByUserException) {
-					// TODO correct handling
-					throw new RuntimeException(e);
+					throw new PreconditionFailedException("No lock on node", e);
+				} else if (e instanceof NodeAlreadyLockedException) {
+					throw new PreconditionFailedException("Node already locked by another user", e);
 				} else {
 					throw new RuntimeException(e);
 				}
@@ -471,7 +473,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 			if (!canAccess) {
 				Logger.warn("User '" + Controller.session(Secured.SESSION_KEY_USERNAME) + "' tried to access a map he/she does not own!");
-				throw new UnauthorizedException("User tried to access not owned map");
+				throw new UnauthorizedException("You are not allowed to access that map!");
 			}
 			return canAccess;
 

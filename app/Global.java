@@ -17,8 +17,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import models.backend.exceptions.UnauthorizedException;
 import models.backend.exceptions.UserNotFoundException;
+import models.backend.exceptions.sendResult.SendResultException;
+import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.frontend.LoggedError;
 
 import org.apache.commons.lang.StringUtils;
@@ -117,8 +118,9 @@ public class Global extends GlobalSettings {
         
         //check if exception needs special handling
         final Throwable realThrowable = throwable.getCause();
-        if(realThrowable instanceof UnauthorizedException) {
-        	return Controller.badRequest("You are not allowed to access that map!");
+        if(realThrowable instanceof SendResultException) {
+        	final SendResultException e = (SendResultException) realThrowable;
+        	return Controller.status(e.getStatusCode(),e.getMessage());
         } else if (realThrowable instanceof UserNotFoundException) {
         	return Controller.unauthorized();
         }

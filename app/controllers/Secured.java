@@ -24,9 +24,7 @@ public class Secured extends Security.Authenticator {
 
 	@Override
 	public String getUsername(Context ctx) {
-		String username = null;
-
-		username = checkForAuthenticationWithQueryString(ctx);
+		String username = checkForAuthenticationWithQueryString(ctx);
 		if (username == null) {
 			username = checkForAuthenticationWithSession(ctx);
 		}
