@@ -35,21 +35,28 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
     handleClick:(event)->
       if @isInnerNode $(event.target)
-        @selectNode() 
-      else if not document.wasDragged  
-        @selectNone()
+        @selectNode(event) 
+      else if not(document.wasDragged or $(event.target).parent().hasClass('controls')) 
+        @selectNone(event)
 
       if $(event.target).hasClass 'action-fold-all'
         @model.set 'folded', not @model.get 'folded' 
 
-    selectNode:()->
+    selectNode:(event)->
+      if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') )
+        @controls.actionEdit(event)
       @model.set 'selected', true
 
     isInnerNode:($target)->
-      if $target.parents().hasClass('inner-node') or $target.hasClass('inner-node') 
-        true 
-      else 
-        false
+      $parent = $target
+      # range 1...20 is needed, if node-content is HTML and its dom is nested up to 20 levels deep
+      for i in [1...20]
+        if $parent.hasClass('inner-node')
+          return true
+        else if $parent.hasClass('controls') or $parent.hasClass('action-fold')
+          return false
+        $parent = $parent.parent()
+      false
 
 
     selectNone:()->
@@ -145,9 +152,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       
       
       postHeight = $node.outerHeight()
-      diffWidth = $node.outerWidth() - preWidth
-      if $($node).hasClass('left')
-        diffWidth = -diffWidth
+      diffWidth = 0
+      if $($node).hasClass('right')
+        diffWidth = ($node.outerWidth() - preWidth)
       
       diff = 0
       if postHeight > childrenHeight
@@ -169,7 +176,15 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       $node.animate {
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
-    
+
+      model = @model
+      
+      # timeout "document.fadeDuration" might not be enough, since other animations maybe need a few millis more
+      setTimeout(->
+        model.getRoot().updateAllConnections()
+      , document.fadeDuration)
+      
+      
      
     foldModel: ->
       @$el.toggleClass('selected')

@@ -79,7 +79,7 @@ public class User extends Controller {
 					if (authenticationSuccessful) {
 						setAuthenticatedSession(credentials, accessToken);
 						Logger.info("User '" + credentials.getUsername() + "' logged in succesfully.");
-						return ok();
+						return ok(accessToken);
 					} else {
 						filledForm.reject("The credentials don't match any user.");
 						Logger.debug(credentials.getUsername() + " is unauthorized");

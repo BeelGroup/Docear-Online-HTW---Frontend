@@ -1,4 +1,4 @@
-define ->
+define ['views/NodeEditView'], (NodeEditView) ->
   module = () ->
 
   class NodeControls extends Backbone.View
@@ -11,33 +11,25 @@ define ->
       "click .action-edit"     : "actionEdit"
       "click .action-new-node" : "actionNewNode"
       "click .action-share"    : "actionShare"
+      "click .action-move"    : "actionMove"
  
     constructor:(@nodeModel, @$node)->
       super()    
 
     actionEdit: (event)->
-      console.log "edit @ "+@nodeView.model.get 'id'
-      # call functions via @nodeView
-      ###
-      $edit = $($controls).children('.action-edit')
-      $($edit).click (event)->
-        $node = $(this).closest('.node')
-        node = model.findById($node.attr('id'))
-        $mindmapCanvas = $(this).closest('.mindmap-canvas')
-        nodeEditView = new NodeEditView(node)
-        nodeEditView.renderAndAppendTo($mindmapCanvas)
-      ###
+      node = @nodeView.model
+      node.set 'selected', true
+      
+      $node = @nodeView.$el
+
+      $mindmapCanvas = $($node).closest('body')
+      
+      nodeEditView = new NodeEditView(node, @nodeView)
+      nodeEditView.renderAndAppendTo($mindmapCanvas)
       
     actionNewNode: (event)->
       console.log "newNode @ "+@nodeView.model.get 'id'
-      # call functions via @nodeView
-      ###
-        $newNode = $($controls).children('.action-new-node')
-        $($newNode).click (event)->
-          currentNodeId = $(this).closest('.node').attr('id')
-          # dummy
-          model.findById(currentNodeId).createAndAddChild()
-      ###
+      @nodeView.model.createAndAddChild()
     
     actionShare: (event)->
       console.log "share @ "+@nodeView.model.get 'id'
@@ -56,6 +48,7 @@ define ->
           editable: ($.inArray('NODE_CONTROLS', document.features) > -1)
           editableText: ($.inArray('EDIT_NODE_TEXT', document.features) > -1)
           foldable: ($.inArray('FOLD_NODE', document.features) > -1)
+          movable: ($.inArray('MOVE_NODE', document.features) > -1)
           isRoot: (@nodeModel.constructor.name == 'RootNode')
       }
       @$el.html @template attrs

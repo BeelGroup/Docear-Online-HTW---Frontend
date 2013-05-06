@@ -25,14 +25,13 @@ define [], ()->
         $("##{rootID}").trigger 'newFoldAction'
 
 
-      @bind 'change',(node, changes)->
+      @bind 'change',(changes)->
         if $.inArray('SERVER_SYNC', document.features) > -1
           attributesToPersist = @get 'attributesToPersist'
           persistenceHandler = @get 'persistenceHandler'
-        
-          $.each changes.changes, (attr, value)->
-            if attr in attributesToPersist
-              persistenceHandler.persistChanges node, changes
+          
+          persistenceHandler.persistChanges @, changes
+          @
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy
@@ -111,5 +110,13 @@ define [], ()->
  
     updateConnection: ()->
       @set 'connectionUpdated', (@get('connectionUpdated')+1)
+    
+    removeCild: (child)->
+      document.log 'removing '+child.get('id')+' from '+@get('id')
+      children = []
+      $.each(@get('children'), (index, node)->
+        if node != child
+          children.push(node)
+      @set 'children', children
       
   module.exports = AbstractNode

@@ -14,7 +14,7 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
   ###
   class MapLoader
 
-  	constructor:(@data)->
+  	constructor:(@data, @mapId)->
       @nodeFactory = new NodeFactory()
       @rootNodeWasPassed = false
       @stillDataToLoad = true
@@ -40,7 +40,7 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
      
     # load root data with some childs
     firstLoad:->
-      @rootNode = @nodeFactory.createRootNodeByData(@data, null)
+      @rootNode = @nodeFactory.createRootNodeByData(@data, null, @mapId)
       @rootNodeWasPassed = true
       @rootNode
 

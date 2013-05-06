@@ -83,9 +83,10 @@ public class ServerUserService extends UserService {
 			return valid;
 		
 		/**
-		 * TODO get a route from Stefan to validate if user is valid
+		 * TODO use route that is for user validation 
 		 * At the moment the method tries to get a not existent map from docear server
 		 * Every code instead of 401 means that the user exists.
+		 * Ticket: https://sourceforge.net/apps/trac/docear/ticket/830
 		 */
 		final String docearServerAPIURL = "https://api.docear.org/user";
 		final String url = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/-1";

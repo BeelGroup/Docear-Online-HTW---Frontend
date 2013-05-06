@@ -43,7 +43,7 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       $('#current-mindmap-name').text(data.name)
       #document.rootID = data.root.id
       
-      mapLoader = new MapLoader(data);
+      mapLoader = new MapLoader(data, @mapId);
 
       @rootView = new RootNodeView mapLoader.firstLoad()
       mapLoader.injectRootView @rootView
