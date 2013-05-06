@@ -56,13 +56,10 @@ define ->
       if $.browser.msie and $.browser.version < 9
         $toolbar.remove()
       else
-        $toolbar.offset(offset)
+        toolbarX = offset.left+($editContainer.outerWidth() + 20)
+        toolbarY = offset.top-(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
+        $toolbar.offset({left: toolbarX, top: toolbarY})
         $toolbar.draggable({ handle: ".handle" });
-        $toolbar.animate({
-          left: '+='+($editContainer.outerWidth() + 20) #a little distance away from node
-          top: '-='+(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
-        })
-      
       @
       
 
