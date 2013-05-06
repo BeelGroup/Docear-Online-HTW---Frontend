@@ -8,7 +8,7 @@ define ->
 
     events:
       'mousedown': (event)-> document.wasDragged = false
-      'mouseup': (event)-> if not document.wasDragged then @rootView.model.selectNone()
+      # 'mouseup': if not document.wasDragged then @rootView.model.selectNone()
 
     constructor:(@id)->
       super()
@@ -34,7 +34,7 @@ define ->
           if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
             if event.keyCode == 27
               @center(true)
-            else
+            else if !$('.node-editor:first').is(':visible')
               @rootView.userKeyInput event
 
        $(document).keyup (event)=>

@@ -3,6 +3,8 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
 
   class NodeFactory
 
+    persistenceHandlers = []
+  
     ###
       todo:
         remember nodes with childs, which still need to be rendered
@@ -12,8 +14,8 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
         should be used in a loader class
     ###
 
-    createRootNodeByData:(data, containerID)->
-
+    createRootNodeByData:(data, containerID, mapId)->
+    
       rootNode = new RootNode()
       rootNode.set 'containerID', containerID
       rootNode.set 'leftChildren', []
@@ -21,6 +23,9 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       rootNode.set 'mapId', data.id
       rootNode.set 'folded', false
 
+      if persistenceHandlers[data.id] == undefined
+        persistenceHandlers[data.id] = new PersistenceHandler(mapId)
+      
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
 
@@ -67,8 +72,8 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       node.set 'lastAddedChild', 'undefined'
       node.set 'connectionUpdated', 0
 
-      node.set 'persistenceHandler', (new PersistenceHandler())
-      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
+      node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
+      node.set 'attributesToPersist', ['nodeText', 'isHTML', 'locked']
 
       node.setEdgestyle(data.edgeStyle)
 

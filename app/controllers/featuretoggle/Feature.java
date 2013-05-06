@@ -31,6 +31,7 @@ public enum Feature {
     EDIT_NODE_TEXT("enables the user to click on a node and change the text in it"),
     NODE_CONTROLS("enables node controls to edit/add/delete nodes "),
     FOLD_NODE("enables to fold/unfold nodes "),
+    MOVE_NODE("enables to move nodes into an other node or to anouter position"),
     FEEDBACK("enables a feedback dialog for the user"),
     USER_PROFILE("enables the user profile"),
     SERVER_SYNC("synchronizes all changes in the frontend with the backend");

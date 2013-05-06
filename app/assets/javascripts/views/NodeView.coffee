@@ -13,11 +13,11 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
       super()
 
 
-    recursiveRender: (parentView, parent, nodes)->
+    recursiveRender: (parentView, parent, nodes, @rootView)->
       if not document.cancel_loading
         $.each nodes, (index, node)=>
           nodeView = new NodeView(node)
-          nodeView.renderAndAppendTo(parent)
+          nodeView.renderAndAppendTo(parent, rootView)
         
 
     changeChildren: ->
@@ -134,13 +134,23 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
 
 
-    renderAndAppendTo:($element)->
+    renderAndAppendTo:($element, rootView)->
       @render()
+      
+      if @controls.movable
+        $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });
+        $(@$el).find('.inner-node:first').droppable({
+          accept: '.node',
+          hoverClass: 'droppable-hover'
+          drop: ( event, ui )->
+            newParentId = $( this ).closest('.node').attr('id')
+        })
+      
       $element.append(@$el)
       @alignButtons()
       children = @model.get 'children'
       if children isnt undefined and children.length > 0
-        @recursiveRender(@, @$el.find('.children:first'), children)
+        @recursiveRender(@, @$el.find('.children:first'), children, rootView)
       else
         @$el.find('.action-fold').hide()
 
