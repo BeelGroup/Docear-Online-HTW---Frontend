@@ -45,7 +45,6 @@ define ->
         selection = window.getSelection();    
         range = doc.createRange();
         range.selectNodeContents(text);
-        console.log range
         selection.removeAllRanges();
         selection.addRange(range);
       
