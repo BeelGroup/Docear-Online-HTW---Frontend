@@ -2,6 +2,7 @@ package services.backend.project;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import models.backend.exceptions.sendResult.SendResultException;
-import models.project.Project;
 import models.project.ProjectEntry;
 import models.project.ProjectFile;
 import models.project.ProjectFolder;
@@ -184,10 +184,26 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<String> getUpdatesSince(Long projectId, Integer sinceRevision) {
+	public Promise<String> versionDelta(Long projectId, String cursor) {
+		final int sinceRevision = Integer.parseInt(cursor);
 		try {
-			final File projectRoot = new File(Play.application().resource("rest/v1/project/" + projectId).toURI());
-			return Promise.pure(Project.getUpdatesSinceJson(projectRoot, sinceRevision));
+			final File updatesFolder = new File(Play.application().resource("rest/v1/project/" + projectId + "/_projectmetadata/updates").toURI());
+			final File[] updateFiles = updatesFolder.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File arg0, String name) {
+					final int revisionNumber = Integer.parseInt(name);
+					return revisionNumber > sinceRevision;
+				}
+			});
+			final ObjectMapper mapper = new ObjectMapper();
+			final List<JsonNode> updates = new ArrayList<JsonNode>();
+			for (File updateFile : updateFiles) {
+
+				updates.add(mapper.readTree(updateFile));
+
+			}
+
+			return Promise.pure(mapper.writeValueAsString(updates));
 
 		} catch (Exception e) {
 			throw new RuntimeException(e);

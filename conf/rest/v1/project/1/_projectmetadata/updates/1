@@ -1,11 +1,14 @@
-{
-  "type":"AddEntry",
-  "username":"user",
-  "source":"PC",
-  "parentFolder":"/mindmaps",
-  "newEntry":{
-    "name":"5.mm",
-    "type":"File",
-    "path":"/mindmaps/5.mm"
-  }
+[
+ "/mindmaps/5.mm",
+ {
+    "path": "/mindmaps/5.mm",
+    "size": "8495 bytes",
+    "bytes": 8495,
+    "modified": "2013-04-30T15:26:01.929+02:00",
+    "is_dir": false,
+    "icon": "",
+    "projectId": "1",
+    "rev": "ef314d",
+    "mime_type": "text/plain"
 }
+]

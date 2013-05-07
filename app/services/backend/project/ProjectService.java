@@ -16,5 +16,5 @@ public interface ProjectService {
 	Promise<JsonNode> putFile(Long projectId, String path, byte[] content);
 	
 	Promise<Boolean> listenIfUpdateOccurs(Long projectId);
-	Promise<String> getUpdatesSince(Long projectId, Integer sinceRevision);
+	Promise<String> versionDelta(Long projectId, String cursor);
 }

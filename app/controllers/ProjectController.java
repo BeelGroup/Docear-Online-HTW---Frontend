@@ -3,6 +3,7 @@ package controllers;
 import java.io.InputStream;
 
 import models.project.formdatas.CreateFolderData;
+import models.project.formdatas.ProjectDeltaData;
 
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import services.backend.project.ProjectService;
 @Component
 public class ProjectController extends Controller {
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
+	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
 
 	@Autowired
 	private ProjectService projectService;
@@ -81,14 +83,23 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result getUpdatesSince(Long projectId, Integer revision) {
-		return async(projectService.getUpdatesSince(projectId, revision).map(new Function<String, Result>() {
+	public Result projectVersionDelta() {
+		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
 
-			@Override
-			public Result apply(String updates) throws Throwable {
-				return ok(updates);
-			}
-		}));
+		if (filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final ProjectDeltaData data = filledForm.get();
+			return async(projectService.versionDelta(data.getProjectId(), data.getCursor()).map(new Function<String, Result>() {
+
+				@Override
+				public Result apply(String updates) throws Throwable {
+					return ok(updates);
+				}
+			}));
+		}
+		
+		
 	}
 
 }
