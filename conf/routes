@@ -30,12 +30,15 @@ GET		/map/:mapId/listen				@controllers.MindMap.listenForUpdates(mapId: String)
 GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
 
 # Projects
-GET		/project/:projectId/list					@controllers.ProjectController.listProject(projectId: Long)
-GET		/project/:projectId/folder/*path			@controllers.ProjectController.listFolder(projectId: Long, path: String)
-GET		/project/:projectId/file/*path				@controllers.ProjectController.getFile(projectId: Long, path: String)
-
 GET		/project/:projectId/listen					@controllers.ProjectController.listenForUpdates(projectId: Long)
 GET		/project/:projectId/updates/:revision		@controllers.ProjectController.getUpdatesSince(projectId: Long, revision: Integer)
+
+## Project files
+GET		/1/files/:projectId/*path					@controllers.ProjectController.getFile(projectId: Long, path: String)
+PUT		/1/files_put/:projectId/*path				@controllers.ProjectController.putFile(projectId: Long, path: String)
+POST	/1/fileops/create_folder					@controllers.ProjectController.createFolder()
+GET		/1/metadata/:projectId/*path				@controllers.ProjectController.metadata(projectId: Long, path: String)
+GET		/1/metadata/:projectId						@controllers.ProjectController.metadata(projectId: Long, path = "")
 
 
 # User
@@ -53,3 +56,7 @@ GET     /assets/webjars/*file       controllers.WebJarAssets.at(file)
 GET     /assets/javascripts/routes.js controllers.Application.javascriptRoutes()
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+
+# untrailing
+GET		/*path/			controllers.Application.untrail(path: String)
