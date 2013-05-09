@@ -9,6 +9,7 @@ import java.util.List;
 
 import models.backend.User;
 import models.backend.UserMindmapInfo;
+import models.backend.exceptions.sendResult.SendResultException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.context.annotation.Profile;
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.libs.F;
+import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.libs.WS.Response;
+import play.mvc.Controller;
 import controllers.Session;
 
 @Profile("DocearWebserviceUserService")
@@ -51,52 +54,59 @@ public class ServerUserService extends UserService {
 
 		String docearServerAPIURL = "https://api.docear.org/user";
 		final Promise<WS.Response> mindmapInfoPromise = WS.url(docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/").setHeader("accessToken", user.getAccessToken()).get();
-		WS.Response response = mindmapInfoPromise.get();
+		try {
+			final Response response = mindmapInfoPromise.get();
+			Logger.debug("ServerUserService.getListOfMindMapsFromUser => response received");
+			BufferedReader br = new BufferedReader(new StringReader(response.getBody().toString()));
+			List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
+			for (String line; (line = br.readLine()) != null;) {
+				String[] strings = line.split("\\|#\\|");
+				final String mmIdOnServer = strings[0];
+				final String mmIdInternal = strings[1];
+				final String revision = strings[2];
+				final String filePath = strings[3];
+				final String fileName = strings[4];
 
-		Logger.debug("ServerUserService.getListOfMindMapsFromUser => response received");
-		BufferedReader br = new BufferedReader(new StringReader(response.getBody().toString()));
-		List<UserMindmapInfo> infos = new LinkedList<UserMindmapInfo>();
-		for (String line; (line = br.readLine()) != null;) {
-			String[] strings = line.split("\\|#\\|");
-			final String mmIdOnServer = strings[0];
-			final String mmIdInternal = strings[1];
-			final String revision = strings[2];
-			final String filePath = strings[3];
-			final String fileName = strings[4];
+				UserMindmapInfo info = new UserMindmapInfo(mmIdOnServer, mmIdInternal, revision, filePath, fileName);
+				infos.add(info);
+			}
 
-			UserMindmapInfo info = new UserMindmapInfo(mmIdOnServer, mmIdInternal, revision, filePath, fileName);
-			infos.add(info);
+			return Promise.pure(Arrays.asList(infos.toArray(new UserMindmapInfo[0])));
+		} catch (Exception e) {
+			throw new SendResultException("Docear server not reachable", Controller.SERVICE_UNAVAILABLE, e);
 		}
-		return Promise.pure(Arrays.asList(infos.toArray(new UserMindmapInfo[0])));
 	}
-	
+
 	@Override
 	public Promise<List<Long>> getListOfProjectIdsFromUser(User user) {
 		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/305");
 	}
-	
+
 	@Override
 	public Boolean isValid(User user) {
-		//check if cache has info
+		// check if cache has info
 		Boolean valid = Session.isValid(user);
-		if(valid != null)
+		if (valid != null)
 			return valid;
-		
+
 		/**
-		 * TODO use route that is for user validation 
-		 * At the moment the method tries to get a not existent map from docear server
-		 * Every code instead of 401 means that the user exists.
-		 * Ticket: https://sourceforge.net/apps/trac/docear/ticket/830
+		 * TODO use route that is for user validation At the moment the method
+		 * tries to get a not existent map from docear server Every code instead
+		 * of 401 means that the user exists. Ticket:
+		 * https://sourceforge.net/apps/trac/docear/ticket/830
 		 */
 		final String docearServerAPIURL = "https://api.docear.org/user";
 		final String url = docearServerAPIURL + "/" + user.getUsername() + "/mindmaps/-1";
 		final Promise<WS.Response> mindmapInfoPromise = WS.url(url).setHeader("accessToken", user.getAccessToken()).get();
-		WS.Response response = mindmapInfoPromise.get();
-		
-		final int status = response.getStatus();
-		valid = (status != 401);
-		Session.setValid(user, valid);
-		return valid;
-	}
+		try {
+			final Response response = mindmapInfoPromise.get();
 
+			final int status = response.getStatus();
+			valid = (status != 401);
+			Session.setValid(user, valid);
+			return valid;
+		} catch (Exception e) {
+			throw new SendResultException("Docear server not reachable", Controller.SERVICE_UNAVAILABLE, e);
+		}
+	}
 }

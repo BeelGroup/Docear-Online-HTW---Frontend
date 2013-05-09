@@ -1,4 +1,4 @@
-package models.backend;
+package models.project;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -25,7 +25,6 @@ public class Project {
 		final File metaFolder = getFileFromFolder(projectFolder, "_projectmetadata");
 		final File configFile = getFileFromFolder(metaFolder, "config.json");
 		final File updatesFolder = getFileFromFolder(metaFolder, "updates");
-		final File filesFolder = getFileFromFolder(projectFolder, "files");
 
 		JsonNode config;
 		try {
@@ -36,7 +35,7 @@ public class Project {
 
 		this.name = config.get("name").asText();
 		this.revision = (long) updatesFolder.list().length;
-		root = new ProjectFolder(name, "", filesFolder);
+		root = null;//new ProjectFolder(name, "", filesFolder);
 	}
 
 	public Long getId() {

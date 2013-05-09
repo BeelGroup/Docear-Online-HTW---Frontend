@@ -175,6 +175,9 @@ public class Application extends Controller {
         return result;
     }
 
+	public static Result untrail(String path) {
+		return movedPermanently("/"+path);
+	}
     private static boolean isRequestForJson(LoggedError loggedError) {
         boolean isJson = false;
         boolean found = false;

@@ -1,6 +1,6 @@
 package models.project.updates;
 
-import models.backend.ProjectEntry;
+import models.project.ProjectEntry;
 
 public class AddEntryUpdate extends ProjectUpdate {
 	private final String parentFolder;
