@@ -6,7 +6,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     constructor: (mapId)->
       super()
       @mapId = mapId
-      console.log mapId
+      #console.log mapId
       
       @persistenceApi = {
         'change': {

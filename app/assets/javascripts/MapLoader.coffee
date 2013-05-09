@@ -18,26 +18,11 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
       @nodeFactory = new NodeFactory()
       @rootNodeWasPassed = false
       @stillDataToLoad = true
-
-      # debugging
-      @testcalls = -1
+      @rendering = off
+      @removeFromList = Array()
 
     injectRootView:(@rootView)->
 
-    continueLoading:->
-      if @stillDataToLoad
-        window.setTimeout @loadStep, 400
-
-        
-    loadStep:=>
-      @loadMore()
-      # should work ... but doesnt
-      @rootView.refreshDom()
-      @rootView.connectChildren()
-      document.log @rootView, 'console'
-      @continueLoading()
-      
-     
     # load root data with some childs
     firstLoad:->
       @rootNode = @nodeFactory.createRootNodeByData(@data, null, @mapId)
@@ -45,54 +30,71 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
       @rootNode
 
 
+    continueLoading:->
+      if Object.keys(@rootNode.getUnfinishedNodes()).length > 0
+        window.setTimeout @loadMore, 400
+      else
+        @rootNode.trigger 'finishedLoading' 
+
+          
     # load / render / append next nodes
-    loadMore:->
-      for node in @rootNode.getNodeList() 
-        if typeof (renderUs = node.get 'childsToLoad') isnt 'undefined'
-          for renderMe in renderUs  
-            @appendNodesToParent renderMe, node
-          node.set 'childsToLoad', 'undefined'
+    loadMore:=>
+      items = @rootNode.getUnfinishedNodes()
+      ids = Object.keys(items);
+      for id in ids
+        if id isnt undefined and id isnt 'undefined'
+          @getDataByID id, items[id]
+
+      @rootView.refreshDom()
+      @rootView.connectChildren()
 
 
-    appendNodesToParent:(id, parentNode)->
-      #debugging
-      if id is 'ID_1616796999' or id is 'ID_1891755637' or id is 'ID_452528799' or id is 'ID_1279466317'
-        data = @getDataByID id
-        nodesToAppend = @nodeFactory.getRecursiveChildren data, parentNode, @rootNode
+      @continueLoading()
+
+
+    appendNodesToParent:(data, parentNode)=>
+      #console.log data
+      if data isnt null
+        newNode = @nodeFactory.createNodeByData data, parentNode, @rootNode 
+        childs = @nodeFactory.createChildrenRecursive data.children, newNode, @rootNode
         # add children to list of childerns
-        parentNode.set 'children', (parentNode.get 'children').concat nodesToAppend
+        parentNode.set 'children', (parentNode.get 'children').concat newNode
+        newNode.set 'children', childs
         # append to dom
-        @rootView.recursiveRender $('#'+parentNode.get 'id').find('.children:first'), nodesToAppend
-        document.log nodesToAppend, 'console'
-
-
-    getDataByID:(id)->
-      @testcalls++
-      # DEBUGGING
-      # ID_1616796999.children
-      if @testcalls is 0
-        data0 = [{"id":"ID_1616796999","nodeText":"You can add images to a node","isHtml":false,"folded":false,"icons":[],"children":[],"hGap":0,"shiftY":0}]
-      # ID_1891755637.children
-      else if @testcalls is 1
-        data1 = [{"id":"ID_1891755637","nodeText":"They can be in any standard format","isHtml":false,"folded":false,"icons":[],"children":[{"id":"ID_871612900","nodeText":"JPEG","isHtml":false,"folded":false,"icons":[],"children":[],"hGap":0,"shiftY":0},{"id":"ID_1546013773","nodeText":"GIF","isHtml":false,"folded":false,"icons":[],"children":[],"hGap":0,"shiftY":0},{"id":"ID_1792512538","nodeText":"PNG","isHtml":false,"folded":false,"icons":[],"children":[],"hGap":0,"shiftY":0}],"hGap":0,"shiftY":0}]
-      else if @testcalls is 2
-      # ID_452528799.children
-        data2 = [{"id":"ID_452528799","nodeText":"Just copy and paste or drag&drop an image to the mind map","isHtml":false,"folded":false,"icons":[],"children":[],"hGap":0,"shiftY":0}]
-      # ID_1279466317.children
-      else if @testcalls is 3
-        @stillDataToLoad = false
-        data3 = [{"id":"ID_1279466317","nodeText":"Example","isHtml":false,"folded":false,"icons":[],"children":[{"id":"ID_1178635212","nodeText":"Docear Logo","isHtml":false,"folded":false,"icons":[],"children":[],"hGap":0,"shiftY":0}],"hGap":0,"shiftY":0}]
-
-
-      ###
-       jsRoutes.controllers.MindMap.mapAsJson(mapId).url
-        /map/mapId/json?-1 
-
-      ###
+        @rootView.recursiveRender $('#'+parentNode.get 'id').find('.children:first'), {newNode}
+        # nodes were loaded, remove index from "still to load list"
+        delete @rootNode.getUnfinishedNodes()[data.id]
+        #console.log Object.keys(@rootNode.getUnfinishedNodes()).length 
 
 
 
+    getDataByID:(nodeId, myparent)->
+      href = jsRoutes.controllers.MindMap.getNode(@mapId, nodeId, 1).url
+      console.log href
+      request = $.ajax(
+        invokedata: {
+          maploader: @
+          myparent: myparent
+        }
+        url: href
+        type: 'GET',
+        async: true,
+        dataType: "json"
+        cache: false,
+        timeout: 30000,
+        fail: ->
+          document.log "error on loading childs. Textstatus:"+textStatus
+        ,
+        success: (data)-> @invokedata.maploader.appendNodesToParent(data, @invokedata.myparent)
+      )
 
+      if request.status is 200
+        request.responseText
+      else 
+        null
 
-
+    ### 
+      appendNodesToParent called by getDataById (when ajax request was successfull)
+      appentNodeToParent calls continueLOading. when nodes were added
+    ###
   module.exports = MapLoader      

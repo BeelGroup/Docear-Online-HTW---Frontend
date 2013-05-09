@@ -5,6 +5,7 @@ define ['models/AbstractNode'],  (AbstractNode) ->
     constructor:->
       super()
       @allNodes = new Array()
+      @unfinishedNodes = {}
       @sup = RootNode.__super__
 
     addNodeToList:(node)->
@@ -12,6 +13,13 @@ define ['models/AbstractNode'],  (AbstractNode) ->
 
     getNodeList:->
       @allNodes
+
+    addNodetoUnfinishedList:(id, parentNode)->
+      console.log parentNode
+      @unfinishedNodes[id] = parentNode
+
+    getUnfinishedNodes:->
+      @unfinishedNodes
 
     activateListeners:->
       # will be catched in canvasView

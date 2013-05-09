@@ -13,7 +13,6 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
     ###
 
     createRootNodeByData:(data, containerID)->
-
       rootNode = new RootNode()
       rootNode.set 'containerID', containerID
       rootNode.set 'leftChildren', []
@@ -25,24 +24,27 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       rootNode.activateListeners()
 
       if data.root.leftChildren isnt undefined
-        leftNodes = @getRecursiveChildren(data.root.leftChildren, rootNode, rootNode)
+        leftNodes = @createChildrenRecursive(data.root.leftChildren, rootNode, rootNode)
         rootNode.set 'leftChildren', leftNodes
       
       if data.root.rightChildren isnt undefined
-        rightNodes = @getRecursiveChildren(data.root.rightChildren, rootNode, rootNode)
+        rightNodes = @createChildrenRecursive(data.root.rightChildren, rootNode, rootNode)
         rootNode.set 'rightChildren', rightNodes
 
       rootNode
 
 
-    createNodeByData:(data, rootNode, parent)->
-
+    createNodeByData:(data, parent, rootNode)->
+      #console.log parent
       node = new Node()
       node.set 'children', []
       node.set 'parent', parent
-      node.set 'folded', data.folded
+      node.set 'folded', false
       if data.childrenIds isnt undefined 
         node.set 'childsToLoad', data.childrenIds
+        for id in data.childrenIds
+          rootNode.addNodetoUnfinishedList(id, node)
+
       rootNode.addNodeToList node
 
       @setDefaults(node, rootNode, data)
@@ -52,7 +54,6 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
 
 
     setDefaults:(node, rootNode, data)->
-
       node.set 'id', data.id
       node.set 'nodeText', data.nodeText
       node.set 'isHTML', data.isHtml
@@ -76,16 +77,13 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       node.setEdgestyle(data.edgeStyle)
 
 
-    getRecursiveChildren:(childrenData, parent, root)->
-
+    createChildrenRecursive:(childrenData, parent, root)->
       children = []
-      if childrenData isnt undefined and childrenData.id isnt undefined
-        newChild = @createNodeByData(childrenData, root, parent)
-        children.push newChild
-      else if childrenData isnt undefined
+      if childrenData != undefined
         for child in childrenData
-          newChild = @createNodeByData(child, root, parent)
-          newChild.set 'children', @getRecursiveChildren(child.children, newChild, root)
+          newChild = @createNodeByData(child, parent, root)
+          if child.children != undefined
+            newChild.set 'children', @createChildrenRecursive(child.children, newChild, root)
           children.push newChild
       children
 
