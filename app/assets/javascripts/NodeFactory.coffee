@@ -35,7 +35,6 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
 
 
     createNodeByData:(data, parent, rootNode)->
-      #console.log parent
       node = new Node()
       node.set 'children', []
       node.set 'parent', parent

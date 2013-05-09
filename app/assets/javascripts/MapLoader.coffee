@@ -32,25 +32,34 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
 
     continueLoading:->
       if Object.keys(@rootNode.getUnfinishedNodes()).length > 0
-        window.setTimeout @loadMore, 400
+        window.setTimeout @loadMore, 40
       else
+        @rootView.refreshDom()
+        @rootView.connectChildren()
         @rootNode.trigger 'finishedLoading' 
 
           
     # load / render / append next nodes
     loadMore:=>
       items = @rootNode.getUnfinishedNodes()
-      ids = Object.keys(items);
-      for id in ids
-        if id isnt undefined and id isnt 'undefined'
-          @getDataByID id, items[id]
+      ids = Object.keys(items)
+
+      @loadStep ids, items, 0
 
       @rootView.refreshDom()
       @rootView.connectChildren()
 
 
-      @continueLoading()
-
+    loadStep:(ids, items, index)=>
+      if index < ids.length
+        id = ids[index]
+        if id isnt undefined and id isnt 'undefined'
+          @getDataByID id, items[id]
+          @rootView.refreshDom()
+          @rootView.connectChildren()
+        window.setTimeout @loadStep, 100, ids, items, ++index
+      else
+        @continueLoading()
 
     appendNodesToParent:(data, parentNode)=>
       #console.log data
@@ -68,9 +77,8 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
 
 
 
-    getDataByID:(nodeId, myparent)->
-      href = jsRoutes.controllers.MindMap.getNode(@mapId, nodeId, 1).url
-      console.log href
+    getDataByID:(nodeId, myparent)=>
+      href = jsRoutes.controllers.MindMap.getNode(@mapId, nodeId, 100).url
       request = $.ajax(
         invokedata: {
           maploader: @

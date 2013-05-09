@@ -15,7 +15,6 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       @allNodes
 
     addNodetoUnfinishedList:(id, parentNode)->
-      console.log parentNode
       @unfinishedNodes[id] = parentNode
 
     getUnfinishedNodes:->

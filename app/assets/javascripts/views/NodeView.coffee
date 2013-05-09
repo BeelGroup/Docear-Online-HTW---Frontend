@@ -14,7 +14,6 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
 
     recursiveRender: (parent, nodes)->
-      console.log nodes
       if not document.cancel_loading
         $.each nodes, (index, node)=>
           nodeView = new NodeView(node)
