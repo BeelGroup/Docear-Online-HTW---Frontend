@@ -15,4 +15,9 @@ public class Wait {
 		WebDriverWait wait = new WebDriverWait(driver, seconds);
 		wait.until(ExpectedConditions.presenceOfElementLocated(condition));
 	}
+	
+	public static void wait(WebDriver driver, int seconds){
+		WebDriverWait wait = new WebDriverWait(driver, seconds);
+		wait.withMessage("Waiting....");
+	}
 }
