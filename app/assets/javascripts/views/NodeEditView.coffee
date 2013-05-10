@@ -21,6 +21,7 @@ define ->
       
       $(@$el).fadeOut(document.fadeDuration, ->
         $(this).remove()
+        $('.editor-toolbar a.btn').addClass('disabled')
       )
       
     saveChanges: (event)->
@@ -54,7 +55,7 @@ define ->
       $element.append(obj)
       
       $(obj).find('.edit-overlay:first').animate({
-        opacity: 0.4
+        opacity: 0.0
       }, document.fadeDuration)
       
       $editContainer = $(obj).find('.node-editor:first')
@@ -63,7 +64,10 @@ define ->
       $editContainer.attr('id', editorId)
       $($editContainer).wysiwyg()
 
-      $toolbar = $(obj).find('.editor-toolbar:first')
+      $toolbar = $(obj).find('.editor-toolbar')
+      $('.editor-toolbar a.btn').removeClass('disabled')
+      
+      $toolbarIndoc = $(obj).find('.editor-toolbar-indoc')
       $toolbar.attr('data-target', '#'+editorId)
         
       offset = @$node.offset()
@@ -74,12 +78,12 @@ define ->
       @selectText(editorId)
       
       if $.browser.msie and $.browser.version < 9
-        $toolbar.remove()
+        $toolbarIndoc.remove()
       else
-        toolbarX = offset.left+($editContainer.outerWidth() + 20)
-        toolbarY = offset.top-(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
+        toolbarX = offset.left
+        toolbarY = offset.top+($editContainer.outerHeight())
         $toolbar.offset({left: toolbarX, top: toolbarY})
-        $toolbar.draggable({ handle: ".handle" });
+        $toolbarIndoc.draggable({ handle: ".handle" });
       @
       
 

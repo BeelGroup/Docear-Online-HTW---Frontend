@@ -1,4 +1,4 @@
-require ['NodeFactory','feedbackForm', 'logger', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features'],  (NodeFactory, FeedbackForm, Logger, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features) -> 
+require ['NodeFactory','feedbackForm', 'logger', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features', 'ribbons'],  (NodeFactory, FeedbackForm, Logger, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features, ribbons) -> 
 
   # load user maps for dropdown menu
   loadUserMaps = ->
@@ -7,7 +7,7 @@ require ['NodeFactory','feedbackForm', 'logger', 'views/MapView','routers/Docear
         url: jsRoutes.controllers.User.mapListFromDB().url,
         dataType: 'json',
         success: (data)->
-          $selectMinmap = $('#select-mindmap')
+          $selectMinmap = $('.select-mindmap')
           
           mapLatestRevision = {}
           if data.length> 0
@@ -43,3 +43,6 @@ require ['NodeFactory','feedbackForm', 'logger', 'views/MapView','routers/Docear
         mapView.loadMap("welcome")
 
   initialLoad()
+  
+  if($.inArray('RIBBONS', document.features) > -1)
+    initRibbons()

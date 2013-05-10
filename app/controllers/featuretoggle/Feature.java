@@ -34,7 +34,11 @@ public enum Feature {
     MOVE_NODE("enables to move nodes into an other node or to anouter position"),
     FEEDBACK("enables a feedback dialog for the user"),
     USER_PROFILE("enables the user profile"),
-    SERVER_SYNC("synchronizes all changes in the frontend with the backend");
+    SERVER_SYNC("synchronizes all changes in the frontend with the backend"),
+    RIBBONS("display ribbons on top of page"),
+    RIBBON_HOME("display home ribbon"),
+    RIBBON_EDIT("display edit ribbon"),
+    RIBBON_WORKSPACE("display workspace ribbon");
 
     String description;
     boolean isEnabled = false;

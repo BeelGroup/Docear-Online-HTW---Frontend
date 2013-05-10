@@ -1,0 +1,142 @@
+@menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
+    @if(onlyIf) {
+        <li @if(relativeUrl == request.uri ) {class="active"}>
+          @if(relativeUrl != null) {
+            <a href="@relativeUrl" @if(linkId != "" ){id="@linkId"} class="@linkClass">
+          }else{
+            <div class="@linkClass" @if(linkId != "" ){id="@linkId"}>
+          }
+                @if(glyphicon != "") {<i class="@glyphicon icon-white"></i>}
+                @label
+          @if(relativeUrl != null) {
+            </a>
+          }else{
+            </div>
+          }
+        </li>
+    }
+}
+@implicitSession = @{session} @* makes isAuthenticated, @username and @usernameOption possible *@
+
+@if(controllers.featuretoggle.Feature.RIBBONS.isEnabled()) {
+
+        <div id="ribbons">
+            <div class="nav navbar nav-tabs">
+	            <ul class="nav nav-tabs pull-left ribbon-tabs">
+	                <li class="ribbon-logo">
+	                  <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
+	                </li>
+	                @if(controllers.featuretoggle.Feature.RIBBON_HOME.isEnabled()) {
+	                <li class="active tab">
+	                  <a href="#ribbon-home">Home</a>
+	                </li>
+	                }
+	                @if(controllers.featuretoggle.Feature.RIBBON_EDIT.isEnabled()) {
+	                <li class="active tab">
+	                  <a href="#ribbon-edit">Edit</a>
+	                </li>
+	                }
+	                @if(controllers.featuretoggle.Feature.RIBBON_WORKSPACE.isEnabled()) {
+	                <li class="active tab">
+	                  <a href="#ribbon-workspace">Workspace</a>
+	                </li>
+	                }
+	            </ul>
+	            
+                <ul class="nav pull-right">
+                    @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
+                    @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
+                        @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
+                    }
+                    @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
+                </ul>
+            </div>
+	    </div>
+            
+            @if(controllers.featuretoggle.Feature.RIBBON_HOME.isEnabled()) {
+            <div id="ribbon-home" class="ribbon">
+                <div class="dropdown">
+		            <a data-toggle="dropdown" class="btn dropdown-toggle toggle-mindmap-select" href="#">Select MindMap <b class="caret"></b></a>
+		            <ul class="dropdown-menu select-mindmap" data-no-collapse="true">
+	               </ul>
+	            </div>
+            </div>
+            }
+            @if(controllers.featuretoggle.Feature.RIBBON_EDIT.isEnabled()) {
+            <div id="ribbon-edit" data-target="#editor" data-role="editor-toolbar" class="ribbon editor-toolbar">
+                <div class="ribbon-group">
+                  <div class="btn-group">
+                      <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font"><i class="icon-font"></i><b class="caret"></b></a>
+                         <ul class="dropdown-menu">
+                             <li><a style="font-family:'Serif'" data-edit="fontName Serif">Serif</a></li>
+                             <li><a style="font-family:'Sans'" data-edit="fontName Sans">Sans</a></li>
+                             <li><a style="font-family:'Arial'" data-edit="fontName Arial">Arial</a></li>
+                             <li><a style="font-family:'Arial Black'" data-edit="fontName Arial Black">Arial Black</a></li>
+                             <li><a style="font-family:'Courier'" data-edit="fontName Courier">Courier</a></li>
+                             <li><a style="font-family:'Courier New'" data-edit="fontName Courier New">Courier New</a></li>
+                             <li><a style="font-family:'Comic Sans MS'" data-edit="fontName Comic Sans MS">Comic Sans MS</a></li>
+                             <li><a style="font-family:'Helvetica'" data-edit="fontName Helvetica">Helvetica</a></li>
+                             <li><a style="font-family:'Impact'" data-edit="fontName Impact">Impact</a></li>
+                             <li><a style="font-family:'Lucida Grande'" data-edit="fontName Lucida Grande">Lucida Grande</a></li>
+                             <li><a style="font-family:'Lucida Sans'" data-edit="fontName Lucida Sans">Lucida Sans</a></li>
+                             <li><a style="font-family:'Tahoma'" data-edit="fontName Tahoma">Tahoma</a></li>
+                             <li><a style="font-family:'Times'" data-edit="fontName Times">Times</a></li>
+                             <li><a style="font-family:'Times New Roman'" data-edit="fontName Times New Roman">Times New Roman</a></li>
+                             <li><a style="font-family:'Verdana'" data-edit="fontName Verdana">Verdana</a></li>
+                         </ul>
+                  </div>
+                                
+                  <div class="btn-group">
+                    <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font Size"><i class="icon-text-height"></i>&nbsp;<b class="caret"></b></a>
+                      <ul class="dropdown-menu">
+                      <li><a data-edit="fontSize 5"><font size="5">Huge</font></a></li>
+                      <li><a data-edit="fontSize 3"><font size="3">Normal</font></a></li>
+                      <li><a data-edit="fontSize 1"><font size="1">Small</font></a></li>
+                      </ul>
+                  </div>
+                  <div class="btn-group">
+                    <a title="" data-edit="bold" class="btn disabled" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+                    <a title="" data-edit="italic" class="btn disabled" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+                    <a title="" data-edit="strikethrough" class="btn disabled" data-original-title="Strikethrough"><i class="icon-strikethrough"></i></a>
+                    <a title="" data-edit="underline" class="btn disabled" data-original-title="Underline (Ctrl/Cmd+U)"><i class="icon-underline"></i></a>
+                  </div>
+                  <div class="btn-group">
+                    <a title="" data-edit="insertunorderedlist" class="btn disabled" data-original-title="Bullet list"><i class="icon-list-ul"></i></a>
+                    <a title="" data-edit="insertorderedlist" class="btn disabled" data-original-title="Number list"><i class="icon-list-ol"></i></a>
+                    <a title="" data-edit="outdent" class="btn disabled" data-original-title="Reduce indent (Shift+Tab)"><i class="icon-indent-left"></i></a>
+                    <a title="" data-edit="indent" class="btn disabled" data-original-title="Indent (Tab)"><i class="icon-indent-right"></i></a>
+                  </div>
+                  <div class="btn-group">
+                    <a title="" data-edit="justifyleft" class="btn disabled" data-original-title="Align Left (Ctrl/Cmd+L)"><i class="icon-align-left"></i></a>
+                    <a title="" data-edit="justifycenter" class="btn disabled" data-original-title="Center (Ctrl/Cmd+E)"><i class="icon-align-center"></i></a>
+                    <a title="" data-edit="justifyright" class="btn disabled" data-original-title="Align Right (Ctrl/Cmd+R)"><i class="icon-align-right"></i></a>
+                    <a title="" data-edit="justifyfull" class="btn disabled" data-original-title="Justify (Ctrl/Cmd+J)"><i class="icon-align-justify"></i></a>
+                  </div>
+                  <div class="btn-group">
+                      <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Hyperlink"><i class="icon-link"></i></a>
+                        <div class="dropdown-menu input-append">
+                            <input type="text" data-edit="createLink" placeholder="URL" class="span2">
+                            <button type="button" class="btn disabled">Add</button>
+                    </div>
+                    <a title="" data-edit="unlink" class="btn disabled" data-original-title="Remove Hyperlink"><i class="icon-cut"></i></a>
+            
+                  </div>
+                  
+                  <div class="btn-group">
+                    <a id="pictureBtn" title="" class="btn disabled" data-original-title="Insert picture (or just drag &amp; drop)"><i class="icon-picture"></i></a>
+                    <input type="file" data-edit="insertImage" data-target="#pictureBtn" data-role="magic-overlay" style="opacity: 0; position: absolute; top: 0px; left: 0px; width: 39px; height: 30px;">
+                  </div>
+                  <div class="btn-group">
+                    <a title="" data-edit="undo" class="btn disabled" data-original-title="Undo (Ctrl/Cmd+Z)"><i class="icon-undo"></i></a>
+                    <a title="" data-edit="redo" class="btn disabled" data-original-title="Redo (Ctrl/Cmd+Y)"><i class="icon-repeat"></i></a>
+                  </div>
+                </div>
+            </div>
+            }
+            @if(controllers.featuretoggle.Feature.RIBBON_WORKSPACE.isEnabled()) {
+            <div id="ribbon-workspace" class="ribbon">
+                
+            </div>
+            }
+        </div>
+}
