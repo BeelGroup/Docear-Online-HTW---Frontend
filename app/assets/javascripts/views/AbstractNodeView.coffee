@@ -104,11 +104,21 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
     initialFoldStatus:()-> 
       shouldBeVisible = !@model.get('folded')
       @updateFS(shouldBeVisible, true)
+
      
     updateFoldStatus:()->
-      shouldBeVisible = !@model.get('folded')
-      domVisible = @$el.children('.children').is ':visible'
-      @updateFS(shouldBeVisible, domVisible)
+      if @renderOnExpand
+        @$el.find('.children:first').toggle()
+        document.rootView.refreshDom()
+        document.rootView.connectChildren()
+        @renderOnExpand = false
+        @$el.find('.children:first').toggle()
+        @updateFS(true, false)
+      else
+        shouldBeVisible = !@model.get('folded')
+        domVisible = @$el.children('.children').is ':visible'
+        @updateFS(shouldBeVisible, domVisible)
+      
 
     updateFS:(shouldBeVisible, domVisible)->
       if shouldBeVisible isnt domVisible
@@ -116,9 +126,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         $children = @$el.children('.children')
         $myself = @$el.children('.inner-node')
 
-        $nodesToFold = @$el.children('.inner-node').children('.action-fold')
-        $nodesToFold.toggleClass 'invisible'
-        @alignChildrenofElement 
+        @switchFoldButtons()
+
+        #@alignChildrenofElement 
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
         
@@ -131,7 +141,13 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
             if childrenHeight > nodeHeight
               @resizeTree @$el, @model, -diff
         
+        # toggle visibilety of childs
         $children.fadeToggle(document.fadeDuration)
+
+    switchFoldButtons:->
+      $nodesToFold = @$el.children('.inner-node').children('.action-fold')
+      # toggle +/- button
+      $nodesToFold.toggleClass 'invisible'
 
 
     changeNodeText: ->

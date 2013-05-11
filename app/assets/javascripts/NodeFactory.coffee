@@ -38,7 +38,7 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
       node = new Node()
       node.set 'children', []
       node.set 'parent', parent
-      node.set 'folded', false
+      node.set 'folded', data.folded
       if data.childrenIds isnt undefined 
         node.set 'childsToLoad', data.childrenIds
         for id in data.childrenIds

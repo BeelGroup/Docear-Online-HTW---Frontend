@@ -109,11 +109,10 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
         $(childrenContainer).css('height', height)
         $(childrenContainer).css('width', width)
 
-      if $(element).attr('folded') is 'true' and totalChildrenHeight <= 0
-        [elementHeight, totalChildrenWidth]
-        #diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
-        #console.log Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer
-        #[Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
+      if $(element).attr('folded') is 'true'
+        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
+
+        [Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
       else
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
@@ -121,9 +120,9 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
     render: ->
       @$el.html @template @getRenderData()
       @$el.append(@model.get 'purehtml')
-      @$el.attr('folded', @model.get 'folded')
+      #@$el.attr('folded', @model.get 'folded')
 
-      # in first step: from roon to its childs
+      # in first step: from root to its childs
       if @model.get('parent') isnt undefined and @model.get('parent') isnt null
         @connection = new ConnectionView(@model.get('parent'), @model)
         @connection.renderAndAppendToNode(@$el)
@@ -137,6 +136,7 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
 
     renderAndAppendTo:($element)->
       @render()
+      @renderOnExpand = false 
       
       if @controls.movable
         $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });
@@ -146,17 +146,35 @@ define ['views/AbstractNodeView','views/ConnectionView', 'views/NodeControlsView
           drop: ( event, ui )->
             newParentId = $( this ).closest('.node').attr('id')
         })
-      
+
       $element.append(@$el)
       @alignButtons()
+
       children = @model.get 'children'
+      childsToLoad = @model.get 'childsToLoad'
+
+      # if there are already informations about cholds in the model: render them
       if children isnt undefined and children.length > 0
         @recursiveRender(@$el.find('.children:first'), children)
+        # if this element is not within a folded subtree: update fold status
+        if $element.is ':visible'
+          @initialFoldStatus()
+        else if @model.get 'folded'
+          @switchFoldButtons()
+          @$el.find('.children:first').toggle()
+          @renderOnExpand = true
+      # if there will more childs be rendered later: set flag
+      else if childsToLoad isnt undefined and childsToLoad.length > 0
+        if @model.get 'folded'
+          @switchFoldButtons()
+          @$el.find('.children:first').toggle()
+          @renderOnExpand = true
+      # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()
 
-      @initialFoldStatus()
-
+        
+      
 
     destroy: ->
       @model?.off null, null, @

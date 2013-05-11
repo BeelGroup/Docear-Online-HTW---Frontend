@@ -25,20 +25,21 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
         @rootView.getElement().remove()
 
       document.log "call: loadMap #{mapId} (MapController)"
-      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId, 100).url
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId, document.initialLoadChunkSize).url
       #@href = 'https://docear:freeplane537@staging.my.docear.org/map/3/json?nodeCount=55'
       # start loading after fadein
-      @$el.parent().find(".loading-map-overlay").fadeIn 400, =>
-        $.get(@href, @parseAndRenderMapByJsonData, "json")
+      #@$el.parent().find(".loading-map-overlay").fadeIn 400, =>
+      $.get(@href, @parseAndRenderMapByJsonData, "json")
       
 
 
     parseAndRenderMapByJsonData: (data)=>
       $('#current-mindmap-name').text(data.name)
 
-      mapLoader = new MapLoader(data, @mapId);
+      mapLoader = new MapLoader data, @mapId
 
       @rootView = new RootNodeView mapLoader.firstLoad()
+      document.rootView = @rootView
       mapLoader.injectRootView @rootView
       @rootView.renderAndAppendTo(@canvas.getElement())
 
@@ -57,8 +58,9 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       , 500)
 
       # first part of map is loaded - fadeout
-      @$el.parent().find(".loading-map-overlay").fadeOut()
-
+      #@$el.parent().find(".loading-map-overlay").fadeOut()
+      document.initialLoad = true
+      debugger
       mapLoader.continueLoading()
       @rootView.model.on 'refreshSize', @refreshMiniNodes
 

@@ -45,18 +45,19 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
       ids = Object.keys(items)
 
       @loadStep ids, items, 0
-
+      
+      # only do that, when unfolded!
       @rootView.refreshDom()
       @rootView.connectChildren()
 
 
     loadStep:(ids, items, index)=>
+      #@rootView.refreshDom()
+      #@rootView.connectChildren()
       if index < ids.length
         id = ids[index]
         if id isnt undefined and id isnt 'undefined'
-          @getDataByID id, items[id]
-          @rootView.refreshDom()
-          @rootView.connectChildren()
+          @getDataAndRenderNodesByID id, items[id]
         window.setTimeout @loadStep, 100, ids, items, ++index
       else
         @continueLoading()
@@ -77,8 +78,8 @@ define ['NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHa
 
 
 
-    getDataByID:(nodeId, myparent)=>
-      href = jsRoutes.controllers.MindMap.getNode(@mapId, nodeId, 100).url
+    getDataAndRenderNodesByID:(nodeId, myparent)=>
+      href = jsRoutes.controllers.MindMap.getNode(@mapId, nodeId, document.loadChunkSize).url
       request = $.ajax(
         invokedata: {
           maploader: @
