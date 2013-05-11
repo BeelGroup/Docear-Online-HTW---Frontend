@@ -23,6 +23,8 @@ define ['views/NodeEditView'], (NodeEditView) ->
       $node = @nodeView.$el
 
       $mindmapCanvas = $($node).closest('#mindmap-container')
+      $( "#ribbons li.tab a.ribbon-edit" ).click()
+      console.log $( "#ribbons li.tab a.ribbon-edit" )
       
       nodeEditView = new NodeEditView(node, @nodeView)
       nodeEditView.renderAndAppendTo($mindmapCanvas)
