@@ -59,7 +59,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         else if $parent.hasClass('action-fold')
           return 'noChange'
         $parent = $parent.parent()
-      false
+      'deselect'
 
 
     selectNone:()->
