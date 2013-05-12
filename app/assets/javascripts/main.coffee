@@ -7,7 +7,7 @@ require ['raphael-min', 'json2', 'mousetrap.min', 'jquery.mousewheel.min', 'jque
       url: jsRoutes.controllers.User.mapListFromDB().url,
       dataType: 'json',
       success: (data)->
-        $selectMinmap = $('#select-mindmap')
+        $selectMinmap = $('.select-mindmap')
         mapLatestRevision = {}
         if data.length> 0
           $.each(data, (index,value)->
@@ -20,7 +20,9 @@ require ['raphael-min', 'json2', 'mousetrap.min', 'jquery.mousewheel.min', 'jque
           $selectMinmap.empty()
           $.each(mapLatestRevision, (id,value)->
             date = $.datepicker.formatDate("dd.mm.yy", new Date(value.map.revision))
-            $selectMinmap.append """<li><a class="dropdown-toggle" href="#{jsRoutes.controllers.Application.index().url}#map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
+            link = """<li><a class="dropdown-toggle" href="#{jsRoutes.controllers.Application.index().url}#map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
+            console.log link
+            $selectMinmap.append link
           )
     })
 
