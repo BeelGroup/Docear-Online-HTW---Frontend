@@ -1,4 +1,4 @@
-require ['raphael-min', 'json2', 'mousetrap.min', 'jquery.mousewheel.min', 'jquery.hotkeys', 'jquery.transformAnimate', 'jquery.json-2.4.min', 'jquery.svg.min', 'jquery.svganim.min', 'bootstrap-wysiwyg', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'logger', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features'],  (raphael, json2, mousetrap, mousewheel, JQHotkeys, JQTransformAnimate, JQJson, JSSvg ,JQSvgAnim, bootstrapWysiwyg, templates, NodeFactory, FeedbackForm, Logger, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features) -> 
+require ['views/templates.pre.min', 'NodeFactory','feedbackForm', 'logger', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features'],  (templates, NodeFactory, FeedbackForm, Logger, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features) -> 
 
   # load user maps for dropdown menu
   loadUserMaps = ->
@@ -21,7 +21,6 @@ require ['raphael-min', 'json2', 'mousetrap.min', 'jquery.mousewheel.min', 'jque
           $.each(mapLatestRevision, (id,value)->
             date = $.datepicker.formatDate("dd.mm.yy", new Date(value.map.revision))
             link = """<li><a class="dropdown-toggle" href="#{jsRoutes.controllers.Application.index().url}#map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
-            console.log link
             $selectMinmap.append link
           )
     })
