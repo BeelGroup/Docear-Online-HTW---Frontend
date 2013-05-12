@@ -34,7 +34,8 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
 
 
     parseAndRenderMapByJsonData: (data)=>
-      $('#current-mindmap-name').text(data.name)
+      $('.current-mindmap-name').text(data.name)
+
 
       mapLoader = new MapLoader data, @mapId
 
@@ -60,7 +61,6 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       # first part of map is loaded - fadeout
       #@$el.parent().find(".loading-map-overlay").fadeOut()
       document.initialLoad = true
-      debugger
       mapLoader.continueLoading()
       @rootView.model.on 'refreshSize', @refreshMiniNodes
 

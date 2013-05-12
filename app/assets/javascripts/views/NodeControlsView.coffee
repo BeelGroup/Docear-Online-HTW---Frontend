@@ -22,7 +22,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
       
       $node = @nodeView.$el
 
-      $mindmapCanvas = $($node).closest('body')
+      $mindmapCanvas = $($node).closest('#mindmap-container')
       
       nodeEditView = new NodeEditView(node, @nodeView)
       nodeEditView.renderAndAppendTo($mindmapCanvas)
