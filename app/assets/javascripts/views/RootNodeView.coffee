@@ -203,30 +203,30 @@ define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeVie
       possibilities = document.body.style
       fallback = false
 
-      #console.log  $.browser.version
+      document.log  $.browser.version
       # IE
       if $.browser.msie 
         if $.browser.version > 8
-          #console.log 'IE 9 & 10'
+          document.log 'IE 9 & 10'
           @getElement().css
             '-ms-transform': "scale(#{amount})" 
 
         else if $.browser.version <= 8 
-          #console.log 'IE 7 & 8'
+          document.log 'IE 7 & 8'
           fallback = true
 
       # Safari, Firefox and Chrome with CSS3 support 
       else if($.inArray('WebkitTransform', possibilities) or 
       $.inArray('MozTransform', inpossibilities) or 
       $.inArray('OTransform', possibilities)) 
-        #console.log 'Webkit, Moz, O'
+        document.log 'Webkit, Moz, O'
         if animate
           @getElement().animate {'scale' : amount}, {duration: 100, queue: false}
         else
           @getElement().animate {'scale' : amount}, 0
 
       else
-        #console.log $.browser
+        document.log $.browser
         fallback = true
 
       # ultra fallback

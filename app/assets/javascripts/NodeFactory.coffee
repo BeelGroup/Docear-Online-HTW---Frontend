@@ -62,10 +62,8 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
         # if there are linebreaks
         if nodeTexts.length > 1
           container = $("<div></div>")
-          console.log data.nodeText
           # create DIVs for each line and append a whitespace on their end if required
           for currentLine in nodeTexts
-            console.log currentLine.slice(-1)
             if currentLine.slice(-1) isnt '-'
               container.append $("<div>#{currentLine.concat '&nbsp;'}</div>")
             else

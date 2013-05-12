@@ -8,6 +8,7 @@ define ->
 
     events:
       'mousedown': (event)-> document.wasDragged = false
+      'click': -> $('username').blur()
       # 'mouseup': if not document.wasDragged then @rootView.model.selectNone()
 
     constructor:(@id)->

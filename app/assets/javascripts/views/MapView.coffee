@@ -35,6 +35,9 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
 
 
     parseAndRenderMapByJsonData: (data)=>
+
+      console.log data
+
       $('.current-mindmap-name').text(data.name)
       #document.rootID = data.root.id
       
