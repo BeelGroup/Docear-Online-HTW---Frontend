@@ -137,7 +137,11 @@ define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeVie
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
-              selectedNode.set 'folded', not selectedNode.get 'folded' 
+              if selectedNode.typeName is 'rootModel' 
+                @changeFoldedStatus 'both'
+              else
+                selectedNode.set 'folded', not selectedNode.get 'folded'
+
         else
           @model.set 'selected', true
         event.preventDefault()
