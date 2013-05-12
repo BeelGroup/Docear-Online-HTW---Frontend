@@ -280,7 +280,7 @@ define ->
         if (not @rootView.model.get 'selected') and selectRoot
           @rootView.model.set 'selected', true
 
-        @centerViewTo @rootView.model
+        @centerViewTo @rootView.model, true, true
           # will throw an event which is cached by this class 
       else
         canvasPivot = @canvasPivot()
@@ -291,7 +291,7 @@ define ->
 
 
     setRootView:(@rootView)->
-      @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false)
+      @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false, false)
       
       @zoomAmount = 100   
       @currentMapSize = @rootView.getTotalSize()
@@ -299,7 +299,7 @@ define ->
       @checkBoundaries()
 
 
-    centerViewTo:(selectedNode, shiftInAnyCase = true)->
+    centerViewTo:(selectedNode, shiftInAnyCase = true, center = true)->
       $element = $("##{selectedNode.id}")
 
       canvasWidth = $element.width()  * @zoomAmount
@@ -320,21 +320,45 @@ define ->
         y: halfParentHeight - elementPos.y + @$el.parent().offset().top
 
       iCanSeeU = true
+      spacer = 15
 
-      # right corner
+      # node is in the right corner
       if delta.x < 0.0
-        if (Math.abs(delta.x) + halfElementWidth) >= halfParentWidth
+        if (Math.abs(delta.x) + halfElementWidth + spacer) >= halfParentWidth
           iCanSeeU = false
-      else # left corner
-        if (Math.abs(delta.x) + halfElementWidth) >= halfParentWidth
+          # if centering is not required, move the not visibe part (plus space) only
+          if not center
+            delta.x = delta.x + halfParentWidth - halfElementWidth - spacer
+        # if node is horizontaly full visible and centering is not required, dont move it horizontally
+        else if not center
+          delta.x = 0
+      # node is in the left corner
+      else 
+        if (Math.abs(delta.x) + halfElementWidth + spacer) >= halfParentWidth
           iCanSeeU = false
-      # lower corner
+          if not center
+            delta.x = delta.x - halfParentWidth + halfElementWidth + spacer
+        else if not center
+          delta.x = 0
+      # node is in the lower corner
       if delta.y < 0.0
-        if (Math.abs(delta.y) + halfElementHeight) >= halfParentHeight
+        if (Math.abs(delta.y) + halfElementHeight + spacer) >= halfParentHeight
           iCanSeeU = false
-      else # upper corner
-        if (Math.abs(delta.y) + halfElementHeight) >= halfParentHeight
+          if not center
+            delta.y = delta.y + halfParentHeight - halfElementHeight - spacer
+        else if not center
+          delta.y = 0
+      # node is in the upper corner
+      else 
+        if (Math.abs(delta.y) + halfElementHeight + spacer) >= halfParentHeight
           iCanSeeU = false
+          if not center
+            delta.y = delta.y - halfParentHeight + halfElementHeight + spacer
+        else if not center
+          delta.y = 0
+
+
+
 
       if shiftInAnyCase or not iCanSeeU
         @move delta
