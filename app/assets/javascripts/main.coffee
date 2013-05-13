@@ -1,4 +1,4 @@
-require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features'],  (logger, templates, NodeFactory, FeedbackForm, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features) -> 
+require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features', 'ribbons'],  (logger, templates, NodeFactory, FeedbackForm, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features, ribbons) -> 
 
   # load user maps for dropdown menu
   loadUserMaps = ->
