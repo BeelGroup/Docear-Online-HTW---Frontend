@@ -43,3 +43,6 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
         mapView.loadMap("welcome")
 
   initialLoad()
+  
+  if($.inArray('RIBBONS', document.features) > -1)
+    initRibbons()
