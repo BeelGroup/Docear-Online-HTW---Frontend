@@ -1,4 +1,4 @@
-define ->
+define ['logger'], (logger) ->
   module = () ->
 
   class Canvas extends Backbone.View

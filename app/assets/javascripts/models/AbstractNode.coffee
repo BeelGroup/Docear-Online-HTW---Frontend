@@ -2,7 +2,7 @@
 abstract class
 ###
 
-define [], ()->
+define ['logger'], (logger)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 

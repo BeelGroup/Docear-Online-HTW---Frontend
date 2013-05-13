@@ -1,4 +1,4 @@
-define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeView, RootNode, NodeControlsView) ->
+define ['logger', 'views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (logger, NodeView, RootNode, NodeControlsView) ->
   module = ->
   
   class RootNodeView extends NodeView

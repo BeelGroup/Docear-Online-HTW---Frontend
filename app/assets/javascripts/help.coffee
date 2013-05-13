@@ -1,4 +1,4 @@
-require [],  () -> 
+require ['logger'],  (logger) -> 
   $helpMenu = $('#help-menu ul.menu')
   id = 1
   
