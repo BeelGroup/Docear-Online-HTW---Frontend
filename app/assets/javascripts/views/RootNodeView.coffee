@@ -36,9 +36,11 @@ define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeVie
       if side is 'left' or side is 'both'
         @$el.children('.inner-node').children('.action-fold.left').toggleClass('invisible')
         @$el.children('.leftChildren').fadeToggle(document.fadeDuration)
+        @$el.trigger 'newFoldAction'
       if side is 'right' or side is 'both'
         @$el.children('.inner-node').children('.action-fold.right').toggleClass('invisible')
         @$el.children('.rightChildren').fadeToggle(document.fadeDuration)
+        @$el.trigger 'newFoldAction'
 
 
 
@@ -135,7 +137,11 @@ define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeVie
             when document.navigation.key.selectNextBrother #DOWN
               @selectBrother selectedNode, true
             when document.navigation.key.fold #F
-              selectedNode.set 'folded', not selectedNode.get 'folded' 
+              if selectedNode.typeName is 'rootModel' 
+                @changeFoldedStatus 'both'
+              else
+                selectedNode.set 'folded', not selectedNode.get 'folded'
+
         else
           @model.set 'selected', true
         event.preventDefault()
@@ -197,30 +203,30 @@ define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeVie
       possibilities = document.body.style
       fallback = false
 
-      #console.log  $.browser.version
+      document.log  $.browser.version
       # IE
       if $.browser.msie 
         if $.browser.version > 8
-          #console.log 'IE 9 & 10'
+          document.log 'IE 9 & 10'
           @getElement().css
             '-ms-transform': "scale(#{amount})" 
 
         else if $.browser.version <= 8 
-          #console.log 'IE 7 & 8'
+          document.log 'IE 7 & 8'
           fallback = true
 
       # Safari, Firefox and Chrome with CSS3 support 
       else if($.inArray('WebkitTransform', possibilities) or 
       $.inArray('MozTransform', inpossibilities) or 
       $.inArray('OTransform', possibilities)) 
-        #console.log 'Webkit, Moz, O'
+        document.log 'Webkit, Moz, O'
         if animate
           @getElement().animate {'scale' : amount}, {duration: 100, queue: false}
         else
           @getElement().animate {'scale' : amount}, 0
 
       else
-        #console.log $.browser
+        document.log $.browser
         fallback = true
 
       # ultra fallback

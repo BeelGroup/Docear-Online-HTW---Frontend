@@ -22,17 +22,17 @@ define ['views/NodeEditView'], (NodeEditView) ->
       
       $node = @nodeView.$el
 
-      $mindmapCanvas = $($node).closest('body')
+      $mindmapCanvas = $($node).closest('#mindmap-container')
       
       nodeEditView = new NodeEditView(node, @nodeView)
       nodeEditView.renderAndAppendTo($mindmapCanvas)
       
     actionNewNode: (event)->
-      console.log "newNode @ "+@nodeView.model.get 'id'
+      document.log "newNode @ "+@nodeView.model.get 'id'
       @nodeView.model.createAndAddChild()
     
     actionShare: (event)->
-      console.log "share @ "+@nodeView.model.get 'id'
+      document.log "share @ "+@nodeView.model.get 'id'
       # call functions via @nodeView
     
     renderAndAppendToNode:(@nodeView)->

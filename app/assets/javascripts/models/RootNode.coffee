@@ -4,6 +4,7 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   class RootNode extends AbstractNode
     constructor:->
       super()
+      @typeName = 'rootModel'
       @sup = RootNode.__super__
 
 

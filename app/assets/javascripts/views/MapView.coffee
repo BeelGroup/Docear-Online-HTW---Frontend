@@ -19,23 +19,34 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
 
 
     loadMap: (@mapId) ->
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
+
+      $.ajax(
+        url: @href
+        success: @initMapLoading
+        error: @showMapLoadingError
+        dataType: "json"
+      )
+      
+
+    showMapLoadingError:(a,b,c)=>
+      alert a.responseText
+
+    initMapLoading:(data)=>
+
       if @rootView isnt undefined
         document.log 'delete old map'
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
 
-      document.log "call: loadMap #{mapId} (MapController)"
+      document.log "call: loadMap #{data.id} (MapController)"     
 
-      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
-
-      # start loading after fadein
       @$el.parent().find(".loading-map-overlay").fadeIn 400, =>
-        $.get(@href, @parseAndRenderMapByJsonData, "json")
-      
+        @parseAndRenderMapByJsonData(data)
 
 
     parseAndRenderMapByJsonData: (data)=>
-      $('#current-mindmap-name').text(data.name)
+      $('.current-mindmap-name').text(data.name)
       #document.rootID = data.root.id
       
       mapLoader = new MapLoader(data, @mapId);
@@ -49,9 +60,6 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       @canvas.setRootView(@rootView)
       @canvas.center()
 
-      while current = mapLoader.load() isnt null
-        # here is work TODO
-        document.log 'still data to load'
       
       setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions(), @

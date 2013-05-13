@@ -58,7 +58,7 @@ define ->
         'height': @minimapViewportOriginHeight
 
 
-    resizeMiniViewport:(event, @scaleAmount, reset)=>
+    resizeMiniViewport:(event, @scaleAmount, duration = 100)=>
       possibilities = document.body.style
       fallback = false
       element = @$root
@@ -80,7 +80,7 @@ define ->
       $.inArray('MozTransform', inpossibilities) or 
       $.inArray('OTransform', possibilities)) 
         #console.log 'Webkit, Moz, O'
-        element.animate {'scale' : @scaleAmount}, 100
+        element.animate {'scale' : @scaleAmount}, duration
 
       else
         #console.log $.browser
@@ -109,7 +109,7 @@ define ->
       @createMiniNode stats, @$root for stats in @nodePositions.leftChilds
       @createMiniNode stats, @$root for stats in @nodePositions.rightChilds
 
-      @resizeMiniViewport(null, @scaleAmount)
+      @resizeMiniViewport(null, @scaleAmount, 0)
 
 
     createMiniNode:(stats, $container)->

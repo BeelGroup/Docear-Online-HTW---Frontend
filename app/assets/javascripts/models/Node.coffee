@@ -4,6 +4,7 @@ define ['models/AbstractNode'],  (AbstractNode) ->
   class Node extends AbstractNode
     constructor:->
       super() 
+      @typeName = 'nodeModel'
 
       
     setEdgestyle: (edgeStyle) ->
