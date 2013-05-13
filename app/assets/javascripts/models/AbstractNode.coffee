@@ -32,6 +32,8 @@ define [], ()->
           
           persistenceHandler.persistChanges @, changes
           @
+      
+      # Update minimap when node text was modified
       @bind 'change:nodeText', ->    
         $("##{@get('rootNodeModel').get 'id'}").trigger 'updateMinimap'
 
@@ -111,7 +113,7 @@ define [], ()->
       root.get 'mapId'
  
     updateConnection: ()->
-      @set 'connectionUpdated', (@get('connectionUpdated')+1)
+      @.trigger 'updateConnection'
     
     removeCild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')
