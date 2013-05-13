@@ -45,6 +45,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
     selectNode:(event)->
       if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') )
+        #$("##{(@model.get 'rootNodeModel').get 'id'}").trigger 'newSelectedNode', @
         @controls.actionEdit(event)
       @model.set 'selected', true
 
@@ -56,10 +57,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
           return 'select'
         else if $parent.hasClass('controls')
           return 'deselect'
-        else if $parent.hasClass('action-fold')
+        else if $parent.hasClass('action-fold') 
           return 'noChange'
         $parent = $parent.parent()
-      'deselect'
+      'deselect'  
 
 
     selectNone:()->
