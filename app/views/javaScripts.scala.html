@@ -17,7 +17,6 @@
    keep the full js to precompile with sbt/play
 *@
 <script src='@routes.Assets.at("javascripts/handlebars-min-1.0.beta.js")'></script>
-<script src='@routes.Assets.at("javascripts/requireSetup.js")'></script>
 @helper.requireJs(core = routes.WebJarAssets.at(WebJarAssets.locate("require.js")).url, module = routes.Assets.at("javascripts/main").url)
 
 <script src='@routes.Assets.at("javascripts/jquery.json-2.4.min.js")'></script>
