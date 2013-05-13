@@ -22,7 +22,7 @@ define [], ()->
       @bind 'change:folded', =>
         rootID = @get('rootNodeModel').get 'id'
         # is catched in mapview to update mininodes in minimap
-        $("##{rootID}").trigger 'newFoldAction'
+        $("##{rootID}").trigger 'updateMinimap'
 
 
       @bind 'change',(changes)->
@@ -32,6 +32,8 @@ define [], ()->
           
           persistenceHandler.persistChanges @, changes
           @
+      @bind 'change:nodeText', ->    
+        $("##{@get('rootNodeModel').get 'id'}").trigger 'updateMinimap'
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy

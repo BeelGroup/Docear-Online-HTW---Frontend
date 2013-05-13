@@ -37,6 +37,7 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       else
         @loadMap 'welcome'
 
+
     initMapLoading:(data)=>
       if @rootView isnt undefined
         document.log 'delete old map'
@@ -69,7 +70,7 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
         @minimap.drawMiniNodes @rootView.setChildPositions(), @
       , 500)
 
-      @rootView.getElement().on 'newFoldAction', => setTimeout( => 
+      @rootView.getElement().on 'updateMinimap', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
