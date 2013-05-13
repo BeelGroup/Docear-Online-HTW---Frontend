@@ -30,10 +30,14 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       
 
     showMapLoadingError:(a,b,c)=>
-      alert a.responseText
+      # if answere doesn't contain redirect, show error message
+      if a.responseText.indexOf("<head>") is -1
+        alert a.responseText
+      # otherwise redirect to welcome map
+      else
+        @loadMap 'welcome'
 
     initMapLoading:(data)=>
-
       if @rootView isnt undefined
         document.log 'delete old map'
         @canvas.zoomCenter(false)
