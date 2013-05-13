@@ -44,21 +44,21 @@ define [], ()->
     # status messages for update
     saveOptions:
       success: (model) ->
-        console.log "Node with id '#{model.id}' was updated to the server."
+        document.log "Node with id '#{model.id}' was updated to the server."
       error: (model, response) ->
-        console.log "Error while saving Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
+        document.log "Error while saving Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
 
     fetchOptions:
       success: (model) ->
-        console.log "Node with id '#{model.id}' was fetched from the server."
+        document.log "Node with id '#{model.id}' was fetched from the server."
       error: (model, response) ->
-        console.log "Error while fetching Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
+        document.log "Error while fetching Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
     
     destroyOptions:
       success: ->
-        editor.log "Node has been deleted from the permanent record."
+        document.log "Node has been deleted from the permanent record."
       error: (model, response) ->
-        editor.log "Error: #{response.status} #{response.statusText}"
+        document.log "Error: #{response.status} #{response.statusText}"
 
     getNextChild: (children = (@get('children')))->
       nextChild = null
