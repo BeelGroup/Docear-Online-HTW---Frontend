@@ -34,7 +34,8 @@ public enum Feature {
     MOVE_NODE("enables to move nodes into an other node or to anouter position"),
     FEEDBACK("enables a feedback dialog for the user"),
     USER_PROFILE("enables the user profile"),
-    SERVER_SYNC("synchronizes all changes in the frontend with the backend");
+    SERVER_SYNC("synchronizes all changes in the frontend with the backend"),
+    WORKSPACE("enables project synchronization with the API-Server");
 
     String description;
     boolean isEnabled = false;
