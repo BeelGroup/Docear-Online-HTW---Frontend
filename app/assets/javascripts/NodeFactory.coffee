@@ -1,4 +1,4 @@
-define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler', 'handlers/UpdateHandler'],  (RootNode, Node, PersistenceHandler, UpdateHandler) ->  
+define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler', 'handlers/UpdateHandler'],  (logger, RootNode, Node, PersistenceHandler, UpdateHandler) ->  
   module = ->
 
   class NodeFactory

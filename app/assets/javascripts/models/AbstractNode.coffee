@@ -2,7 +2,7 @@
 abstract class
 ###
 
-define [], ()->
+define ['logger'], (logger)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
@@ -22,7 +22,7 @@ define [], ()->
       @bind 'change:folded', =>
         rootID = @get('rootNodeModel').get 'id'
         # is catched in mapview to update mininodes in minimap
-        $("##{rootID}").trigger 'newFoldAction'
+        $("##{rootID}").trigger 'updateMinimap'
 
 
       @bind 'change',(changes)->
@@ -32,6 +32,10 @@ define [], ()->
           
           persistenceHandler.persistChanges @, changes
           @
+      
+      # Update minimap when node text was modified
+      @bind 'change:nodeText', ->    
+        $("##{@get('rootNodeModel').get 'id'}").trigger 'updateMinimap'
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy
@@ -110,7 +114,7 @@ define [], ()->
       root.get 'mapId'
  
     updateConnection: ()->
-      @set 'connectionUpdated', (@get('connectionUpdated')+1)
+      @.trigger 'updateConnection'
     
     
     setAttributeWithoutPersist: (attribute, value)->

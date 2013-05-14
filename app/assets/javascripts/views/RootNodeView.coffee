@@ -1,4 +1,4 @@
-define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeView, RootNode, NodeControlsView) ->
+define ['logger', 'views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (logger, NodeView, RootNode, NodeControlsView) ->
   module = ->
   
   class RootNodeView extends NodeView
@@ -36,11 +36,11 @@ define ['views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (NodeVie
       if side is 'left' or side is 'both'
         @$el.children('.inner-node').children('.action-fold.left').toggleClass('invisible')
         @$el.children('.leftChildren').fadeToggle(document.fadeDuration)
-        @$el.trigger 'newFoldAction'
+        @$el.trigger 'updateMinimap'
       if side is 'right' or side is 'both'
         @$el.children('.inner-node').children('.action-fold.right').toggleClass('invisible')
         @$el.children('.rightChildren').fadeToggle(document.fadeDuration)
-        @$el.trigger 'newFoldAction'
+        @$el.trigger 'updateMinimap'
 
 
 

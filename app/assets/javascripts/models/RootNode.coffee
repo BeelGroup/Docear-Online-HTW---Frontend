@@ -1,4 +1,4 @@
-define ['models/AbstractNode'],  (AbstractNode) ->  
+define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->  
   module = ->
   
   class RootNode extends AbstractNode

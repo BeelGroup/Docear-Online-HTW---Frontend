@@ -1,4 +1,4 @@
-define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
+define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
   module = ->
 
   class MapView extends Backbone.View
@@ -30,10 +30,15 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       
 
     showMapLoadingError:(a,b,c)=>
-      alert a.responseText
+      # if answere doesn't contain redirect, show error message
+      if a.responseText.indexOf("<head>") is -1
+        alert a.responseText
+      # otherwise redirect to welcome map
+      else
+        @loadMap 'welcome'
+
 
     initMapLoading:(data)=>
-
       if @rootView isnt undefined
         document.log 'delete old map'
         @canvas.zoomCenter(false)
@@ -65,7 +70,7 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
         @minimap.drawMiniNodes @rootView.setChildPositions(), @
       , 500)
 
-      @rootView.getElement().on 'newFoldAction', => setTimeout( => 
+      @rootView.getElement().on 'updateMinimap', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
