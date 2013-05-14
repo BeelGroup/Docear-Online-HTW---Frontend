@@ -35,8 +35,9 @@ public enum Feature {
     FEEDBACK("enables a feedback dialog for the user"),
     USER_PROFILE("enables the user profile"),
     SERVER_SYNC("synchronizes all changes in the frontend with the backend"),
-    RIBBONS("display ribbons on top of page"),
+    LISTEN_FOR_UPDATES("listen for updates via long polling"),
     LOCK_NODE("lock and unlock nodes when in use"),
+    RIBBONS("display ribbons on top of page"),
     RIBBON_HOME("display home ribbon"),
     RIBBON_EDIT("display edit ribbon"),
     RIBBON_WORKSPACE("display workspace ribbon");

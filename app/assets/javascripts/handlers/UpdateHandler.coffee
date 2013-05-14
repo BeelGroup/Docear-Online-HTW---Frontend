@@ -17,7 +17,6 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
       
     listen: ()->
       me = @
-      document.log "listen for updates"
       params = {
         url: @updateApi.listenForUpdate.Node
         type: 'GET'
@@ -35,7 +34,9 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         }
         dataType: 'json' 
       }
-      $.ajax(params)
+      if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
+        document.log "listen for updates"
+        $.ajax(params)
       
     getChanges: ()->
       me = @
