@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, SyncedView, NodeEditView) ->
+define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (logger, nodeModel, SyncedView, NodeEditView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -34,9 +34,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         
 
     handleClick:(event)->
-      if @isInnerNode $(event.target)
-        @selectNode(event) 
-      else if not(document.wasDragged or $(event.target).parent().hasClass('controls')) 
+      type = @selectionType $(event.target)
+      if type is 'select'
+        @selectNode(event)
+      else if not(document.wasDragged or $(event.target).parent().hasClass('controls')) and type is 'deselect'
         @selectNone(event)
 
       if $(event.target).hasClass 'action-fold-all'
@@ -44,19 +45,22 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
     selectNode:(event)->
       if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') )
+        #$("##{(@model.get 'rootNodeModel').get 'id'}").trigger 'newSelectedNode', @
         @controls.actionEdit(event)
       @model.set 'selected', true
 
-    isInnerNode:($target)->
+    selectionType:($target)->
       $parent = $target
       # range 1...20 is needed, if node-content is HTML and its dom is nested up to 20 levels deep
       for i in [1...20]
         if $parent.hasClass('inner-node')
-          return true
-        else if $parent.hasClass('controls') or $parent.hasClass('action-fold')
-          return false
+          return 'select'
+        else if $parent.hasClass('controls')
+          return 'deselect'
+        else if $parent.hasClass('action-fold') 
+          return 'noChange'
         $parent = $parent.parent()
-      false
+      'deselect'  
 
 
     selectNone:()->

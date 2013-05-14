@@ -101,17 +101,6 @@ object ApplicationBuild extends Build {
         Seq(file)
       }
       , requireJs += "main.js"
-      , requireNativePath := {
-        //TODO windows users can integrate their performance improvements as well
-        val pathOption = System.getProperty("os.name") match {
-          case "Linux" if nativeRequireJSinstalled => Option("r.js")
-          case _ => None
-        }
-        println("using native requireJS: " + pathOption.isDefined)
-        if (!pathOption.isDefined)
-          println("you can setup native requireJS support as root with: npm install -g requirejs")
-        pathOption
-      }
       , javacOptions ++= Seq("-Xlint:-options")
       , javacOptions ++= Seq("-Xlint:deprecation")
     )

@@ -1,4 +1,4 @@
-define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (RootNode, Node, PersistenceHandler) ->  
+define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (logger, RootNode, Node, PersistenceHandler) ->  
   module = ->
 
   class NodeFactory
@@ -54,8 +54,25 @@ define ['models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (Root
 
     setDefaults:(node, rootNode, data)->
       node.set 'id', data.id
+
+      if not data.isHtml
+        nodeTexts = data.nodeText.split '\n'
+        # if there are linebreaks
+        if nodeTexts.length > 1
+          container = $("<div></div>")
+          # create DIVs for each line and append a whitespace on their end if required
+          for currentLine in nodeTexts
+            if currentLine.slice(-1) isnt '-'
+              container.append $("<div>#{currentLine.concat '&nbsp;'}</div>")
+            else
+              container.append $("<div>#{currentLine}</div>")
+          # in this case force isHTML to true and set text 
+          data.isHtml = true
+          data.nodeText = container.html()
+
       node.set 'nodeText', data.nodeText
       node.set 'isHTML', data.isHtml
+      
       node.set 'xPos', 0
       node.set 'yPos', 0
       node.set 'hGap', 0

@@ -1,4 +1,4 @@
-define ['models/AbstractNode'],  (AbstractNode) ->  
+define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->  
   module = ->
   
   class RootNode extends AbstractNode
@@ -6,6 +6,7 @@ define ['models/AbstractNode'],  (AbstractNode) ->
       super()
       @allNodes = new Array()
       @unfinishedNodes = {}
+      @typeName = 'rootModel'
       @sup = RootNode.__super__
 
     addNodeToList:(node)->

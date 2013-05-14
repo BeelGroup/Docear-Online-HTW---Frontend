@@ -1,4 +1,4 @@
-define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
+define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
   module = ->
 
   class MapView extends Backbone.View
@@ -19,18 +19,35 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
 
 
     loadMap: (@mapId) ->
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
+
+      $.ajax(
+        url: @href
+        success: @initMapLoading
+        error: @showMapLoadingError
+        dataType: "json"
+      )
+      
+
+    showMapLoadingError:(a,b,c)=>
+      # if answere doesn't contain redirect, show error message
+      if a.responseText.indexOf("<head>") is -1
+        alert a.responseText
+      # otherwise redirect to welcome map
+      else
+        @loadMap 'welcome'
+
+
+    initMapLoading:(data)=>
       if @rootView isnt undefined
         document.log 'delete old map'
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
 
-      document.log "call: loadMap #{mapId} (MapController)"
-      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId, document.initialLoadChunkSize).url
-      #@href = 'https://docear:freeplane537@staging.my.docear.org/map/3/json?nodeCount=55'
-      # start loading after fadein
-      #@$el.parent().find(".loading-map-overlay").fadeIn 400, =>
-      $.get(@href, @parseAndRenderMapByJsonData, "json")
-      
+      document.log "call: loadMap #{data.id} (MapController)"     
+
+      @$el.parent().find(".loading-map-overlay").fadeIn 400, =>
+        @parseAndRenderMapByJsonData(data)
 
 
     parseAndRenderMapByJsonData: (data)=>
@@ -49,17 +66,17 @@ define ['MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView',
       @rootView.connectChildren()
       @canvas.setRootView(@rootView)
       @canvas.center()
-      
+
       setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions(), @
       , 500)
 
-      @rootView.getElement().on 'newFoldAction', => setTimeout( =>
+      @rootView.getElement().on 'updateMinimap', => setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
       # first part of map is loaded - fadeout
-      #@$el.parent().find(".loading-map-overlay").fadeOut()
+      @$el.parent().find(".loading-map-overlay").fadeOut()
       document.initialLoad = true
       mapLoader.continueLoading()
       @rootView.model.on 'refreshSize', @refreshMiniNodes
