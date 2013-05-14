@@ -1,9 +1,10 @@
-define ['models/AbstractNode'],  (AbstractNode) ->  
+define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->  
   module = ->
 
   class Node extends AbstractNode
     constructor:->
       super() 
+      @typeName = 'nodeModel'
 
       
     setEdgestyle: (edgeStyle) ->

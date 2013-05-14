@@ -8,5 +8,12 @@
     <div class='action-fold expand-icon invisible'>
       <img class='action-fold-all' src="/assets/images/icon_plus.svg">
     </div>
-  {{/if}} 
+  {{/if}}
+  
+  {{#if lockable}}
+  <div class='lock'>
+    <i class="icon-user"></i>
+    <span class="lock-username"></span>
+  </div>
+  {{/if}}
 </div>

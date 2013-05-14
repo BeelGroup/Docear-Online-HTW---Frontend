@@ -1,4 +1,4 @@
-define [],() ->
+define ['logger'],(logger) ->
   module = ->
   
   class DocearRouter extends Backbone.Router

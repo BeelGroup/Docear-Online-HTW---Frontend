@@ -6,7 +6,6 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     constructor: (mapId)->
       super()
       @mapId = mapId
-      console.log mapId
       
       @persistenceApi = {
         'change': {
@@ -17,16 +16,25 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         },
         'delete': {
           'Node': jsRoutes.controllers.MindMap.deleteNode(mapId).url
+        },
+        'lock': {
+          'Node': jsRoutes.controllers.MindMap.requestLock(mapId).url
+        },
+        'unlock': {
+          'Node': jsRoutes.controllers.MindMap.releaseLock(mapId).url
         }
       }
-
-    persistChanges: (object, changes)->
+      
+    getObjectName: (object)->
       objectName = object.constructor.name
       if objectName == 'RootNode' 
         objectName = 'Node'
+      objectName
+
+    persistChanges: (object, changes)->
+      objectName = @getObjectName(object)
       values = {}
       if @persistenceApi.change[objectName] != undefined
-        
         changesToPersist = false
         $.each changes.changed, (attr, value)->
           if attr in object.get('attributesToPersist')
@@ -34,13 +42,39 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
             changesToPersist = true
         if changesToPersist
           params = {'nodeId': object.get('id'), 'attributeValueMapJson': $.toJSON(values)}
-          $.post(@persistenceApi.change[objectName], params)
+          #$.post(@persistenceApi.change[objectName], params)
 
     persistNew: (object, params)->
-      objectName = object.constructor.name
-      params = {'json': $.toJSON(params)}
-      $.post(@persistenceApi.create[objectName], params, (data)->
-        object.addChild data.id, data.nodeText
-      , 'json')
+      document.log "TODO: persist node"
+      
+    lock: (node)->
+      if $.inArray('LOCK_NODE', document.features) > -1
+        params = {
+            type: 'POST'
+            data: {'nodeId': node.get('id')}
+            cache: false
+            statusCode: {
+              200: (response)->
+                document.log "node "+node.get('id')+" locked"
+              412: (response)->
+                document.log "error while locking node "+node.get('id')
+            }
+        }
+        $.ajax(@persistenceApi.lock.Node, params)
+      
+    unlock: (node)->
+      if $.inArray('LOCK_NODE', document.features) > -1
+        params = {
+            type: 'POST'
+            data: {'nodeId': node.get('id')}
+            cache: false
+            statusCode: {
+              200: (response)->
+                document.log "node "+node.get('id')+" unlocked"
+              412: (response)->
+                document.log "error while unlocking node "+node.get('id')
+            }
+        }
+        $.ajax(@persistenceApi.unlock.Node, params)
 
   module.exports = PersistenceHandler

@@ -1,9 +1,10 @@
-define ['models/AbstractNode'],  (AbstractNode) ->  
+define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->  
   module = ->
   
   class RootNode extends AbstractNode
     constructor:->
       super()
+      @typeName = 'rootModel'
       @sup = RootNode.__super__
 
 

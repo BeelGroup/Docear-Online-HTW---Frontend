@@ -6,22 +6,40 @@ define ->
     tagName: 'div',
     className: 'node-edit-container hide-with-overlay' 
     template: Handlebars.templates['NodeEdit']
+    # needed to stop refreshing lock
+    destroyed: false
 
     events:
-      "click .edit-overlay"  : "hideEditView"
-      "click .cancel"   : "hideEditView"
+      "click .edit-overlay"  : "hideAndSave"
       "click .save"     : "saveChanges"
+      "click .cancel"     : "hide"
  
     constructor:(@nodeModel, @nodeView)->
       @$node = $('#'+@nodeModel.get('id'))
       super()    
 
-    hideEditView: (event)->
-      @saveChanges event
+    destroy:->
+      # http://stackoverflow.com/questions/6569704/destroy-or-remove-a-view-in-backbone-js
+      this.undelegateEvents()
+      this.$el.removeData().unbind()
+      this.remove()
+      Backbone.View.prototype.remove.call(this)
+      @destroyed = true
+      
+      
+    
+    hide: (event)->
+      @nodeModel.get('persistenceHandler').unlock(@nodeModel)
       
       $(@$el).fadeOut(document.fadeDuration, ->
         $(this).remove()
+        $('.editor-toolbar a.btn').addClass('disabled')
       )
+      @destroy()
+      
+    hideAndSave: (event)->
+      @saveChanges event
+      @hide event
       
     saveChanges: (event)->
       $(@$el).find('.node-editor').cleanHtml()
@@ -54,7 +72,7 @@ define ->
       $element.append(obj)
       
       $(obj).find('.edit-overlay:first').animate({
-        opacity: 0.4
+        opacity: 0.0
       }, document.fadeDuration)
       
       $editContainer = $(obj).find('.node-editor:first')
@@ -63,7 +81,10 @@ define ->
       $editContainer.attr('id', editorId)
       $($editContainer).wysiwyg()
 
-      $toolbar = $(obj).find('.editor-toolbar:first')
+      $toolbar = $(obj).find('.editor-toolbar')
+      $('.editor-toolbar a.btn').removeClass('disabled')
+      
+      $toolbarIndoc = $(obj).find('.editor-toolbar-indoc')
       $toolbar.attr('data-target', '#'+editorId)
         
       offset = @$node.offset()
@@ -74,20 +95,29 @@ define ->
       @selectText(editorId)
       
       if $.browser.msie and $.browser.version < 9
-        $toolbar.remove()
+        $toolbarIndoc.remove()
       else
-        toolbarX = offset.left+($editContainer.outerWidth() + 20)
-        toolbarY = offset.top-(($toolbar.outerHeight() - $editContainer.outerHeight()) / 2)
+        toolbarX = offset.left
+        toolbarY = offset.top+($editContainer.outerHeight())
         $toolbar.offset({left: toolbarX, top: toolbarY})
-        $toolbar.draggable({ handle: ".handle" });
+        $toolbarIndoc.draggable({ handle: ".handle" });
       @
       
 
     render:->
+      @updateLock()
       @$el.html @template {}
       ec = $(@$el.html).find('.edit-container:first')
       ec.offset(@$node.offset())
       $(ec).find('.node-id:first').val(@$node.attr('id'))
       @
+      
+    updateLock:->
+      if not @destroyed
+        @nodeModel.get('persistenceHandler').lock(@nodeModel)
+        nodeEditView = @
+        setTimeout(->
+          nodeEditView.updateLock()
+        , document.lockRefresh)
 
   module.exports = NodeEdit

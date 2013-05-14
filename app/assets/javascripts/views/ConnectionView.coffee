@@ -1,4 +1,4 @@
-define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->  
+define ['logger', 'models/Node', 'models/RootNode'],  (logger, NodeModel, RootNodeModel) ->  
   module = ->
 
   class ConnectionView extends Backbone.View
@@ -6,21 +6,23 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
     tagName  : 'div'
     className: 'connection'
 
-    constructor: (@sourceModel, @targetModel) ->
+    constructor: (@parentModel, @childModel) ->
       super()
-      @targetModel.bind "change:connectionUpdated",@repaintConnection , @
-      
+      @childModel.bind "updateConnection",@repaintConnection , @
+      # as long as we dont move the nodes, this can be computet one time here 
+      @$parentNode = $('#'+@parentModel.get('id'))
 
-    repaintConnection: ()->
-      @$sourceNode = $('#'+@sourceModel.get('id'))
-      @$targetNode = $('#'+@targetModel.get('id'))
-      @isRight = $(@$targetNode).hasClass('right')
-      
-      @calculateEndpoints()
-      @positionContainer()
-      @drawConnection()
-      
-    
+
+    repaintConnection: ()->      
+      @$childNode = $('#'+@childModel.get('id'))
+      # paint connections, when child is visible
+      if @$childNode.is ':visible'
+        @isRight = $(@$childNode).hasClass('right')
+        document.log 'repaint connection for'+@parentModel.get('id')       
+        @calculateEndpoints()
+        @positionContainer()
+        @drawConnection()
+
       
     getCurrentZoomAmount: ()->
       zoom = document.currentZoom
@@ -39,8 +41,8 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
       strokeWidth = document.graph.defaultWidth
       zoom = @getCurrentZoomAmount()
       
-      sourceBB = @getModelBoundingBox @$sourceNode, zoom
-      targetBB = @getModelBoundingBox @$targetNode, zoom
+      sourceBB = @getModelBoundingBox @$parentNode, zoom
+      targetBB = @getModelBoundingBox @$childNode, zoom
 
       @sourceEndpoint = 
         x : 0
@@ -106,7 +108,7 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
         @connection.startY = @connectionContainer.height - strokeWidth
 
     positionContainer:()->
-      $connectionContainer = $(@$targetNode).children('.connection:first')
+      $connectionContainer = $(@$childNode).children('.connection:first')
       if @isRight
         $($connectionContainer).css(  'left', """#{@connectionContainer.x}px""")
       else
@@ -116,10 +118,10 @@ define ['models/Node', 'models/RootNode'],  (NodeModel, RootNodeModel) ->
       $($connectionContainer).css( 'height', """#{Math.max(@connectionContainer.height, 15)}px""")
       
     drawConnection: ()->
-      $connectionContainer = $(@$targetNode).children('.connection:first')
-      strokeWidth = (@targetModel.get 'edgeStyle').width
+      $connectionContainer = $(@$childNode).children('.connection:first')
+      strokeWidth = (@childModel.get 'edgeStyle').width
 
-      intColor = (@targetModel.get 'edgeStyle').color
+      intColor = (@childModel.get 'edgeStyle').color
       strokeColor = @rgbToHex(intColor)
       
       middleX = @connection.endX/2

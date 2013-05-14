@@ -1,8 +1,12 @@
 package features.mindmap.general;
 
 
+import static helper.Assertions.assertElementCountEquals;
+import static helper.Assertions.assertElementExistsNot;
+import static helper.Assertions.assertElementExistsOnce;
 import static org.fest.assertions.Assertions.assertThat;
-import static helper.Assertions.*;
+
+import helper.Wait;
 
 import java.util.List;
 
@@ -11,6 +15,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import controllers.featuretoggle.Feature;
+
 import play.libs.F.Callback;
 import play.test.TestBrowser;
 import base.DocearTest;
@@ -18,20 +24,27 @@ import base.DocearTest;
 public class GeneralTest extends DocearTest{
     
     @Test
-    @Ignore
     public void initPageTest() {
         runInBrowser( new Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
             	gotoRoot();
             	
             	//Check Title
-            	assertThat(driver.getTitle()).isEqualTo("Login");
+            	assertThat(driver.getTitle()).isEqualTo("Docear online (Alpha) - Login");
             	
+
             	//Check menu
-            	WebElement menu = driver.findElement(By.className("menu-container"));
+            	WebElement menu;
+				if (!requiredFeatureEnabled(Feature.RIBBONS.name())){
+					menu = driver.findElement(By.className("menu-container"));
+				} else {
+					menu = driver.findElement(By.id("ribbons"));
+				}
+
             	//Check links to Help and Imprint
             	assertThat(menu.findElement(By.linkText("Imprint")).getAttribute("href")).isEqualTo("http://www.docear.org/imprint/");
             	assertThat(menu.findElement(By.linkText("Help")).getAttribute("href")).isEqualTo(url("/help"));
+            	
             }
         });
     }
@@ -42,14 +55,12 @@ public class GeneralTest extends DocearTest{
         runInBrowser( new Callback<TestBrowser>() {
             public void invoke(TestBrowser browser) {
             	gotoRoot();
-            	
+
             	//Check if no node is selected
-            	List<WebElement> selectedNodes = driver.findElements(By.className("selected"));
-            	assertThat(selectedNodes).isEmpty();
             	assertElementExistsNot(driver, By.className("selected"));
             	
             	//Check if exactly one root node exists
-            	List<WebElement> rootNodes = driver.findElements(By.className("root"));
+            	List<WebElement> rootNodes = driver.findElements(By.cssSelector("div.node.root"));
             	assertThat(rootNodes.size()).isEqualTo(1);
             	
             	if (rootNodes.size() == 1){
@@ -60,7 +71,6 @@ public class GeneralTest extends DocearTest{
             		assertElementExistsOnce(rootNode, By.className("leftChildren"));
             		
             		//Check for node content
-            		//assertThat(rootNode.findElement(By.xpath("//div[@class='inner-node']/div[@class='content']")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             		assertThat(rootNode.findElement(By.cssSelector("div.root > div.inner-node > div.content")).getText()).isEqualTo("Welcome to Docear Online (Alpha)");
             	}
             	

@@ -14,7 +14,7 @@ object ApplicationBuild extends Build {
     val appVersion      = "0.1-SNAPSHOT"
 
     val appDependencies = {
-      val seleniumVersion = "2.31.0"
+      val seleniumVersion = "2.32.0"
       Seq(
         "junit" % "junit-dep" % "4.11" % "test"
         , "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.0.2"
@@ -33,12 +33,11 @@ object ApplicationBuild extends Build {
         , "org.webjars" % "webjars-play" % "2.1.0"
         , "org.webjars" % "bootstrap" % "2.1.1"
         , "org.webjars" % "font-awesome" % "3.0.2"
+        , "org.webjars" % "requirejs" % "2.1.5"
         , "com.typesafe.akka" % "akka-remote_2.10" % "2.1.2"
         , "info.schleichardt" %% "play-2-mailplugin" % "0.9-SNAPSHOT"
       )
     }
-    
-    System.setProperty("browser", "FIREFOX")
 
     val handlebarsOptions = SettingKey[Seq[String]]("ember-options")
     val handlebarsEntryPoints = SettingKey[PathFinder]("ember-entry-points")
@@ -102,20 +101,6 @@ object ApplicationBuild extends Build {
         Seq(file)
       }
       , requireJs += "main.js"
-      , requireNativePath := {
-        //TODO windows users can integrate their performance improvements as well
-        val pathOption = System.getProperty("os.name") match {
-          case "Linux" if nativeRequireJSinstalled => Option("r.js")
-          case _ => None
-        }
-        println(System.getProperty("browser", "DEFAULT"))
-        System.setProperty("browser", "FIREFOX")
-        println(System.getProperty("browser", "DEFAULT"))
-        println("using native requireJS: " + pathOption.isDefined)
-        if (!pathOption.isDefined)
-          println("you can setup native requireJS support as root with: npm install -g requirejs")
-        pathOption
-      }
       , javacOptions ++= Seq("-Xlint:-options")
       , javacOptions ++= Seq("-Xlint:deprecation")
     )

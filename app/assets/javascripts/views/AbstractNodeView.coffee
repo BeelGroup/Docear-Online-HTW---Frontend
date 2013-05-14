@@ -1,4 +1,4 @@
-define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, SyncedView, NodeEditView) ->
+define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (logger, nodeModel, SyncedView, NodeEditView) ->
   module = ->
   
   class AbstractNodeView extends SyncedView
@@ -34,9 +34,10 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
         
 
     handleClick:(event)->
-      if @isInnerNode $(event.target)
-        @selectNode(event) 
-      else if not(document.wasDragged or $(event.target).parent().hasClass('controls')) 
+      type = @selectionType $(event.target)
+      if type is 'select'
+        @selectNode(event)
+      else if not(document.wasDragged or $(event.target).parent().hasClass('controls')) and type is 'deselect'
         @selectNone(event)
 
       if $(event.target).hasClass 'action-fold-all'
@@ -44,19 +45,22 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
 
     selectNode:(event)->
       if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') )
+        #$("##{(@model.get 'rootNodeModel').get 'id'}").trigger 'newSelectedNode', @
         @controls.actionEdit(event)
       @model.set 'selected', true
 
-    isInnerNode:($target)->
+    selectionType:($target)->
       $parent = $target
       # range 1...20 is needed, if node-content is HTML and its dom is nested up to 20 levels deep
       for i in [1...20]
         if $parent.hasClass('inner-node')
-          return true
-        else if $parent.hasClass('controls') or $parent.hasClass('action-fold')
-          return false
+          return 'select'
+        else if $parent.hasClass('controls')
+          return 'deselect'
+        else if $parent.hasClass('action-fold') 
+          return 'noChange'
         $parent = $parent.parent()
-      false
+      'deselect'  
 
 
     selectNone:()->
@@ -83,18 +87,14 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       @$el #$('#'+@model.get 'id')
 
 
-    lockModel: ->
-      # will be replaced by username
-      @model.lock 'me'
-      document.log 'locked'
-
-
     changeLockStatus: ->
       if @model.get 'locked' 
-        if (@model.get('lockedBy') != 'me')
-          @$('.changeable').attr('disabled', 'disabled')
+        if (@model.get('lockedBy') != null)
+          $lockContainer = @$el.children('.inner-node').children('.lock')
+          $lockContainer.children('.lock-username').text(@model.get('lockedBy'))
+          $lockContainer.fadeIn('fast')
       else
-        @$('.changeable').removeAttr('disabled')
+        @$el.children('.inner-node').children('.lock').text('').fadeOut('fast')
     
 
     changeSelectStatus: ->
@@ -109,6 +109,7 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
       shouldBeVisible = !@model.get('folded')
       domVisible = @$el.children('.children').is ':visible'
       @updateFS(shouldBeVisible, domVisible)
+      document.log 'update fold status'
 
     updateFS:(shouldBeVisible, domVisible)->
       if shouldBeVisible isnt domVisible
@@ -189,18 +190,6 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
     foldModel: ->
       @$el.toggleClass('selected')
       @model.set 'folded', not @model.get 'folded'
-      
-
-    # [Debugging] model modification
-    modificateModel: -> 
-      @model.set 'nodeText', Math.random()   
-      @model.set 'xPos', (@model.get 'xPos') + 20   
-      @model.set 'yPos', (@model.get 'yPos') + 20
-      if(@model.get 'locked')   
-        @model.unlock()
-      else
-        @model.lock 'Mr. P'
-     
 
     subView: (view, autoRender = false) ->
       # if model is set, use its id OR a unique random id
@@ -213,7 +202,9 @@ define ['models/Node', 'views/SyncedView', 'views/NodeEditView'], (nodeModel, Sy
     getRenderData: ->
     # if the model is already set, parse it to json
       if @model?
-        @model.toJSON()
+        data = @model.toJSON()
+        data['lockable'] = ($.inArray('LOCK_NODE', document.features) > -1)
+        data
     # otherwise pass an empty JSON
       else
         {}

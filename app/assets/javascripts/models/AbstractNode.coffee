@@ -2,7 +2,7 @@
 abstract class
 ###
 
-define [], ()->
+define ['logger'], (logger)->
   module = () ->
 
   class AbstractNode extends Backbone.Model 
@@ -22,16 +22,20 @@ define [], ()->
       @bind 'change:folded', =>
         rootID = @get('rootNodeModel').get 'id'
         # is catched in mapview to update mininodes in minimap
-        $("##{rootID}").trigger 'newFoldAction'
+        $("##{rootID}").trigger 'updateMinimap'
 
 
       @bind 'change',(changes)->
-        if $.inArray('SERVER_SYNC', document.features) > -1
+        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('persist')
           attributesToPersist = @get 'attributesToPersist'
           persistenceHandler = @get 'persistenceHandler'
           
           persistenceHandler.persistChanges @, changes
           @
+      
+      # Update minimap when node text was modified
+      @bind 'change:nodeText', ->    
+        $("##{@get('rootNodeModel').get 'id'}").trigger 'updateMinimap'
 
     lock: (lockedBy) ->
       @set 'lockedBy', lockedBy
@@ -39,26 +43,27 @@ define [], ()->
  
  
     unlock: ->
+      @set 'lockedBy', null
       @set 'locked', false
 
     # status messages for update
     saveOptions:
       success: (model) ->
-        console.log "Node with id '#{model.id}' was updated to the server."
+        document.log "Node with id '#{model.id}' was updated to the server."
       error: (model, response) ->
-        console.log "Error while saving Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
+        document.log "Error while saving Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
 
     fetchOptions:
       success: (model) ->
-        console.log "Node with id '#{model.id}' was fetched from the server."
+        document.log "Node with id '#{model.id}' was fetched from the server."
       error: (model, response) ->
-        console.log "Error while fetching Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
+        document.log "Error while fetching Node with id '#{model.id}': #{response.status} #{response.statusText} (path was #{model.urlRoot})"
     
     destroyOptions:
       success: ->
-        editor.log "Node has been deleted from the permanent record."
+        document.log "Node has been deleted from the permanent record."
       error: (model, response) ->
-        editor.log "Error: #{response.status} #{response.statusText}"
+        document.log "Error: #{response.status} #{response.statusText}"
 
     getNextChild: (children = (@get('children')))->
       nextChild = null
@@ -109,8 +114,14 @@ define [], ()->
       root.get 'mapId'
  
     updateConnection: ()->
-      @set 'connectionUpdated', (@get('connectionUpdated')+1)
+      @.trigger 'updateConnection'
     
+    
+    setAttributeWithoutPersist: (attribute, value)->
+      @set 'persist', false
+      @set 'attribute', value
+      @set 'persist', true
+      
     removeCild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')
       children = []
@@ -118,5 +129,5 @@ define [], ()->
         if node != child
           children.push(node)
       @set 'children', children
-      
+  
   module.exports = AbstractNode

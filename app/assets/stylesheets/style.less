@@ -239,6 +239,15 @@ mindmap-container{
     color: @dark-grey;
 } 
 
+.mindmap-canvas .node .inner-node .lock 
+{
+    position: absolute;
+    top: -16px;
+    left: 20px;
+    display: none;
+}
+
+
 #mindmap-container.landing-page 
 {
     margin-left: 330px;   
@@ -380,33 +389,114 @@ ul.nav .no-link {
     top: -100;
     left: -100;
 }
-.editor-toolbar 
+.editor-toolbar-indoc
 {
     position: absolute;
     width: 200px;
     border-radius: 20px 20px 20px 20px;
     background-color: #FFFFFF;
     border: 2px solid @docear-blue;
-    padding: 0px;
-    padding-bottom: 10px;
+    
+    opacity:0.7;
+    filter:alpha(opacity=70); /* For IE8 and earlier */
 }
-.editor-toolbar .btn-group
+.editor-toolbar-indoc:hover
 {
-    padding: 3px 10px;
+    opacity:1.0;
+    filter:alpha(opacity=100); /* For IE8 and earlier */
+}
+.editor-toolbar-indoc .controls
+{
+    margin-left: 12px;
+}
+.editor-toolbar-indoc .btn-group
+{
+    padding: 3px 0px;
     margin-left: 5px;
 }
-.editor-toolbar .handle
+.editor-toolbar-indoc .btn
 {
-    position: relative;
-    top: 0px;
-    left: opx;
-    border-radius: 20px 20px 0px 0px;
-    border-bottom: 2px solid @docear-light-blue;
-    margin-bottom: 10px;
+    padding: 3px 5px;
+}
+.editor-toolbar-indoc .handle
+{
+    position: absolute;
+    top: 1px;
+    left: 0px;
+    border-radius: 20px 0px 0px 20px;
+    border-right: 2px solid @docear-light-blue;
     background-color: @grey;
-    height: 20px;
+    width: 10px;
+    height: 32px;
 }
 .droppable-hover
 {
     background-color: @dark-grey;
+}
+
+
+.ribbon
+{
+    height: 40px;
+    background-color: @light-grey;
+    padding: 10px;
+    display: none;
+}
+.ribbon .ribbon-group
+{
+    border-right: #DDDDDD;
+}
+#ribbons
+{
+    border-bottom: 1px solid @grey;
+    width: 100%;
+}
+#ribbons .nav 
+{
+    margin-bottom: 0px;
+    
+    background-color: #1b1b1b;
+    background-image: -moz-linear-gradient(top,#222,#111);
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#222),to(#111));
+    background-image: -webkit-linear-gradient(top,#222,#111);
+    background-image: -o-linear-gradient(top,#222,#111);
+    background-image: linear-gradient(to bottom,#222,#111);
+    background-repeat: repeat-x;
+    border-color: #252525;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff222222',endColorstr='#ff111111',GradientType=0);
+}
+#ribbons .nav
+{
+    border-bottom: 0px solid #ddd;
+}
+#ribbons .navbar
+{
+    padding: 0px 20px 0px 70px;
+}
+#ribbons .nav>li>a 
+{
+    text-shadow: 0 0px 0 #fff;
+}
+#ribbons .ribbon-logo a
+{
+    padding: 0px;
+}
+#ribbons .ribbon-logo img
+{
+    height: 35px;
+}
+#ribbons li a
+{
+    color: @dark-grey;
+}
+#ribbons li.active a
+{
+    color: @light-grey;
+    background-color: transparent;
+}
+#ribbons .ribbon-tabs li.tab.active a,
+#ribbons .ribbon-tabs li.tab a:hover
+{
+    color: @dark-grey;
+    background-color: @light-grey;
 }
