@@ -24,6 +24,7 @@
 
         <div id="ribbons">
             <div class="nav navbar nav-tabs">
+            @if(isAuthenticated) {
 	            <ul class="nav nav-tabs pull-left ribbon-tabs">
 	                <li class="ribbon-logo">
 	                  <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
@@ -44,7 +45,6 @@
 	                </li>
 	                }
 	            </ul>
-	            
                 <ul class="nav pull-right">
                     @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
                     @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
@@ -52,6 +52,20 @@
                     }
                     @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
                 </ul>
+            }else{
+                <ul class="nav nav-tabs pull-left ribbon-tabs">
+                    <li class="ribbon-logo">
+                      <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
+                    </li>
+                </ul>
+                    
+                <ul class="nav">
+                    @menuItem("http://www.docear.org/imprint/", "Imprint")
+                    @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
+                    @menuItem(controllers.routes.Application.help().url, "Help")
+                </ul>
+            }
+	            
             </div>
 	    </div>
             

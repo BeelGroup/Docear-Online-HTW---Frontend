@@ -489,18 +489,16 @@ ul.nav .no-link {
 {
     color: @grey;
 }
-#ribbons li a:hover
+#ribbons li.active a
 {
+    font-weight: bold;
     color: @light-grey;
     background-color: transparent;
 }
-#ribbons li.tab a:hover
+#ribbons .ribbon-tabs li.tab.active a,
+#ribbons .ribbon-tabs li.tab a:hover
 {
     color: @dark-grey;
     background-color: @light-grey;
-}
-#ribbons li.tab.active a
-{
-    color: @dark-grey;
-    background-color: @light-grey;
+    font-weight: normal;
 }
