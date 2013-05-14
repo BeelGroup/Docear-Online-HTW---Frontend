@@ -26,7 +26,7 @@ define [], ()->
 
 
       @bind 'change',(changes)->
-        if $.inArray('SERVER_SYNC', document.features) > -1
+        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('persist')
           attributesToPersist = @get 'attributesToPersist'
           persistenceHandler = @get 'persistenceHandler'
           
@@ -39,6 +39,7 @@ define [], ()->
  
  
     unlock: ->
+      @set 'lockedBy', null
       @set 'locked', false
 
     # status messages for update
@@ -111,6 +112,12 @@ define [], ()->
     updateConnection: ()->
       @set 'connectionUpdated', (@get('connectionUpdated')+1)
     
+    
+    setAttributeWithoutPersist: (attribute, value)->
+      @set 'persist', false
+      @set 'attribute', value
+      @set 'persist', true
+      
     removeCild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')
       children = []
@@ -118,5 +125,5 @@ define [], ()->
         if node != child
           children.push(node)
       @set 'children', children
-      
+  
   module.exports = AbstractNode

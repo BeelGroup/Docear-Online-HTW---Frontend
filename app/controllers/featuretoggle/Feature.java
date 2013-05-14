@@ -36,6 +36,7 @@ public enum Feature {
     USER_PROFILE("enables the user profile"),
     SERVER_SYNC("synchronizes all changes in the frontend with the backend"),
     RIBBONS("display ribbons on top of page"),
+    LOCK_NODE("lock and unlock nodes when in use"),
     RIBBON_HOME("display home ribbon"),
     RIBBON_EDIT("display edit ribbon"),
     RIBBON_WORKSPACE("display workspace ribbon");

@@ -24,7 +24,6 @@ define ['views/NodeEditView'], (NodeEditView) ->
 
       $mindmapCanvas = $($node).closest('#mindmap-container')
       $( "#ribbons li.tab a.ribbon-edit" ).click()
-      console.log $( "#ribbons li.tab a.ribbon-edit" )
       
       nodeEditView = new NodeEditView(node, @nodeView)
       nodeEditView.renderAndAppendTo($mindmapCanvas)
@@ -50,6 +49,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
           editable: ($.inArray('NODE_CONTROLS', document.features) > -1)
           editableText: ($.inArray('EDIT_NODE_TEXT', document.features) > -1)
           foldable: ($.inArray('FOLD_NODE', document.features) > -1)
+          lockable: ($.inArray('LOCK_NODE', document.features) > -1)
           movable: ($.inArray('MOVE_NODE', document.features) > -1)
           isRoot: (@nodeModel.constructor.name == 'RootNode')
       }

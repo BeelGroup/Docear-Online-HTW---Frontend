@@ -131,7 +131,7 @@ public class MindMap extends Controller {
 		return async(updatePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String updates) throws Throwable {
-				return ok(updates);
+				return ok(updates.replaceAll("\"\\{", "\\{").replaceAll("\\}\"", "\\}").replace("\\\"", "\""));
 			}
 		}));
 	}

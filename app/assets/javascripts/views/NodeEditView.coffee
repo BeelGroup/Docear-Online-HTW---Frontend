@@ -6,23 +6,40 @@ define ->
     tagName: 'div',
     className: 'node-edit-container hide-with-overlay' 
     template: Handlebars.templates['NodeEdit']
+    # needed to stop refreshing lock
+    destroyed: false
 
     events:
-      "click .edit-overlay"  : "hideEditView"
-      "click .cancel"   : "hideEditView"
+      "click .edit-overlay"  : "hideAndSave"
       "click .save"     : "saveChanges"
+      "click .cancel"     : "hide"
  
     constructor:(@nodeModel, @nodeView)->
       @$node = $('#'+@nodeModel.get('id'))
       super()    
 
-    hideEditView: (event)->
-      @saveChanges event
+    destroy:->
+      # http://stackoverflow.com/questions/6569704/destroy-or-remove-a-view-in-backbone-js
+      this.undelegateEvents()
+      this.$el.removeData().unbind()
+      this.remove()
+      Backbone.View.prototype.remove.call(this)
+      @destroyed = true
+      
+      
+    
+    hide: (event)->
+      @nodeModel.get('persistenceHandler').unlock(@nodeModel)
       
       $(@$el).fadeOut(document.fadeDuration, ->
         $(this).remove()
         $('.editor-toolbar a.btn').addClass('disabled')
       )
+      @destroy()
+      
+    hideAndSave: (event)->
+      @saveChanges event
+      @hide event
       
     saveChanges: (event)->
       $(@$el).find('.node-editor').cleanHtml()
@@ -88,10 +105,19 @@ define ->
       
 
     render:->
+      @updateLock()
       @$el.html @template {}
       ec = $(@$el.html).find('.edit-container:first')
       ec.offset(@$node.offset())
       $(ec).find('.node-id:first').val(@$node.attr('id'))
       @
+      
+    updateLock:->
+      if not @destroyed
+        @nodeModel.get('persistenceHandler').lock(@nodeModel)
+        nodeEditView = @
+        setTimeout(->
+          nodeEditView.updateLock()
+        , document.lockRefresh)
 
   module.exports = NodeEdit
