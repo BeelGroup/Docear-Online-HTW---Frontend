@@ -9,7 +9,8 @@ import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import services.backend.project.FileStore;
+
+import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

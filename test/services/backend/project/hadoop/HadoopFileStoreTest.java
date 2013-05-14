@@ -5,7 +5,8 @@ import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import services.backend.project.FileStore;
+
+import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

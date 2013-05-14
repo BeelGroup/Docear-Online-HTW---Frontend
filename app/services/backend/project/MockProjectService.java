@@ -37,21 +37,8 @@ import play.libs.F.Promise;
 public class MockProjectService implements ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	// @Override
-	// public Promise<JsonNode> listProject(Long projectId) {
-	// try {
-	// final File projectRoot = new
-	// File(Play.application().resource("rest/v1/project/" +
-	// projectId).toURI());
-	// final Project project = new Project(projectId, projectRoot);
-	// return Promise.pure(mapper.valueToTree(project));
-	// } catch (URISyntaxException e) {
-	// throw new RuntimeException(e);
-	// }
-	// }
-
 	@Override
-	public Promise<InputStream> getFile(Long projectId, String path) {
+	public Promise<InputStream> getFile(String projectId, String path) {
 		if (!path.startsWith("/"))
 			path = "/" + path;
 
@@ -59,7 +46,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<JsonNode> putFile(Long projectId, String path, byte[] content) {
+	public Promise<JsonNode> putFile(String projectId, String path, byte[] content) {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String filename = path.substring(path.lastIndexOf("/"));
@@ -94,12 +81,12 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<JsonNode> metadata(Long projectId, String path) {
+	public Promise<JsonNode> metadata(String projectId, String path) {
 		return Promise.pure(new ObjectMapper().valueToTree(metadataIntern(projectId, path, true)));
 	}
 
 	@Override
-	public Promise<JsonNode> createFolder(Long projectId, String path) {
+	public Promise<JsonNode> createFolder(String projectId, String path) {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String folderName = path.substring(path.lastIndexOf("/"));
@@ -120,7 +107,7 @@ public class MockProjectService implements ProjectService {
 		}
 	}
 
-	private ProjectEntry metadataIntern(Long projectId, String path, boolean loadContents) {
+	private ProjectEntry metadataIntern(String projectId, String path, boolean loadContents) {
 		path = addLeadingSlash(path);
 		ProjectEntry result = null;
 		try {
@@ -137,7 +124,7 @@ public class MockProjectService implements ProjectService {
 		}
 	}
 
-	private ProjectEntry folderMetadata(Long projectId, File folder, boolean loadContents) {
+	private ProjectEntry folderMetadata(String projectId, File folder, boolean loadContents) {
 		final String path = uriToPath(projectId, folder.getAbsolutePath());
 
 		final DateTime modified = new DateTime(folder.lastModified());
@@ -154,7 +141,7 @@ public class MockProjectService implements ProjectService {
 		return pf;
 	}
 
-	private ProjectEntry fileMetadata(Long projectId, File file) {
+	private ProjectEntry fileMetadata(String projectId, File file) {
 		final String path = uriToPath(projectId, file.getAbsolutePath());
 
 		final DateTime modified = new DateTime(file.lastModified());
@@ -164,7 +151,7 @@ public class MockProjectService implements ProjectService {
 		return pf;
 	}
 
-	private String uriToPath(Long projectId, String uriPath) {
+	private String uriToPath(String projectId, String uriPath) {
 		uriPath = uriPath.replace("\\", "/");
 		final String seperator = "/";
 		final String searchString = seperator + projectId + seperator + "files";
@@ -175,7 +162,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<Boolean> listenIfUpdateOccurs(Long projectId) {
+	public Promise<Boolean> listenIfUpdateOccurs(String projectId) {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -188,7 +175,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<String> versionDelta(Long projectId, String cursor) {
+	public Promise<String> versionDelta(String projectId, String cursor) {
 		final int sinceRevision = Integer.parseInt(cursor);
 		try {
 			final File updatesFolder = new File(Play.application().resource("rest/v1/project/" + projectId + "/_projectmetadata/updates").toURI());

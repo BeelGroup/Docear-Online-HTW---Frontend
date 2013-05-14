@@ -6,15 +6,12 @@ import org.codehaus.jackson.JsonNode;
 
 import play.libs.F.Promise;
 
-
-
 public interface ProjectService {
+	Promise<InputStream> getFile(String projectId, String path);
+	Promise<JsonNode> metadata(String projectId, String path);
+	Promise<JsonNode> createFolder(String projectId, String path);
+	Promise<JsonNode> putFile(String projectId, String path, byte[] content);
 	
-	Promise<InputStream> getFile(Long projectId, String path);
-	Promise<JsonNode> metadata(Long projectId, String path);
-	Promise<JsonNode> createFolder(Long projectId, String path);
-	Promise<JsonNode> putFile(Long projectId, String path, byte[] content);
-	
-	Promise<Boolean> listenIfUpdateOccurs(Long projectId);
-	Promise<String> versionDelta(Long projectId, String cursor);
+	Promise<Boolean> listenIfUpdateOccurs(String projectId);
+	Promise<String> versionDelta(String projectId, String cursor);
 }

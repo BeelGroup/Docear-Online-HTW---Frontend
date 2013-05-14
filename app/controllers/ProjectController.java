@@ -23,7 +23,7 @@ public class ProjectController extends Controller {
 	@Autowired
 	private ProjectService projectService;
 
-	public Result getFile(Long projectId, String path) {
+	public Result getFile(String projectId, String path) {
 		return async(projectService.getFile(projectId, path).map(new Function<InputStream, Result>() {
 
 			@Override
@@ -33,7 +33,7 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result putFile(Long projectId, String path) {
+	public Result putFile(String projectId, String path) {
 		final byte[] content = request().body().asRaw().asBytes();
 		return async(projectService.putFile(projectId, path, content).map(new Function<JsonNode, Result>() {
 
@@ -60,25 +60,12 @@ public class ProjectController extends Controller {
 		}
 	}
 
-	public Result metadata(Long projectId, String path) {
+	public Result metadata(String projectId, String path) {
 		return async(projectService.metadata(projectId, path).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode entry) throws Throwable {
 				return ok(entry);
-			}
-		}));
-	}
-
-	public Result listenForUpdates(Long projectId) {
-		return async(projectService.listenIfUpdateOccurs(projectId).map(new Function<Boolean, Result>() {
-
-			@Override
-			public Result apply(Boolean hasChanged) throws Throwable {
-				if (hasChanged)
-					return ok();
-				else
-					return status(NOT_MODIFIED);
 			}
 		}));
 	}

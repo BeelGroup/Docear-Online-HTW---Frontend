@@ -17,32 +17,32 @@ public class HashBasedProjectService implements ProjectService {
     private ProjectService projectService;
 
     @Override
-    public F.Promise<InputStream> getFile(Long projectId, String path) {
+    public F.Promise<InputStream> getFile(String projectId, String path) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
     }
 
     @Override
-    public F.Promise<JsonNode> metadata(Long projectId, String path) {
+    public F.Promise<JsonNode> metadata(String projectId, String path) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
     }
 
     @Override
-    public F.Promise<JsonNode> createFolder(Long projectId, String path) {
+    public F.Promise<JsonNode> createFolder(String projectId, String path) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
     }
 
     @Override
-    public F.Promise<JsonNode> putFile(Long projectId, String path, byte[] content) {
+    public F.Promise<JsonNode> putFile(String projectId, String path, byte[] content) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
     }
 
     @Override
-    public F.Promise<Boolean> listenIfUpdateOccurs(Long projectId) {
+    public F.Promise<Boolean> listenIfUpdateOccurs(String projectId) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
     }
 
     @Override
-    public F.Promise<String> versionDelta(Long projectId, String cursor) {
+    public F.Promise<String> versionDelta(String projectId, String cursor) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
     }
 }
