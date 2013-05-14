@@ -28,8 +28,12 @@ import play.Play;
 import play.libs.Akka;
 import play.libs.F.Promise;
 
+/**
+ * @deprecated use HashBasedProjectService
+ */
 @Profile("projectMock")
 @Component
+@Deprecated
 public class MockProjectService implements ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
 
