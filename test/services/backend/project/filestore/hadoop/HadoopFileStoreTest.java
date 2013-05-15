@@ -1,4 +1,4 @@
-package services.backend.project.hadoop;
+package services.backend.project.filestore.hadoop;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.RawLocalFileSystem;
