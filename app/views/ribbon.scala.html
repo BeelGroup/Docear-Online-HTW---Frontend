@@ -1,3 +1,5 @@
+@import controllers.featuretoggle.Feature._
+
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
         <li @if(relativeUrl == request.uri ) {class="active"}>
@@ -18,31 +20,31 @@
 }
 @implicitSession = @{session} @* makes isAuthenticated, @username and @usernameOption possible *@
 
-@if(controllers.featuretoggle.Feature.RIBBONS.isEnabled()) {
+@if(RIBBONS.isEnabled()) {
 
         <div id="ribbons">
             <div class="nav navbar nav-tabs">
+            @if(isAuthenticated) {
 	            <ul class="nav nav-tabs pull-left ribbon-tabs">
 	                <li class="ribbon-logo">
 	                  <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
 	                </li>
-	                @if(controllers.featuretoggle.Feature.RIBBON_HOME.isEnabled()) {
-	                <li class="active tab">
+	                @if(RIBBON_HOME.isEnabled()) {
+	                <li class="tab">
 	                  <a href="#ribbon-home">Home</a>
 	                </li>
 	                }
-	                @if(controllers.featuretoggle.Feature.RIBBON_EDIT.isEnabled()) {
-	                <li class="active tab">
-	                  <a href="#ribbon-edit">Edit</a>
+	                @if(RIBBON_EDIT.isEnabled()) {
+	                <li class="tab">
+	                  <a href="#ribbon-edit" class="ribbon-edit">Edit</a>
 	                </li>
 	                }
-	                @if(controllers.featuretoggle.Feature.RIBBON_WORKSPACE.isEnabled()) {
-	                <li class="active tab">
+	                @if(RIBBON_WORKSPACE.isEnabled()) {
+	                <li class="tab">
 	                  <a href="#ribbon-workspace">Workspace</a>
 	                </li>
 	                }
 	            </ul>
-	            
                 <ul class="nav pull-right">
                     @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
                     @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
@@ -50,6 +52,20 @@
                     }
                     @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
                 </ul>
+            }else{
+                <ul class="nav nav-tabs pull-left ribbon-tabs">
+                    <li class="ribbon-logo">
+                      <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
+                    </li>
+                </ul>
+                    
+                <ul class="nav">
+                    @menuItem("http://www.docear.org/imprint/", "Imprint")
+                    @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
+                    @menuItem(controllers.routes.Application.help().url, "Help")
+                </ul>
+            }
+	            
             </div>
 	    </div>
             

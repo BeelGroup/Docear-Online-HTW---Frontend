@@ -1,9 +1,10 @@
-define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (logger, RootNode, Node, PersistenceHandler) ->  
+define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler', 'handlers/UpdateHandler'],  (logger, RootNode, Node, PersistenceHandler, UpdateHandler) ->  
   module = ->
 
   class NodeFactory
 
     persistenceHandlers = []
+    updateHandlers = []
   
     ###
       todo:
@@ -22,9 +23,14 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       rootNode.set 'rightChildren', []
       rootNode.set 'mapId', data.id
       rootNode.set 'folded', false
+      rootNode.set 'revision', data.revision
 
       if persistenceHandlers[data.id] == undefined
         persistenceHandlers[data.id] = new PersistenceHandler(mapId)
+
+      if updateHandlers[data.id] == undefined
+        updateHandlers[data.id] = new UpdateHandler(mapId, rootNode)
+      rootNode.set 'updateHandler', updateHandlers[data.id]
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
@@ -91,6 +97,7 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
       node.set 'attributesToPersist', ['nodeText', 'isHTML', 'locked']
+      node.set 'persist', true
 
       node.setEdgestyle(data.edgeStyle)
 

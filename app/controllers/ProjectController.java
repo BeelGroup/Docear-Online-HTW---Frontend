@@ -14,8 +14,11 @@ import play.libs.F.Function;
 import play.mvc.Controller;
 import play.mvc.Result;
 import services.backend.project.ProjectService;
+import controllers.featuretoggle.Feature;
+import controllers.featuretoggle.ImplementedFeature;
 
 @Component
+@ImplementedFeature(Feature.WORKSPACE)
 public class ProjectController extends Controller {
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);

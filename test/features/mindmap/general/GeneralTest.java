@@ -15,6 +15,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import controllers.featuretoggle.Feature;
+
 import play.libs.F.Callback;
 import play.test.TestBrowser;
 import base.DocearTest;
@@ -30,11 +32,19 @@ public class GeneralTest extends DocearTest{
             	//Check Title
             	assertThat(driver.getTitle()).isEqualTo("Docear online (Alpha) - Login");
             	
+
             	//Check menu
-            	WebElement menu = driver.findElement(By.className("menu-container"));
+            	WebElement menu;
+				if (!requiredFeatureEnabled(Feature.RIBBONS.name())){
+					menu = driver.findElement(By.className("menu-container"));
+				} else {
+					menu = driver.findElement(By.id("ribbons"));
+				}
+
             	//Check links to Help and Imprint
             	assertThat(menu.findElement(By.linkText("Imprint")).getAttribute("href")).isEqualTo("http://www.docear.org/imprint/");
             	assertThat(menu.findElement(By.linkText("Help")).getAttribute("href")).isEqualTo(url("/help"));
+            	
             }
         });
     }

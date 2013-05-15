@@ -239,6 +239,15 @@ mindmap-container{
     color: @dark-grey;
 } 
 
+.mindmap-canvas .node .inner-node .lock 
+{
+    position: absolute;
+    top: -16px;
+    left: 20px;
+    display: none;
+}
+
+
 #mindmap-container.landing-page 
 {
     margin-left: 330px;   
@@ -478,19 +487,15 @@ ul.nav .no-link {
 }
 #ribbons li a
 {
-    color: @grey;
+    color: @dark-grey;
 }
-#ribbons li a:hover
+#ribbons li.active a
 {
     color: @light-grey;
     background-color: transparent;
 }
-#ribbons li.tab a:hover
-{
-    color: @dark-grey;
-    background-color: @light-grey;
-}
-#ribbons li.tab.active a
+#ribbons .ribbon-tabs li.tab.active a,
+#ribbons .ribbon-tabs li.tab a:hover
 {
     color: @dark-grey;
     background-color: @light-grey;
