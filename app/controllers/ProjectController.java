@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import models.project.formdatas.CreateFolderData;
@@ -26,7 +27,7 @@ public class ProjectController extends Controller {
 	@Autowired
 	private ProjectService projectService;
 
-	public Result getFile(String projectId, String path) {
+	public Result getFile(String projectId, String path) throws IOException {
 		return async(projectService.getFile(projectId, path).map(new Function<InputStream, Result>() {
 
 			@Override
@@ -36,7 +37,7 @@ public class ProjectController extends Controller {
 		}));
     }
 
-	public Result putFile(String projectId, String path) {
+	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
 		return async(projectService.putFile(projectId, path, content).map(new Function<JsonNode, Result>() {
 
@@ -47,7 +48,7 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result createFolder() {
+	public Result createFolder() throws IOException {
 		Form<CreateFolderData> filledForm = createFolderForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
@@ -63,7 +64,7 @@ public class ProjectController extends Controller {
 		}
 	}
 
-	public Result metadata(String projectId, String path) {
+	public Result metadata(String projectId, String path) throws IOException {
 		return async(projectService.metadata(projectId, path).map(new Function<JsonNode, Result>() {
 
 			@Override
@@ -73,7 +74,7 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result projectVersionDelta() {
+	public Result projectVersionDelta() throws IOException {
 		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {

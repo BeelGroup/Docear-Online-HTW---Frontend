@@ -38,7 +38,7 @@ public class MockProjectService implements ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
-	public Promise<InputStream> getFile(String projectId, String path) {
+	public Promise<InputStream> getFile(String projectId, String path) throws IOException {
 		if (!path.startsWith("/"))
 			path = "/" + path;
 
@@ -46,7 +46,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<JsonNode> putFile(String projectId, String path, byte[] content) {
+	public Promise<JsonNode> putFile(String projectId, String path, byte[] content) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String filename = path.substring(path.lastIndexOf("/"));
@@ -68,25 +68,23 @@ public class MockProjectService implements ProjectService {
 			final ProjectEntry pf = metadataIntern(projectId, path, false);
 			return Promise.pure(mapper.valueToTree(pf));
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} finally {
+            throw new RuntimeException(e);
+        } finally {
 			IOUtils.closeQuietly(out);
 		}
 	}
 
-	private String addLeadingSlash(String path) {
+	private String addLeadingSlash(String path) throws IOException {
 		return path.startsWith("/") ? path : "/" + path;
 	}
 
 	@Override
-	public Promise<JsonNode> metadata(String projectId, String path) {
+	public Promise<JsonNode> metadata(String projectId, String path) throws IOException {
 		return Promise.pure(new ObjectMapper().valueToTree(metadataIntern(projectId, path, true)));
 	}
 
 	@Override
-	public Promise<JsonNode> createFolder(String projectId, String path) {
+	public Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String folderName = path.substring(path.lastIndexOf("/"));
@@ -107,7 +105,7 @@ public class MockProjectService implements ProjectService {
 		}
 	}
 
-	private ProjectEntry metadataIntern(String projectId, String path, boolean loadContents) {
+	private ProjectEntry metadataIntern(String projectId, String path, boolean loadContents) throws IOException {
 		path = addLeadingSlash(path);
 		ProjectEntry result = null;
 		try {
@@ -124,7 +122,7 @@ public class MockProjectService implements ProjectService {
 		}
 	}
 
-	private ProjectEntry folderMetadata(String projectId, File folder, boolean loadContents) {
+	private ProjectEntry folderMetadata(String projectId, File folder, boolean loadContents) throws IOException {
 		final String path = uriToPath(projectId, folder.getAbsolutePath());
 
 		final DateTime modified = new DateTime(folder.lastModified());
@@ -175,7 +173,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<String> versionDelta(String projectId, String cursor) {
+	public Promise<String> versionDelta(String projectId, String cursor) throws IOException {
 		final int sinceRevision = Integer.parseInt(cursor);
 		try {
 			final File updatesFolder = new File(Play.application().resource("rest/v1/project/" + projectId + "/_projectmetadata/updates").toURI());
@@ -196,7 +194,7 @@ public class MockProjectService implements ProjectService {
 
 			return Promise.pure(mapper.writeValueAsString(updates));
 
-		} catch (Exception e) {
+		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
