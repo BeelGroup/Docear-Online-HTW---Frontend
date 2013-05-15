@@ -24,5 +24,5 @@ document.graph.defaultWidth = 2
 
 document.currentZoom = 1
 
-document.lockRefresh = 20000
+document.lockRefresh = 10000
 
