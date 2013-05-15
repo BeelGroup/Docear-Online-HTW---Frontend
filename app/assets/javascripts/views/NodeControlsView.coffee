@@ -13,7 +13,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
       "click .action-share"    : "actionShare"
       "click .action-move"    : "actionMove"
  
-    constructor:(@nodeModel, @$node)->
+    constructor:(@nodeModel, @nodeView, @$node)->
       super()    
 
     actionEdit: (event)->
@@ -22,10 +22,10 @@ define ['views/NodeEditView'], (NodeEditView) ->
       
       $node = @nodeView.$el
 
-      $mindmapCanvas = $($node).closest('#mindmap-container')
       if $( "#ribbons li.tab.active a.ribbon-edit" ).size() <= 0 
         $( "#ribbons li.tab a.ribbon-edit" ).click()
       
+      $mindmapCanvas = $($node).closest('#mindmap-container')
       nodeEditView = new NodeEditView(node, @nodeView)
       nodeEditView.renderAndAppendTo($mindmapCanvas)
       

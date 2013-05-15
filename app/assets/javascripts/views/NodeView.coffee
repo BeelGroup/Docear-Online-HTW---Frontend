@@ -8,7 +8,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
     template: Handlebars.templates['Node']
     id: 99
 
-    constructor:(@model) ->
+    constructor:(@model, @rootView) ->
       @id = @model.get 'id'
       super()
 
@@ -16,14 +16,14 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
     recursiveRender: (parentView, parent, nodes, @rootView)->
       if not document.cancel_loading
         $.each nodes, (index, node)=>
-          nodeView = new NodeView(node)
-          nodeView.renderAndAppendTo(parent, rootView)
+          nodeView = new NodeView(node, @rootView)
+          nodeView.renderAndAppendTo(parent, @rootView)
         
 
     changeChildren: ->
       ## TODO -> render and align new child
       newChild = @model.get 'lastAddedChild'
-      nodeView = new NodeView(newChild)
+      nodeView = new NodeView(newChild, @rootView)
       $nodeHtml = $($(nodeView.render().el))
       $node = @$el
       
@@ -115,7 +115,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
-    render: ->
+    render: (@rootView)->
       @$el.html @template @getRenderData()
 
       @$el.attr('folded', @model.get 'folded')
@@ -135,7 +135,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
 
     renderAndAppendTo:($element, rootView)->
-      @render()
+      @render(rootView)
       
       if @controls.movable
         $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });

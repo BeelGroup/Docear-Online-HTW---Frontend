@@ -31,9 +31,12 @@ define ->
     hide: (event)->
       @nodeModel.get('persistenceHandler').unlock(@nodeModel)
       
+      @$node.children('.inner-node').animate({
+        opacity: 1.0
+      }, 0)
       $(@$el).fadeOut(document.fadeDuration, ->
         $(this).remove()
-        $('.editor-toolbar a.btn').addClass('disabled')
+        $('.editor-toolbar a').unbind().addClass('disabled')
       )
       @destroy()
       
@@ -79,16 +82,16 @@ define ->
       
       editorId = 'editor-'+Date.now()
       $editContainer.attr('id', editorId)
-      $($editContainer).wysiwyg()
 
-      $toolbar = $(obj).find('.editor-toolbar')
-      $('.editor-toolbar a.btn').removeClass('disabled')
+      $toolbar = $('.editor-toolbar')
+      $toolbar.find('a.btn').removeClass('disabled')
+      $toolbar.attr('data-target', '#'+editorId)
       
       $toolbarIndoc = $(obj).find('.editor-toolbar-indoc')
-      $toolbar.attr('data-target', '#'+editorId)
-        
+      
       offset = @$node.offset()
       
+      $($editContainer).wysiwyg()
       $editContainer.html(@$node.children('.inner-node').children('.content').html())
       $editContainer.offset(offset)
       
@@ -99,17 +102,18 @@ define ->
       else
         toolbarX = offset.left
         toolbarY = offset.top+($editContainer.outerHeight())
-        $toolbar.offset({left: toolbarX, top: toolbarY})
+        $toolbarIndoc.offset({left: toolbarX, top: toolbarY})
         $toolbarIndoc.draggable({ handle: ".handle" });
-      @
       
+      @scaleLikeRoot($editContainer)
+      @$node.children('.inner-node').animate({
+        opacity: 0.0
+      }, 0)
+      @
 
     render:->
       @updateLock()
       @$el.html @template {}
-      ec = $(@$el.html).find('.edit-container:first')
-      ec.offset(@$node.offset())
-      $(ec).find('.node-id:first').val(@$node.attr('id'))
       @
       
     updateLock:->
@@ -119,5 +123,54 @@ define ->
         setTimeout(->
           nodeEditView.updateLock()
         , document.lockRefresh)
+
+    scaleLikeRoot:($elem)-> 
+      scaleAmount = @nodeView.rootView.scaleAmount    
+      lastScaleAmount = @nodeView.rootView.lastScaleAmount    
+      currentScale = @nodeView.rootView.currentScale
+      
+      possibilities = document.body.style
+      fallback = false
+
+      deltaTop = ($($elem).outerHeight() - ($($elem).outerHeight() / (1/scaleAmount))) /2
+      deltaLeft = ($($elem).outerWidth() - ($($elem).outerWidth() / (1/scaleAmount))) /2
+
+      document.log  $.browser.version
+      # IE
+      if $.browser.msie 
+        if $.browser.version > 8
+          document.log 'IE 9 & 10'
+          $($elem).css
+            '-ms-transform': "scale(#{scaleAmount})" 
+          $($elem).animate {
+            'top' : "-="+deltaTop
+            'left' : "-="+deltaLeft
+          }, 0
+
+        else if $.browser.version <= 8 
+          document.log 'IE 7 & 8'
+          fallback = true
+
+      # Safari, Firefox and Chrome with CSS3 support 
+      else if($.inArray('WebkitTransform', possibilities) or 
+      $.inArray('MozTransform', inpossibilities) or 
+      $.inArray('OTransform', possibilities)) 
+        document.log 'Webkit, Moz, O'
+        $($elem).animate {
+          'scale' : scaleAmount
+          'top' : "-="+deltaTop
+          'left' : "-="+deltaLeft
+        }, 0
+
+      else
+        document.log $.browser
+        fallback = true
+
+      # ultra fallback
+      if fallback
+        scaleDiff = 0
+        if lastScaleAmount != scaleAmount
+          if scaleAmount > lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+          $($elem).effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
 
   module.exports = NodeEdit
