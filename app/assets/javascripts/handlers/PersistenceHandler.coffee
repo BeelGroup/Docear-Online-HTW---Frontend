@@ -63,7 +63,6 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         $.ajax(@persistenceApi.lock.Node, params)
       
     unlock: (node, timeout = 0)->
-      document.log "UUUUNNNLLLOOOCCCKKK"
       if $.inArray('LOCK_NODE', document.features) > -1
         params = {
             url: @persistenceApi.unlock.Node
