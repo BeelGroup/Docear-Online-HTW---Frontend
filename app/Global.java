@@ -46,9 +46,11 @@ import controllers.featuretoggle.FeatureComparator;
 
 public class Global extends GlobalSettings {
     private int loggedErrorExpirationInSeconds;
+    private Application application;
 
     @Override
     public void onStart(Application application) {
+        this.application = application;
         final Configuration conf = Play.application().configuration();
         logConfiguration(conf);
         initializeSpring();
@@ -172,7 +174,9 @@ public class Global extends GlobalSettings {
     @Override
     public Result onHandlerNotFound(Http.RequestHeader requestHeader) {
         Logger.warn("404 for " + requestHeader);
-        if (requestHeader.accepts("text/html")) {
+        if (Play.isDev() && application.configuration().getBoolean("application.showdev404page")) {
+            return null;
+        } else if (requestHeader.accepts("text/html")) {
             flash("warning", "Page not found");
             return notFound(views.html.status404.render(requestHeader));
         } else {
