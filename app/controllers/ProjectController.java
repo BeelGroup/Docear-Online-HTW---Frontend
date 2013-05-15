@@ -34,7 +34,7 @@ public class ProjectController extends Controller {
 				return ok(fileStream);
 			}
 		}));
-	}
+    }
 
 	public Result putFile(String projectId, String path) {
 		final byte[] content = request().body().asRaw().asBytes();

@@ -1,6 +1,9 @@
 package configuration;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,6 +13,10 @@ import play.Configuration;
 import play.Logger;
 import play.Play;
 import controllers.MindMap;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * 
@@ -49,5 +56,14 @@ public class SpringConfiguration {
     @Bean
     public MindMap mindMap() {
         return new MindMap();
+    }
+
+    @Bean
+    public FileSystem fileSystem() throws IOException {
+        final FileSystem fileSystem = new RawLocalFileSystem();
+        final URI uri = fileSystem.getUri().resolve(new File("hadoop-fs").getAbsolutePath());//TODO not suitable for prod, writes directly in working directory
+        fileSystem.initialize(uri, new org.apache.hadoop.conf.Configuration());
+        fileSystem.setWorkingDirectory(new Path(uri));
+        return fileSystem;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import play.libs.F;
+import services.backend.project.filestore.FileStore;
 
 import java.io.InputStream;
 
@@ -14,7 +15,7 @@ import java.io.InputStream;
 public class HashBasedProjectService implements ProjectService {
 
     @Autowired
-    private ProjectService projectService;
+    private FileStore fileStore;
 
     @Override
     public F.Promise<InputStream> getFile(String projectId, String path) {
@@ -44,5 +45,12 @@ public class HashBasedProjectService implements ProjectService {
     @Override
     public F.Promise<String> versionDelta(String projectId, String cursor) {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
+    }
+
+    @Override
+    public String toString() {
+        return "HashBasedProjectService{" +
+                "fileStore=" + fileStore +
+                '}';
     }
 }

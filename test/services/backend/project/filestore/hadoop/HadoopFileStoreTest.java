@@ -1,7 +1,7 @@
 package services.backend.project.filestore.hadoop;
 
+import configuration.SpringConfiguration;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class HadoopFileStoreTest {
 
     @Before
     public void setUp() throws Exception {
-        fileStore = new HadoopFileStore(new RawLocalFileSystem());
+        fileStore = new HadoopFileStore(new SpringConfiguration().fileSystem());
     }
 
     @After

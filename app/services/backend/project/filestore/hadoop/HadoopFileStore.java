@@ -1,9 +1,5 @@
 package services.backend.project.filestore.hadoop;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +10,7 @@ import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 //import org.apache.hadoop.fs.FileSystem;
 
@@ -33,9 +27,6 @@ public class HadoopFileStore implements FileStore {
 
     public HadoopFileStore(FileSystem fileSystem) throws IOException {
         this.fileSystem = fileSystem;
-        final URI uri = fileSystem.getUri().resolve(new File("hadoop-fs").getAbsolutePath());//TODO not suitable for prod, writes directly in working directory
-        fileSystem.initialize(uri, new Configuration());
-        fileSystem.setWorkingDirectory(new Path(uri));
     }
 
     @Autowired
@@ -50,5 +41,12 @@ public class HadoopFileStore implements FileStore {
     @Override
     public DataInputStream open(String path) throws IOException {
         return fileSystem.open(new Path(path));
+    }
+
+    @Override
+    public String toString() {
+        return "HadoopFileStore{" +
+                "fileSystem=" + fileSystem +
+                '}';
     }
 }
