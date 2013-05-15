@@ -33,8 +33,9 @@ public class HadoopFileStore implements FileStore {
 
     public HadoopFileStore(FileSystem fileSystem) throws IOException {
         this.fileSystem = fileSystem;
-        final URI uri = fileSystem.getUri().resolve(new File("hadoop/fs/").getAbsolutePath());//TODO not suitable for prod, writes directly in working directory
+        final URI uri = fileSystem.getUri().resolve(new File("hadoop-fs").getAbsolutePath());//TODO not suitable for prod, writes directly in working directory
         fileSystem.initialize(uri, new Configuration());
+        fileSystem.setWorkingDirectory(new Path(uri));
     }
 
     @Autowired
