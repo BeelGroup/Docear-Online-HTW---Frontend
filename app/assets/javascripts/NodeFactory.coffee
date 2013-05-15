@@ -96,7 +96,7 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'connectionUpdated', 0
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
-      node.set 'attributesToPersist', ['nodeText', 'isHTML', 'locked']
+      node.set 'attributesToPersist', ['nodeText', 'isHTML']
       node.set 'persist', true
 
       node.setEdgestyle(data.edgeStyle)

@@ -42,7 +42,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
             changesToPersist = true
         if changesToPersist
           params = {'nodeId': object.get('id'), 'attributeValueMapJson': $.toJSON(values)}
-          #$.post(@persistenceApi.change[objectName], params)
+          $.post(@persistenceApi.change[objectName], params)
 
     persistNew: (object, params)->
       document.log "TODO: persist node"
@@ -62,9 +62,11 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         }
         $.ajax(@persistenceApi.lock.Node, params)
       
-    unlock: (node)->
+    unlock: (node, timeout = 0)->
+      document.log "UUUUNNNLLLOOOCCCKKK"
       if $.inArray('LOCK_NODE', document.features) > -1
         params = {
+            url: @persistenceApi.unlock.Node
             type: 'POST'
             data: {'nodeId': node.get('id')}
             cache: false
@@ -75,6 +77,8 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
                 document.log "error while unlocking node "+node.get('id')
             }
         }
-        $.ajax(@persistenceApi.unlock.Node, params)
+        setTimeout(->
+          $.ajax(params)
+        , timeout)
 
   module.exports = PersistenceHandler

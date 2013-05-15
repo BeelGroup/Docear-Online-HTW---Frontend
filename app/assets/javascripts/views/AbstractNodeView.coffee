@@ -23,6 +23,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
+      @model.bind "change:isHTML",@changeNodeText , @
       @addEvents()
 
 
@@ -88,13 +89,14 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
 
     changeLockStatus: ->
+      $lockContainer = @$el.children('.inner-node').children('.lock')
       if @model.get 'locked' 
         if (@model.get('lockedBy') != null)
-          $lockContainer = @$el.children('.inner-node').children('.lock')
           $lockContainer.children('.lock-username').text(@model.get('lockedBy'))
           $lockContainer.fadeIn('fast')
       else
-        @$el.children('.inner-node').children('.lock').text('').fadeOut('fast')
+        $lockContainer.children('.lock-username').text('')
+        $lockContainer.fadeOut('fast')
     
 
     changeSelectStatus: ->
@@ -149,6 +151,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         $contentContainer.addClass('isHTML')
         $contentContainer.html(@model.get 'nodeText')
       else
+        $contentContainer.removeClass('isHTML')
         $contentContainer.text(@model.get 'nodeText')
       
       

@@ -29,7 +29,8 @@ define ->
       
     
     hide: (event)->
-      @nodeModel.get('persistenceHandler').unlock(@nodeModel)
+      # call unlock after 1 Sec to give model time to submit changes
+      @nodeModel.get('persistenceHandler').unlock(@nodeModel, 1000)
       
       @$node.children('.inner-node').animate({
         opacity: 1.0
