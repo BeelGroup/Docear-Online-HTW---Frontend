@@ -74,9 +74,15 @@ define ->
       obj = $(@render().el)
       $element.append(obj)
       
+      $mmCanvas = @$node.closest('.mindmap-canvas')
+      
       $(obj).find('.edit-overlay:first').animate({
         opacity: 0.0
-      }, document.fadeDuration)
+        top: $mmCanvas.offset().top
+        left: $mmCanvas.offset().left
+        width: $mmCanvas.outerWidth()
+        height: $mmCanvas.outerHeight()
+      }, 0)
       
       $editContainer = $(obj).find('.node-editor:first')
       
@@ -97,15 +103,16 @@ define ->
       
       @selectText(editorId)
       
+      toolbarX = offset.left
+      toolbarY = offset.top+($editContainer.outerHeight())
+      $toolbarIndoc.offset({left: toolbarX, top: toolbarY})
+      $toolbarIndoc.draggable({ handle: ".handle" });
       if $.browser.msie and $.browser.version < 9
         $toolbarIndoc.remove()
-      else
-        toolbarX = offset.left
-        toolbarY = offset.top+($editContainer.outerHeight())
-        $toolbarIndoc.offset({left: toolbarX, top: toolbarY})
-        $toolbarIndoc.draggable({ handle: ".handle" });
       
       @scaleLikeRoot($editContainer)
+      
+      $viewPort = @$node.closest('.mindmap-viewport') 
       @$node.children('.inner-node').animate({
         opacity: 0.0
       }, 0)
