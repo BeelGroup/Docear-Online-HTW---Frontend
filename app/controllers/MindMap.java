@@ -29,6 +29,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
 import services.backend.user.UserService;
+import views.html.helper.form;
 
 @Component
 public class MindMap extends Controller {
@@ -171,8 +172,9 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result changeNode(final String mapId) throws JsonParseException, JsonMappingException, IOException {
+	public Result changeNode(final String mapId) {
 		final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
+		
 		Logger.debug("MindMap.changeNode => mapId=" + mapId + ", form=" + filledForm.toString());
 
 		if (filledForm.hasErrors())
@@ -180,11 +182,19 @@ public class MindMap extends Controller {
 		else {
 			final ChangeNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-			};
-			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
+			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
+			
+			//Logger.debug(request().body().asJson().asText());
+			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
+			Logger.debug((formUrlEncoded != null) + "");
+			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if(entry.getKey().equals("nodeId"))
+					continue;
+				
+				attributeValueMap.put(entry.getKey(), entry.getValue()[0]);
+			}
 
-			final F.Promise<String> promise = mindMapCrudService.changeNode(source(), username(), mapId, nodeId, map);
+			final F.Promise<String> promise = mindMapCrudService.changeNode(source(), username(), mapId, nodeId, attributeValueMap);
 			return async(promise.map(new Function<String, Result>() {
 				@Override
 				public Result apply(String json) throws Throwable {
