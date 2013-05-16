@@ -23,6 +23,8 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages.AddNodeRequest;
 import org.docear.messages.Messages.AddNodeResponse;
+import org.docear.messages.Messages.ChangeEdgeRequest;
+import org.docear.messages.Messages.ChangeEdgeResponse;
 import org.docear.messages.Messages.ChangeNodeRequest;
 import org.docear.messages.Messages.ChangeNodeResponse;
 import org.docear.messages.Messages.FetchMindmapUpdatesRequest;
@@ -30,7 +32,7 @@ import org.docear.messages.Messages.FetchMindmapUpdatesResponse;
 import org.docear.messages.Messages.GetNodeRequest;
 import org.docear.messages.Messages.GetNodeResponse;
 import org.docear.messages.Messages.ListenToUpdateOccurrenceRequest;
-import org.docear.messages.Messages.ListenToUpdateOccurrenceRespone;
+import org.docear.messages.Messages.ListenToUpdateOccurrenceResponse;
 import org.docear.messages.Messages.MindMapRequest;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
 import org.docear.messages.Messages.MindmapAsJsonRequest;
@@ -145,8 +147,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				return promise.map(new Function<Object, Boolean>() {
 
 					@Override
-					public Boolean apply(Object arg0) throws Throwable {
-						final ListenToUpdateOccurrenceRespone response = (ListenToUpdateOccurrenceRespone) arg0;
+					public Boolean apply(Object listenResponse) throws Throwable {
+						final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) listenResponse;
 						return response.getResult();
 					}
 				}).recover(new Function<Throwable, Boolean>() {
@@ -309,6 +311,22 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		});
 	}
 
+	@Override
+	public Promise<Boolean> changeEdge(String source, String username, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
+		Logger.debug("ServerMindMapCrudService.changeEdge => mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());
+
+		final ChangeEdgeRequest request = new ChangeEdgeRequest(source, username, mapId, nodeId, attributeValueMap);
+
+		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
+
+			@Override
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
+				final ChangeEdgeResponse response = (ChangeEdgeResponse) promise.get();
+				return Promise.pure(response.isSuccess());
+			}
+		});
+	}
+
 	/**
 	 * Central point to perform an action on a mindmap. Helps to centralise
 	 * error handling
@@ -394,12 +412,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 				final StringBuilder outfileName = new StringBuilder();
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is real map, loading from docear server");
 				final byte[] filebytes = getMindMapInputStreamFromDocearServer(user, mapId, outfileName);
-				
+
 				if (filebytes == null) {
 					Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map with serverId: " + mapId + " was not in zip file.");
 					throw new FileNotFoundException("Map not found");
 				}
-				
+
 				fileName = outfileName.toString();
 				in = new ByteArrayInputStream(filebytes);
 			}
