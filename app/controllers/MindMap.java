@@ -184,14 +184,15 @@ public class MindMap extends Controller {
 			final String nodeId = data.getNodeId();
 			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
 			
-			//Logger.debug(request().body().asJson().asText());
 			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
 			Logger.debug((formUrlEncoded != null) + "");
 			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
 				if(entry.getKey().equals("nodeId"))
 					continue;
 				
-				attributeValueMap.put(entry.getKey(), entry.getValue()[0]);
+				final String value = entry.getValue()[0];
+				
+				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 
 			final F.Promise<String> promise = mindMapCrudService.changeNode(source(), username(), mapId, nodeId, attributeValueMap);
@@ -265,10 +266,20 @@ public class MindMap extends Controller {
 		else {
 			final ChangeEdgeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-			};
-			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
-			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(source(), username(), mapId, nodeId, map);
+			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
+			
+			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
+			Logger.debug((formUrlEncoded != null) + "");
+			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if(entry.getKey().equals("nodeId"))
+					continue;
+				
+				final String value = entry.getValue()[0];
+				Logger.debug("value: "+value+"; empty :"+value.isEmpty());
+				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
+			}
+			Logger.debug(attributeValueMap.toString());
+			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(source(), username(), mapId, nodeId, attributeValueMap);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
