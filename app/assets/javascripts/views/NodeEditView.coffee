@@ -133,52 +133,52 @@ define ->
         , document.lockRefresh)
 
     scaleLikeRoot:($elem)-> 
-      scaleAmount = @nodeView.rootView.scaleAmount    
-      lastScaleAmount = @nodeView.rootView.lastScaleAmount    
-      currentScale = @nodeView.rootView.currentScale
-      
-      possibilities = document.body.style
-      fallback = false
-
-      deltaTop = ($($elem).outerHeight() - ($($elem).outerHeight() / (1/scaleAmount))) /2
-      deltaLeft = ($($elem).outerWidth() - ($($elem).outerWidth() / (1/scaleAmount))) /2
-
-      document.log  $.browser.version
-      # IE
-      if $.browser.msie 
-        if $.browser.version > 8
-          document.log 'IE 9 & 10'
-          $($elem).css
-            '-ms-transform': "scale(#{scaleAmount})" 
+      scaleAmount = @nodeView.rootView.scaleAmount
+      if scaleAmount != 1
+        lastScaleAmount = @nodeView.rootView.lastScaleAmount    
+        currentScale = @nodeView.rootView.currentScale
+        possibilities = document.body.style
+        fallback = false
+  
+        deltaTop = ($($elem).outerHeight() - ($($elem).outerHeight() / (1/scaleAmount))) /2
+        deltaLeft = ($($elem).outerWidth() - ($($elem).outerWidth() / (1/scaleAmount))) /2
+  
+        # IE
+        if $.browser.msie 
+          if $.browser.version > 8
+            if scaleAmount > 1
+              $($elem).css
+                '-ms-transform': "scale(#{scaleAmount})" 
+            
+            $($elem).animate {
+              'top' : "-="+deltaTop
+              'left' : "-="+deltaLeft
+            }, 0
+  
+          else if $.browser.version <= 8 
+            fallback = true
+  
+        # Safari, Firefox and Chrome with CSS3 support 
+        else if($.inArray('WebkitTransform', possibilities) or 
+        $.inArray('MozTransform', inpossibilities) or 
+        $.inArray('OTransform', possibilities)) 
           $($elem).animate {
+            'scale' : scaleAmount
             'top' : "-="+deltaTop
             'left' : "-="+deltaLeft
-          }, 0
-
-        else if $.browser.version <= 8 
-          document.log 'IE 7 & 8'
+          }, 0, ->
+            if scaleAmount < 1
+              $($elem).animate {
+                'scale' : 1
+              }, 500
+        else
           fallback = true
-
-      # Safari, Firefox and Chrome with CSS3 support 
-      else if($.inArray('WebkitTransform', possibilities) or 
-      $.inArray('MozTransform', inpossibilities) or 
-      $.inArray('OTransform', possibilities)) 
-        document.log 'Webkit, Moz, O'
-        $($elem).animate {
-          'scale' : scaleAmount
-          'top' : "-="+deltaTop
-          'left' : "-="+deltaLeft
-        }, 0
-
-      else
-        document.log $.browser
-        fallback = true
-
-      # ultra fallback
-      if fallback
-        scaleDiff = 0
-        if lastScaleAmount != scaleAmount
-          if scaleAmount > lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
-          $($elem).effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+  
+        # ultra fallback
+        if fallback
+          scaleDiff = 0
+          if lastScaleAmount != scaleAmount
+            if scaleAmount > lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+            $($elem).effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
 
   module.exports = NodeEdit

@@ -22,9 +22,10 @@ define ['views/NodeEditView'], (NodeEditView) ->
       if node.get 'locked'
         $innerNode = @nodeView.$el.children('.inner-node')
         
-        prevColor = $innerNode.css 'color'
-        borderColor = $innerNode.css 'border-color'
         # quick red blink
+        prevColor = $innerNode.css 'color'
+        # attr border-color didn't work in IE
+        borderColor = $innerNode.css 'border-top-color'
         $innerNode.animate({
           'border-color': '#FF0000'
           color: '#FF0000'
