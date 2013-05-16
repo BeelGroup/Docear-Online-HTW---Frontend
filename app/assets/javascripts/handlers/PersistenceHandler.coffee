@@ -33,15 +33,15 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
 
     persistChanges: (object, changes)->
       objectName = @getObjectName(object)
-      values = {}
+      params = {'nodeId': object.get('id')}
       if @persistenceApi.change[objectName] != undefined
         changesToPersist = false
+        
         $.each changes.changed, (attr, value)->
           if attr in object.get('attributesToPersist')
-            values[attr] = object.get attr
+            params[attr] = object.get attr
             changesToPersist = true
         if changesToPersist
-          params = {'nodeId': object.get('id'), 'attributeValueMapJson': $.toJSON(values)}
           $.post(@persistenceApi.change[objectName], params)
 
     persistNew: (object, params)->
