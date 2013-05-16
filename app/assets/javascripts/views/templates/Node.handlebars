@@ -11,9 +11,9 @@
   {{/if}}
   
   {{#if lockable}}
-  <div class='lock node-control'>
+  <div class='lock node-control {{#if locked}}visible{{/if}}'>
     <i class="icon-user"></i>
-    <span class="lock-username"></span>
+    <span class="lock-username">{{#if locked}}{{{lockedBy}}}{{/if}}</span>
   </div>
   {{/if}}
 </div>

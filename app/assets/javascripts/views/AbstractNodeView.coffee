@@ -148,9 +148,11 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
       $contentContainer = $node.children('.inner-node').children('.content')
       if @model.get 'isHTML'
+        document.log "Changing text as HTML"
         $contentContainer.addClass('isHTML')
         $contentContainer.html(@model.get 'nodeText')
       else
+        document.log "Changing text as PLAIN"
         $contentContainer.removeClass('isHTML')
         $contentContainer.text(@model.get 'nodeText')
       
