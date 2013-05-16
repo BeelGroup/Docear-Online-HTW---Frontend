@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,7 @@ import play.Logger;
 import play.Play;
 import play.libs.Akka;
 import play.libs.F.Promise;
+import services.backend.project.filestore.FileStore;
 
 /**
  * @deprecated use HashBasedProjectService
@@ -36,17 +38,19 @@ import play.libs.F.Promise;
 @Deprecated
 public class MockProjectService implements ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
+	
+	@Autowired
+	private FileStore fileStore;
 
 	@Override
-	public Promise<InputStream> getFile(String projectId, String path) throws IOException {
+	public Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
 		if (!path.startsWith("/"))
 			path = "/" + path;
-
 		return Promise.pure(Play.application().resourceAsStream("rest/v1/project/" + projectId + "/files" + path));
 	}
 
 	@Override
-	public Promise<JsonNode> putFile(String projectId, String path, byte[] content) throws IOException {
+	public Promise<JsonNode> putFile(String username, String projectId, String path, byte[] content) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String filename = path.substring(path.lastIndexOf("/"));
@@ -68,8 +72,8 @@ public class MockProjectService implements ProjectService {
 			final ProjectEntry pf = metadataIntern(projectId, path, false);
 			return Promise.pure(mapper.valueToTree(pf));
 		} catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } finally {
+			throw new RuntimeException(e);
+		} finally {
 			IOUtils.closeQuietly(out);
 		}
 	}
@@ -79,12 +83,12 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<JsonNode> metadata(String projectId, String path) throws IOException {
+	public Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
 		return Promise.pure(new ObjectMapper().valueToTree(metadataIntern(projectId, path, true)));
 	}
 
 	@Override
-	public Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
+	public Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String folderName = path.substring(path.lastIndexOf("/"));
@@ -160,7 +164,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<Boolean> listenIfUpdateOccurs(String projectId) {
+	public Promise<Boolean> listenIfUpdateOccurs(String username, String projectId) {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -173,7 +177,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<String> versionDelta(String projectId, String cursor) throws IOException {
+	public Promise<String> versionDelta(String username, String projectId, String cursor) throws IOException {
 		final int sinceRevision = Integer.parseInt(cursor);
 		try {
 			final File updatesFolder = new File(Play.application().resource("rest/v1/project/" + projectId + "/_projectmetadata/updates").toURI());
@@ -198,5 +202,12 @@ public class MockProjectService implements ProjectService {
 			throw new RuntimeException(e);
 		}
 	}
+	
+    @Override
+    public String toString() {
+        return "HashBasedProjectService{" +
+                "fileStore=" + fileStore +
+                '}';
+    }
 
 }

@@ -8,11 +8,11 @@ import org.codehaus.jackson.JsonNode;
 import play.libs.F.Promise;
 
 public interface ProjectService {
-	Promise<InputStream> getFile(String projectId, String path) throws IOException;
-	Promise<JsonNode> metadata(String projectId, String path) throws IOException;
-	Promise<JsonNode> createFolder(String projectId, String path) throws IOException;
-	Promise<JsonNode> putFile(String projectId, String path, byte[] content) throws IOException;
+	Promise<InputStream> getFile(String username, String projectId, String path) throws IOException;
+	Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException;
+	Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException;
+	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] content) throws IOException;
 	
-	Promise<Boolean> listenIfUpdateOccurs(String projectId) throws IOException;
-	Promise<String> versionDelta(String projectId, String cursor) throws IOException;
+	Promise<Boolean> listenIfUpdateOccurs(String username, String projectId) throws IOException;
+	Promise<String> versionDelta(String username, String projectId, String cursor) throws IOException;
 }

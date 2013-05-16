@@ -14,7 +14,9 @@ import play.data.Form;
 import play.libs.F.Function;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.user.UserService;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.ImplementedFeature;
 
@@ -27,19 +29,24 @@ public class ProjectController extends Controller {
 	@Autowired
 	private ProjectService projectService;
 
+	@Autowired
+	private UserService userService;
+
+	@Security.Authenticated(Secured.class)
 	public Result getFile(String projectId, String path) throws IOException {
-		return async(projectService.getFile(projectId, path).map(new Function<InputStream, Result>() {
+		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {
 
 			@Override
 			public Result apply(InputStream fileStream) throws Throwable {
 				return ok(fileStream);
 			}
 		}));
-    }
+	}
 
+	@Security.Authenticated(Secured.class)
 	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
-		return async(projectService.putFile(projectId, path, content).map(new Function<JsonNode, Result>() {
+		return async(projectService.putFile(username(), projectId, path, content).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {
@@ -48,6 +55,7 @@ public class ProjectController extends Controller {
 		}));
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result createFolder() throws IOException {
 		Form<CreateFolderData> filledForm = createFolderForm.bindFromRequest();
 
@@ -55,7 +63,7 @@ public class ProjectController extends Controller {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final CreateFolderData data = filledForm.get();
-			return async(projectService.createFolder(data.getProjectId(), data.getPath()).map(new Function<JsonNode, Result>() {
+			return async(projectService.createFolder(username(), data.getProjectId(), data.getPath()).map(new Function<JsonNode, Result>() {
 				@Override
 				public Result apply(JsonNode folderMetadata) throws Throwable {
 					return ok(folderMetadata);
@@ -64,8 +72,9 @@ public class ProjectController extends Controller {
 		}
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result metadata(String projectId, String path) throws IOException {
-		return async(projectService.metadata(projectId, path).map(new Function<JsonNode, Result>() {
+		return async(projectService.metadata(username(), projectId, path).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode entry) throws Throwable {
@@ -74,6 +83,7 @@ public class ProjectController extends Controller {
 		}));
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result projectVersionDelta() throws IOException {
 		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
 
@@ -81,7 +91,7 @@ public class ProjectController extends Controller {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final ProjectDeltaData data = filledForm.get();
-			return async(projectService.versionDelta(data.getProjectId(), data.getCursor()).map(new Function<String, Result>() {
+			return async(projectService.versionDelta(username(), data.getProjectId(), data.getCursor()).map(new Function<String, Result>() {
 
 				@Override
 				public Result apply(String updates) throws Throwable {
@@ -89,8 +99,18 @@ public class ProjectController extends Controller {
 				}
 			}));
 		}
-		
-		
+
 	}
 
+	/**
+	 * 
+	 * @return name of currently logged in user
+	 */
+	private String username() {
+		final models.backend.User user = userService.getCurrentUser();
+		if (user != null)
+			return user.getUsername();
+		else
+			return null;
+	}
 }

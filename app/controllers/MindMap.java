@@ -75,6 +75,7 @@ public class MindMap extends Controller {
 		}));
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result requestLock(final String mapId) {
 		final Form<RequestLockData> filledForm = requestLockForm.bindFromRequest();
 		Logger.debug("MindMap.requestLock => mapId=" + mapId + ", form=" + filledForm.toString());
@@ -99,6 +100,7 @@ public class MindMap extends Controller {
 		}
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result releaseLock(final String mapId) {
 		final Form<ReleaseLockData> filledForm = releaseLockForm.bindFromRequest();
 		Logger.debug("MindMap.requestLock => mapId=" + mapId + ", form=" + filledForm.toString());
@@ -155,6 +157,7 @@ public class MindMap extends Controller {
 		}
 	}
 
+	
 	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("MindMap.getNode <- mapId=" + mapId + ", nodeId=" + nodeId + ", nodeCount= " + nodeCount);
 		if (!mapId.equals("welcome") && !userService.isAuthenticated())
@@ -243,6 +246,7 @@ public class MindMap extends Controller {
 		}
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result listenForUpdates(final String mapId) {
 		return async(mindMapCrudService.listenForUpdates(source(), username(), mapId).map(new Function<Boolean, Result>() {
 
