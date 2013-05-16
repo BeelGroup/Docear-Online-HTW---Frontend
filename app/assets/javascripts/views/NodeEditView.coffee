@@ -125,7 +125,9 @@ define ->
       @
       
     updateLock:->
-      if not @destroyed
+      if $(@$el).hasClass('close-and-destroy')
+        @hide()
+      else if not @destroyed
         @nodeModel.get('persistenceHandler').lock(@nodeModel)
         nodeEditView = @
         setTimeout(->

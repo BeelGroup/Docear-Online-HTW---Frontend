@@ -50,17 +50,25 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     lock: (node)->
       if $.inArray('LOCK_NODE', document.features) > -1
         params = {
+            url: @persistenceApi.lock.Node
             type: 'POST'
             data: {'nodeId': node.get('id')}
+            dataType: 'json'
             cache: false
             statusCode: {
               200: (response)->
                 document.log "node "+node.get('id')+" locked"
               412: (response)->
+                # hide and destroy edit container 
+                $editNodeContainer = $('.node-edit-container')
+                $('#'+node.get('id')).children('.inner-node').animate({opacity: 1.0}, 0)
+                $editNodeContainer.addClass('close-and-destroy').hide()
                 document.log "error while locking node "+node.get('id')
             }
+            complete: (jqXHR, textStatus)->
+              document.log textStatus
         }
-        $.ajax(@persistenceApi.lock.Node, params)
+        $.ajax(params)
       
     unlock: (node, timeout = 0)->
       if $.inArray('LOCK_NODE', document.features) > -1
