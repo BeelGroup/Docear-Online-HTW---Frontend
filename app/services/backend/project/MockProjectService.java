@@ -36,7 +36,7 @@ import services.backend.project.filestore.FileStore;
 @Profile("projectMock")
 @Component
 @Deprecated
-public class MockProjectService implements ProjectService {
+public class MockProjectService extends ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
 	
 	@Autowired
@@ -46,6 +46,7 @@ public class MockProjectService implements ProjectService {
 	public Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
 		if (!path.startsWith("/"))
 			path = "/" + path;
+		
 		return Promise.pure(Play.application().resourceAsStream("rest/v1/project/" + projectId + "/files" + path));
 	}
 
@@ -201,6 +202,12 @@ public class MockProjectService implements ProjectService {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	@Override
+	public Promise<JsonNode> delete(String username, String projectId, String path) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
     @Override
