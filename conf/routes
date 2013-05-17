@@ -25,6 +25,7 @@ POST	/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
 POST	/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
 POST	/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
 POST	/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
+POST	/map/:mapId/node/changeEdge		@controllers.MindMap.changeEdge(mapId: String)
 
 GET		/map/:mapId/listen				@controllers.MindMap.listenForUpdates(mapId: String)
 GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)

@@ -33,16 +33,16 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
 
     persistChanges: (object, changes)->
       objectName = @getObjectName(object)
-      values = {}
+      params = {'nodeId': object.get('id')}
       if @persistenceApi.change[objectName] != undefined
         changesToPersist = false
+        
         $.each changes.changed, (attr, value)->
           if attr in object.get('attributesToPersist')
-            values[attr] = object.get attr
+            params[attr] = object.get attr
             changesToPersist = true
         if changesToPersist
-          params = {'nodeId': object.get('id'), 'attributeValueMapJson': $.toJSON(values)}
-          #$.post(@persistenceApi.change[objectName], params)
+          $.post(@persistenceApi.change[objectName], params)
 
     persistNew: (object, params)->
       document.log "TODO: persist node"
@@ -50,21 +50,30 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     lock: (node)->
       if $.inArray('LOCK_NODE', document.features) > -1
         params = {
+            url: @persistenceApi.lock.Node
             type: 'POST'
             data: {'nodeId': node.get('id')}
+            dataType: 'json'
             cache: false
             statusCode: {
               200: (response)->
                 document.log "node "+node.get('id')+" locked"
               412: (response)->
+                # hide and destroy edit container 
+                $editNodeContainer = $('.node-edit-container')
+                $('#'+node.get('id')).children('.inner-node').animate({opacity: 1.0}, 0)
+                $editNodeContainer.addClass('close-and-destroy').hide()
                 document.log "error while locking node "+node.get('id')
             }
+            complete: (jqXHR, textStatus)->
+              document.log textStatus
         }
-        $.ajax(@persistenceApi.lock.Node, params)
+        $.ajax(params)
       
-    unlock: (node)->
+    unlock: (node, timeout = 0)->
       if $.inArray('LOCK_NODE', document.features) > -1
         params = {
+            url: @persistenceApi.unlock.Node
             type: 'POST'
             data: {'nodeId': node.get('id')}
             cache: false
@@ -75,6 +84,8 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
                 document.log "error while unlocking node "+node.get('id')
             }
         }
-        $.ajax(@persistenceApi.unlock.Node, params)
+        setTimeout(->
+          $.ajax(params)
+        , timeout)
 
   module.exports = PersistenceHandler

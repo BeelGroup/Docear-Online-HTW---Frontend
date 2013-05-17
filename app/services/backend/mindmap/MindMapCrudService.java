@@ -55,5 +55,6 @@ public interface MindMapCrudService {
 	 */
 	Promise<Boolean> removeNode(String source, String username, String mapId, String nodeId);
 
+	Promise<Boolean> changeEdge(String source, String username, String mapId, String nodeId, Map<String,Object> attributeValueMap);
 
 }

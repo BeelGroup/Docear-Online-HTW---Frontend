@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
+import models.frontend.formdata.ChangeEdgeData;
 import models.frontend.formdata.ChangeNodeData;
 import models.frontend.formdata.CreateNodeData;
 import models.frontend.formdata.MoveNodeData;
@@ -14,8 +15,6 @@ import models.frontend.formdata.RequestLockData;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +36,7 @@ public class MindMap extends Controller {
 	private final static Form<MoveNodeData> moveNodeForm = Form.form(MoveNodeData.class);
 	private final static Form<RequestLockData> requestLockForm = Form.form(RequestLockData.class);
 	private final static Form<ReleaseLockData> releaseLockForm = Form.form(ReleaseLockData.class);
+	private final static Form<ChangeEdgeData> changeEdgeForm = Form.form(ChangeEdgeData.class);
 
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
@@ -172,8 +172,9 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result changeNode(final String mapId) throws JsonParseException, JsonMappingException, IOException {
+	public Result changeNode(final String mapId) {
 		final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
+		
 		Logger.debug("MindMap.changeNode => mapId=" + mapId + ", form=" + filledForm.toString());
 
 		if (filledForm.hasErrors())
@@ -181,11 +182,20 @@ public class MindMap extends Controller {
 		else {
 			final ChangeNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-			};
-			final Map<String, Object> map = new ObjectMapper().readValue(data.getAttributeValueMapJson(), typeRef);
-			// Logger.debug(map.get("attributes").getClass().getSimpleName());
-			final F.Promise<String> promise = mindMapCrudService.changeNode(source(), username(), mapId, nodeId, map);
+			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
+			
+			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
+			Logger.debug((formUrlEncoded != null) + "");
+			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if(entry.getKey().equals("nodeId"))
+					continue;
+				
+				final String value = entry.getValue()[0];
+				
+				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
+			}
+
+			final F.Promise<String> promise = mindMapCrudService.changeNode(source(), username(), mapId, nodeId, attributeValueMap);
 			return async(promise.map(new Function<String, Result>() {
 				@Override
 				public Result apply(String json) throws Throwable {
@@ -247,6 +257,42 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
+	public Result changeEdge(final String mapId) throws JsonParseException, JsonMappingException, IOException {
+		final Form<ChangeEdgeData> filledForm = changeEdgeForm.bindFromRequest();
+		Logger.debug("MindMap.changeEdge => mapId=" + mapId + ", form=" + filledForm.toString());
+
+		if (filledForm.hasErrors())
+			return badRequest(filledForm.errorsAsJson());
+		else {
+			final ChangeEdgeData data = filledForm.get();
+			final String nodeId = data.getNodeId();
+			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
+			
+			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
+			Logger.debug((formUrlEncoded != null) + "");
+			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if(entry.getKey().equals("nodeId"))
+					continue;
+				
+				final String value = entry.getValue()[0];
+				Logger.debug("value: "+value+"; empty :"+value.isEmpty());
+				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
+			}
+			Logger.debug(attributeValueMap.toString());
+			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(source(), username(), mapId, nodeId, attributeValueMap);
+			return async(promise.map(new Function<Boolean, Result>() {
+				@Override
+				public Result apply(Boolean success) throws Throwable {
+					if (success) {
+						return ok();
+					} else {
+						return status(PRECONDITION_FAILED);
+					}
+				}
+			}));
+		}
+	}
+	
 	public Result listenForUpdates(final String mapId) {
 		return async(mindMapCrudService.listenForUpdates(source(), username(), mapId).map(new Function<Boolean, Result>() {
 

@@ -2,18 +2,18 @@
 <div class='inner-node'>
   <div class='content {{#if isHTML}}isHTML{{/if}}'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
   {{#if foldable}}
-    <div class='action-fold collapse-icon'>
+    <div class='action-fold collapse-icon node-control'>
       <img class='action-fold-all' src="/assets/images/icon_minus.svg">
     </div>
-    <div class='action-fold expand-icon invisible'>
+    <div class='action-fold expand-icon invisible node-control'>
       <img class='action-fold-all' src="/assets/images/icon_plus.svg">
     </div>
   {{/if}}
   
   {{#if lockable}}
-  <div class='lock'>
+  <div class='lock node-control {{#if locked}}visible{{/if}}'>
     <i class="icon-user"></i>
-    <span class="lock-username"></span>
+    <span class="lock-username">{{#if locked}}{{{lockedBy}}}{{/if}}</span>
   </div>
   {{/if}}
 </div>

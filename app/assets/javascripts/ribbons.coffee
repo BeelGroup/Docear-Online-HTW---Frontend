@@ -13,6 +13,9 @@
       false
     )
 
+    
+    if $.browser.msie and $.browser.version <= 8
+      $( "#ribbons .ribbon-tabs li.tab a.ribbon-edit" ).parent().remove()
     $firstTab = $( "#ribbons .ribbon-tabs li.tab:first a" )
     if  $firstTab.size() > 0
       $active = $( "#ribbons .ribbon-tabs li.tab.active:first a" )

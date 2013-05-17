@@ -58,14 +58,19 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     
     updateNode: (update)->
       node = @rootNode.findById update.nodeId
-      
       if update.attribute is 'locked'
         if update.value isnt null
           node.lock update.value
-          document.log "update: node "+node.id+" => locked"
+          document.log "UPDATE: node #{node.id} SET locked"
         else
           node.unlock()
-          document.log "update: node "+node.id+" => unlocked "
+          document.log "UPDATE: node #{node.id} SET unlocked"
+      else if update.attribute is 'isHTML'
+        document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value} "
+        node.setAttributeWithoutPersist 'isHTML', update.value
+      else if update.attribute is 'nodeText'
+        document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value}"
+        node.setAttributeWithoutPersist 'nodeText', update.value
       
       
     

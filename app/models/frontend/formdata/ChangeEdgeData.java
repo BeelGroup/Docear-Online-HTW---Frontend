@@ -2,7 +2,7 @@ package models.frontend.formdata;
 
 import play.data.validation.Constraints.Required;
 
-public class ChangeNodeData {
+public class ChangeEdgeData {
 	@Required
 	private String nodeId;
 

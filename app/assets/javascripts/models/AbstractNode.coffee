@@ -8,7 +8,7 @@ define ['logger'], (logger)->
   class AbstractNode extends Backbone.Model 
 
     constructor:->
-      super()    
+      super()
 
 
     activateListeners:->
@@ -38,9 +38,9 @@ define ['logger'], (logger)->
         $("##{@get('rootNodeModel').get 'id'}").trigger 'updateMinimap'
 
     lock: (lockedBy) ->
+      document.log "Locked by : "+lockedBy
       @set 'lockedBy', lockedBy
       @set 'locked', true
- 
  
     unlock: ->
       @set 'lockedBy', null
@@ -119,7 +119,7 @@ define ['logger'], (logger)->
     
     setAttributeWithoutPersist: (attribute, value)->
       @set 'persist', false
-      @set 'attribute', value
+      @set attribute, value
       @set 'persist', true
       
     removeCild: (child)->

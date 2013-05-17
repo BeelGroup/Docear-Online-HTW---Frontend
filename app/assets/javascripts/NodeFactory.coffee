@@ -85,7 +85,11 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'yPos', 0
       node.set 'hGap', 0
       node.set 'shiftY', 0
-      node.set 'locked', false
+      
+      if data.locked isnt undefined and data.locked != ""
+        node.lock data.locked
+      else
+        node.unlock()
 
       node.set 'rootNodeModel', rootNode
       node.set 'selected', false
@@ -96,7 +100,7 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'connectionUpdated', 0
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
-      node.set 'attributesToPersist', ['nodeText', 'isHTML', 'locked']
+      node.set 'attributesToPersist', ['nodeText', 'isHTML']
       node.set 'persist', true
 
       node.setEdgestyle(data.edgeStyle)

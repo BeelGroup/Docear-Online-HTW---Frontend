@@ -29,11 +29,15 @@ define ->
       
     
     hide: (event)->
-      @nodeModel.get('persistenceHandler').unlock(@nodeModel)
+      # call unlock after document.unlockDelay Sec to give model time to submit changes
+      @nodeModel.get('persistenceHandler').unlock(@nodeModel, document.unlockDelay)
       
+      @$node.children('.inner-node').animate({
+        opacity: 1.0
+      }, 0)
       $(@$el).fadeOut(document.fadeDuration, ->
         $(this).remove()
-        $('.editor-toolbar a.btn').addClass('disabled')
+        $('.editor-toolbar a').unbind().addClass('disabled')
       )
       @destroy()
       
@@ -71,53 +75,112 @@ define ->
       obj = $(@render().el)
       $element.append(obj)
       
+      $mmCanvas = @$node.closest('.mindmap-canvas')
+      
       $(obj).find('.edit-overlay:first').animate({
         opacity: 0.0
-      }, document.fadeDuration)
+        top: $mmCanvas.offset().top
+        left: $mmCanvas.offset().left
+        width: $mmCanvas.outerWidth()
+        height: $mmCanvas.outerHeight()
+      }, 0)
       
       $editContainer = $(obj).find('.node-editor:first')
       
       editorId = 'editor-'+Date.now()
       $editContainer.attr('id', editorId)
-      $($editContainer).wysiwyg()
 
-      $toolbar = $(obj).find('.editor-toolbar')
-      $('.editor-toolbar a.btn').removeClass('disabled')
+      $toolbar = $('.editor-toolbar')
+      $toolbar.find('a.btn').removeClass('disabled')
+      $toolbar.attr('data-target', '#'+editorId)
       
       $toolbarIndoc = $(obj).find('.editor-toolbar-indoc')
-      $toolbar.attr('data-target', '#'+editorId)
-        
+      
       offset = @$node.offset()
       
+      $($editContainer).wysiwyg()
       $editContainer.html(@$node.children('.inner-node').children('.content').html())
       $editContainer.offset(offset)
       
       @selectText(editorId)
       
+      toolbarX = offset.left
+      toolbarY = offset.top+($editContainer.outerHeight())
+      $toolbarIndoc.offset({left: toolbarX, top: toolbarY})
+      $toolbarIndoc.draggable({ handle: ".handle" });
       if $.browser.msie and $.browser.version < 9
         $toolbarIndoc.remove()
-      else
-        toolbarX = offset.left
-        toolbarY = offset.top+($editContainer.outerHeight())
-        $toolbar.offset({left: toolbarX, top: toolbarY})
-        $toolbarIndoc.draggable({ handle: ".handle" });
-      @
       
+      @scaleLikeRoot($editContainer)
+      
+      $viewPort = @$node.closest('.mindmap-viewport') 
+      @$node.children('.inner-node').animate({
+        opacity: 0.0
+      }, 0)
+      @
 
     render:->
       @updateLock()
       @$el.html @template {}
-      ec = $(@$el.html).find('.edit-container:first')
-      ec.offset(@$node.offset())
-      $(ec).find('.node-id:first').val(@$node.attr('id'))
       @
       
     updateLock:->
-      if not @destroyed
+      if $(@$el).hasClass('close-and-destroy')
+        @hide()
+      else if not @destroyed
         @nodeModel.get('persistenceHandler').lock(@nodeModel)
         nodeEditView = @
         setTimeout(->
           nodeEditView.updateLock()
         , document.lockRefresh)
+
+    scaleLikeRoot:($elem)-> 
+      scaleAmount = @nodeView.rootView.scaleAmount
+      if scaleAmount != 1
+        lastScaleAmount = @nodeView.rootView.lastScaleAmount    
+        currentScale = @nodeView.rootView.currentScale
+        possibilities = document.body.style
+        fallback = false
+  
+        deltaTop = ($($elem).outerHeight() - ($($elem).outerHeight() / (1/scaleAmount))) /2
+        deltaLeft = ($($elem).outerWidth() - ($($elem).outerWidth() / (1/scaleAmount))) /2
+  
+        # IE
+        if $.browser.msie 
+          if $.browser.version > 8
+            if scaleAmount > 1
+              $($elem).css
+                '-ms-transform': "scale(#{scaleAmount})" 
+            
+            $($elem).animate {
+              'top' : "-="+deltaTop
+              'left' : "-="+deltaLeft
+            }, 0
+  
+          else if $.browser.version <= 8 
+            fallback = true
+  
+        # Safari, Firefox and Chrome with CSS3 support 
+        else if($.inArray('WebkitTransform', possibilities) or 
+        $.inArray('MozTransform', inpossibilities) or 
+        $.inArray('OTransform', possibilities)) 
+          $($elem).animate {
+            'scale' : scaleAmount
+            'top' : "-="+deltaTop
+            'left' : "-="+deltaLeft
+          }, 0, ->
+            if scaleAmount < 1
+              $($elem).animate {
+                'scale' : 1
+              }, 500
+        else
+          fallback = true
+  
+        # ultra fallback
+        if fallback
+          scaleDiff = 0
+          if lastScaleAmount != scaleAmount
+            if scaleAmount > lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
+            $($elem).effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
 
   module.exports = NodeEdit
