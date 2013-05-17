@@ -61,7 +61,7 @@ public class SpringConfiguration {
     @Bean
     public FileSystem fileSystem() throws IOException {
         final FileSystem fileSystem = new RawLocalFileSystem();
-        final URI uri = fileSystem.getUri().resolve(new File("hadoop-fs").getAbsolutePath());//TODO not suitable for prod, writes directly in working directory
+        final URI uri = new File("hadoop-fs").toURI();//TODO not suitable for prod, writes directly in working directory
         fileSystem.initialize(uri, new org.apache.hadoop.conf.Configuration());
         fileSystem.setWorkingDirectory(new Path(uri));
         return fileSystem;
