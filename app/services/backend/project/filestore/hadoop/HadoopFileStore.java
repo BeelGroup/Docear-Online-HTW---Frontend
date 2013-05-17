@@ -21,7 +21,9 @@ import java.io.IOException;
 @Profile("hadoopFileStore")
 @Component
 public class HadoopFileStore implements FileStore {
-
+    @Autowired
+    private FileSystem fileSystem;
+    
     public HadoopFileStore() {
     }
 
@@ -29,8 +31,6 @@ public class HadoopFileStore implements FileStore {
         this.fileSystem = fileSystem;
     }
 
-    @Autowired
-    private FileSystem fileSystem;
 
     @Override
     public DataOutputStream create(String path) throws IOException {

@@ -2,6 +2,7 @@ package services.backend.project.filestore;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public interface FileStore {
@@ -19,6 +20,7 @@ public interface FileStore {
      * @param path hierarchical path for the file
      * @return a stream to read the data
      * @throws IOException
+     * @throws FileNotFoundException
      */
-    DataInputStream open(String path) throws IOException;
+    DataInputStream open(String path) throws IOException, FileNotFoundException;
 }
