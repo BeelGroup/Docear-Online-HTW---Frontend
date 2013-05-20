@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 
@@ -21,7 +23,7 @@ import services.backend.project.filestore.FileStore;
 
 @Profile("projectHashImpl")
 @Component
-public class HashBasedProjectService extends ProjectService {
+public class HashBasedProjectService implements ProjectService {
 
 	@Autowired
 	private FileStore fileStore;
@@ -104,5 +106,30 @@ public class HashBasedProjectService extends ProjectService {
 
 	private String generateProjectResourcePath(String projectId, String path) {
 		return projectId + "/" + path;
+	}
+	
+	/**
+	 * taken from http://www.mkyong.com/java/java-sha-hashing-example/
+	 * 
+	 * @param content
+	 * @return
+	 */
+	private static String getFileCheckSum(byte[] content) {
+		try {
+			final MessageDigest md = MessageDigest.getInstance("SHA-512");
+			md.update(content);
+
+			final byte[] mdbytes = md.digest();
+
+			// convert the byte to hex format
+			final StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < mdbytes.length; i++) {
+				sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+			}
+
+			return sb.toString();
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("Invalid Crypto algorithm! ", e);
+		}
 	}
 }

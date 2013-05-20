@@ -36,7 +36,7 @@ import services.backend.project.filestore.FileStore;
 @Profile("projectMock")
 @Component
 @Deprecated
-public class MockProjectService extends ProjectService {
+public class MockProjectService implements ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
 	
 	@Autowired
