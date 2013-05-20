@@ -1,5 +1,6 @@
 package services.backend.project;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
+import java.util.zip.ZipInputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 
@@ -27,6 +29,8 @@ import services.backend.project.filestore.FileStore;
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
+	private final String FOLDER_UNZIPPED = "filesUnzipped";
+	private final String FOLDER_ZIPPED = "filesZipped";
 
 	@Autowired
 	private FileStore fileStore;
@@ -43,7 +47,7 @@ public class HashBasedProjectService implements ProjectService {
 			final String fileHash = IOUtils.toString(in);
 			IOUtils.closeQuietly(in);
 
-			return Promise.pure((InputStream) fileStore.open("unzippedFiles/"+fileHash));
+			return Promise.pure((InputStream) fileStore.open(FOLDER_ZIPPED+"/"+fileHash+".zip"));
 
 		} catch (FileNotFoundException e) {
 			throw new NotFoundException("File not found!", e);
@@ -63,25 +67,37 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> putFile(String username, String projectId, String path, InputStream contentStream) throws IOException {
+	public F.Promise<JsonNode> putFile(String username, String projectId, String path, byte[] zipFileBytes) throws IOException {
 		/**
 		 * For now generates hash, saves it for the path and saves the file
 		 */
 		OutputStream out = null;
-		DigestInputStream digestIm = null;
+		ZipInputStream zipStream = null;
+		DigestInputStream digestIn = null;
 		String fileHash = null;
-		try {
+		try {			
+			final String zippedTmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000)+".zip";
 			final String tmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000);
-			digestIm = new DigestInputStream(contentStream, createMessageDigest());
+			//copy zipfile to tmp dir
+			out = fileStore.create(zippedTmpPath);
+			IOUtils.write(zipFileBytes, out);
+			IOUtils.closeQuietly(out);
+			
+			//get unzipped file
+			zipStream = new ZipInputStream(new ByteArrayInputStream(zipFileBytes));
+			zipStream.getNextEntry();
+			digestIn = new DigestInputStream(zipStream, createMessageDigest());
 			out = fileStore.create(tmpPath);
 			// write to temp location
-			IOUtils.copy(digestIm, out);
+			IOUtils.copy(digestIn, out);
 			IOUtils.closeQuietly(out);
 			//get hash
-			fileHash = getFileCheckSum(digestIm);
-			final String unzippedPath = "unzippedFiles/"+fileHash;
+			fileHash = getFileCheckSum(digestIn);
+			final String unzippedPath = FOLDER_UNZIPPED+"/"+fileHash;
+			final String zippedPath = FOLDER_ZIPPED+"/"+fileHash+".zip";
 			
 			fileStore.move(tmpPath, unzippedPath);
+			fileStore.move(zippedTmpPath, zippedPath);
 			
 			
 			final String fullPath = generateProjectResourcePath(projectId, path);
@@ -93,7 +109,7 @@ public class HashBasedProjectService implements ProjectService {
 			throw new NotFoundException("File not found!", e);
 		} finally {
 			IOUtils.closeQuietly(out);
-			IOUtils.closeQuietly(contentStream);
+			IOUtils.closeQuietly(zipStream);
 		}
 		
 		return Promise.pure(new ObjectMapper().readTree("{\"hash\":\"" + fileHash + "\"}"));

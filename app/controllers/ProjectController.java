@@ -1,6 +1,5 @@
 package controllers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -33,7 +32,6 @@ public class ProjectController extends Controller {
 	@Autowired
 	private UserService userService;
 
-	@Security.Authenticated(Secured.class)
 	public Result getFile(String projectId, String path) throws IOException {
 		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {
 
@@ -44,11 +42,16 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	@Security.Authenticated(Secured.class)
+	/**
+	 * body contains zipped file
+	 * @param projectId
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
 	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
-		final InputStream in = new ByteArrayInputStream(content);
-		return async(projectService.putFile(username(), projectId, path, in).map(new Function<JsonNode, Result>() {
+		return async(projectService.putFile(username(), projectId, path, content).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {

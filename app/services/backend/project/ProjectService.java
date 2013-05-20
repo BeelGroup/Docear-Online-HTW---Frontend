@@ -2,8 +2,6 @@ package services.backend.project;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.codehaus.jackson.JsonNode;
 
@@ -21,7 +19,16 @@ public interface ProjectService {
 
 	Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException;
 
-	Promise<JsonNode> putFile(String username, String projectId, String path, InputStream contentStream) throws IOException;
+	/**
+	 * takes zipped file
+	 * @param username
+	 * @param projectId
+	 * @param path
+	 * @param zipFileBytes
+	 * @return
+	 * @throws IOException
+	 */
+	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] zipFileBytes) throws IOException;
 
 	Promise<JsonNode> delete(String username, String projectId, String path) throws IOException;
 
