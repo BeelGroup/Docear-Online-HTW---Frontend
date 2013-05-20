@@ -1,0 +1,14 @@
+[
+    {
+        "_id": {
+            "$oid": "507f191e810c19729de860ea"
+        },
+        "name": "Mein Projekt",
+        "authUsers": ["Alex", "Micha", "Julius"],
+        "changes":[
+            {"state": "UUID", "path":"/path/to/resource"},
+            {"state": "UUID2", "path":"/path/to/another/resource"}
+        ]
+    }
+]
+
