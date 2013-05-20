@@ -22,7 +22,7 @@ define ['logger'], (logger)->
       @bind 'change:folded', =>
         rootID = @get('rootNodeModel').get 'id'
         # is catched in mapview to update mininodes in minimap
-        $("##{rootID}").trigger 'updateMinimap'
+        $("##{rootID}").trigger 'refreshMinimap'
 
 
       @bind 'change',(changes)->

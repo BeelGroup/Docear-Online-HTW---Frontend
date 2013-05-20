@@ -19,7 +19,10 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
 
 
     loadMap: (@mapId) ->
-      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
+      if @mapLoader isnt undefined
+        @mapLoader.stop()
+        
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId, document.initialLoadChunkSize).url
 
       $.ajax(
         url: @href
@@ -53,12 +56,12 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
     parseAndRenderMapByJsonData: (data)=>
       $('.current-mindmap-name').text(data.name)
 
+      
+      @mapLoader = new MapLoader data, @mapId
 
-      mapLoader = new MapLoader data, @mapId
-
-      @rootView = new RootNodeView mapLoader.firstLoad()
+      @rootView = new RootNodeView @mapLoader.firstLoad()
       document.rootView = @rootView
-      mapLoader.injectRootView @rootView
+      @mapLoader.injectRootView @rootView
       @rootView.renderAndAppendTo(@canvas.getElement())
 
       @rootView.centerInContainer()
@@ -75,15 +78,20 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
+
       # first part of map is loaded - fadeout
       @$el.parent().find(".loading-map-overlay").fadeOut()
       document.initialLoad = true
-      mapLoader.continueLoading()
-      @rootView.model.on 'refreshSize', @refreshMiniNodes
+      @mapLoader.continueLoading()
+      @rootView.model.on 'refreshSize', @refreshSizeOfCanvasAndMinimap
+      @rootView.model.on 'refreshMinimap', @minimap.drawMiniNodes @rootView.setChildPositions()
+      @rootView.model.on 'refreshDomConnectionsAndBoundaries', @refreshDomConnectionsAndBoundaries
 
 
-
-    refreshMiniNodes:=>
+    refreshDomConnectionsAndBoundaries:=>
+      document.log 'refresh'
+      @rootView.refreshDom()
+      @rootView.connectChildren()
       @canvas.checkBoundaries()
       @minimap.drawMiniNodes @rootView.setChildPositions()
 

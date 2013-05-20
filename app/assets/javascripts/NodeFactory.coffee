@@ -41,6 +41,7 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'folded', data.folded
       if data.childrenIds isnt undefined 
         node.set 'childsToLoad', data.childrenIds
+        rootNode.addParentToParentToLoadList(node)
         for id in data.childrenIds
           rootNode.addNodetoUnfinishedList(id, node)
 
@@ -89,6 +90,10 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
 
       node.set 'persistenceHandler', (new PersistenceHandler())
       node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
+
+      node.set 'foldedShow', false
+      node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
+      node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
 
       node.setEdgestyle(data.edgeStyle)
 

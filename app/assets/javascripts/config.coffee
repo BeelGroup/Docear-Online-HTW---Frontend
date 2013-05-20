@@ -26,5 +26,5 @@ document.currentZoom = 1
 
 document.initialLoad = false
 document.loadChunkSize = 100
-document.initialLoadChunkSize = 100
+document.initialLoadChunkSize = 500
 

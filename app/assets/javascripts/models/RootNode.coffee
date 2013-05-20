@@ -5,6 +5,7 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
     constructor:->
       super()
       @allNodes = new Array()
+      @parentsToLoad = new Array()
       @unfinishedNodes = {}
       @typeName = 'rootModel'
       @sup = RootNode.__super__
@@ -17,6 +18,12 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
 
     addNodetoUnfinishedList:(id, parentNode)->
       @unfinishedNodes[id] = parentNode
+
+    addParentToParentToLoadList:(parentNode)->
+      @parentsToLoad.push parentNode
+
+    getParentsToLoad:->
+      return @parentsToLoad
 
     getUnfinishedNodes:->
       @unfinishedNodes

@@ -107,24 +107,26 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
     initialFoldStatus:()-> 
       shouldBeVisible = !@model.get('folded')
-      @updateFS(shouldBeVisible, true)
+      @privateUpdateFoldStatus(shouldBeVisible, true)
 
      
     updateFoldStatus:()->
       if @renderOnExpand
+        # visible for layouting
         @$el.find('.children:first').toggle()
-        document.rootView.refreshDom()
-        document.rootView.connectChildren()
+        (@model.get 'rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        # childs will layouted (not rendered) the first and only time here.
         @renderOnExpand = false
-        @$el.find('.children:first').toggle()
-        @updateFS(true, false)
+        #@$el.find('.children:first').toggle()
+        @switchFoldButtons()
+        #@privateUpdateFoldStatus(true, false, true)
       else
         shouldBeVisible = !@model.get('folded')
         domVisible = @$el.children('.children').is ':visible'
-        @updateFS(shouldBeVisible, domVisible)
+        @privateUpdateFoldStatus(shouldBeVisible, domVisible, false)
       
 
-    updateFS:(shouldBeVisible, domVisible)->
+    privateUpdateFoldStatus:(shouldBeVisible, domVisible, firstLayouting)->
       if shouldBeVisible isnt domVisible
         
         $children = @$el.children('.children')

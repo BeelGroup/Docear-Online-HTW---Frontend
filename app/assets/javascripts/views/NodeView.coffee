@@ -164,14 +164,16 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
           @$el.find('.children:first').toggle()
           @renderOnExpand = true
       # if there will more childs be rendered later: set flag
-      else if childsToLoad isnt undefined and childsToLoad.length > 0
+      else if childsToLoad isnt undefined and childsToLoad.length > 0    
         if @model.get 'folded'
           @switchFoldButtons()
           @$el.find('.children:first').toggle()
           @renderOnExpand = true
+          @$el.find('.action-fold').hide()
       # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()
+
 
         
       

@@ -18,7 +18,7 @@ define ['logger', 'models/Node', 'models/RootNode'],  (logger, NodeModel, RootNo
       # paint connections, when child is visible
       if @$childNode.is ':visible'
         @isRight = $(@$childNode).hasClass('right')
-        document.log 'repaint connection for'+@parentModel.get('id')       
+        #document.log 'repaint connection for'+@parentModel.get('id')       
         @calculateEndpoints()
         @positionContainer()
         @drawConnection()
