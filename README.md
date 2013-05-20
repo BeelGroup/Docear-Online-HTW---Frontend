@@ -1,6 +1,9 @@
 # Demo
 * https://staging.my.docear.org/ with credentials docear freeplane537
 
+# Continuous Integration
+* https://ci.docear.org/ci/job/Frontend/
+
 # Installation 
 1. make sure you have installed a JDK (6 or 7) correctly
     * open a console and enter `javac -version`, that should print your java version, for example `javac 1.6.0_37`
