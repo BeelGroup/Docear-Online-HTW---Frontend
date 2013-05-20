@@ -4,8 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import play.Logger;
 import play.libs.F;
 import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
@@ -40,7 +43,7 @@ public class HashBasedProjectService implements ProjectService {
 			final String fileHash = IOUtils.toString(in);
 			IOUtils.closeQuietly(in);
 
-			return Promise.pure((InputStream) fileStore.open(fileHash));
+			return Promise.pure((InputStream) fileStore.open("unzippedFiles/"+fileHash));
 
 		} catch (FileNotFoundException e) {
 			throw new NotFoundException("File not found!", e);
@@ -60,28 +63,40 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> putFile(String username, String projectId, String path, byte[] content) throws IOException {
+	public F.Promise<JsonNode> putFile(String username, String projectId, String path, InputStream contentStream) throws IOException {
 		/**
 		 * For now generates hash, saves it for the path and saves the file
 		 */
 		OutputStream out = null;
+		DigestInputStream digestIm = null;
+		String fileHash = null;
 		try {
-			//generate hash
-			final String fileHash = getFileCheckSum(content);
+			final String tmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000);
+			digestIm = new DigestInputStream(contentStream, createMessageDigest());
+			out = fileStore.create(tmpPath);
+			// write to temp location
+			IOUtils.copy(digestIm, out);
+			IOUtils.closeQuietly(out);
+			//get hash
+			fileHash = getFileCheckSum(digestIm);
+			final String unzippedPath = "unzippedFiles/"+fileHash;
+			
+			fileStore.move(tmpPath, unzippedPath);
+			
+			
 			final String fullPath = generateProjectResourcePath(projectId, path);
 			out = fileStore.create(fullPath);
 			IOUtils.write(fileHash, out);
-			IOUtils.closeQuietly(out);
+
 			
-			out = fileStore.create(fileHash);
-			IOUtils.write(content, out);
-			
-			return Promise.pure(new ObjectMapper().readTree("{\"hash\":\""+fileHash+"\"}"));
 		} catch (FileNotFoundException e) {
 			throw new NotFoundException("File not found!", e);
 		} finally {
 			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(contentStream);
 		}
+		
+		return Promise.pure(new ObjectMapper().readTree("{\"hash\":\"" + fileHash + "\"}"));
 	}
 
 	@Override
@@ -107,27 +122,32 @@ public class HashBasedProjectService implements ProjectService {
 	private String generateProjectResourcePath(String projectId, String path) {
 		return projectId + "/" + path;
 	}
-	
+
 	/**
 	 * taken from http://www.mkyong.com/java/java-sha-hashing-example/
 	 * 
 	 * @param content
 	 * @return
 	 */
-	private static String getFileCheckSum(byte[] content) {
+	private static String getFileCheckSum(DigestInputStream inputStream) {
+		final MessageDigest md = inputStream.getMessageDigest();
+		final byte[] mdbytes = md.digest();
+		Logger.debug("length: "+mdbytes.length+";\n"+mdbytes.toString());
+
+		// convert the byte to hex format
+		final StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < mdbytes.length; i++) {
+			sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+		}
+
+		IOUtils.closeQuietly(inputStream);
+		return sb.toString();
+
+	}
+
+	private static MessageDigest createMessageDigest() {
 		try {
-			final MessageDigest md = MessageDigest.getInstance("SHA-512");
-			md.update(content);
-
-			final byte[] mdbytes = md.digest();
-
-			// convert the byte to hex format
-			final StringBuffer sb = new StringBuffer();
-			for (int i = 0; i < mdbytes.length; i++) {
-				sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
-			}
-
-			return sb.toString();
+			return MessageDigest.getInstance("SHA-512");
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException("Invalid Crypto algorithm! ", e);
 		}

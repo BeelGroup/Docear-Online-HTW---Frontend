@@ -21,7 +21,7 @@ public interface ProjectService {
 
 	Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException;
 
-	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] content) throws IOException;
+	Promise<JsonNode> putFile(String username, String projectId, String path, InputStream contentStream) throws IOException;
 
 	Promise<JsonNode> delete(String username, String projectId, String path) throws IOException;
 

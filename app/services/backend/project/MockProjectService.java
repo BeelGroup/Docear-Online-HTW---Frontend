@@ -51,7 +51,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<JsonNode> putFile(String username, String projectId, String path, byte[] content) throws IOException {
+	public Promise<JsonNode> putFile(String username, String projectId, String path, InputStream contentStream) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String filename = path.substring(path.lastIndexOf("/"));
@@ -68,7 +68,7 @@ public class MockProjectService implements ProjectService {
 
 			newfile.createNewFile();
 			out = new FileOutputStream(newfile);
-			IOUtils.write(content, out);
+			IOUtils.copy(contentStream, out);
 
 			final ProjectEntry pf = metadataIntern(projectId, path, false);
 			return Promise.pure(mapper.valueToTree(pf));

@@ -23,4 +23,6 @@ public interface FileStore {
      * @throws FileNotFoundException
      */
     DataInputStream open(String path) throws IOException, FileNotFoundException;
+    
+    void move(String fromPath, String toPath) throws IOException, FileNotFoundException;
 }

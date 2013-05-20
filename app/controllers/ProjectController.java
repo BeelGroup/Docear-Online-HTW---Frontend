@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -46,7 +47,8 @@ public class ProjectController extends Controller {
 	@Security.Authenticated(Secured.class)
 	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
-		return async(projectService.putFile(username(), projectId, path, content).map(new Function<JsonNode, Result>() {
+		final InputStream in = new ByteArrayInputStream(content);
+		return async(projectService.putFile(username(), projectId, path, in).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {
