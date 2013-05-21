@@ -81,9 +81,12 @@ define ['logger'], (logger) ->
           'left'  : "#{curX - xdiff/2}px"
           'top'   : "#{curY - ydiff/2}px"
 
+
         @$el.trigger 'resize'
         @rootView.centerInContainer()
-        @center()
+        @move({x: -xdiff/2, y: -ydiff/2}, false)
+        # doesnt work anymore... the resize function might be callen on unfold
+        # @center()
 
 
     getElement:()->
@@ -145,10 +148,6 @@ define ['logger'], (logger) ->
               @$el.trigger 'dragging'
 
             @dragCounter++
-
-
-
-
 
 
     move:(delta, animated = true, time = 200)->

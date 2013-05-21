@@ -4,9 +4,29 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
   class RootNode extends AbstractNode
     constructor:->
       super()
+      @allNodes = new Array()
+      @parentsToLoad = new Array()
+      @unfinishedNodes = {}
       @typeName = 'rootModel'
       @sup = RootNode.__super__
 
+    addNodeToList:(node)->
+      @allNodes.push node
+
+    getNodeList:->
+      @allNodes
+
+    addNodetoUnfinishedList:(id, parentNode)->
+      @unfinishedNodes[id] = parentNode
+
+    addParentToParentToLoadList:(parentNode)->
+      @parentsToLoad.push parentNode
+
+    getParentsToLoad:->
+      return @parentsToLoad
+
+    getUnfinishedNodes:->
+      @unfinishedNodes
 
     activateListeners:->
       # will be catched in canvasView
@@ -67,11 +87,14 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
         addRightChild child
 
     updateAllConnections: ->
-      nodes = []
-      nodes = $.merge(nodes, @get('children').slice()  )
+      #nodes = []
+      #nodes = $.merge(nodes, @get('children').slice()  )
       # used to be recursive via child.getSelectedNode() but could create mem problems
-      while node = nodes.shift()
+      #while node = @allNodes.shift()
+        #node.updateConnection()
+        #nodes = $.merge(nodes, node.get('children').slice()  )
+
+      for node in @allNodes
         node.updateConnection()
-        nodes = $.merge(nodes, node.get('children').slice()  )
       
   module.exports = RootNode
