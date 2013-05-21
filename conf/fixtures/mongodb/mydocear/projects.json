@@ -5,9 +5,12 @@
         },
         "name": "Mein Projekt",
         "authUsers": ["Alex", "Micha", "Julius"],
+        "revision": 3,
         "changes":[
-            {"state": "UUID", "path":"/path/to/resource"},
-            {"state": "UUID2", "path":"/path/to/another/resource"}
+            {"path":"/README.md", "revision": 0},
+            {"path":"/README.md", "revision": 1},
+            {"path":"/path/to/another/resource", "revision": 0},
+            {"path":"/README.md", "revision": 2}
         ]
     }
 ]
