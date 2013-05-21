@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import models.project.formdatas.CreateFolderData;
@@ -13,9 +14,14 @@ import play.data.Form;
 import play.libs.F.Function;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.user.UserService;
+import controllers.featuretoggle.Feature;
+import controllers.featuretoggle.ImplementedFeature;
 
 @Component
+@ImplementedFeature(Feature.WORKSPACE)
 public class ProjectController extends Controller {
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
@@ -23,8 +29,11 @@ public class ProjectController extends Controller {
 	@Autowired
 	private ProjectService projectService;
 
-	public Result getFile(Long projectId, String path) {
-		return async(projectService.getFile(projectId, path).map(new Function<InputStream, Result>() {
+	@Autowired
+	private UserService userService;
+
+	public Result getFile(String projectId, String path) throws IOException {
+		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {
 
 			@Override
 			public Result apply(InputStream fileStream) throws Throwable {
@@ -33,9 +42,16 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result putFile(Long projectId, String path) {
+	/**
+	 * body contains zipped file
+	 * @param projectId
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
-		return async(projectService.putFile(projectId, path, content).map(new Function<JsonNode, Result>() {
+		return async(projectService.putFile(username(), projectId, path, content).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {
@@ -44,14 +60,15 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result createFolder() {
+	@Security.Authenticated(Secured.class)
+	public Result createFolder() throws IOException {
 		Form<CreateFolderData> filledForm = createFolderForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final CreateFolderData data = filledForm.get();
-			return async(projectService.createFolder(data.getProjectId(), data.getPath()).map(new Function<JsonNode, Result>() {
+			return async(projectService.createFolder(username(), data.getProjectId(), data.getPath()).map(new Function<JsonNode, Result>() {
 				@Override
 				public Result apply(JsonNode folderMetadata) throws Throwable {
 					return ok(folderMetadata);
@@ -60,8 +77,9 @@ public class ProjectController extends Controller {
 		}
 	}
 
-	public Result metadata(Long projectId, String path) {
-		return async(projectService.metadata(projectId, path).map(new Function<JsonNode, Result>() {
+	@Security.Authenticated(Secured.class)
+	public Result metadata(String projectId, String path) throws IOException {
+		return async(projectService.metadata(username(), projectId, path).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode entry) throws Throwable {
@@ -70,27 +88,15 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result listenForUpdates(Long projectId) {
-		return async(projectService.listenIfUpdateOccurs(projectId).map(new Function<Boolean, Result>() {
-
-			@Override
-			public Result apply(Boolean hasChanged) throws Throwable {
-				if (hasChanged)
-					return ok();
-				else
-					return status(NOT_MODIFIED);
-			}
-		}));
-	}
-
-	public Result projectVersionDelta() {
+	@Security.Authenticated(Secured.class)
+	public Result projectVersionDelta() throws IOException {
 		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final ProjectDeltaData data = filledForm.get();
-			return async(projectService.versionDelta(data.getProjectId(), data.getCursor()).map(new Function<String, Result>() {
+			return async(projectService.versionDelta(username(), data.getProjectId(), data.getCursor()).map(new Function<String, Result>() {
 
 				@Override
 				public Result apply(String updates) throws Throwable {
@@ -98,8 +104,18 @@ public class ProjectController extends Controller {
 				}
 			}));
 		}
-		
-		
+
 	}
 
+	/**
+	 * 
+	 * @return name of currently logged in user
+	 */
+	private String username() {
+		final models.backend.User user = userService.getCurrentUser();
+		if (user != null)
+			return user.getUsername();
+		else
+			return null;
+	}
 }

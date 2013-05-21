@@ -4,8 +4,11 @@ import org.eclipse.jgit.lib.{ObjectId, RepositoryCache}
 import org.eclipse.jgit.storage.file.ReflogEntry
 import org.eclipse.jgit.util.FS
 import sbt._
+import sbt.ExclusionRule
 import sbt.Keys._
 import play.Project._
+import sbt.PlayExceptions.CompilationException
+import scala.Some
 import System._
 
 object ApplicationBuild extends Build {
@@ -13,28 +16,49 @@ object ApplicationBuild extends Build {
     val appName         = "Docear-Frontend"
     val appVersion      = "0.1-SNAPSHOT"
 
-    val appDependencies = {
+    val frontendDependencies = {
       val seleniumVersion = "2.32.0"
+      Seq(
+        "org.seleniumhq.selenium" % "selenium-java" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
+        , "org.seleniumhq.selenium" % "selenium-firefox-driver" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
+        , "org.seleniumhq.selenium" % "selenium-chrome-driver" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
+        , "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % seleniumVersion % "test"
+        , "org.apache.httpcomponents" % "httpclient" % "4.2.3" //needed by selenium, must be in compile scope
+        , "org.webjars" % "webjars-play" % "2.1.0"
+        , "org.webjars" % "bootstrap" % "2.1.1"
+        , "org.webjars" % "font-awesome" % "3.0.2"
+        , "org.webjars" % "requirejs" % "2.1.5"
+      )
+    }
+
+    val backendDependencies = {
+      val hadoopVersion = "0.23.7"
+      Seq(
+        "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion excludeAll(
+          ExclusionRule(organization = "com.sun.jdmk"),
+          ExclusionRule(organization = "com.sun.jmx"),
+          ExclusionRule(organization = "javax.jms"),
+          ExclusionRule(name = "commons-daemon"),
+          ExclusionRule(organization = "org.codehaus.jettison")
+          )
+        , "org.apache.hadoop" % "hadoop-common" % hadoopVersion excludeAll(ExclusionRule(organization = "javax.activation"), ExclusionRule(organization = "org.codehaus.jettison"))
+        , "com.typesafe.akka" %% "akka-remote" % "2.1.2"
+        , "info.schleichardt" %% "play-embed-mongo" % "0.2"
+        , "org.mongojack" % "mongojack" % "2.0.0-RC4" //working with JSON and POJOs using a MongoDB http://mongojack.org/
+      )
+    }
+
+    val appDependencies = frontendDependencies ++ backendDependencies ++ {
       Seq(
         "junit" % "junit-dep" % "4.11" % "test"
         , "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.0.2"
         , "commons-lang" % "commons-lang" % "2.6"
         , "org.springframework" % "spring-context" % "3.1.2.RELEASE"
         , "cglib" % "cglib" % "2.2.2"
-        , "org.seleniumhq.selenium" % "selenium-java" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
-        , "org.seleniumhq.selenium" % "selenium-firefox-driver" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
-        , "org.seleniumhq.selenium" % "selenium-chrome-driver" % seleniumVersion % "test" //find new versions on http://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-firefox-driver
-        , "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % seleniumVersion % "test"
-        , "org.apache.httpcomponents" % "httpclient" % "4.2.3" //needed by selenium, must be in compile scope
         , "com.novocode" % "junit-interface" % "0.9" % "test"
         , "org.reflections" % "reflections" % "0.9.8"//fix for error: NoSuchMethodError: com.google.common.cache.CacheBuilder.maximumSize(I)Lcom/google/common/cache/CacheBuilder;
         , "joda-time" % "joda-time" % "2.1"
         , javaCore
-        , "org.webjars" % "webjars-play" % "2.1.0"
-        , "org.webjars" % "bootstrap" % "2.1.1"
-        , "org.webjars" % "font-awesome" % "3.0.2"
-        , "org.webjars" % "requirejs" % "2.1.5"
-        , "com.typesafe.akka" % "akka-remote_2.10" % "2.1.2"
         , "info.schleichardt" %% "play-2-mailplugin" % "0.9-SNAPSHOT"
       )
     }

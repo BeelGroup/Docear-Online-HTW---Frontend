@@ -1,3 +1,5 @@
+@import controllers.featuretoggle.Feature._
+
 @menuItem(relativeUrl:String, label: => String, linkId: String = "", linkClass: String = "", onlyIf: Boolean = true, glyphicon: String = "") = {
     @if(onlyIf) {
         <li @if(relativeUrl == request.uri ) {class="active"}>
@@ -18,31 +20,31 @@
 }
 @implicitSession = @{session} @* makes isAuthenticated, @username and @usernameOption possible *@
 
-@if(controllers.featuretoggle.Feature.RIBBONS.isEnabled()) {
+@if(RIBBONS.isEnabled()) {
 
         <div id="ribbons">
             <div class="nav navbar nav-tabs">
+            @if(isAuthenticated) {
 	            <ul class="nav nav-tabs pull-left ribbon-tabs">
 	                <li class="ribbon-logo">
 	                  <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
 	                </li>
-	                @if(controllers.featuretoggle.Feature.RIBBON_HOME.isEnabled()) {
-	                <li class="active tab">
+	                @if(RIBBON_HOME.isEnabled()) {
+	                <li class="tab">
 	                  <a href="#ribbon-home">Home</a>
 	                </li>
 	                }
-	                @if(controllers.featuretoggle.Feature.RIBBON_EDIT.isEnabled()) {
-	                <li class="active tab">
-	                  <a href="#ribbon-edit">Edit</a>
+	                @if(RIBBON_EDIT.isEnabled()) {
+	                <li class="tab">
+	                  <a href="#ribbon-edit" class="ribbon-edit">Edit</a>
 	                </li>
 	                }
-	                @if(controllers.featuretoggle.Feature.RIBBON_WORKSPACE.isEnabled()) {
-	                <li class="active tab">
+	                @if(RIBBON_WORKSPACE.isEnabled()) {
+	                <li class="tab">
 	                  <a href="#ribbon-workspace">Workspace</a>
 	                </li>
 	                }
 	            </ul>
-	            
                 <ul class="nav pull-right">
                     @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
                     @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
@@ -50,6 +52,20 @@
                     }
                     @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
                 </ul>
+            }else{
+                <ul class="nav nav-tabs pull-left ribbon-tabs">
+                    <li class="ribbon-logo">
+                      <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
+                    </li>
+                </ul>
+                    
+                <ul class="nav">
+                    @menuItem("http://www.docear.org/imprint/", "Imprint")
+                    @menuItem(controllers.routes.Application.index().url, "Login", linkClass="loginButton", onlyIf = !isAuthenticated)
+                    @menuItem(controllers.routes.Application.help().url, "Help")
+                </ul>
+            }
+	            
             </div>
 	    </div>
             
@@ -111,20 +127,6 @@
                     <a title="" data-edit="justifycenter" class="btn disabled" data-original-title="Center (Ctrl/Cmd+E)"><i class="icon-align-center"></i></a>
                     <a title="" data-edit="justifyright" class="btn disabled" data-original-title="Align Right (Ctrl/Cmd+R)"><i class="icon-align-right"></i></a>
                     <a title="" data-edit="justifyfull" class="btn disabled" data-original-title="Justify (Ctrl/Cmd+J)"><i class="icon-align-justify"></i></a>
-                  </div>
-                  <div class="btn-group">
-                      <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Hyperlink"><i class="icon-link"></i></a>
-                        <div class="dropdown-menu input-append">
-                            <input type="text" data-edit="createLink" placeholder="URL" class="span2">
-                            <button type="button" class="btn disabled">Add</button>
-                    </div>
-                    <a title="" data-edit="unlink" class="btn disabled" data-original-title="Remove Hyperlink"><i class="icon-cut"></i></a>
-            
-                  </div>
-                  
-                  <div class="btn-group">
-                    <a id="pictureBtn" title="" class="btn disabled" data-original-title="Insert picture (or just drag &amp; drop)"><i class="icon-picture"></i></a>
-                    <input type="file" data-edit="insertImage" data-target="#pictureBtn" data-role="magic-overlay" style="opacity: 0; position: absolute; top: 0px; left: 0px; width: 39px; height: 30px;">
                   </div>
                   <div class="btn-group">
                     <a title="" data-edit="undo" class="btn disabled" data-original-title="Undo (Ctrl/Cmd+Z)"><i class="icon-undo"></i></a>

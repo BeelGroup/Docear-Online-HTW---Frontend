@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -27,35 +28,30 @@ import play.Logger;
 import play.Play;
 import play.libs.Akka;
 import play.libs.F.Promise;
+import services.backend.project.filestore.FileStore;
 
+/**
+ * @deprecated use HashBasedProjectService
+ */
 @Profile("projectMock")
 @Component
+@Deprecated
 public class MockProjectService implements ProjectService {
 	private final ObjectMapper mapper = new ObjectMapper();
-
-	// @Override
-	// public Promise<JsonNode> listProject(Long projectId) {
-	// try {
-	// final File projectRoot = new
-	// File(Play.application().resource("rest/v1/project/" +
-	// projectId).toURI());
-	// final Project project = new Project(projectId, projectRoot);
-	// return Promise.pure(mapper.valueToTree(project));
-	// } catch (URISyntaxException e) {
-	// throw new RuntimeException(e);
-	// }
-	// }
+	
+	@Autowired
+	private FileStore fileStore;
 
 	@Override
-	public Promise<InputStream> getFile(Long projectId, String path) {
+	public Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
 		if (!path.startsWith("/"))
 			path = "/" + path;
-
+		
 		return Promise.pure(Play.application().resourceAsStream("rest/v1/project/" + projectId + "/files" + path));
 	}
 
 	@Override
-	public Promise<JsonNode> putFile(Long projectId, String path, byte[] content) {
+	public Promise<JsonNode> putFile(String username, String projectId, String path, byte[] zipFileBytes) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String filename = path.substring(path.lastIndexOf("/"));
@@ -72,30 +68,28 @@ public class MockProjectService implements ProjectService {
 
 			newfile.createNewFile();
 			out = new FileOutputStream(newfile);
-			IOUtils.write(content, out);
+			IOUtils.write(zipFileBytes, out);
 
 			final ProjectEntry pf = metadataIntern(projectId, path, false);
 			return Promise.pure(mapper.valueToTree(pf));
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} finally {
 			IOUtils.closeQuietly(out);
 		}
 	}
 
-	private String addLeadingSlash(String path) {
+	private String addLeadingSlash(String path) throws IOException {
 		return path.startsWith("/") ? path : "/" + path;
 	}
 
 	@Override
-	public Promise<JsonNode> metadata(Long projectId, String path) {
+	public Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
 		return Promise.pure(new ObjectMapper().valueToTree(metadataIntern(projectId, path, true)));
 	}
 
 	@Override
-	public Promise<JsonNode> createFolder(Long projectId, String path) {
+	public Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 		final String pathOfParentFolder = path.substring(0, path.lastIndexOf("/"));
 		final String folderName = path.substring(path.lastIndexOf("/"));
@@ -116,7 +110,7 @@ public class MockProjectService implements ProjectService {
 		}
 	}
 
-	private ProjectEntry metadataIntern(Long projectId, String path, boolean loadContents) {
+	private ProjectEntry metadataIntern(String projectId, String path, boolean loadContents) throws IOException {
 		path = addLeadingSlash(path);
 		ProjectEntry result = null;
 		try {
@@ -133,7 +127,7 @@ public class MockProjectService implements ProjectService {
 		}
 	}
 
-	private ProjectEntry folderMetadata(Long projectId, File folder, boolean loadContents) {
+	private ProjectEntry folderMetadata(String projectId, File folder, boolean loadContents) throws IOException {
 		final String path = uriToPath(projectId, folder.getAbsolutePath());
 
 		final DateTime modified = new DateTime(folder.lastModified());
@@ -150,7 +144,7 @@ public class MockProjectService implements ProjectService {
 		return pf;
 	}
 
-	private ProjectEntry fileMetadata(Long projectId, File file) {
+	private ProjectEntry fileMetadata(String projectId, File file) {
 		final String path = uriToPath(projectId, file.getAbsolutePath());
 
 		final DateTime modified = new DateTime(file.lastModified());
@@ -160,7 +154,7 @@ public class MockProjectService implements ProjectService {
 		return pf;
 	}
 
-	private String uriToPath(Long projectId, String uriPath) {
+	private String uriToPath(String projectId, String uriPath) {
 		uriPath = uriPath.replace("\\", "/");
 		final String seperator = "/";
 		final String searchString = seperator + projectId + seperator + "files";
@@ -171,7 +165,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<Boolean> listenIfUpdateOccurs(Long projectId) {
+	public Promise<Boolean> listenIfUpdateOccurs(String username, String projectId) {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -184,7 +178,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<String> versionDelta(Long projectId, String cursor) {
+	public Promise<String> versionDelta(String username, String projectId, String cursor) throws IOException {
 		final int sinceRevision = Integer.parseInt(cursor);
 		try {
 			final File updatesFolder = new File(Play.application().resource("rest/v1/project/" + projectId + "/_projectmetadata/updates").toURI());
@@ -205,9 +199,22 @@ public class MockProjectService implements ProjectService {
 
 			return Promise.pure(mapper.writeValueAsString(updates));
 
-		} catch (Exception e) {
+		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	@Override
+	public Promise<JsonNode> delete(String username, String projectId, String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+    @Override
+    public String toString() {
+        return "HashBasedProjectService{" +
+                "fileStore=" + fileStore +
+                '}';
+    }
 
 }

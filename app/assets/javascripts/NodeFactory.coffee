@@ -1,8 +1,11 @@
-define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (logger, RootNode, Node, PersistenceHandler) ->  
+define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler', 'handlers/UpdateHandler'],  (logger, RootNode, Node, PersistenceHandler, UpdateHandler) ->  
   module = ->
 
   class NodeFactory
 
+    persistenceHandlers = []
+    updateHandlers = []
+  
     ###
       todo:
         remember nodes with childs, which still need to be rendered
@@ -12,14 +15,24 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
         should be used in a loader class
     ###
 
-    createRootNodeByData:(data, containerID)->
+    createRootNodeByData:(data, containerID, @mapId)->
       rootNode = new RootNode()
       rootNode.set 'containerID', containerID
       rootNode.set 'leftChildren', []
       rootNode.set 'rightChildren', []
+      
+      # data.id should be filename
       rootNode.set 'mapId', data.id
       rootNode.set 'folded', false
+      rootNode.set 'revision', data.revision
 
+      if persistenceHandlers[data.id] == undefined
+        persistenceHandlers[data.id] = new PersistenceHandler(@mapId)
+
+      if updateHandlers[data.id] == undefined
+        updateHandlers[data.id] = new UpdateHandler(@mapId, rootNode)
+      rootNode.set 'updateHandler', updateHandlers[data.id]
+      
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
 
@@ -78,7 +91,11 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'yPos', 0
       node.set 'hGap', 0
       node.set 'shiftY', 0
-      node.set 'locked', false
+      
+      if data.locked isnt undefined and data.locked != ""
+        node.lock data.locked
+      else
+        node.unlock()
 
       node.set 'rootNodeModel', rootNode
       node.set 'selected', false
@@ -88,8 +105,9 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'lastAddedChild', 'undefined'
       node.set 'connectionUpdated', 0
 
-      node.set 'persistenceHandler', (new PersistenceHandler())
-      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML', 'locked']
+      node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
+      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML']
+      node.set 'persist', true
 
       node.set 'foldedShow', false
       node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url

@@ -27,7 +27,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	public Promise<String> mindMapAsJsonString(String source, String username, String id, Integer nodeCount) throws DocearServiceException, IOException {
 		return Promise.pure(resourceToString("rest/v1/map/" + id + ".json"));
 	}
-	
+
 	@Override
 	public Promise<String> mindMapAsXmlString(String source, String username, String mapId) throws DocearServiceException, IOException {
 		throw new NotImplementedException();
@@ -62,16 +62,17 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		try {
 			final ObjectMapper om = new ObjectMapper();
 			final List<String> updates = new ArrayList<String>();
-			for(Map.Entry<String, Object> entry : attributeValueMap.entrySet()) {
-				final String update = "{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\""+nodeId+"\",\"attribute\":\""+entry.getKey()+"\",\"value\":"+om.writeValueAsString(entry.getValue())+"}";
+			for (Map.Entry<String, Object> entry : attributeValueMap.entrySet()) {
+				final String update = "{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"" + nodeId + "\",\"attribute\":\"" + entry.getKey() + "\",\"value\":" + om.writeValueAsString(entry.getValue())
+						+ "}";
 				updates.add(update);
 			}
 			return Promise.pure(om.writeValueAsString(updates));
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override
 	public Promise<Boolean> moveNodeTo(String source, String username, String mapId, String newParentNodeId, String nodeId, Integer newIndex) {
 		return Promise.pure(true);
@@ -89,7 +90,10 @@ public class MockMindMapCrudService implements MindMapCrudService {
 
 	@Override
 	public Promise<String> fetchUpdatesSinceRevision(String source, String username, String mapId, Integer revision) {
-		final String updates = "{\"currentRevision\":"+revision+4+",\"orderedUpdates\":[{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":\"online-demo\"},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"folded\",\"value\":true},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"nodeText\",\"value\":\"New Text\"},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":null}]}";
+		final String updates = "{\"currentRevision\":"
+				+ revision
+				+ 4
+				+ ",\"orderedUpdates\":[{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":\"online-demo\"},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"folded\",\"value\":true},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"nodeText\",\"value\":\"New Text\"},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":null}]}";
 		return Promise.pure(updates);
 	}
 
@@ -103,11 +107,16 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
-				Thread.sleep((long)(Math.random() * 30000));
+				Thread.sleep((long) (Math.random() * 30000));
 				return true;
 			}
 		});
 
 		return promise;
+	}
+
+	@Override
+	public Promise<Boolean> changeEdge(String source, String username, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
+		throw new NotImplementedException();
 	}
 }

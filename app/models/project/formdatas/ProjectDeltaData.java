@@ -4,15 +4,15 @@ import play.data.validation.Constraints.Required;
 
 public class ProjectDeltaData {
 	@Required
-	private Long projectId;
+	private String projectId;
 	@Required
 	private String cursor;
 
-	public Long getProjectId() {
+	public String getProjectId() {
 		return projectId;
 	}
 
-	public void setProjectId(Long projectId) {
+	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
 

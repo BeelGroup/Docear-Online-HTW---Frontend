@@ -8,7 +8,7 @@ define ['logger'], (logger)->
   class AbstractNode extends Backbone.Model 
 
     constructor:->
-      super()    
+      super()
 
 
     activateListeners:->
@@ -26,7 +26,7 @@ define ['logger'], (logger)->
 
 
       @bind 'change',(changes)->
-        if $.inArray('SERVER_SYNC', document.features) > -1
+        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('persist')
           attributesToPersist = @get 'attributesToPersist'
           persistenceHandler = @get 'persistenceHandler'
           
@@ -38,11 +38,12 @@ define ['logger'], (logger)->
         $("##{@get('rootNodeModel').get 'id'}").trigger 'updateMinimap'
 
     lock: (lockedBy) ->
+      document.log "Locked by : "+lockedBy
       @set 'lockedBy', lockedBy
       @set 'locked', true
  
- 
     unlock: ->
+      @set 'lockedBy', null
       @set 'locked', false
 
     # status messages for update
@@ -115,6 +116,12 @@ define ['logger'], (logger)->
     updateConnection: ()->
       @.trigger 'updateConnection'
     
+    
+    setAttributeWithoutPersist: (attribute, value)->
+      @set 'persist', false
+      @set attribute, value
+      @set 'persist', true
+      
     removeCild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')
       children = []
@@ -122,5 +129,5 @@ define ['logger'], (logger)->
         if node != child
           children.push(node)
       @set 'children', children
-      
+  
   module.exports = AbstractNode

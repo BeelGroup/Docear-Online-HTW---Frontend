@@ -28,3 +28,5 @@ document.initialLoad = false
 document.loadChunkSize = 100
 document.initialLoadChunkSize = 500
 
+document.lockRefresh = 10000
+document.unlockDelay = 400

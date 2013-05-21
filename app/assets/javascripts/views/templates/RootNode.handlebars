@@ -15,4 +15,11 @@
       <img class='action-fold-right' src="/assets/images/icon_plus.svg">
     </div>    
   <div class='content'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
+  
+  {{#if lockable}}
+  <div class='lock node-control'>
+    <i class="icon-user"></i>
+    <span class="lock-username"></span>
+  </div>
+  {{/if}}
 </div>

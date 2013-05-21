@@ -8,22 +8,22 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
     template: Handlebars.templates['Node']
     id: 99
 
-    constructor:(@model) ->
+    constructor:(@model, @rootView) ->
       @id = @model.get 'id'
       super()
 
 
-    recursiveRender: (parent, nodes)->
+    recursiveRender: (parent, nodes, @rootView)->
       if not document.cancel_loading
         $.each nodes, (index, node)=>
-          nodeView = new NodeView(node)
-          nodeView.renderAndAppendTo(parent)
+          nodeView = new NodeView(node, @rootView)
+          nodeView.renderAndAppendTo(parent, @rootView)
         
 
     changeChildren: ->
       ## TODO -> render and align new child
       newChild = @model.get 'lastAddedChild'
-      nodeView = new NodeView(newChild)
+      nodeView = new NodeView(newChild, @rootView)
       $nodeHtml = $($(nodeView.render().el))
       $node = @$el
       
@@ -117,7 +117,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
-    render: ->
+    render: (@rootView)->
       @$el.html @template @getRenderData()
       @$el.append(@model.get 'purehtml')
       #@$el.attr('folded', @model.get 'folded')
@@ -134,8 +134,8 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
 
 
-    renderAndAppendTo:($element)->
-      @render()
+    renderAndAppendTo:($element, @rootView)->
+      @render(@rootView)
       @renderOnExpand = false 
       
       if @controls.movable
@@ -155,7 +155,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
       # if there are already informations about cholds in the model: render them
       if children isnt undefined and children.length > 0
-        @recursiveRender(@$el.find('.children:first'), children)
+        @recursiveRender(@$el.find('.children:first'), children, @rootView)
         # if this element is not within a folded subtree: update fold status
         if $element.is ':visible'
           @initialFoldStatus()

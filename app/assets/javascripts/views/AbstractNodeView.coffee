@@ -23,6 +23,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
+      @model.bind "change:isHTML",@changeNodeText , @
       @addEvents()
 
 
@@ -87,18 +88,15 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @$el #$('#'+@model.get 'id')
 
 
-    lockModel: ->
-      # will be replaced by username
-      @model.lock 'me'
-      document.log 'locked'
-
-
     changeLockStatus: ->
+      $lockContainer = @$el.children('.inner-node').children('.lock')
       if @model.get 'locked' 
-        if (@model.get('lockedBy') != 'me')
-          @$('.changeable').attr('disabled', 'disabled')
+        if (@model.get('lockedBy') != null)
+          $lockContainer.children('.lock-username').text(@model.get('lockedBy'))
+          $lockContainer.fadeIn('fast')
       else
-        @$('.changeable').removeAttr('disabled')
+        $lockContainer.children('.lock-username').text('')
+        $lockContainer.fadeOut('fast')
     
 
     changeSelectStatus: ->
@@ -167,9 +165,12 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
       $contentContainer = $node.children('.inner-node').children('.content')
       if @model.get 'isHTML'
+        document.log "Changing text as HTML"
         $contentContainer.addClass('isHTML')
         $contentContainer.html(@model.get 'nodeText')
       else
+        document.log "Changing text as PLAIN"
+        $contentContainer.removeClass('isHTML')
         $contentContainer.text(@model.get 'nodeText')
       
       
@@ -199,30 +200,11 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
 
-      model = @model
-      
-      # timeout "document.fadeDuration" might not be enough, since other animations maybe need a few millis more
-      setTimeout(->
-        model.getRoot().updateAllConnections()
-      , document.fadeDuration)
-      
       
      
     foldModel: ->
       @$el.toggleClass('selected')
       @model.set 'folded', not @model.get 'folded'
-      
-
-    # [Debugging] model modification
-    modificateModel: -> 
-      @model.set 'nodeText', Math.random()   
-      @model.set 'xPos', (@model.get 'xPos') + 20   
-      @model.set 'yPos', (@model.get 'yPos') + 20
-      if(@model.get 'locked')   
-        @model.unlock()
-      else
-        @model.lock 'Mr. P'
-     
 
     subView: (view, autoRender = false) ->
       # if model is set, use its id OR a unique random id
@@ -235,7 +217,9 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
     getRenderData: ->
     # if the model is already set, parse it to json
       if @model?
-        @model.toJSON()
+        data = @model.toJSON()
+        data['lockable'] = ($.inArray('LOCK_NODE', document.features) > -1)
+        data
     # otherwise pass an empty JSON
       else
         {}
