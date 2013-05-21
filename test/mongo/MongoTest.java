@@ -55,15 +55,21 @@ public class MongoTest extends WithApplication {
     @Test
     public void testAddRevisionToProject() throws Exception {
         final BasicDBObject updatedFile = updateFileInfos();
+        final BasicDBObject updatedProject = updateProjectWithNewFileVersion(updatedFile);
+        final int newProjectRevision = updatedProject.getInt("revision");
+        assertThat(newProjectRevision).isEqualTo(4);
+
+
+    }
+
+    private BasicDBObject updateProjectWithNewFileVersion(BasicDBObject updatedFile) {
         final int revisionOfFile = updatedFile.getInt("revision");
         final String pathOfFile = updatedFile.getString("_id.path");
         BasicDBObject revisionInfo = new BasicDBObject("changes", new BasicDBObject("path", pathOfFile).append("revision", revisionOfFile));
         final BasicDBObject settings = new BasicDBObject().
                 append("$inc", new BasicDBObject("revision", 1)).
                 append("$push", revisionInfo);
-        final BasicDBObject updatedProject = (BasicDBObject) projects().findAndModify(queryForExampleProject(), new BasicDBObject(), new BasicDBObject(), false, settings, true, false);
-        final int newProjectRevision = updatedProject.getInt("revision");
-        assertThat(newProjectRevision).isEqualTo(4);
+        return (BasicDBObject) projects().findAndModify(queryForExampleProject(), new BasicDBObject(), new BasicDBObject(), false, settings, true, false);
     }
 
     private BasicDBObject updateFileInfos() {
