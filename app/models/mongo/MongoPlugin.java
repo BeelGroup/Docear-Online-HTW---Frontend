@@ -1,6 +1,7 @@
 package models.mongo;
 
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import org.apache.commons.lang3.Validate;
 import play.Application;
@@ -58,5 +59,13 @@ public class MongoPlugin extends Plugin {
 
     public static DB db() {
         return mongoClient().getDB(Play.application().configuration().getString("mongo.db.default.name"));
+    }
+
+    public static DBCollection projects() {
+        return db().getCollection("projects");
+    }
+
+    public static DBCollection files() {
+        return db().getCollection("files");
     }
 }
