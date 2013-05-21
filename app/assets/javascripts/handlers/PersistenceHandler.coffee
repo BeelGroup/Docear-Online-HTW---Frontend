@@ -34,7 +34,6 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     persistChanges: (object, changes)->
       objectName = @getObjectName(object)
       params = {'nodeId': object.get('id')}
-      document.log "persist changes for #{objectName}: #{object.get('id')}"
       if @persistenceApi.change[objectName] != undefined
         changesToPersist = false
         
@@ -43,7 +42,6 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
             params[attr] = object.get attr
             changesToPersist = true
         if changesToPersist
-          document.log "persisting changes via url: #{@persistenceApi.change[objectName]}"
           $.post(@persistenceApi.change[objectName], params)
 
     persistNew: (object, params)->

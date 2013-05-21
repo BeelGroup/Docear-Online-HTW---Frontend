@@ -26,11 +26,10 @@ define ['logger'], (logger)->
 
 
       @bind 'change',(changes)->
-        document.log changes, 'console'
         if $.inArray('SERVER_SYNC', document.features) > -1 and @get('persist')
           attributesToPersist = @get 'attributesToPersist'
           persistenceHandler = @get 'persistenceHandler'
-          document.log 'calling persistenceHandler.persistChanges'
+          
           persistenceHandler.persistChanges @, changes
           @
       
