@@ -24,7 +24,7 @@ import static models.mongo.MongoPlugin.files;
 import static models.mongo.MongoPlugin.projects;
 import static org.fest.assertions.Assertions.assertThat;
 
-public class MongoTest extends WithApplication {
+public abstract class MongoTest extends WithApplication {
     @Before
     public void setUp() throws Exception {
         final HashMap<String,Object> additionalConfiguration = Maps.newHashMap();
@@ -39,7 +39,7 @@ public class MongoTest extends WithApplication {
         stopPlay();
     }
 
-    @Test
+
     public void testFixtures() throws Exception {
         final DBCollection projects = projects();
         final BasicDBObject project = (BasicDBObject) projects.findOne(queryForExampleProject());
@@ -52,7 +52,7 @@ public class MongoTest extends WithApplication {
         return new BasicDBObject("_id", new ObjectId("507f191e810c19729de860ea"));
     }
 
-    @Test
+
     public void testAddRevisionToProject() throws Exception {
         final BasicDBObject updatedFile = updateFileInfos();
         final BasicDBObject updatedProject = updateProjectWithNewFileVersion(updatedFile);
