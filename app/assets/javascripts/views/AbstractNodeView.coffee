@@ -183,13 +183,6 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
 
-      model = @model
-      
-      # timeout "document.fadeDuration" might not be enough, since other animations maybe need a few millis more
-      setTimeout(->
-        model.getRoot().updateAllConnections()
-      , document.fadeDuration)
-      
       
      
     foldModel: ->
