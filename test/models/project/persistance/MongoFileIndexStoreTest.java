@@ -126,7 +126,14 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testCreateProject() throws Exception {
-
+        final String newProjectName = "Docear 4Word";
+        final String projectOwnerName = "Stefan";
+        final String id = store.createProject(newProjectName, projectOwnerName).getId();
+        final Project project = store.findProjectById(id);
+        assertThat(project.getId()).isNotEmpty();
+        assertThat(project.getName()).isEqualTo(newProjectName);
+        assertThat(project.getAuthorizedUsers()).contains(projectOwnerName);
+        assertThat(project.getRevision()).isEqualTo(-1);
     }
 
     @Test

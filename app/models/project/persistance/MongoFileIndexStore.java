@@ -7,10 +7,12 @@ import com.mongodb.DBObject;
 import org.apache.commons.lang.NotImplementedException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Iterables.transform;
 import static models.mongo.MongoPlugin.*;
+import static com.google.common.collect.Lists.newArrayList;
 
 
 public class MongoFileIndexStore implements FileIndexStore {
@@ -66,7 +68,15 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public Project createProject(String name, String username) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+        final int revision = -1;
+        final ArrayList<String> authorizedUsers = newArrayList(username);
+        final BasicDBObject document = doc("name", name).
+                append("revision", revision).
+                append("changes", new ArrayList<String>()).
+                append("authUsers", authorizedUsers);
+        projects().insert(document);
+        final String id = document.get("_id").toString();
+        return new Project(id, name, revision, authorizedUsers);
     }
 
     @Override
