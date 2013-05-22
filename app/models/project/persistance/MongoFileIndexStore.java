@@ -1,10 +1,8 @@
 package models.project.persistance;
 
 import com.google.common.base.Function;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.google.common.collect.Iterables;
+import com.mongodb.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
 
@@ -113,5 +111,17 @@ public class MongoFileIndexStore implements FileIndexStore {
     @Override
     public Iterable<FileMetaData> getMetaData(String id, String path, int max) throws IOException {
         throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+    }
+
+    @Override
+    public Changes getProjectChangesSinceRevision(String id, long revision) throws IOException {
+        final BasicDBObject query = doc("$match", queryById(id));
+        final BasicDBObject selectOnlyChangesArray = doc("$project", presentFields("changes").append("_id", 0));
+        final BasicDBObject unwindChangesArray = doc("$unwind", "$changes");
+        final BasicDBObject skipPreviousRevisions = doc("$skip", revision);
+        final BasicDBObject groupPaths = doc("$group", doc("_id", 0).append("paths", doc("$addToSet", "$changes.path")));
+        final AggregationOutput output = projects().aggregate(query, selectOnlyChangesArray, unwindChangesArray, skipPreviousRevisions, selectOnlyChangesArray, groupPaths);
+        final BasicDBObject result = (BasicDBObject) Iterables.getFirst(output.results(), null);
+        return new Changes(getStringList(result, "paths"));
     }
 }

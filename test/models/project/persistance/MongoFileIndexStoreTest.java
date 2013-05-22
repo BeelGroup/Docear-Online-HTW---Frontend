@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -161,5 +162,12 @@ public class MongoFileIndexStoreTest extends MongoTest {
     @Test
     public void testGetMetaDataFolder() throws Exception {
 
+    }
+
+    @Test
+    public void testGetProjectChangesSinceRevision() throws Exception {
+        final Changes changes = store.getProjectChangesSinceRevision(PROJECT_ID, 1);
+        assertThat(changes.getChangedPaths()).contains("/README.md", "/src/main/java/Main.java");
+        assertThat(new HashSet<String>(changes.getChangedPaths())).hasSize(changes.getChangedPaths().size());
     }
 }
