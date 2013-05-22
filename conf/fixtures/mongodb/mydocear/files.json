@@ -7,14 +7,18 @@
         "revision": 1,
         "revisions": [
             {
-                "filehash": "4343a",
+                "hash": "4343a",
                 "timestamp": { "$date": "2013-05-21T07:50:18.981Z"},
-                "size": "132324"
+                "bytes": 132324,
+                "is_dir": false,
+                "is_deleted": false
             },
             {
-                "filehash": "122233a",
+                "hash": "122233a",
                 "timestamp": { "$date": "2013-05-21T07:52:18.981Z"},
-                "size": "1323"
+                "bytes": 1323,
+                "is_dir": false,
+                "is_deleted": false
             }
         ]
     }

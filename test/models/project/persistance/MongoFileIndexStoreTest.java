@@ -137,13 +137,25 @@ public class MongoFileIndexStoreTest extends MongoTest {
     }
 
     @Test
-    public void testUpsertFile() throws Exception {
+    public void testInsertFile() throws Exception {
+
+    }
+
+    @Test
+    public void testUpdateFile() throws Exception {
 
     }
 
     @Test
     public void testGetMetaDataSingleFile() throws Exception {
-
+        final String filePath = "/README.md";
+        final FileMetaData metaData = store.getMetaData(PROJECT_ID, filePath);
+        assertThat(metaData.getPath()).isEqualTo(filePath);
+        assertThat(metaData.getHash()).isEqualTo("122233a");
+        assertThat(metaData.getBytes()).isEqualTo(1323);
+        assertThat(metaData.isDir()).isEqualTo(false);
+        assertThat(metaData.isDeleted()).isEqualTo(false);
+        assertThat(metaData.getRevision()).isGreaterThanOrEqualTo(1);
     }
 
     @Test

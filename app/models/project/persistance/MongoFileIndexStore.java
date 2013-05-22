@@ -1,10 +1,12 @@
 package models.project.persistance;
 
 import com.google.common.base.Function;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.apache.commons.lang.NotImplementedException;
+import org.bson.types.ObjectId;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,7 +88,26 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public FileMetaData getMetaData(String id, String path) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+        final BasicDBObject query = doc("_id",
+                doc("project", new ObjectId(id)).append("path", path)
+        );
+        final BasicDBObject fields = presentFields("revision").append("revisions", doc("$slice", -1));
+        final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, fields);
+        final BasicDBList revisions = (BasicDBList) fileBson.get("revisions");//the only element is the last revision
+        final BasicDBObject revisionBson = (BasicDBObject) revisions.get(0);
+        final boolean isDir = revisionBson.getBoolean("is_dir");
+        final boolean isDeleted = revisionBson.getBoolean("is_deleted");
+        final long revision = fileBson.getLong("revision");
+        FileMetaData result;
+        if (isDir) {
+            result = FileMetaData.folder(path, isDeleted);
+        } else {
+            final String hash = revisionBson.getString("hash");
+            final long bytes = revisionBson.getInt("bytes");
+            result = FileMetaData.file(path, hash, bytes, isDeleted);
+        }
+        result.setRevision(revision);
+        return result;
     }
 
     @Override

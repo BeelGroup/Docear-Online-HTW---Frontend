@@ -2,17 +2,17 @@ package models.project.persistance;
 
 public class FileMetaData {
     private final String path;
-    private final String fileHash;
+    private final String hash;
     private final long bytes;
-    private final boolean isFolder;
+    private final boolean isDir;
     private final boolean isDeleted;
     private Long revision;
 
-    FileMetaData(String path, String fileHash, long bytes, boolean isFolder, boolean isDeleted) {
-        this.fileHash = fileHash;
+    FileMetaData(String path, String hash, long bytes, boolean isDir, boolean isDeleted) {
+        this.hash = hash;
         this.path = path;
         this.bytes = bytes;
-        this.isFolder = isFolder;
+        this.isDir = isDir;
         this.isDeleted = isDeleted;
     }
 
@@ -20,12 +20,12 @@ public class FileMetaData {
         return new FileMetaData(path, null, 0, true, isDeleted);
     }
 
-    public static FileMetaData file(String path, String fileHash, long fileSize, boolean isDeleted) {
-        return new FileMetaData(path, fileHash, fileSize, true, isDeleted);
+    public static FileMetaData file(String path, String hash, long bytes, boolean isDeleted) {
+        return new FileMetaData(path, hash, bytes, false, isDeleted);
     }
 
-    public String getFileHash() {
-        return fileHash;
+    public String getHash() {
+        return hash;
     }
 
     public long getBytes() {
@@ -36,8 +36,8 @@ public class FileMetaData {
         return isDeleted;
     }
 
-    public boolean isFolder() {
-        return isFolder;
+    public boolean isDir() {
+        return isDir;
     }
 
     public String getPath() {
