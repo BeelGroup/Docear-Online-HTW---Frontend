@@ -85,4 +85,17 @@ public class MongoPlugin extends Plugin {
         }
         return result;
     }
+
+    /**
+     * Creates a BSON document for the field selecting syntax.
+     * @param fields the fields that should be in the document
+     * @return
+     */
+    public static BasicDBObject presentFields(String... fields) {
+        final BasicDBObject result = new BasicDBObject();
+        for (final String field : fields) {
+            result.append(field, 1);
+        }
+        return result;
+    }
 }

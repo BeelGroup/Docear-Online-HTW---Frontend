@@ -1,34 +1,58 @@
 package models.project.persistance;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
+import static com.google.common.collect.Iterables.transform;
 import static models.mongo.MongoPlugin.*;
 
 
 public class MongoFileIndexStore implements FileIndexStore {
+
+    public static final BasicDBObject DEFAULT_PRESENT_FIELDS_PROJECT = presentFields("name", "authUsers", "revision");
+
     @Override
     public Project findById(String id) throws IOException {
         final BasicDBObject query = doc("_id", new ObjectId(id));
-        final BasicDBObject fields = doc("name", 1).append("authUsers", 1).append("revision", 1);
-        final BasicDBObject projectBson = (BasicDBObject) projects().findOne(query, fields);
+        final BasicDBObject projectBson = (BasicDBObject) projects().findOne(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+        return convertToProject(projectBson);
+    }
+
+    private Project convertToProject(BasicDBObject bson) {
         Project result = null;
-        if (projectBson != null) {
-            final String name = projectBson.getString("name");
-            final long revision = projectBson.getInt("revision");
-            final List<String> authorizedUsers = getStringList(projectBson, "authUsers");
-            result = new Project(id, name, revision, authorizedUsers);
+        if (bson != null) {
+            final String idFromBson = bson.get("_id").toString();
+            final String name = bson.getString("name");
+            final long revision = bson.getInt("revision");
+            final List<String> authorizedUsers = getStringList(bson, "authUsers");
+            result = new Project(idFromBson, name, revision, authorizedUsers);
         }
         return result;
     }
 
     @Override
     public Iterable<Project> findProjectsFromUser(String username) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+        final BasicDBObject query = doc("authUsers", username);
+        DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+        return transform(cursor, new Function<DBObject, Project>() {
+            @Override
+            public Project apply(DBObject dbObject) {
+                Project result = null;
+                if (dbObject instanceof BasicDBObject) {
+                    result = convertToProject((BasicDBObject) dbObject);
+                }
+                return result;
+            }
+        });
     }
 
     @Override

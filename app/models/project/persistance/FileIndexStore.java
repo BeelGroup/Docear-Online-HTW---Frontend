@@ -15,7 +15,10 @@ public interface FileIndexStore {
     Project findById(String id) throws IOException;
 
     /**
-     * Finds the projects a user is associated
+     * Finds the projects a user is associated.
+     * Implementations can be lazy fetching from the database.
+     * It is used as iterable to make it work in for loops.
+     * Do not use the iterable twice.
      * @param username the name of the who belongs to projects
      * @return an iterable with projects of username
      * @throws IOException
@@ -66,6 +69,7 @@ public interface FileIndexStore {
 
     /**
      * Retrieves metadata of the children of a folder.
+     * Do not use the iterable twice.
      * @param id the id of the associated project
      * @param path the path of the folder
      * @param max the maximal number of results

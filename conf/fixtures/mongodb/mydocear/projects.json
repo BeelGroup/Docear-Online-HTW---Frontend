@@ -12,6 +12,24 @@
             {"path":"/path/to/another/resource", "revision": 0},
             {"path":"/README.md", "revision": 2}
         ]
+    },
+    {
+        "_id": {
+            "$oid": "508963723aed14a714a59591"
+        },
+        "name": "Docear Sync",
+        "authUsers": ["Alex", "Micha", "Julius"],
+        "revision": -1,
+        "changes":[]
+    },
+    {
+        "_id": {
+            "$oid": "519c73a00f089cc3e429c15f"
+        },
+        "name": "Docear Sync",
+        "authUsers": ["Paul", "Florian"],
+        "revision": -1,
+        "changes":[]
     }
 ]
 
