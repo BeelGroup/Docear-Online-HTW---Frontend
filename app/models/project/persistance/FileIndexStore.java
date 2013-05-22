@@ -12,7 +12,7 @@ public interface FileIndexStore {
      * @return The project from the database or null
      * @throws IOException
      */
-    Project findById(String id) throws IOException;
+    Project findProjectById(String id) throws IOException;
 
     /**
      * Finds the projects a user is associated.

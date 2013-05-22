@@ -1,14 +1,11 @@
 package models.project.persistance;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.apache.commons.lang.NotImplementedException;
-import org.bson.types.ObjectId;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
@@ -21,8 +18,8 @@ public class MongoFileIndexStore implements FileIndexStore {
     public static final BasicDBObject DEFAULT_PRESENT_FIELDS_PROJECT = presentFields("name", "authUsers", "revision");
 
     @Override
-    public Project findById(String id) throws IOException {
-        final BasicDBObject query = doc("_id", new ObjectId(id));
+    public Project findProjectById(String id) throws IOException {
+        final BasicDBObject query = queryById(id);
         final BasicDBObject projectBson = (BasicDBObject) projects().findOne(query, DEFAULT_PRESENT_FIELDS_PROJECT);
         return convertToProject(projectBson);
     }
@@ -57,7 +54,8 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public void addUserToProject(String id, String username) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+        final BasicDBObject query = queryById(id);
+        projects().update(query, doc("$push", doc("authUsers", "Florian")));
     }
 
     @Override

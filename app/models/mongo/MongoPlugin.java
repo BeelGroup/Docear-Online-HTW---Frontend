@@ -2,6 +2,7 @@ package models.mongo;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.Validate;
+import org.bson.types.ObjectId;
 import play.Application;
 import play.Logger;
 import play.Play;
@@ -97,5 +98,9 @@ public class MongoPlugin extends Plugin {
             result.append(field, 1);
         }
         return result;
+    }
+
+    public static BasicDBObject queryById(final String id) {
+        return doc("_id", new ObjectId(id));
     }
 }
