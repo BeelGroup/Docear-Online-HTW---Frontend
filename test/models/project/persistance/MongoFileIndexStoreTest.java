@@ -118,7 +118,10 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testRemoveUserFromProject() throws Exception {
-
+        final String userToBeRemoved = "Micha";
+        assertThat(store.findProjectById(PROJECT_ID).getAuthorizedUsers()).contains(userToBeRemoved);
+        store.removeUserFromProject(PROJECT_ID, userToBeRemoved);
+        assertThat(store.findProjectById(PROJECT_ID).getAuthorizedUsers()).excludes(userToBeRemoved);
     }
 
     @Test

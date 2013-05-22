@@ -55,12 +55,13 @@ public class MongoFileIndexStore implements FileIndexStore {
     @Override
     public void addUserToProject(String id, String username) throws IOException {
         final BasicDBObject query = queryById(id);
-        projects().update(query, doc("$push", doc("authUsers", "Florian")));
+        projects().update(query, doc("$addToSet", doc("authUsers", username)));
     }
 
     @Override
     public void removeUserFromProject(String id, String username) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+        final BasicDBObject query = queryById(id);
+        projects().update(query, doc("$pull", doc("authUsers", username)));
     }
 
     @Override
