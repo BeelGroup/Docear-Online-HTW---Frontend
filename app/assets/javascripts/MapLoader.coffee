@@ -58,7 +58,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
         if parentToLoadNode isnt undefined and parentToLoadNode isnt 'undefined'
           @getDataAndRenderNodesByID parentToLoadNode
         if @rootNode.getParentsToLoadSize() > 0 and @continue = true
-          window.setTimeout @loadStep,100, @rootNode.getNextParentToLoad()
+          window.setTimeout @loadStep,200, @rootNode.getNextParentToLoad()
         else
           @continueLoading()
 
@@ -76,6 +76,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
 
         # append to dom
         @rootView.recursiveRender $('#'+parentNode.get 'id').find('.children:first'), childs
+        #@rootView.model.trigger 'refreshDomConnectionsAndBoundaries'
 
 
     getDataAndRenderNodesByID:(parentToLoadNode)=>

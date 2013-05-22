@@ -102,17 +102,16 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         height = Math.max(totalChildrenHeight, elementHeight)
         width = totalChildrenWidth
 
-
-
         $(childrenContainer).css('left', left+'px')
         $(childrenContainer).css('top', top)
         $(childrenContainer).css('height', height)
         $(childrenContainer).css('width', width)
 
-      if $(element).attr('folded') is 'true'
-        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
 
-        [Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
+      if $(element).attr('folded') is 'true'      
+        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
+        [elementHeight + 0, totalChildrenWidth]
+        #[elementHeight + @verticalSpacer, totalChildrenWidth]
       else
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
@@ -120,7 +119,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
     render: (@rootView)->
       @$el.html @template @getRenderData()
       @$el.append(@model.get 'purehtml')
-      #@$el.attr('folded', @model.get 'folded')
+      @$el.attr('folded', @model.get 'folded')
 
       # in first step: from root to its childs
       if @model.get('parent') isnt undefined and @model.get('parent') isnt null

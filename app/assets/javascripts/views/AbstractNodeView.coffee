@@ -109,6 +109,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
      
     updateFoldStatus:()->
+      @$el.attr('folded', @model.get 'folded')
       if @renderOnExpand
         # visible for layouting
         @$el.find('.children:first').toggle()
