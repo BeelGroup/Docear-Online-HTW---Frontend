@@ -4,6 +4,7 @@ import java.io.IOException;
 
 /**
  * An interface to persist index information of files.
+ * For not found entities null will be returned.
  */
 public interface FileIndexStore {
     /**
@@ -77,4 +78,13 @@ public interface FileIndexStore {
      * @throws IOException
      */
     Iterable<FileMetaData> getMetaData(String id, String path, int max) throws IOException;
+
+    /**
+     * Receives information about the changed files since a revision.
+     * @param id the project id
+     * @param revision the first project revision to start the search
+     * @return changes since revision
+     * @throws IOException
+     */
+    Changes getProjectChangesSinceRevision(String id, long revision) throws IOException;
 }
