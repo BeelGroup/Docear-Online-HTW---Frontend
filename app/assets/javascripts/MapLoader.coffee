@@ -14,7 +14,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
   ###
   class MapLoader
 
-  	constructor:(@data, @mapId)->
+    constructor:(@data, @mapId)->
       @nodeFactory = new NodeFactory()
       @rootNodeWasPassed = false
       @stillDataToLoad = true
@@ -37,7 +37,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
 
 
     continueLoading:->
-      if Object.keys(@rootNode.getUnfinishedNodes()).length > 0 and @continue = true
+      if @rootNode.getParentsToLoadSize() > 0 and @continue = true
         window.setTimeout @loadMore, 40
       else
         @rootView.model.trigger 'refreshDomConnectionsAndBoundaries' 
@@ -46,53 +46,44 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
 
     # load / render / append next nodes
     loadMore:=>
-      items = @rootNode.getUnfinishedNodes()
-      ids = Object.keys(items)
-
-      @loadStep ids, items, 0
+      @loadStep @rootNode.getNextParentToLoad()
       
       # only do that, when unfolded!
-      @rootView.model.trigger 'refreshDomConnectionsAndBoundaries' 
+      @rootView.model.trigger 'refreshDomConnectionsAndBoundaries'
       document.log 'load step'
 
 
-    loadStep:(ids, items, index)=>
+    loadStep:(parentToLoadNode)=>
       if @continue
-        if index < ids.length
-          id = ids[index]
-          if id isnt undefined and id isnt 'undefined'
-            @getDataAndRenderNodesByID id, items[id]
-          window.setTimeout @loadStep, 100, ids, items, ++index
+        if parentToLoadNode isnt undefined and parentToLoadNode isnt 'undefined'
+          @getDataAndRenderNodesByID parentToLoadNode
+        if @rootNode.getParentsToLoadSize() > 0 and @continue = true
+          window.setTimeout @loadStep,100, @rootNode.getNextParentToLoad()
         else
           @continueLoading()
 
 
-    appendNodesToParent:(data, parentNode)=>
-      if data isnt null
-        newNode = @nodeFactory.createNodeByData data, parentNode, @rootNode 
-        childs = @nodeFactory.createChildrenRecursive data.children, newNode, @rootNode
+    appendNodesToParent:(dataOfParentNode, parentNode)=>
+      if dataOfParentNode isnt null
+        childs = @nodeFactory.createChildrenRecursive dataOfParentNode.children, parentNode, @rootNode
         # add children to list of childerns
-        parentNode.set 'children', (parentNode.get 'children').concat newNode
-        newNode.set 'children', childs
+        parentNode.set 'children', (parentNode.get 'children').concat childs
+        #newNode.set 'children', childs
 
         if (parentNode.get 'folded') and !(parentNode.get 'foldedShow')
           $('#'+parentNode.get 'id').find('.inner-node .action-fold').show()
           parentNode.set 'foldedShow', true
 
         # append to dom
-        @rootView.recursiveRender $('#'+parentNode.get 'id').find('.children:first'), {newNode}
-        # nodes were loaded, remove index from "still to load list"
-        delete @rootNode.getUnfinishedNodes()[data.id]
+        @rootView.recursiveRender $('#'+parentNode.get 'id').find('.children:first'), childs
 
 
-
-    getDataAndRenderNodesByID:(nodeId, myparent)=>
-      href = jsRoutes.controllers.MindMap.getNode(@mapId, nodeId, document.loadChunkSize).url
+    getDataAndRenderNodesByID:(parentToLoadNode)=>
+      href = jsRoutes.controllers.MindMap.getNode(@mapId, parentToLoadNode.get 'id', document.loadChunkSize).url
       request = $.ajax(
-        invokedata: {
+        invokedata:
           maploader: @
-          myparent: myparent
-        }
+          parentToLoadNode: parentToLoadNode
         url: href
         type: 'GET',
         async: true,
@@ -102,7 +93,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
         fail: ->
           document.log "error on loading childs. Textstatus:"+textStatus
         ,
-        success: (data)-> @invokedata.maploader.appendNodesToParent(data, @invokedata.myparent)
+        success: (data)-> @invokedata.maploader.appendNodesToParent(data, parentToLoadNode)
       )
 
       if request.status is 200

@@ -22,8 +22,11 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
     addParentToParentToLoadList:(parentNode)->
       @parentsToLoad.push parentNode
 
-    getParentsToLoad:->
-      return @parentsToLoad
+    getParentsToLoadSize:->
+      @parentsToLoad.length
+
+    getNextParentToLoad:->
+      @parentsToLoad.shift()
 
     getUnfinishedNodes:->
       @unfinishedNodes
