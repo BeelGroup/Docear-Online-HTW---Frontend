@@ -1,8 +1,6 @@
 package models.mongo;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 import org.apache.commons.lang3.Validate;
 import play.Application;
 import play.Logger;
@@ -10,6 +8,8 @@ import play.Play;
 import play.Plugin;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Connection Plugins.
@@ -67,5 +67,22 @@ public class MongoPlugin extends Plugin {
 
     public static DBCollection files() {
         return db().getCollection("files");
+    }
+
+    public static BasicDBObject doc(final String key, final Object value) {
+        return new BasicDBObject(key, value);
+    }
+
+    public static List<String> getStringList(final BasicDBObject bson, final String key) {
+        final Object maybeList = bson.get(key);
+        List<String> result = null;
+        if (maybeList != null && maybeList instanceof BasicDBList) {
+            final BasicDBList bsonList = (BasicDBList) maybeList;
+            result = new ArrayList<String>(bsonList.size());
+            for (final Object item : bsonList) {
+                result.add(item.toString());
+            }
+        }
+        return result;
     }
 }
