@@ -48,7 +48,7 @@ public interface ProjectService {
 	 * @return
 	 * @throws IOException
 	 */
-	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] zipFileBytes) throws IOException;
+	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException;
 
 	Promise<JsonNode> delete(String username, String projectId, String path) throws IOException;
 

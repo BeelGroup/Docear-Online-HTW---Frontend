@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import models.project.formdatas.AddUserToProjectData;
 import models.project.formdatas.CreateFolderData;
@@ -29,7 +30,7 @@ public class ProjectController extends Controller {
 	final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
 	final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);
 	final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
-	
+
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
 
@@ -38,7 +39,7 @@ public class ProjectController extends Controller {
 
 	@Autowired
 	private UserService userService;
-	
+
 	@Security.Authenticated(Secured.class)
 	public Result getProject(String projectId) throws IOException {
 		return async(projectService.getProjectById(username(), projectId).map(new Function<JsonNode, Result>() {
@@ -48,7 +49,7 @@ public class ProjectController extends Controller {
 			}
 		}));
 	}
- 	
+
 	@Security.Authenticated(Secured.class)
 	public Result createProject() throws IOException {
 		Form<CreateProjectData> filledForm = createProjectForm.bindFromRequest();
@@ -65,7 +66,7 @@ public class ProjectController extends Controller {
 			}));
 		}
 	}
-	
+
 	@Security.Authenticated(Secured.class)
 	public Result addUserToProject() throws IOException {
 		Form<AddUserToProjectData> filledForm = addUserToProjectForm.bindFromRequest();
@@ -77,7 +78,7 @@ public class ProjectController extends Controller {
 			return async(projectService.addUserToProject(username(), data.getProjectId(), data.getUsername()).map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
-					if(success)
+					if (success)
 						return ok();
 					else {
 						return internalServerError("Unknown Error occured");
@@ -86,7 +87,7 @@ public class ProjectController extends Controller {
 			}));
 		}
 	}
-	
+
 	@Security.Authenticated(Secured.class)
 	public Result removeUserFromProject() throws IOException {
 		Form<RemoveUserFromProjectData> filledForm = removeUserFromProjectForm.bindFromRequest();
@@ -98,7 +99,7 @@ public class ProjectController extends Controller {
 			return async(projectService.removeUserFromProject(username(), data.getProjectId(), data.getUsername()).map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
-					if(success)
+					if (success)
 						return ok();
 					else {
 						return internalServerError("Unknown Error occured");
@@ -106,7 +107,7 @@ public class ProjectController extends Controller {
 				}
 			}));
 		}
-	}	
+	}
 
 	@Security.Authenticated(Secured.class)
 	public Result getFile(String projectId, String path) throws IOException {
@@ -121,6 +122,7 @@ public class ProjectController extends Controller {
 
 	/**
 	 * body contains zipped file
+	 * 
 	 * @param projectId
 	 * @param path
 	 * @return
@@ -129,7 +131,16 @@ public class ProjectController extends Controller {
 	@Security.Authenticated(Secured.class)
 	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
-		return async(projectService.putFile(username(), projectId, path, content).map(new Function<JsonNode, Result>() {
+		
+		/**
+		 * To recognize if the uploaded file is a zip 
+		 * we can check for the signature, a zip file starts with: 0x504b0304
+		 */
+		final ByteBuffer byteBuffer = ByteBuffer.wrap(content);
+		final int zipSignature = byteBuffer.getInt();
+		final boolean isZip = (zipSignature == 0x504b0304);
+		
+		return async(projectService.putFile(username(), projectId, path, content, isZip).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {

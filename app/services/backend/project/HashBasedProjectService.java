@@ -1,6 +1,7 @@
 package services.backend.project;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
@@ -55,31 +58,31 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public Promise<Boolean> addUserToProject(String username, String projectId, String usernameToAdd) throws IOException {
-		if(!hasUserRightsOnProject(username, projectId)) {
+		if (!hasUserRightsOnProject(username, projectId)) {
 			throw new UnauthorizedException("User has no rights on Project");
 		}
-		
+
 		fileIndexStore.addUserToProject(projectId, usernameToAdd);
 		return Promise.pure(true);
 	}
 
 	@Override
 	public Promise<Boolean> removeUserFromProject(String username, String projectId, String usernameToRemove) throws IOException {
-		if(!hasUserRightsOnProject(username, projectId)) {
+		if (!hasUserRightsOnProject(username, projectId)) {
 			throw new UnauthorizedException("User has no rights on Project");
 		}
-		
+
 		fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
 		return Promise.pure(true);
 	}
 
 	@Override
 	public Promise<JsonNode> getProjectById(String username, String projectId) throws IOException {
-		if(!hasUserRightsOnProject(username, projectId)) {
+		if (!hasUserRightsOnProject(username, projectId)) {
 			throw new UnauthorizedException("User has no rights on Project");
 		}
 		final Project project = fileIndexStore.findProjectById(projectId);
-		
+
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
 
@@ -92,12 +95,12 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
-		/**
-		 * for now, just save the file hash for a path in hadoop. If hash is
-		 * present load file from hadoop
-		 */
+		if (!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
 
 		try {
+			// look for file in fileIndexStore
 			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
 			if (metadata == null) {
 				throw new NotFoundException("File not found!");
@@ -131,49 +134,104 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> putFile(String username, String projectId, String path, byte[] zipFileBytes) throws IOException {
-		/**
-		 * For now generates hash, saves it for the path and saves the file
-		 */
+	public F.Promise<JsonNode> putFile(String username, String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException {
+		if (!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+
+		Integer bytes = 0;
+		final String fileHash = isZip ? putFileInStoreWithZippedFileBytes(fileBytes, bytes) : putFileInStoreWithFileBytes(fileBytes, bytes);
+
+		// update file in index
+		final FileMetaData metadata = FileMetaData.file(path, fileHash, bytes, false);
+		fileIndexStore.upsertFile(projectId, metadata);
+
+		return Promise.pure(new ObjectMapper().valueToTree(metadata));
+	}
+
+	/**
+	 * 
+	 * @param zippedFileBytes
+	 * @return fileHash
+	 * @throws IOException
+	 */
+	private String putFileInStoreWithZippedFileBytes(byte[] zippedFileBytes, Integer outBytes) throws IOException {
 		OutputStream out = null;
 		ZipInputStream zipStream = null;
 		DigestInputStream digestIn = null;
-		FileMetaData metadata = null;
+		String fileHash = null;
+
 		try {
 			final String zippedTmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000) + ".zip";
 			final String tmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000);
+
 			// copy zipfile to tmp dir
 			out = fileStore.create(zippedTmpPath);
-			IOUtils.write(zipFileBytes, out);
+			IOUtils.write(zippedFileBytes, out);
 			IOUtils.closeQuietly(out);
 
 			// get unzipped file
-			zipStream = new ZipInputStream(new ByteArrayInputStream(zipFileBytes));
+			zipStream = new ZipInputStream(new ByteArrayInputStream(zippedFileBytes));
 			zipStream.getNextEntry();
 			digestIn = new DigestInputStream(zipStream, createMessageDigest());
 			out = fileStore.create(tmpPath);
 			// write to temp location
-			final int bytes = IOUtils.copy(digestIn, out);
+			outBytes = IOUtils.copy(digestIn, out);
 			IOUtils.closeQuietly(out);
 			// get hash
-			final String fileHash = getFileCheckSum(digestIn);
+			fileHash = getFileCheckSum(digestIn);
 			final String unzippedPath = FOLDER_UNZIPPED + "/" + fileHash;
 			final String zippedPath = FOLDER_ZIPPED + "/" + fileHash + ".zip";
 
 			fileStore.move(tmpPath, unzippedPath);
 			fileStore.move(zippedTmpPath, zippedPath);
 
-			// update file in index
-			metadata = FileMetaData.file(path, fileHash, bytes, false);
-			fileIndexStore.upsertFile(projectId, metadata);
-
 		} finally {
 			IOUtils.closeQuietly(out);
 			IOUtils.closeQuietly(zipStream);
 			IOUtils.closeQuietly(digestIn);
 		}
+		return fileHash;
+	}
 
-		return Promise.pure(new ObjectMapper().valueToTree(metadata));
+	private String putFileInStoreWithFileBytes(byte[] fileBytes, Integer outBytes) throws IOException {
+		OutputStream out = null;
+		ZipOutputStream zipStream = null;
+		DigestInputStream digestIn = null;
+		String fileHash = null;
+
+		try {
+			final String tmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000);
+
+			// copy file to tmp dir
+			digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
+			out = fileStore.create(tmpPath);
+			outBytes = IOUtils.copy(digestIn, out);
+			IOUtils.closeQuietly(out);
+
+			// get hash
+			fileHash = getFileCheckSum(digestIn);
+
+			final String unzippedPath = FOLDER_UNZIPPED + "/" + fileHash;
+			final String zippedPath = FOLDER_ZIPPED + "/" + fileHash + ".zip";
+
+			// write zipped file
+			out = fileStore.create(zippedPath);
+			zipStream = new ZipOutputStream(out);
+			zipStream.putNextEntry(new ZipEntry("file"));
+			IOUtils.write(fileBytes, zipStream);
+			zipStream.closeEntry();
+			IOUtils.closeQuietly(zipStream);
+			IOUtils.closeQuietly(out);
+			
+			
+			fileStore.move(tmpPath, unzippedPath);
+		} finally {
+			IOUtils.closeQuietly(zipStream);
+			IOUtils.closeQuietly(digestIn);
+			IOUtils.closeQuietly(out);
+		}
+		return fileHash;
 	}
 
 	@Override
@@ -233,20 +291,20 @@ public class HashBasedProjectService implements ProjectService {
 	private boolean hasUserRightsOnProject(String username, String projectId) throws IOException {
 		// TODO might be an implementation on db side?
 		final Project project = fileIndexStore.findProjectById(projectId);
-		if(project == null) {
-			throw new NotFoundException("Project with id "+ projectId + " not found.");
+		if (project == null) {
+			throw new NotFoundException("Project with id " + projectId + " not found.");
 		}
 		return project.getAuthorizedUsers().contains(username);
 	}
-	
+
 	private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) {
 		final List<A> list = new ArrayList<A>();
 		final Iterator<A> it = cursor.iterator();
-		
-		while(it.hasNext()) {
+
+		while (it.hasNext()) {
 			list.add(it.next());
 		}
-		
+
 		return list;
 	}
 }
