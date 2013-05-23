@@ -12,6 +12,10 @@ import java.util.Random;
 import java.util.zip.ZipInputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
+import models.project.persistance.Changes;
+import models.project.persistance.FileIndexStore;
+import models.project.persistance.FileMetaData;
+import models.project.persistance.MongoFileIndexStore;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -34,6 +38,8 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Autowired
 	private FileStore fileStore;
+	
+	private FileIndexStore fileIndexStore = new MongoFileIndexStore();
 
 	@Override
 	public F.Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
@@ -41,29 +47,38 @@ public class HashBasedProjectService implements ProjectService {
 		 * for now, just save the file hash for a path in hadoop. If hash is
 		 * present load file from hadoop
 		 */
-		InputStream in = null;
+
 		try {
-			in = fileStore.open(generateProjectResourcePath(projectId, path));
-			final String fileHash = IOUtils.toString(in);
-			IOUtils.closeQuietly(in);
+			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
+			if(metadata == null) {
+				throw new NotFoundException("File not found!");
+			}
+			
+			final String fileHash = metadata.getHash();
 
 			return Promise.pure((InputStream) fileStore.open(FOLDER_ZIPPED+"/"+fileHash+".zip"));
 
 		} catch (FileNotFoundException e) {
 			throw new NotFoundException("File not found!", e);
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 
 	@Override
 	public F.Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
-		throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
+		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
+		if(metadata == null) {
+			throw new NotFoundException("File not found!");
+		}
+		final JsonNode metadataJson = new ObjectMapper().valueToTree(metadata);
+		return Promise.pure(metadataJson);
 	}
 
 	@Override
 	public F.Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
-		throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
+		final FileMetaData metadata = FileMetaData.folder(path, false);
+		fileIndexStore.upsertFile(projectId, metadata);
+		
+		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
 	@Override
@@ -74,7 +89,7 @@ public class HashBasedProjectService implements ProjectService {
 		OutputStream out = null;
 		ZipInputStream zipStream = null;
 		DigestInputStream digestIn = null;
-		String fileHash = null;
+		FileMetaData metadata = null; 
 		try {			
 			final String zippedTmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000)+".zip";
 			final String tmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000);
@@ -89,30 +104,27 @@ public class HashBasedProjectService implements ProjectService {
 			digestIn = new DigestInputStream(zipStream, createMessageDigest());
 			out = fileStore.create(tmpPath);
 			// write to temp location
-			IOUtils.copy(digestIn, out);
+			final int bytes = IOUtils.copy(digestIn, out);
 			IOUtils.closeQuietly(out);
 			//get hash
-			fileHash = getFileCheckSum(digestIn);
+			final String fileHash = getFileCheckSum(digestIn);
 			final String unzippedPath = FOLDER_UNZIPPED+"/"+fileHash;
 			final String zippedPath = FOLDER_ZIPPED+"/"+fileHash+".zip";
 			
 			fileStore.move(tmpPath, unzippedPath);
 			fileStore.move(zippedTmpPath, zippedPath);
 			
-			
-			final String fullPath = generateProjectResourcePath(projectId, path);
-			out = fileStore.create(fullPath);
-			IOUtils.write(fileHash, out);
-
-			
-		} catch (FileNotFoundException e) {
-			throw new NotFoundException("File not found!", e);
+			//update file in index
+			metadata = FileMetaData.file(path, fileHash, bytes, false);
+			fileIndexStore.upsertFile(projectId, metadata);
+						
 		} finally {
 			IOUtils.closeQuietly(out);
 			IOUtils.closeQuietly(zipStream);
+			IOUtils.closeQuietly(digestIn);
 		}
 		
-		return Promise.pure(new ObjectMapper().readTree("{\"hash\":\"" + fileHash + "\"}"));
+		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
 	@Override
@@ -121,22 +133,22 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<String> versionDelta(String username, String projectId, String cursor) throws IOException {
-		throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
+	public F.Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException {
+		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, Integer.parseInt(cursor));
+		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
+		
 	}
 
 	@Override
 	public Promise<JsonNode> delete(String username, String projectId, String path) throws IOException {
-		throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
+		final FileMetaData metadata = FileMetaData.folder(path, true);
+		fileIndexStore.upsertFile(projectId, metadata);
+		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
 	@Override
 	public String toString() {
 		return "HashBasedProjectService{" + "fileStore=" + fileStore + '}';
-	}
-
-	private String generateProjectResourcePath(String projectId, String path) {
-		return projectId + "/" + path;
 	}
 
 	/**

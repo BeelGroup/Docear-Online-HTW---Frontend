@@ -96,10 +96,10 @@ public class ProjectController extends Controller {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final ProjectDeltaData data = filledForm.get();
-			return async(projectService.versionDelta(username(), data.getProjectId(), data.getCursor()).map(new Function<String, Result>() {
+			return async(projectService.versionDelta(username(), data.getProjectId(), data.getCursor()).map(new Function<JsonNode, Result>() {
 
 				@Override
-				public Result apply(String updates) throws Throwable {
+				public Result apply(JsonNode updates) throws Throwable {
 					return ok(updates);
 				}
 			}));

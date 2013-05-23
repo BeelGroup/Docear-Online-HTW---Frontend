@@ -34,6 +34,6 @@ public interface ProjectService {
 
 	Promise<Boolean> listenIfUpdateOccurs(String username, String projectId) throws IOException;
 
-	Promise<String> versionDelta(String username, String projectId, String cursor) throws IOException;
+	Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException;
 
 }

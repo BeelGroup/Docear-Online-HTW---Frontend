@@ -178,7 +178,7 @@ public class MockProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<String> versionDelta(String username, String projectId, String cursor) throws IOException {
+	public Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException {
 		final int sinceRevision = Integer.parseInt(cursor);
 		try {
 			final File updatesFolder = new File(Play.application().resource("rest/v1/project/" + projectId + "/_projectmetadata/updates").toURI());
@@ -197,7 +197,7 @@ public class MockProjectService implements ProjectService {
 
 			}
 
-			return Promise.pure(mapper.writeValueAsString(updates));
+			return Promise.pure(mapper.valueToTree(updates));
 
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
