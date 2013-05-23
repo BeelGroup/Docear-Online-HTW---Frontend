@@ -33,6 +33,8 @@ GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevisio
 # Projects
 ## manage
 POST	/1/project/create				@controllers.ProjectController.createProject()
+POST	/1/project/addUser				@controllers.ProjectController.addUserToProject()
+POST	/1/project/removeUser			@controllers.ProjectController.removeUserFromProject()
 GET		/1/files/:projectId/*path					@controllers.ProjectController.getFile(projectId: String, path: String)
 PUT		/1/files_put/:projectId/*path				@controllers.ProjectController.putFile(projectId: String, path: String)
 POST	/1/fileops/create_folder					@controllers.ProjectController.createFolder()

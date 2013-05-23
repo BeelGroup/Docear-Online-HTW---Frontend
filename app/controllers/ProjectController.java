@@ -3,9 +3,11 @@ package controllers;
 import java.io.IOException;
 import java.io.InputStream;
 
+import models.project.formdatas.AddUserToProjectData;
 import models.project.formdatas.CreateFolderData;
 import models.project.formdatas.CreateProjectData;
 import models.project.formdatas.ProjectDeltaData;
+import models.project.formdatas.RemoveUserFromProjectData;
 
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ import controllers.featuretoggle.ImplementedFeature;
 @ImplementedFeature(Feature.WORKSPACE)
 public class ProjectController extends Controller {
 	final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
+	final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);
+	final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
+	
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
 
@@ -49,6 +54,46 @@ public class ProjectController extends Controller {
 			}));
 		}
 	}
+	
+	public Result addUserToProject() throws IOException {
+		Form<AddUserToProjectData> filledForm = addUserToProjectForm.bindFromRequest();
+
+		if (filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final AddUserToProjectData data = filledForm.get();
+			return async(projectService.addUserToProject(username(), data.getProjectId(), data.getUsername()).map(new Function<Boolean, Result>() {
+				@Override
+				public Result apply(Boolean success) throws Throwable {
+					if(success)
+						return ok();
+					else {
+						return internalServerError("Unknown Error occured");
+					}
+				}
+			}));
+		}
+	}
+	
+	public Result removeUserFromProject() throws IOException {
+		Form<RemoveUserFromProjectData> filledForm = removeUserFromProjectForm.bindFromRequest();
+
+		if (filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final RemoveUserFromProjectData data = filledForm.get();
+			return async(projectService.removeUserFromProject(username(), data.getProjectId(), data.getUsername()).map(new Function<Boolean, Result>() {
+				@Override
+				public Result apply(Boolean success) throws Throwable {
+					if(success)
+						return ok();
+					else {
+						return internalServerError("Unknown Error occured");
+					}
+				}
+			}));
+		}
+	}	
 
 	public Result getFile(String projectId, String path) throws IOException {
 		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {

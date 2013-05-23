@@ -222,6 +222,9 @@ public class HashBasedProjectService implements ProjectService {
 	private boolean hasUserRightsOnProject(String username, String projectId) throws IOException {
 		// TODO might be an implementation on db side?
 		final Project project = fileIndexStore.findProjectById(projectId);
+		if(project == null) {
+			throw new NotFoundException("Project with id "+ projectId + " not found.");
+		}
 		return project.getAuthorizedUsers().contains(username);
 	}
 }
