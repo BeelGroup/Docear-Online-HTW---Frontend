@@ -1,7 +1,6 @@
 package services.backend.project;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +52,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public Promise<JsonNode> createProject(String username, String name) throws IOException {
 		final Project project = fileIndexStore.createProject(name, username);
+		fileIndexStore.upsertFile(project.getId(), FileMetaData.folder("/", false));
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
 
@@ -99,6 +99,8 @@ public class HashBasedProjectService implements ProjectService {
 			throw new UnauthorizedException("User has no rights on Project");
 		}
 
+		path = addLeadingSlash(path);
+
 		try {
 			// look for file in fileIndexStore
 			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
@@ -117,6 +119,12 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
+		if (!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+
+		path = addLeadingSlash(path);
+
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
 		if (metadata == null) {
 			throw new NotFoundException("File not found!");
@@ -127,6 +135,12 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
+		if (!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+
+		path = addLeadingSlash(path);
+
 		final FileMetaData metadata = FileMetaData.folder(path, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
@@ -138,6 +152,8 @@ public class HashBasedProjectService implements ProjectService {
 		if (!hasUserRightsOnProject(username, projectId)) {
 			throw new UnauthorizedException("User has no rights on Project");
 		}
+
+		path = addLeadingSlash(path);
 
 		Integer bytes = 0;
 		final String fileHash = isZip ? putFileInStoreWithZippedFileBytes(fileBytes, bytes) : putFileInStoreWithFileBytes(fileBytes, bytes);
@@ -223,8 +239,7 @@ public class HashBasedProjectService implements ProjectService {
 			zipStream.closeEntry();
 			IOUtils.closeQuietly(zipStream);
 			IOUtils.closeQuietly(out);
-			
-			
+
 			fileStore.move(tmpPath, unzippedPath);
 		} finally {
 			IOUtils.closeQuietly(zipStream);
@@ -241,13 +256,22 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException {
+		if (!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+
 		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, Integer.parseInt(cursor));
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
-
 	}
 
 	@Override
 	public Promise<JsonNode> delete(String username, String projectId, String path) throws IOException {
+		if (!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+
+		path = addLeadingSlash(path);
+
 		final FileMetaData metadata = FileMetaData.folder(path, true);
 		fileIndexStore.upsertFile(projectId, metadata);
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
@@ -306,5 +330,12 @@ public class HashBasedProjectService implements ProjectService {
 		}
 
 		return list;
+	}
+
+	private String addLeadingSlash(String path) {
+		if (!path.startsWith("/"))
+			return "/" + path;
+
+		return path;
 	}
 }
