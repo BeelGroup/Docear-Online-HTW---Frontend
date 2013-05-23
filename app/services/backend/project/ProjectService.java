@@ -39,15 +39,6 @@ public interface ProjectService {
 
 	Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException;
 
-	/**
-	 * takes zipped file
-	 * @param username
-	 * @param projectId
-	 * @param path
-	 * @param zipFileBytes
-	 * @return
-	 * @throws IOException
-	 */
 	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException;
 
 	Promise<JsonNode> delete(String username, String projectId, String path) throws IOException;
