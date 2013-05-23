@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.quote;
 import static models.mongo.MongoPlugin.*;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -21,6 +23,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public class MongoFileIndexStore implements FileIndexStore {
 
     public static final BasicDBObject DEFAULT_PRESENT_FIELDS_PROJECT = presentFields("name", "authUsers", "revision");
+    public static final BasicDBObject DEFAULT_PRESENT_FIELDS_FILE_METADATA = presentFields("revision", "_id.path").append("revisions", doc("$slice", -1));
 
     @Override
     public Project findProjectById(String id) throws IOException {
@@ -123,8 +126,15 @@ public class MongoFileIndexStore implements FileIndexStore {
         final BasicDBObject query = doc("_id",
                 doc("project", new ObjectId(id)).append("path", path)
         );
-        final BasicDBObject fields = presentFields("revision").append("revisions", doc("$slice", -1));
-        final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, fields);
+        final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
+        System.err.println("fileBson");
+        System.err.println(fileBson);
+        return convertToFileMetaData(fileBson);
+    }
+
+    private FileMetaData convertToFileMetaData(BasicDBObject fileBson) {
+        System.err.println("----");
+        System.err.println(fileBson);
         FileMetaData result = null;
         if (fileBson != null) {
             final BasicDBList revisions = (BasicDBList) fileBson.get("revisions");//the only element is the last revision
@@ -132,22 +142,42 @@ public class MongoFileIndexStore implements FileIndexStore {
             final boolean isDir = revisionBson.getBoolean("is_dir");
             final boolean isDeleted = revisionBson.getBoolean("is_deleted");
             final long revision = fileBson.getLong("revision");
-
+            final String filePath = ((BasicDBObject) fileBson.get("_id")).getString("path");
             if (isDir) {
-                result = FileMetaData.folder(path, isDeleted);
+                result = FileMetaData.folder(filePath, isDeleted);
             } else {
                 final String hash = revisionBson.getString("hash");
                 final long bytes = revisionBson.getInt("bytes");
-                result = FileMetaData.file(path, hash, bytes, isDeleted);
+                result = FileMetaData.file(filePath, hash, bytes, isDeleted);
             }
             result.setRevision(revision);
         }
+        System.err.println(result);
         return result;
     }
 
     @Override
-    public Iterable<FileMetaData> getMetaData(String id, String path, int max) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+    public Iterable<FileMetaData> getMetaDataOfDirectFolderChildren(String id, String path, int max) throws IOException {
+        final String folderPath = path.endsWith("/") ? path : path + "/";
+//        Pattern childrenOfFolderPattern = Pattern.compile("^" + quote(folderPath) + "[^/]+$");
+        Pattern childrenOfFolderPattern = Pattern.compile("" + (folderPath) + ".+");
+        System.out.println("pattern " + childrenOfFolderPattern);
+        final BasicDBObject query = doc("_id",
+                doc("path", Pattern.compile(".*"))
+//                doc("project", new ObjectId(id)).append("path", childrenOfFolderPattern)
+        );
+        System.out.println(query);
+        final DBCursor cursor = files().find(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
+        return new EntityCursorBase<FileMetaData>(cursor) {
+            @Override
+            protected FileMetaData convert(DBObject dbObject) {
+                FileMetaData result = null;
+                if (dbObject instanceof BasicDBObject) {
+                    result = convertToFileMetaData((BasicDBObject) dbObject);
+                }
+                return result;
+            }
+        };
     }
 
     @Override

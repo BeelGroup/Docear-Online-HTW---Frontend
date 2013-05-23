@@ -1,6 +1,7 @@
 package models.project.persistance;
 
-import com.mongodb.BasicDBList;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -10,10 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static models.mongo.MongoPlugin.*;
@@ -155,7 +153,23 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testGetMetaDataFolder() throws Exception {
+        //since we test we can consume all at once
+        final List<FileMetaData> data = newArrayList(store.getMetaDataOfDirectFolderChildren(PROJECT_ID, "/src/main/java", 100));
+        assertThat(data.size()).isGreaterThanOrEqualTo(2);
+        final List<String> paths = Lists.transform(data, new Function<FileMetaData, String>() {
+            @Override
+            public String apply(FileMetaData fileMetaData) {
+                return fileMetaData.getPath();
+            }
+        });
+        System.out.println("paths:");
+        for (FileMetaData path : data) {
+            System.out.println(path);
 
+        }
+        assertThat(paths).contains("/src/main/java/models", "/src/main/java/Main.java");
+        assertThat(paths.contains("/README.md")).overridingErrorMessage("should not contain elements from above folders").isFalse();
+        assertThat(paths.contains("/src/main/java/models/Person.java")).overridingErrorMessage("should not return transitive child elements").isFalse();
     }
 
     @Test
