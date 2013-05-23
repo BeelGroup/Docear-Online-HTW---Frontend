@@ -70,6 +70,10 @@ public class MongoPlugin extends Plugin {
         return db().getCollection("files");
     }
 
+    public static BasicDBObject doc() {
+        return new BasicDBObject();
+    }
+
     public static BasicDBObject doc(final String key, final Object value) {
         return new BasicDBObject(key, value);
     }
@@ -102,5 +106,9 @@ public class MongoPlugin extends Plugin {
 
     public static BasicDBObject queryById(final String id) {
         return doc("_id", new ObjectId(id));
+    }
+
+    public static BasicDBObject queryForFile(String id, String path) {
+        return doc("_id", doc("project", new ObjectId(id)).append("path", path));
     }
 }

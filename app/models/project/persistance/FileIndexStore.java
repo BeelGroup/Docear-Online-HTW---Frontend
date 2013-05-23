@@ -74,7 +74,7 @@ public interface FileIndexStore {
      * @param id the id of the associated project
      * @param path the path of the folder
      * @param max the maximal number of results
-     * @return an iterable with all files and folders of the specified folder. The first element is the folder itself.
+     * @return an iterable with all files and folders of the specified folder. It works not recursive, only the direct children of path are found.
      * @throws IOException
      */
     Iterable<FileMetaData> getMetaData(String id, String path, int max) throws IOException;
