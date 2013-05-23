@@ -280,15 +280,15 @@ public class HashBasedProjectService implements ProjectService {
 		}
 	}
 
-	private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) {
+	private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) throws IOException {
 		final List<A> list = new ArrayList<A>();
 		final Iterator<A> it = cursor.iterator();
 
 		while (it.hasNext()) {
 			list.add(it.next());
 		}
-
-		return list;
+        cursor.close();
+        return list;
 	}
 
 	private String addLeadingSlash(String path) {
