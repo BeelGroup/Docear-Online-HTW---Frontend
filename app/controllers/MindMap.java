@@ -46,8 +46,13 @@ public class MindMap extends Controller {
 	// cannot be secured, because we load the welcome map
 	public Result mapAsJson(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId + "; nodeCount: " + nodeCount);
+		
+		//for welcome map allways take cached json
+		if(mapId.equals("welcome")) {
+			return ok(util.Input.resourceToString("rest/v1/map/welcome.json"));
+		}
 		// check if welcome map or user authenticated
-		if (!mapId.equals("welcome") && !userService.isAuthenticated())
+		if (!userService.isAuthenticated())
 			return redirect(routes.Application.index());
 
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(source(), username(), mapId, nodeCount);
@@ -157,7 +162,6 @@ public class MindMap extends Controller {
 		}
 	}
 
-	
 	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("MindMap.getNode <- mapId=" + mapId + ", nodeId=" + nodeId + ", nodeCount= " + nodeCount);
 		if (!mapId.equals("welcome") && !userService.isAuthenticated())
@@ -174,7 +178,7 @@ public class MindMap extends Controller {
 	@Security.Authenticated(Secured.class)
 	public Result changeNode(final String mapId) {
 		final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
-		
+
 		Logger.debug("MindMap.changeNode => mapId=" + mapId + ", form=" + filledForm.toString());
 
 		if (filledForm.hasErrors())
@@ -183,15 +187,15 @@ public class MindMap extends Controller {
 			final ChangeNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
-			
+
 			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
 			Logger.debug((formUrlEncoded != null) + "");
-			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
-				if(entry.getKey().equals("nodeId"))
+			for (Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if (entry.getKey().equals("nodeId"))
 					continue;
-				
+
 				final String value = entry.getValue()[0];
-				
+
 				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 
@@ -267,15 +271,15 @@ public class MindMap extends Controller {
 			final ChangeEdgeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 			final Map<String, Object> attributeValueMap = new HashMap<String, Object>();
-			
+
 			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
 			Logger.debug((formUrlEncoded != null) + "");
-			for(Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
-				if(entry.getKey().equals("nodeId"))
+			for (Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if (entry.getKey().equals("nodeId"))
 					continue;
-				
+
 				final String value = entry.getValue()[0];
-				Logger.debug("value: "+value+"; empty :"+value.isEmpty());
+				Logger.debug("value: " + value + "; empty :" + value.isEmpty());
 				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 			Logger.debug(attributeValueMap.toString());
@@ -292,7 +296,7 @@ public class MindMap extends Controller {
 			}));
 		}
 	}
-	
+
 	public Result listenForUpdates(final String mapId) {
 		return async(mindMapCrudService.listenForUpdates(source(), username(), mapId).map(new Function<Boolean, Result>() {
 

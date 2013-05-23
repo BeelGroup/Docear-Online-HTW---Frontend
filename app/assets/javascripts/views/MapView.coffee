@@ -19,7 +19,10 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
 
 
     loadMap: (@mapId) ->
-      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId).url
+      if @mapLoader isnt undefined
+        @mapLoader.stop()
+        
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId, document.initialLoadChunkSize).url
 
       $.ajax(
         url: @href
@@ -52,11 +55,13 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
 
     parseAndRenderMapByJsonData: (data)=>
       $('.current-mindmap-name').text(data.name)
-      #document.rootID = data.root.id
-      
-      mapLoader = new MapLoader(data, @mapId);
 
-      @rootView = new RootNodeView mapLoader.load()
+      
+      @mapLoader = new MapLoader data, @mapId
+
+      @rootView = new RootNodeView @mapLoader.firstLoad()
+      document.rootView = @rootView
+      @mapLoader.injectRootView @rootView
       @rootView.renderAndAppendTo(@canvas.getElement())
 
       @rootView.centerInContainer()
@@ -65,7 +70,6 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
       @canvas.setRootView(@rootView)
       @canvas.center()
 
-      
       setTimeout( => 
         @minimap.drawMiniNodes @rootView.setChildPositions(), @
       , 500)
@@ -74,12 +78,22 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
+
       # first part of map is loaded - fadeout
       @$el.parent().find(".loading-map-overlay").fadeOut()
-      @rootNode
+      document.initialLoad = true
+      @mapLoader.continueLoading()
+      @rootView.model.on 'refreshSize', @refreshSizeOfCanvasAndMinimap
+      @rootView.model.on 'refreshMinimap', @minimap.drawMiniNodes @rootView.setChildPositions()
+      @rootView.model.on 'refreshDomConnectionsAndBoundaries', @refreshDomConnectionsAndBoundaries
 
 
-
+    refreshDomConnectionsAndBoundaries:=>
+      document.log 'refresh'
+      @rootView.refreshDom()
+      @rootView.connectChildren()
+      @canvas.checkBoundaries()
+      @minimap.drawMiniNodes @rootView.setChildPositions()
 
     addLoadingOverlay:->
       div = document.createElement("div")
@@ -175,7 +189,6 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
       # pass related viewport-element and canvas-view
       @minimap = new MinimapView("#{@id}_minimap-canvas", $viewport, @canvas)
       @minimap.renderAndAppendTo($viewport)
-
 
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport

@@ -105,23 +105,35 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
     initialFoldStatus:()-> 
       shouldBeVisible = !@model.get('folded')
-      @updateFS(shouldBeVisible, true)
+      @privateUpdateFoldStatus(shouldBeVisible, true)
+
      
     updateFoldStatus:()->
-      shouldBeVisible = !@model.get('folded')
-      domVisible = @$el.children('.children').is ':visible'
-      @updateFS(shouldBeVisible, domVisible)
-      document.log 'update fold status'
+      @$el.attr('folded', @model.get 'folded')
+      if @renderOnExpand
+        # visible for layouting
+        @$el.find('.children:first').toggle()
+        (@model.get 'rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        # childs will layouted (not rendered) the first and only time here.
+        @renderOnExpand = false
+        #@$el.find('.children:first').toggle()
+        @switchFoldButtons()
+        #@privateUpdateFoldStatus(true, false, true)
+      else
+        shouldBeVisible = !@model.get('folded')
+        domVisible = @$el.children('.children').is ':visible'
+        @privateUpdateFoldStatus(shouldBeVisible, domVisible, false)
+      
 
-    updateFS:(shouldBeVisible, domVisible)->
+    privateUpdateFoldStatus:(shouldBeVisible, domVisible, firstLayouting)->
       if shouldBeVisible isnt domVisible
         
         $children = @$el.children('.children')
         $myself = @$el.children('.inner-node')
 
-        $nodesToFold = @$el.children('.inner-node').children('.action-fold')
-        $nodesToFold.toggleClass 'invisible'
+        @switchFoldButtons()
 
+        #@alignChildrenofElement 
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
         
@@ -134,7 +146,13 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
             if childrenHeight > nodeHeight
               @resizeTree @$el, @model, -diff
         
+        # toggle visibilety of childs
         $children.fadeToggle(document.fadeDuration)
+
+    switchFoldButtons:->
+      $nodesToFold = @$el.children('.inner-node').children('.action-fold')
+      # toggle +/- button
+      $nodesToFold.toggleClass 'invisible'
 
 
     changeNodeText: ->
@@ -183,13 +201,6 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         top: '-='+(postHeight-preHeight)/2
       }, document.fadeDuration
 
-      model = @model
-      
-      # timeout "document.fadeDuration" might not be enough, since other animations maybe need a few millis more
-      setTimeout(->
-        model.getRoot().updateAllConnections()
-      , document.fadeDuration)
-      
       
      
     foldModel: ->

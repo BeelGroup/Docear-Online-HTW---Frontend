@@ -15,43 +15,50 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
         should be used in a loader class
     ###
 
-    createRootNodeByData:(data, containerID, mapId)->
-    
+    createRootNodeByData:(data, containerID, @mapId)->
       rootNode = new RootNode()
       rootNode.set 'containerID', containerID
       rootNode.set 'leftChildren', []
       rootNode.set 'rightChildren', []
+      
+      # data.id should be filename
       rootNode.set 'mapId', data.id
       rootNode.set 'folded', false
       rootNode.set 'revision', data.revision
 
       if persistenceHandlers[data.id] == undefined
-        persistenceHandlers[data.id] = new PersistenceHandler(mapId)
+        persistenceHandlers[data.id] = new PersistenceHandler(@mapId)
 
       if updateHandlers[data.id] == undefined
-        updateHandlers[data.id] = new UpdateHandler(mapId, rootNode)
+        updateHandlers[data.id] = new UpdateHandler(@mapId, rootNode)
       rootNode.set 'updateHandler', updateHandlers[data.id]
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
 
-      if data.root.leftChildren != undefined
-        leftNodes = @getRecursiveChildren(data.root.leftChildren, rootNode, rootNode)
+      if data.root.leftChildren isnt undefined
+        leftNodes = @createChildrenRecursive(data.root.leftChildren, rootNode, rootNode)
         rootNode.set 'leftChildren', leftNodes
       
-      if data.root.rightChildren != undefined
-        rightNodes = @getRecursiveChildren(data.root.rightChildren, rootNode, rootNode)
+      if data.root.rightChildren isnt undefined
+        rightNodes = @createChildrenRecursive(data.root.rightChildren, rootNode, rootNode)
         rootNode.set 'rightChildren', rightNodes
 
       rootNode
 
 
-    createNodeByData:(data, rootNode, parent)->
-
+    createNodeByData:(data, parent, rootNode)->
       node = new Node()
       node.set 'children', []
       node.set 'parent', parent
       node.set 'folded', data.folded
+      if data.childrenIds isnt undefined 
+        node.set 'childsToLoad', data.childrenIds
+        rootNode.addParentToParentToLoadList(node)
+        for id in data.childrenIds
+          rootNode.addNodetoUnfinishedList(id, node)
+
+      rootNode.addNodeToList node
 
       @setDefaults(node, rootNode, data)
       node.activateListeners()
@@ -60,7 +67,6 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
 
 
     setDefaults:(node, rootNode, data)->
-
       node.set 'id', data.id
 
       if not data.isHtml
@@ -100,29 +106,30 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'connectionUpdated', 0
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
-      node.set 'attributesToPersist', ['nodeText', 'isHTML']
+      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML']
       node.set 'persist', true
+
+      node.set 'foldedShow', false
+      node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
+      node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
 
       node.setEdgestyle(data.edgeStyle)
 
 
-    getRecursiveChildren:(childrenData, parent, root)->
-
+    createChildrenRecursive:(childrenData, parent, root)->
       children = []
-      if childrenData.id != undefined && childrenData.id != null
-        newChild = @createNodeByData(childrenData, root, parent)
-        children.push newChild
-      else if childrenData != undefined
+      if childrenData != undefined
         for child in childrenData
-          newChild = @createNodeByData(child, root, parent)
+          newChild = @createNodeByData(child, parent, root)
           if child.children != undefined
-            newChild.set 'children', @getRecursiveChildren(child.children, newChild, root)
+            newChild.set 'children', @createChildrenRecursive(child.children, newChild, root)
           children.push newChild
       children
 
 
     createNodeByText:(text)->  
-
+      # dont forget to add the new node to the list
+      # -> rootNode.addNodeToList node
 
 
   module.exports = NodeFactory

@@ -55,7 +55,7 @@ define ->
       else
         value = @$(selector).val()
 
-      @model.set field, value, (error) -> console.log error
+      @model.set field, value, (error) -> document.log error
 
 
   module.exports = SyncedView

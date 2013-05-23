@@ -10,6 +10,7 @@ import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 //import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +42,13 @@ public class HadoopFileStore implements FileStore {
     @Override
     public DataInputStream open(String path) throws IOException {
         return fileSystem.open(new Path(path));
+    }
+    
+    @Override
+    public void move(String fromPath, String toPath) throws IOException, FileNotFoundException {
+    	final Path from = new Path(fromPath);
+    	final Path to = new Path(toPath);
+    	fileSystem.moveFromLocalFile(from, to);
     }
 
     @Override

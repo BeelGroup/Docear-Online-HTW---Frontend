@@ -1,0 +1,35 @@
+[
+    {
+        "_id": {
+            "$oid": "507f191e810c19729de860ea"
+        },
+        "name": "Mein Projekt",
+        "authUsers": ["Alex", "Micha", "Julius"],
+        "revision": 3,
+        "changes":[
+            {"path":"/README.md", "revision": 0},
+            {"path":"/README.md", "revision": 1},
+            {"path":"/src/main/java/Main.java", "revision": 0},
+            {"path":"/README.md", "revision": 2}
+        ]
+    },
+    {
+        "_id": {
+            "$oid": "508963723aed14a714a59591"
+        },
+        "name": "Docear Sync",
+        "authUsers": ["Alex", "Micha", "Julius"],
+        "revision": -1,
+        "changes":[]
+    },
+    {
+        "_id": {
+            "$oid": "519c73a00f089cc3e429c15f"
+        },
+        "name": "Docear Sync",
+        "authUsers": ["Paul", "Florian"],
+        "revision": -1,
+        "changes":[]
+    }
+]
+

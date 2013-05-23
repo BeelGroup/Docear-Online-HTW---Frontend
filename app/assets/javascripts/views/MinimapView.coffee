@@ -63,27 +63,26 @@ define ->
       fallback = false
       element = @$root
 
-      #console.log  $.browser.version
       # IE
       if $.browser.msie 
         if $.browser.version > 8
-          #console.log 'IE 9 & 10'
+          #document.log 'IE 9 & 10'
           element.css
             '-ms-transform': "scale(#{@scaleAmount})" 
 
         else if $.browser.version <= 8 
-          #console.log 'IE 7 & 8'
+          #document.log 'IE 7 & 8'
           fallback = true
 
       # Safari, Firefox and Chrome with CSS3 support 
       else if($.inArray('WebkitTransform', possibilities) or 
       $.inArray('MozTransform', inpossibilities) or 
       $.inArray('OTransform', possibilities)) 
-        #console.log 'Webkit, Moz, O'
+        #document.log 'Webkit, Moz, O'
         element.animate {'scale' : @scaleAmount}, duration
 
       else
-        #console.log $.browser
+        #document.log $.browser
         fallback = true 
 
       # ultra fallback
@@ -185,6 +184,7 @@ define ->
       if animate then @relatedCanvas.stop().animate stats else @relatedCanvas.css stats
 
     updatePositionFromCanvas:(event, stats)=>
+      document.log 'update'
       resizedPos= 
         x: -stats.position.x /@ratio
         y: -stats.position.y /@ratio

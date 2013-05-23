@@ -13,7 +13,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
       super()
 
 
-    recursiveRender: (parentView, parent, nodes, @rootView)->
+    recursiveRender: (parent, nodes, @rootView)->
       if not document.cancel_loading
         $.each nodes, (index, node)=>
           nodeView = new NodeView(node, @rootView)
@@ -80,6 +80,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
             currentTop = -$(child).outerHeight()/2
           currentTop += heightOfChildren[id]/2
           $(child).css('top', currentTop)
+
           
           if sideOfTree == 'left'
             $(child).addClass('left')
@@ -89,7 +90,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
             $(child).css('left', @horizontalSpacer) 
           lastChild = child
           currentTop += heightOfChildren[id]/2 + @verticalSpacer
-          
+
         # to correct the addition on the last run we subtract the last added height
         currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
         totalChildrenWidth += @horizontalSpacer
@@ -107,22 +108,20 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         $(childrenContainer).css('width', width)
 
 
-      if $(element).attr('folded') is 'true'
+      if $(element).attr('folded') is 'true'      
         diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
-
-        [Math.max(totalChildrenHeight, elementHeight) - diff - @verticalSpacer, totalChildrenWidth]
+        [elementHeight + 0, totalChildrenWidth]
+        #[elementHeight + @verticalSpacer, totalChildrenWidth]
       else
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
 
     render: (@rootView)->
       @$el.html @template @getRenderData()
-
+      @$el.append(@model.get 'purehtml')
       @$el.attr('folded', @model.get 'folded')
 
-      @$el.append(@model.get 'purehtml')
-
-      # in first step: from roon to its childs
+      # in first step: from root to its childs
       if @model.get('parent') isnt undefined and @model.get('parent') isnt null
         @connection = new ConnectionView(@model.get('parent'), @model)
         @connection.renderAndAppendToNode(@$el)
@@ -134,8 +133,9 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
 
 
-    renderAndAppendTo:($element, rootView)->
-      @render(rootView)
+    renderAndAppendTo:($element, @rootView)->
+      @render(@rootView)
+      @renderOnExpand = false 
       
       if @controls.movable
         $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });
@@ -145,17 +145,37 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
           drop: ( event, ui )->
             newParentId = $( this ).closest('.node').attr('id')
         })
-      
+
       $element.append(@$el)
       @alignButtons()
+
       children = @model.get 'children'
+      childsToLoad = @model.get 'childsToLoad'
+
+      # if there are already informations about cholds in the model: render them
       if children isnt undefined and children.length > 0
-        @recursiveRender(@, @$el.find('.children:first'), children, rootView)
+        @recursiveRender(@$el.find('.children:first'), children, @rootView)
+        # if this element is not within a folded subtree: update fold status
+        if $element.is ':visible'
+          @initialFoldStatus()
+        else if @model.get 'folded'
+          @switchFoldButtons()
+          @$el.find('.children:first').toggle()
+          @renderOnExpand = true
+      # if there will more childs be rendered later: set flag
+      else if childsToLoad isnt undefined and childsToLoad.length > 0    
+        if @model.get 'folded'
+          @switchFoldButtons()
+          @$el.find('.children:first').toggle()
+          @renderOnExpand = true
+          @$el.find('.action-fold').hide()
+      # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()
 
-      @initialFoldStatus()
 
+        
+      
 
     destroy: ->
       @model?.off null, null, @

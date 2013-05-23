@@ -1,2 +1,4 @@
 380:info.schleichardt.play.embed.mongo.EmbedMongoPlugin
+400:models.mongo.MongoPlugin
+420:models.mongo.MongoFixturesPlugin
 15000:info.schleichardt.play2.mailplugin.MailPlugin
