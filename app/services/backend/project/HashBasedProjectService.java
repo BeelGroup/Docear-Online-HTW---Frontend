@@ -41,6 +41,32 @@ public class HashBasedProjectService implements ProjectService {
 	
 	private FileIndexStore fileIndexStore = new MongoFileIndexStore();
 
+	
+	@Override
+	public Promise<JsonNode> createProject(String username, String name) throws IOException {
+		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	}
+	
+	@Override
+	public Promise<Boolean> addUserToProject(String projectId, String username) throws IOException {
+		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	}
+	
+	@Override
+	public Promise<Boolean> removeUserFromProject(String projectId, String username) throws IOException {
+		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	}
+	
+	@Override
+	public Promise<JsonNode> getProjectById(String projectId) throws IOException {
+		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	}
+	
+	@Override
+	public Promise<JsonNode> getProjectsFromUser(String username) throws IOException {
+		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	}
+	
 	@Override
 	public F.Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
 		/**

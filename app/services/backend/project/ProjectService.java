@@ -13,6 +13,18 @@ import play.libs.F.Promise;
  * 
  */
 public interface ProjectService {
+	
+	//Project level
+	Promise<JsonNode> createProject(String username, String name) throws IOException;
+	Promise<Boolean> addUserToProject(String projectId, String username) throws IOException;
+	Promise<Boolean> removeUserFromProject(String projectId, String username) throws IOException;
+	
+	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
+	Promise<JsonNode> getProjectById(String projectId) throws IOException;
+	
+	
+	
+	//File level
 	Promise<InputStream> getFile(String username, String projectId, String path) throws IOException;
 
 	Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException;
