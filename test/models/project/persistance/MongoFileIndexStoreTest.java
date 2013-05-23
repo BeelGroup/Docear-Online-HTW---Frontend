@@ -100,10 +100,14 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testFindProjectsFromUser() throws Exception {
-        final Iterable<Project> alexProjects = store.findProjectsFromUser("Alex");
+        final EntityCursor<Project> alexProjects = store.findProjectsFromUser("Alex");
         final List<String> projectNames = newArrayList();
-        for (final Project project : alexProjects) {
-            projectNames.add(project.getName());
+        try {
+            for (final Project project : alexProjects) {
+                projectNames.add(project.getName());
+            }
+        } finally {
+            alexProjects.close();
         }
         assertThat(projectNames).hasSize(2);
         assertThat(projectNames).isEqualTo(newArrayList(PROJECT_NAME, "Docear Sync"));

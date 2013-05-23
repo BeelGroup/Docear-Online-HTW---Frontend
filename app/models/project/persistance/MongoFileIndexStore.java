@@ -1,6 +1,5 @@
 package models.project.persistance;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.mongodb.*;
 import org.apache.commons.lang.NotImplementedException;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.collect.Iterables.transform;
 import static models.mongo.MongoPlugin.*;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -39,19 +37,19 @@ public class MongoFileIndexStore implements FileIndexStore {
     }
 
     @Override
-    public Iterable<Project> findProjectsFromUser(String username) throws IOException {
+    public EntityCursor<Project> findProjectsFromUser(String username) throws IOException {
         final BasicDBObject query = doc("authUsers", username);
-        DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
-        return transform(cursor, new Function<DBObject, Project>() {
+        final DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+        return new EntityCursorBase<Project>(cursor) {
             @Override
-            public Project apply(DBObject dbObject) {
+            protected Project convert(DBObject dbObject) {
                 Project result = null;
                 if (dbObject instanceof BasicDBObject) {
                     result = convertToProject((BasicDBObject) dbObject);
                 }
                 return result;
             }
-        });
+        };
     }
 
     @Override
@@ -124,4 +122,5 @@ public class MongoFileIndexStore implements FileIndexStore {
         final BasicDBObject result = (BasicDBObject) Iterables.getFirst(output.results(), null);
         return new Changes(getStringList(result, "paths"));
     }
+
 }
