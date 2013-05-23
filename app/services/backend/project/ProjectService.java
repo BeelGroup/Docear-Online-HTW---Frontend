@@ -20,7 +20,15 @@ public interface ProjectService {
 	Promise<Boolean> removeUserFromProject(String username, String projectId, String usernameToRemove) throws IOException;
 	
 	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
-	Promise<JsonNode> getProjectById(String projectId) throws IOException;
+	
+	/**
+	 * 
+	 * @param username important for user rights validation
+	 * @param projectId id of the project
+	 * @return
+	 * @throws IOException
+	 */
+	Promise<JsonNode> getProjectById(String username, String projectId) throws IOException;
 	
 	
 	

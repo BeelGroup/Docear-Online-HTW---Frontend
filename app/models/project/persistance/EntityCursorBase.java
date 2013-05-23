@@ -1,16 +1,15 @@
 package models.project.persistance;
 
-import com.google.common.base.Function;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import static com.google.common.collect.Iterables.transform;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-import static com.google.common.collect.Iterables.transform;
+import com.google.common.base.Function;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 
-public abstract class EntityCursorBase<T> implements EntityCursor {
+public abstract class EntityCursorBase<T> implements EntityCursor<T> {
     private final DBCursor cursor;
 
     public EntityCursorBase(DBCursor cursor) {

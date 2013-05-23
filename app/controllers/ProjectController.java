@@ -39,6 +39,17 @@ public class ProjectController extends Controller {
 	@Autowired
 	private UserService userService;
 	
+	@Security.Authenticated(Secured.class)
+	public Result getProject(String projectId) throws IOException {
+		return async(projectService.getProjectById(username(), projectId).map(new Function<JsonNode, Result>() {
+			@Override
+			public Result apply(JsonNode folderMetadata) throws Throwable {
+				return ok(folderMetadata);
+			}
+		}));
+	}
+ 	
+	@Security.Authenticated(Secured.class)
 	public Result createProject() throws IOException {
 		Form<CreateProjectData> filledForm = createProjectForm.bindFromRequest();
 
@@ -55,6 +66,7 @@ public class ProjectController extends Controller {
 		}
 	}
 	
+	@Security.Authenticated(Secured.class)
 	public Result addUserToProject() throws IOException {
 		Form<AddUserToProjectData> filledForm = addUserToProjectForm.bindFromRequest();
 
@@ -75,6 +87,7 @@ public class ProjectController extends Controller {
 		}
 	}
 	
+	@Security.Authenticated(Secured.class)
 	public Result removeUserFromProject() throws IOException {
 		Form<RemoveUserFromProjectData> filledForm = removeUserFromProjectForm.bindFromRequest();
 
@@ -95,6 +108,7 @@ public class ProjectController extends Controller {
 		}
 	}	
 
+	@Security.Authenticated(Secured.class)
 	public Result getFile(String projectId, String path) throws IOException {
 		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {
 
@@ -112,6 +126,7 @@ public class ProjectController extends Controller {
 	 * @return
 	 * @throws IOException
 	 */
+	@Security.Authenticated(Secured.class)
 	public Result putFile(String projectId, String path) throws IOException {
 		final byte[] content = request().body().asRaw().asBytes();
 		return async(projectService.putFile(username(), projectId, path, content).map(new Function<JsonNode, Result>() {

@@ -8,12 +8,16 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.zip.ZipInputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.persistance.Changes;
+import models.project.persistance.EntityCursor;
 import models.project.persistance.FileIndexStore;
 import models.project.persistance.FileMetaData;
 import models.project.persistance.Project;
@@ -70,13 +74,20 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<JsonNode> getProjectById(String projectId) throws IOException {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	public Promise<JsonNode> getProjectById(String username, String projectId) throws IOException {
+		if(!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+		final Project project = fileIndexStore.findProjectById(projectId);
+		
+		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
 
 	@Override
 	public Promise<JsonNode> getProjectsFromUser(String username) throws IOException {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+		final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
+		final List<Project> projectList = convertEntityCursorToList(projects);
+		return Promise.pure(new ObjectMapper().valueToTree(projectList));
 	}
 
 	@Override
@@ -226,5 +237,16 @@ public class HashBasedProjectService implements ProjectService {
 			throw new NotFoundException("Project with id "+ projectId + " not found.");
 		}
 		return project.getAuthorizedUsers().contains(username);
+	}
+	
+	private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) {
+		final List<A> list = new ArrayList<A>();
+		final Iterator<A> it = cursor.iterator();
+		
+		while(it.hasNext()) {
+			list.add(it.next());
+		}
+		
+		return list;
 	}
 }

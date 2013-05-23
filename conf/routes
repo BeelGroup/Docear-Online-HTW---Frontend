@@ -35,6 +35,9 @@ GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevisio
 POST	/1/project/create				@controllers.ProjectController.createProject()
 POST	/1/project/addUser				@controllers.ProjectController.addUserToProject()
 POST	/1/project/removeUser			@controllers.ProjectController.removeUserFromProject()
+GET		/1/project/:projectId			@controllers.ProjectController.getProject(projectId: String)
+
+## files
 GET		/1/files/:projectId/*path					@controllers.ProjectController.getFile(projectId: String, path: String)
 PUT		/1/files_put/:projectId/*path				@controllers.ProjectController.putFile(projectId: String, path: String)
 POST	/1/fileops/create_folder					@controllers.ProjectController.createFolder()
@@ -60,5 +63,5 @@ GET     /assets/javascripts/routes.js controllers.Application.javascriptRoutes()
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 
-# untrailing
+# untrailing GET
 GET		/*path/			controllers.Application.untrail(path: String)
