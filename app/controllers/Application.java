@@ -136,6 +136,15 @@ public class Application extends Controller {
                     routes.javascript.MindMap.releaseLock(),
                     routes.javascript.MindMap.listenForUpdates(),
                     routes.javascript.MindMap.fetchUpdatesSinceRevision(),
+                    routes.javascript.ProjectController.createProject(),
+                    routes.javascript.ProjectController.addUserToProject(),
+                    routes.javascript.ProjectController.createFolder(),
+                    routes.javascript.ProjectController.getFile(),
+                    routes.javascript.ProjectController.getProject(),
+                    routes.javascript.ProjectController.metadata(),
+                    routes.javascript.ProjectController.projectVersionDelta(),
+                    routes.javascript.ProjectController.putFile(),
+                    routes.javascript.ProjectController.removeUserFromProject(),
                     routes.javascript.Application.index(),
                     routes.javascript.Assets.at()
             )
