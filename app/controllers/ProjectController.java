@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import models.project.formdatas.CreateFolderData;
+import models.project.formdatas.CreateProjectData;
 import models.project.formdatas.ProjectDeltaData;
 
 import org.codehaus.jackson.JsonNode;
@@ -23,6 +24,7 @@ import controllers.featuretoggle.ImplementedFeature;
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
 public class ProjectController extends Controller {
+	final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
 
@@ -31,6 +33,22 @@ public class ProjectController extends Controller {
 
 	@Autowired
 	private UserService userService;
+	
+	public Result createProject() throws IOException {
+		Form<CreateProjectData> filledForm = createProjectForm.bindFromRequest();
+
+		if (filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final CreateProjectData data = filledForm.get();
+			return async(projectService.createProject(username(), data.getName()).map(new Function<JsonNode, Result>() {
+				@Override
+				public Result apply(JsonNode folderMetadata) throws Throwable {
+					return ok(folderMetadata);
+				}
+			}));
+		}
+	}
 
 	public Result getFile(String projectId, String path) throws IOException {
 		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {

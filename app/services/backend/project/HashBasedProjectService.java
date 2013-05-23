@@ -12,10 +12,11 @@ import java.util.Random;
 import java.util.zip.ZipInputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
+import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.persistance.Changes;
 import models.project.persistance.FileIndexStore;
 import models.project.persistance.FileMetaData;
-import models.project.persistance.MongoFileIndexStore;
+import models.project.persistance.Project;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -38,36 +39,46 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Autowired
 	private FileStore fileStore;
-	
+
 	@Autowired
 	private FileIndexStore fileIndexStore;
 
-	
 	@Override
 	public Promise<JsonNode> createProject(String username, String name) throws IOException {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+		final Project project = fileIndexStore.createProject(name, username);
+		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
-	
+
 	@Override
-	public Promise<Boolean> addUserToProject(String projectId, String username) throws IOException {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	public Promise<Boolean> addUserToProject(String username, String projectId, String usernameToAdd) throws IOException {
+		if(!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+		
+		fileIndexStore.addUserToProject(projectId, usernameToAdd);
+		return Promise.pure(true);
 	}
-	
+
 	@Override
-	public Promise<Boolean> removeUserFromProject(String projectId, String username) throws IOException {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
+	public Promise<Boolean> removeUserFromProject(String username, String projectId, String usernameToRemove) throws IOException {
+		if(!hasUserRightsOnProject(username, projectId)) {
+			throw new UnauthorizedException("User has no rights on Project");
+		}
+		
+		fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
+		return Promise.pure(true);
 	}
-	
+
 	@Override
 	public Promise<JsonNode> getProjectById(String projectId) throws IOException {
 		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
 	}
-	
+
 	@Override
 	public Promise<JsonNode> getProjectsFromUser(String username) throws IOException {
 		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/468");
 	}
-	
+
 	@Override
 	public F.Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
 		/**
@@ -77,13 +88,13 @@ public class HashBasedProjectService implements ProjectService {
 
 		try {
 			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
-			if(metadata == null) {
+			if (metadata == null) {
 				throw new NotFoundException("File not found!");
 			}
-			
+
 			final String fileHash = metadata.getHash();
 
-			return Promise.pure((InputStream) fileStore.open(FOLDER_ZIPPED+"/"+fileHash+".zip"));
+			return Promise.pure((InputStream) fileStore.open(FOLDER_ZIPPED + "/" + fileHash + ".zip"));
 
 		} catch (FileNotFoundException e) {
 			throw new NotFoundException("File not found!", e);
@@ -93,7 +104,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
-		if(metadata == null) {
+		if (metadata == null) {
 			throw new NotFoundException("File not found!");
 		}
 		final JsonNode metadataJson = new ObjectMapper().valueToTree(metadata);
@@ -104,7 +115,7 @@ public class HashBasedProjectService implements ProjectService {
 	public F.Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
 		final FileMetaData metadata = FileMetaData.folder(path, false);
 		fileIndexStore.upsertFile(projectId, metadata);
-		
+
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
@@ -116,16 +127,16 @@ public class HashBasedProjectService implements ProjectService {
 		OutputStream out = null;
 		ZipInputStream zipStream = null;
 		DigestInputStream digestIn = null;
-		FileMetaData metadata = null; 
-		try {			
-			final String zippedTmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000)+".zip";
-			final String tmpPath = "tmp/"+(new Random().nextInt(899999999)+100000000);
-			//copy zipfile to tmp dir
+		FileMetaData metadata = null;
+		try {
+			final String zippedTmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000) + ".zip";
+			final String tmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000);
+			// copy zipfile to tmp dir
 			out = fileStore.create(zippedTmpPath);
 			IOUtils.write(zipFileBytes, out);
 			IOUtils.closeQuietly(out);
-			
-			//get unzipped file
+
+			// get unzipped file
 			zipStream = new ZipInputStream(new ByteArrayInputStream(zipFileBytes));
 			zipStream.getNextEntry();
 			digestIn = new DigestInputStream(zipStream, createMessageDigest());
@@ -133,24 +144,24 @@ public class HashBasedProjectService implements ProjectService {
 			// write to temp location
 			final int bytes = IOUtils.copy(digestIn, out);
 			IOUtils.closeQuietly(out);
-			//get hash
+			// get hash
 			final String fileHash = getFileCheckSum(digestIn);
-			final String unzippedPath = FOLDER_UNZIPPED+"/"+fileHash;
-			final String zippedPath = FOLDER_ZIPPED+"/"+fileHash+".zip";
-			
+			final String unzippedPath = FOLDER_UNZIPPED + "/" + fileHash;
+			final String zippedPath = FOLDER_ZIPPED + "/" + fileHash + ".zip";
+
 			fileStore.move(tmpPath, unzippedPath);
 			fileStore.move(zippedTmpPath, zippedPath);
-			
-			//update file in index
+
+			// update file in index
 			metadata = FileMetaData.file(path, fileHash, bytes, false);
 			fileIndexStore.upsertFile(projectId, metadata);
-						
+
 		} finally {
 			IOUtils.closeQuietly(out);
 			IOUtils.closeQuietly(zipStream);
 			IOUtils.closeQuietly(digestIn);
 		}
-		
+
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
@@ -163,7 +174,7 @@ public class HashBasedProjectService implements ProjectService {
 	public F.Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException {
 		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, Integer.parseInt(cursor));
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
-		
+
 	}
 
 	@Override
@@ -187,7 +198,7 @@ public class HashBasedProjectService implements ProjectService {
 	private static String getFileCheckSum(DigestInputStream inputStream) {
 		final MessageDigest md = inputStream.getMessageDigest();
 		final byte[] mdbytes = md.digest();
-		Logger.debug("length: "+mdbytes.length+";\n"+mdbytes.toString());
+		Logger.debug("length: " + mdbytes.length + ";\n" + mdbytes.toString());
 
 		// convert the byte to hex format
 		final StringBuffer sb = new StringBuffer();
@@ -206,5 +217,11 @@ public class HashBasedProjectService implements ProjectService {
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException("Invalid Crypto algorithm! ", e);
 		}
+	}
+
+	private boolean hasUserRightsOnProject(String username, String projectId) throws IOException {
+		// TODO might be an implementation on db side?
+		final Project project = fileIndexStore.findProjectById(projectId);
+		return project.getAuthorizedUsers().contains(username);
 	}
 }
