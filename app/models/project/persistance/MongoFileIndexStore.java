@@ -161,4 +161,14 @@ public class MongoFileIndexStore implements FileIndexStore {
         final BasicDBObject result = (BasicDBObject) Iterables.getFirst(output.results(), null);
         return new Changes(getStringList(result, "paths"));
     }
+
+    @Override
+    public boolean userBelongsToProject(String username, String id) {
+        boolean belongs = false;
+        if (username != null && id != null) {
+            final BasicDBObject query = queryById(id).append("authUsers", username);
+            belongs = projects().count(query) == 1;
+        }
+        return belongs;
+    }
 }

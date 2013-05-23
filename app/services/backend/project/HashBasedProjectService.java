@@ -58,31 +58,19 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public Promise<Boolean> addUserToProject(String username, String projectId, String usernameToAdd) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		fileIndexStore.addUserToProject(projectId, usernameToAdd);
 		return Promise.pure(true);
 	}
 
 	@Override
 	public Promise<Boolean> removeUserFromProject(String username, String projectId, String usernameToRemove) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
 		return Promise.pure(true);
 	}
 
 	@Override
 	public Promise<JsonNode> getProjectById(String username, String projectId) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
 		final Project project = fileIndexStore.findProjectById(projectId);
-
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
 
@@ -95,10 +83,6 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		path = addLeadingSlash(path);
 
 		try {
@@ -119,10 +103,6 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		path = addLeadingSlash(path);
 
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
@@ -135,10 +115,6 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		path = addLeadingSlash(path);
 
 		final FileMetaData metadata = FileMetaData.folder(path, false);
@@ -149,10 +125,6 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> putFile(String username, String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		path = addLeadingSlash(path);
 
 		Integer bytes = 0;
@@ -256,20 +228,17 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
-
 		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, Integer.parseInt(cursor));
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
 	}
 
-	@Override
-	public Promise<JsonNode> delete(String username, String projectId, String path) throws IOException {
-		if (!hasUserRightsOnProject(username, projectId)) {
-			throw new UnauthorizedException("User has no rights on Project");
-		}
+    @Override
+    public boolean userBelongsToProject(String username, String projectId) {
+        return fileIndexStore.userBelongsToProject(username, projectId);
+    }
 
+    @Override
+	public Promise<JsonNode> delete(String username, String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
 		final FileMetaData metadata = FileMetaData.folder(path, true);
@@ -284,8 +253,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	/**
 	 * taken from http://www.mkyong.com/java/java-sha-hashing-example/
-	 * 
-	 * @param content
+	 *
 	 * @return
 	 */
 	private static String getFileCheckSum(DigestInputStream inputStream) {
@@ -310,15 +278,6 @@ public class HashBasedProjectService implements ProjectService {
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException("Invalid Crypto algorithm! ", e);
 		}
-	}
-
-	private boolean hasUserRightsOnProject(String username, String projectId) throws IOException {
-		// TODO might be an implementation on db side?
-		final Project project = fileIndexStore.findProjectById(projectId);
-		if (project == null) {
-			throw new NotFoundException("Project with id " + projectId + " not found.");
-		}
-		return project.getAuthorizedUsers().contains(username);
 	}
 
 	private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) {

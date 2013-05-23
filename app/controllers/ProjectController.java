@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.AddUserToProjectData;
 import models.project.formdatas.CreateFolderData;
 import models.project.formdatas.CreateProjectData;
@@ -42,15 +43,22 @@ public class ProjectController extends Controller {
 	private UserService userService;
 
 	public Result getProject(String projectId) throws IOException {
-		return async(projectService.getProjectById(username(), projectId).map(new Function<JsonNode, Result>() {
-			@Override
-			public Result apply(JsonNode folderMetadata) throws Throwable {
-				return ok(folderMetadata);
-			}
-		}));
-	}
+        assureUserBelogongsToProject(projectId);
+        return async(projectService.getProjectById(username(), projectId).map(new Function<JsonNode, Result>() {
+            @Override
+            public Result apply(JsonNode folderMetadata) throws Throwable {
+                return ok(folderMetadata);
+            }
+        }));
+    }
 
-	public Result createProject() throws IOException {
+    private void assureUserBelogongsToProject(String projectId) throws IOException {
+        if (!projectService.userBelongsToProject(userService.getCurrentUser().getUsername(), projectId)) {
+            throw new UnauthorizedException("User has no rights on Project");
+        }
+    }
+
+    public Result createProject() throws IOException {
 		Form<CreateProjectData> filledForm = createProjectForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
@@ -66,7 +74,7 @@ public class ProjectController extends Controller {
 		}
 	}
 
-	public Result addUserToProject() throws IOException {
+	public Result addUserToProject(final String projectId) throws IOException {
 		Form<AddUserToProjectData> filledForm = addUserToProjectForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
@@ -86,7 +94,8 @@ public class ProjectController extends Controller {
 		}
 	}
 
-	public Result removeUserFromProject() throws IOException {
+	public Result removeUserFromProject(final String projectId) throws IOException {
+        assureUserBelogongsToProject(projectId);
 		Form<RemoveUserFromProjectData> filledForm = removeUserFromProjectForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
@@ -107,6 +116,7 @@ public class ProjectController extends Controller {
 	}
 
 	public Result getFile(String projectId, String path) throws IOException {
+        assureUserBelogongsToProject(projectId);
 		return async(projectService.getFile(username(), projectId, path).map(new Function<InputStream, Result>() {
 
 			@Override
@@ -125,6 +135,7 @@ public class ProjectController extends Controller {
 	 * @throws IOException
 	 */
 	public Result putFile(String projectId, String path) throws IOException {
+        assureUserBelogongsToProject(projectId);
 		final byte[] content = request().body().asRaw().asBytes();
 		
 		/**
@@ -144,7 +155,8 @@ public class ProjectController extends Controller {
 		}));
 	}
 
-	public Result createFolder() throws IOException {
+	public Result createFolder(String projectId) throws IOException {
+        assureUserBelogongsToProject(projectId);
 		Form<CreateFolderData> filledForm = createFolderForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {
@@ -161,6 +173,7 @@ public class ProjectController extends Controller {
 	}
 
 	public Result metadata(String projectId, String path) throws IOException {
+        assureUserBelogongsToProject(projectId);
 		return async(projectService.metadata(username(), projectId, path).map(new Function<JsonNode, Result>() {
 
 			@Override
@@ -171,7 +184,8 @@ public class ProjectController extends Controller {
 	}
 
 
-	public Result projectVersionDelta() throws IOException {
+	public Result projectVersionDelta(String projectId) throws IOException {
+        assureUserBelogongsToProject(projectId);
 		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
 
 		if (filledForm.hasErrors()) {

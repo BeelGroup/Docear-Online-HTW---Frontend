@@ -47,4 +47,11 @@ public interface ProjectService {
 
 	Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException;
 
+    /**
+     * Checks if the user with the name {@code username} belongs to the project.
+     * @param username
+     * @param projectId
+     * @return true if the user belongs to the project, false otherwise including the project or the user is null or not existing
+     */
+    boolean userBelongsToProject(String username, String projectId);
 }

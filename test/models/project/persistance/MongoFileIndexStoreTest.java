@@ -164,4 +164,10 @@ public class MongoFileIndexStoreTest extends MongoTest {
         assertThat(changes.getChangedPaths()).contains("/README.md", "/src/main/java/Main.java");
         assertThat(new HashSet<String>(changes.getChangedPaths())).hasSize(changes.getChangedPaths().size());
     }
+
+    @Test
+    public void testUserBelongsToProject() throws Exception {
+        assertThat(store.userBelongsToProject("Julius", PROJECT_ID)).isTrue();
+        assertThat(store.userBelongsToProject("Nobody", PROJECT_ID)).isFalse();
+    }
 }

@@ -87,4 +87,9 @@ public interface FileIndexStore {
      * @throws IOException
      */
     Changes getProjectChangesSinceRevision(String id, long revision) throws IOException;
+
+    /**
+     * @see services.backend.project.ProjectService#userBelongsToProject(java.lang.String, java.lang.String)
+     */
+    boolean userBelongsToProject(String username, String projectId);
 }
