@@ -39,7 +39,8 @@ public class HashBasedProjectService implements ProjectService {
 	@Autowired
 	private FileStore fileStore;
 	
-	private FileIndexStore fileIndexStore = new MongoFileIndexStore();
+	@Autowired
+	private FileIndexStore fileIndexStore;
 
 	
 	@Override

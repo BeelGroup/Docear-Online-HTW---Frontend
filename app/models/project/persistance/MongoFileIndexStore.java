@@ -4,6 +4,8 @@ import com.google.common.collect.Iterables;
 import com.mongodb.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import static models.mongo.MongoPlugin.*;
 import static com.google.common.collect.Lists.newArrayList;
 
 
+@Profile("mongoFileIndexStore")
+@Component
 public class MongoFileIndexStore implements FileIndexStore {
 
     public static final BasicDBObject DEFAULT_PRESENT_FIELDS_PROJECT = presentFields("name", "authUsers", "revision");
