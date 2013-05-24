@@ -26,7 +26,7 @@ define ['logger'], (logger)->
 
 
       @bind 'change',(changes)->
-        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('persist')
+        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('autoPersist')
           attributesToPersist = @get 'attributesToPersist'
           persistenceHandler = @get 'persistenceHandler'
           
@@ -118,9 +118,9 @@ define ['logger'], (logger)->
     
     
     setAttributeWithoutPersist: (attribute, value)->
-      @set 'persist', false
+      @set 'autoPersist', false
       @set attribute, value
-      @set 'persist', true
+      @set 'autoPersist', true
       
     removeCild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')
