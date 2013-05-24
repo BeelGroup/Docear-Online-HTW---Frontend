@@ -54,7 +54,7 @@ define ['logger'], (logger)->
         persistenceHandler = @get 'persistenceHandler'
         
         me = @
-        document.log "sending changes to persistence handler"
+        document.log "sending changes to persistence handler #{persistenceHandler}"
         persistenceHandler.persistChanges @, @get('changes'), ->
           if unlock
             document.log "unlocking node"
