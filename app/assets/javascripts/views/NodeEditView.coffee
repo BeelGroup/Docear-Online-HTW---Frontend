@@ -51,6 +51,8 @@ define ->
         @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
         
         @nodeModel.save(unlock = true)
+      else
+        @nodeModel.get('persistenceHandler').unlock(@nodeModel)
         
       
     # found @ http://stackoverflow.com/questions/985272/jquery-selecting-text-in-an-element-akin-to-highlighting-with-your-mouse/987376#987376
