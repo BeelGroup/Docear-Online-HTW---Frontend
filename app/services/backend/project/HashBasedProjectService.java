@@ -17,7 +17,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
-import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.persistance.Changes;
 import models.project.persistance.EntityCursor;
 import models.project.persistance.FileIndexStore;
@@ -52,6 +51,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public Promise<JsonNode> createProject(String username, String name) throws IOException {
 		final Project project = fileIndexStore.createProject(name, username);
+		//add root "/" as base entry
 		fileIndexStore.upsertFile(project.getId(), FileMetaData.folder("/", false));
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
@@ -227,8 +227,8 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> versionDelta(String username, String projectId, String cursor) throws IOException {
-		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, Integer.parseInt(cursor));
+	public F.Promise<JsonNode> versionDelta(String username, String projectId, Long cursor) throws IOException {
+		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, cursor);
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
 	}
 

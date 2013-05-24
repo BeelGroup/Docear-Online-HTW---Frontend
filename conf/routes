@@ -8,50 +8,52 @@ GET     /robots.txt                 controllers.Assets.at(path="/public", file="
 GET     /                           @controllers.Application.index()
 GET     /error/:errorId             controllers.Application.error(errorId: String)
 GET	    /help						controllers.Application.help()
-GET     /rest/v1/user/xyz/mindmap/1.json    controllers.Assets.at(path="/public", file="mindmaps/example1.json")
 
 POST	/feedback					controllers.Application.feedback()
 
 # Mindmap
-GET		/map/:mapId/json			@controllers.MindMap.mapAsJson(mapId: String, nodeCount : Integer ?= -1)
-GET		/map/:mapId/xml				@controllers.MindMap.mapAsXml(mapId: String)
+## get information
+### json
+GET		/rest/v1/map/:mapId/json					@controllers.MindMap.mapAsJson(mapId: String, nodeCount : Integer ?= -1)
+GET		/rest/v1/map/:mapId/json/node/:nodeId 	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
 
+### xml
+GET		/rest/v1/map/:mapId/xml					@controllers.MindMap.mapAsXml(mapId: String)
 
-GET		/map/:mapId/node/:nodeId	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
+### updates
+GET		/rest/v1/map/:mapId/listen				@controllers.MindMap.listenForUpdates(mapId: String)
+GET		/rest/v1/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
 
-DELETE	/map/:mapId/node/delete			@controllers.MindMap.deleteNode(mapId: String)
-POST	/map/:mapId/node/create			@controllers.MindMap.createNode(mapId: String)
-POST	/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
-POST	/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
-POST	/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
-POST	/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
-POST	/map/:mapId/node/changeEdge		@controllers.MindMap.changeEdge(mapId: String)
-
-GET		/map/:mapId/listen				@controllers.MindMap.listenForUpdates(mapId: String)
-GET		/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
+## altering actions
+DELETE	/rest/v1/map/:mapId/node/delete			@controllers.MindMap.deleteNode(mapId: String)
+POST	/rest/v1/map/:mapId/node/create			@controllers.MindMap.createNode(mapId: String)
+POST	/rest/v1/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
+POST	/rest/v1/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
+POST	/rest/v1/map/:mapId/node/requestLock	@controllers.MindMap.requestLock(mapId: String)
+POST	/rest/v1/map/:mapId/node/releaseLock	@controllers.MindMap.releaseLock(mapId: String)
+POST	/rest/v1/map/:mapId/node/changeEdge		@controllers.MindMap.changeEdge(mapId: String)
 
 # Projects
 ## manage
-POST	/1/project/create				@controllers.ProjectController.createProject()
-POST	/1/project/:projectId/addUser				@controllers.ProjectController.addUserToProject(projectId: String)
-POST	/1/project/:projectId/removeUser			@controllers.ProjectController.removeUserFromProject(projectId: String)
-GET		/1/project/:projectId			@controllers.ProjectController.getProject(projectId: String)
+POST	/rest/v1/project/create					@controllers.ProjectController.createProject()
+POST	/rest/v1/project/:projectId/addUser		@controllers.ProjectController.addUserToProject(projectId: String)
+POST	/rest/v1/project/:projectId/removeUser	@controllers.ProjectController.removeUserFromProject(projectId: String)
+GET		/rest/v1/project/:projectId				@controllers.ProjectController.getProject(projectId: String)
 
 ## files
-GET		/1/files/:projectId/*path					@controllers.ProjectController.getFile(projectId: String, path: String)
-PUT		/1/files_put/:projectId/*path				@controllers.ProjectController.putFile(projectId: String, path: String)
-POST	/1/fileops/:projectId/create_folder					@controllers.ProjectController.createFolder(projectId: String)
-GET		/1/metadata/:projectId/*path				@controllers.ProjectController.metadata(projectId: String, path: String)
-GET		/1/metadata/:projectId						@controllers.ProjectController.metadata(projectId: String, path = "")
-POST	/1/:projectId/delta									@controllers.ProjectController.projectVersionDelta(projectId: String)
+GET		/rest/v1/project/:projectId/file/*path		@controllers.ProjectController.getFile(projectId: String, path: String)
+PUT		/rest/v1/project/:projectId/file/*path		@controllers.ProjectController.putFile(projectId: String, path: String, zip : Boolean ?= false)
+POST	/rest/v1/project/:projectId/create_folder	@controllers.ProjectController.createFolder(projectId: String)
+GET		/rest/v1/project/:projectId/metadata/*path	@controllers.ProjectController.metadata(projectId: String, path: String)
+GET		/rest/v1/project/:projectId/metadata		@controllers.ProjectController.metadata(projectId: String, path = "")
+POST	/rest/v1/project/:projectId/delta			@controllers.ProjectController.projectVersionDelta(projectId: String)
 
 
 # User
-#GET 	/login						controllers.Application.index()
 POST	/login						@controllers.User.login()
-POST	/user/login					@controllers.User.loginRest()
-GET		/user/maps		    		@controllers.User.mapListFromDB()
-GET		/user/projects				@controllers.User.projectIdListFromDB()
+POST	/rest/v1/user/login			@controllers.User.loginRest()
+GET		/rest/v1/user/maps	   		@controllers.User.mapListFromDB()
+GET		/rest/v1/user/projects		@controllers.User.projectIdListFromDB()
 
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()

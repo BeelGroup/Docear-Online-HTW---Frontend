@@ -6,10 +6,6 @@ public class CreateProjectData {
 	@Required
 	private String name;
 
-	public CreateProjectData() {
-		
-	}
-
 	public String getName() {
 		return name;
 	}
