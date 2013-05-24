@@ -33,12 +33,12 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
             me.listen()
           401: ()->
             document.log "user is not logged in -> stop listening"
+          503: ()->
+            document.log "Service Temporarily Unavailable"
+            me.listenWithDelay(1000)
           0: ()->
             document.log "Unecpected response code 0"
-            # wait 1 second before starting a new request
-            setTimeout(->
-              me.listen()
-            , 1000)
+            me.listenWithDelay(1000)
             
         }
         dataType: 'json' 
@@ -46,7 +46,12 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
       if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
         document.log "listen for updates"
         $.ajax(params)
-      
+    
+    listenWithDelay: (delay)->
+      setTimeout(->
+        @listen()
+      , delay)
+    
     getChanges: ()->
       me = @
       rootNode = @rootNode
