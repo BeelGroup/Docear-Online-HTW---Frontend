@@ -16,8 +16,8 @@ public interface ProjectService {
 	
 	//Project level
 	Promise<JsonNode> createProject(String username, String name) throws IOException;
-	Promise<Boolean> addUserToProject(String username, String projectId, String usernameToAdd) throws IOException;
-	Promise<Boolean> removeUserFromProject(String username, String projectId, String usernameToRemove) throws IOException;
+	Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException;
+	Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
 	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
 	
 	/**
@@ -27,24 +27,24 @@ public interface ProjectService {
 	 * @return
 	 * @throws IOException
 	 */
-	Promise<JsonNode> getProjectById(String username, String projectId) throws IOException;
+	Promise<JsonNode> getProjectById(String projectId) throws IOException;
 	
 	
 	
 	//File level
-	Promise<InputStream> getFile(String username, String projectId, String path) throws IOException;
+	Promise<InputStream> getFile(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException;
+	Promise<JsonNode> metadata(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException;
+	Promise<JsonNode> createFolder(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> putFile(String username, String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException;
+	Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException;
 
-	Promise<JsonNode> delete(String username, String projectId, String path) throws IOException;
+	Promise<JsonNode> delete(String projectId, String path) throws IOException;
 
-	Promise<Boolean> listenIfUpdateOccurs(String username, String projectId) throws IOException;
+	Promise<Boolean> listenIfUpdateOccurs(String projectId) throws IOException;
 
-	Promise<JsonNode> versionDelta(String username, String projectId, Long cursor) throws IOException;
+	Promise<JsonNode> versionDelta(String projectId, Long revision) throws IOException;
 
     /**
      * Checks if the user with the name {@code username} belongs to the project.

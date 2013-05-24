@@ -57,19 +57,19 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public Promise<Boolean> addUserToProject(String username, String projectId, String usernameToAdd) throws IOException {
+	public Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException {
 		fileIndexStore.addUserToProject(projectId, usernameToAdd);
 		return Promise.pure(true);
 	}
 
 	@Override
-	public Promise<Boolean> removeUserFromProject(String username, String projectId, String usernameToRemove) throws IOException {
+	public Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException {
 		fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
 		return Promise.pure(true);
 	}
 
 	@Override
-	public Promise<JsonNode> getProjectById(String username, String projectId) throws IOException {
+	public Promise<JsonNode> getProjectById(String projectId) throws IOException {
 		final Project project = fileIndexStore.findProjectById(projectId);
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
@@ -82,7 +82,7 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<InputStream> getFile(String username, String projectId, String path) throws IOException {
+	public F.Promise<InputStream> getFile(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
 		try {
@@ -102,7 +102,7 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> metadata(String username, String projectId, String path) throws IOException {
+	public F.Promise<JsonNode> metadata(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
@@ -112,9 +112,11 @@ public class HashBasedProjectService implements ProjectService {
 		final JsonNode metadataJson = new ObjectMapper().valueToTree(metadata);
 		return Promise.pure(metadataJson);
 	}
+	
+	
 
 	@Override
-	public F.Promise<JsonNode> createFolder(String username, String projectId, String path) throws IOException {
+	public F.Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
 		final FileMetaData metadata = FileMetaData.folder(path, false);
@@ -124,7 +126,7 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> putFile(String username, String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException {
+	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException {
 		path = addLeadingSlash(path);
 
 		Integer bytes = 0;
@@ -222,12 +224,12 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<Boolean> listenIfUpdateOccurs(String username, String projectId) throws IOException {
+	public F.Promise<Boolean> listenIfUpdateOccurs(String projectId) throws IOException {
 		throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
 	}
 
 	@Override
-	public F.Promise<JsonNode> versionDelta(String username, String projectId, Long cursor) throws IOException {
+	public F.Promise<JsonNode> versionDelta(String projectId, Long cursor) throws IOException {
 		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, cursor);
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
 	}
@@ -238,7 +240,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-	public Promise<JsonNode> delete(String username, String projectId, String path) throws IOException {
+	public Promise<JsonNode> delete(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
 		final FileMetaData metadata = FileMetaData.folder(path, true);
