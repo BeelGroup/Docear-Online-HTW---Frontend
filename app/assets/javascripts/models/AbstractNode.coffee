@@ -9,8 +9,8 @@ define ['logger'], (logger)->
 
     constructor:->
       super()
-
-
+      @resetChanges()
+    
     activateListeners:->
       @bind 'change:selected', =>
         if(@get('selected'))
@@ -26,12 +26,13 @@ define ['logger'], (logger)->
 
 
       @bind 'change',(changes)->
-        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('autoPersist')
-          attributesToPersist = @get 'attributesToPersist'
-          persistenceHandler = @get 'persistenceHandler'
+        myChanges = @get('changes')
+        $.each changes.changed, (attr, value)->
           
-          persistenceHandler.persistChanges @, changes
-          @
+          myChanges[attr] = value
+          
+        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('autoPersist')
+          @save()
       
       # Update minimap when node text was modified
       @bind 'change:nodeText', ->    
@@ -46,6 +47,18 @@ define ['logger'], (logger)->
       @set 'lockedBy', null
       @set 'locked', false
 
+    save: ->
+      attributesToPersist = @get 'attributesToPersist'
+      persistenceHandler = @get 'persistenceHandler'
+      
+      persistenceHandler.persistChanges @, @get('changes')
+      @resetChanges()
+      @
+      
+      
+    resetChanges: ->
+      @set 'changes', {}
+      
     # status messages for update
     saveOptions:
       success: (model) ->
@@ -118,9 +131,10 @@ define ['logger'], (logger)->
     
     
     setAttributeWithoutPersist: (attribute, value)->
+      autoPersistEnabled = @get 'autoPersist'
       @set 'autoPersist', false
       @set attribute, value
-      @set 'autoPersist', true
+      @set 'autoPersist', autoPersistEnabled
       
     removeCild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')

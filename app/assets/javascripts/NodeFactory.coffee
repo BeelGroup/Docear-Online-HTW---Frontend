@@ -107,7 +107,7 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
       node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML']
-      node.set 'autoPersist', true
+      node.set 'autoPersist', false
 
       node.set 'foldedShow', false
       node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
