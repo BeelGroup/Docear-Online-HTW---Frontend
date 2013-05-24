@@ -26,8 +26,6 @@ public abstract class UserService {
 	
     public abstract Promise<List<UserMindmapInfo>> getListOfMindMapsFromUser(User user) throws IOException;
     
-    public abstract Promise<List<Long>> getListOfProjectIdsFromUser(User user);
-    
     public abstract Boolean isValid(User user);
     
 	/** 

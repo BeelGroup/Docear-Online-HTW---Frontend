@@ -14,6 +14,7 @@ import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.frontend.Credentials;
 
+import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import services.backend.project.ProjectService;
 import services.backend.user.UserService;
 
 @Component
@@ -34,6 +36,9 @@ public class User extends Controller {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private ProjectService projectService;
 
 	public Result login() {
 		final Form<Credentials> filledForm = credentialsForm.bindFromRequest();
@@ -103,12 +108,12 @@ public class User extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result projectIdListFromDB() throws IOException {
-		final Promise<List<Long>> listOfMindMapsFromUser = userService.getListOfProjectIdsFromUser(user());
-		return async(listOfMindMapsFromUser.map(new F.Function<List<Long>, Result>() {
+	public Result projectListFromDB() throws IOException {
+		final Promise<JsonNode> projectListPromise = projectService.getProjectsFromUser(user().getUsername());
+		return async(projectListPromise.map(new F.Function<JsonNode, Result>() {
 			@Override
-			public Result apply(List<Long> projectIds) throws Throwable {
-				return ok(Json.toJson(projectIds));
+			public Result apply(JsonNode projects) throws Throwable {
+				return ok(Json.toJson(projects));
 			}
 		}));
 	}

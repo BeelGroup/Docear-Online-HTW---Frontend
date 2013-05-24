@@ -53,7 +53,7 @@ POST	/rest/v1/project/:projectId/delta			@controllers.ProjectController.projectV
 POST	/login						@controllers.User.login()
 POST	/rest/v1/user/login			@controllers.User.loginRest()
 GET		/rest/v1/user/maps	   		@controllers.User.mapListFromDB()
-GET		/rest/v1/user/projects		@controllers.User.projectIdListFromDB()
+GET		/rest/v1/user/projects		@controllers.User.projectListFromDB()
 
 #TODO should be POST: http://de.wikipedia.org/wiki/Cross-Site_Request_Forgery
 GET 	/logout						@controllers.User.logout()

@@ -1,7 +1,6 @@
 package services.backend.user;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,13 +33,6 @@ public class MockUserService extends UserService {
 					"/not/available", "4.mm"), new UserMindmapInfo("5", "5", "Dec 05, 2012 6:38:31 PM", "/not/available", "5.mm")));
 		else
 			throw new UserNotFoundException();
-	}
-
-	@Override
-	public Promise<List<Long>> getListOfProjectIdsFromUser(User user) {
-		List<Long> list = new ArrayList<Long>();
-		list.add(1L);
-		return Promise.pure(list);
 	}
 
 	@Override

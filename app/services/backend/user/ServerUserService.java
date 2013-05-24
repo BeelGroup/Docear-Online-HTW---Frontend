@@ -13,7 +13,6 @@ import models.backend.User;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.sendResult.SendResultException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -82,11 +81,6 @@ public class ServerUserService extends UserService {
 		} catch (Exception e) {
 			throw new SendResultException("Docear server not reachable", Controller.SERVICE_UNAVAILABLE, e);
 		}
-	}
-
-	@Override
-	public Promise<List<Long>> getListOfProjectIdsFromUser(User user) {
-		throw new NotImplementedException("https://github.com/Docear/HTW-Frontend/issues/305");
 	}
 
 	@Override
