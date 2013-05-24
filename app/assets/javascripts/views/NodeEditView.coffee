@@ -47,7 +47,7 @@ define ->
       
       newNodeText = $(@$el).find('.node-editor:first').html()
       if newNodeText isnt @nodeModel.get('nodeText')
-        @nodeModel.set 'isHTML', true
+        @nodeModel.set 'isHtml', true
         @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
         
         @nodeModel.save(unlock = true)

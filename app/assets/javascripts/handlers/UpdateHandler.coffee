@@ -79,9 +79,9 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         else
           node.unlock()
           document.log "UPDATE: node #{node.id} SET unlocked"
-      else if update.attribute is 'isHTML'
+      else if update.attribute is 'isHtml'
         document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value} "
-        node.setAttributeWithoutPersist 'isHTML', update.value
+        node.setAttributeWithoutPersist 'isHtml', update.value
       else if update.attribute is 'nodeText'
         document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value}"
         node.setAttributeWithoutPersist 'nodeText', update.value
