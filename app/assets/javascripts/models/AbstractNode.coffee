@@ -27,11 +27,12 @@ define ['logger'], (logger)->
 
       @bind 'change',(changes)->
         myChanges = @get('changes')
+        attributesToPersist = @get 'attributesToPersist'
         $.each changes.changed, (attr, value)->
+          if attr in attributesToPersist
+            myChanges.push attr
           
-          myChanges[attr] = value
-          
-        if $.inArray('SERVER_SYNC', document.features) > -1 and @get('autoPersist')
+        if @get('autoPersist')
           @save()
       
       # Update minimap when node text was modified
@@ -47,17 +48,19 @@ define ['logger'], (logger)->
       @set 'lockedBy', null
       @set 'locked', false
 
-    save: ->
-      attributesToPersist = @get 'attributesToPersist'
-      persistenceHandler = @get 'persistenceHandler'
-      
-      persistenceHandler.persistChanges @, @get('changes')
-      @resetChanges()
+    save: (unlock = true)->
+      if $.inArray('SERVER_SYNC', document.features) > -1
+        persistenceHandler = @get 'persistenceHandler'
+        
+        me = @
+        persistenceHandler.persistChanges @, @get('changes'), ->
+          persistenceHandler.unlock(me)
+        @resetChanges()
       @
       
       
     resetChanges: ->
-      @set 'changes', {}
+      @set 'changes', []
       
     # status messages for update
     saveOptions:
