@@ -79,6 +79,9 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
             statusCode: {
               200: (response)->
                 document.log "node "+node.get('id')+" unlocked"
+                # this is also done by the UpdateHandler when recieving updates,
+                # but calling it here is for usability
+                node.unlock()
               412: (response)->
                 document.log "error while unlocking node "+node.get('id')
             }

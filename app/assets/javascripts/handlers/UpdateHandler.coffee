@@ -22,15 +22,24 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         type: 'GET'
         cache: false
         complete: (jqXHR, textStatus )->
-          me.listen()
+          # document.log textStatus
         statusCode: {
           200: ()->
             document.log "changed -> calling getChanges()"
             me.getChanges()
+            me.listen()
           304: ()->
             document.log "no changes -> listen()"
+            me.listen()
+          401: ()->
+            document.log "user is not logged in -> stop listening"
           0: ()->
-            document.log "request timeout -> listen()"
+            document.log "Unecpected response code 0"
+            # wait 1 second before starting a new request
+            setTimeout(->
+              me.listen()
+            , 1000)
+            
         }
         dataType: 'json' 
       }
