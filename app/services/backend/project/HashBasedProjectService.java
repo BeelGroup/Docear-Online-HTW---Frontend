@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public Promise<JsonNode> createProject(String username, String name) throws IOException {
 		final Project project = fileIndexStore.createProject(name, username);
-		//add root "/" as base entry
+		// add root "/" as base entry
 		fileIndexStore.upsertFile(project.getId(), FileMetaData.folder("/", false));
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
@@ -109,11 +110,23 @@ public class HashBasedProjectService implements ProjectService {
 		if (metadata == null) {
 			throw new NotFoundException("File not found!");
 		}
-		final JsonNode metadataJson = new ObjectMapper().valueToTree(metadata);
-		return Promise.pure(metadataJson);
+
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode metadataJson = (ObjectNode)mapper.valueToTree(metadata);
+
+		// get children for dir
+		if (metadata.isDir()) {
+			List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
+			final Iterable<FileMetaData> iterable = fileIndexStore.getMetaData(projectId, path, 5000);
+			Iterator<FileMetaData> it = iterable.iterator();
+			while (it.hasNext()) {
+				childrenData.add(it.next());
+			}
+			final JsonNode contentsJson = mapper.valueToTree(childrenData);
+			metadataJson.put("contents", contentsJson);
+		}
+		return Promise.pure((JsonNode)metadataJson);
 	}
-	
-	
 
 	@Override
 	public F.Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
@@ -234,12 +247,12 @@ public class HashBasedProjectService implements ProjectService {
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
 	}
 
-    @Override
-    public boolean userBelongsToProject(String username, String projectId) {
-        return fileIndexStore.userBelongsToProject(username, projectId);
-    }
+	@Override
+	public boolean userBelongsToProject(String username, String projectId) {
+		return fileIndexStore.userBelongsToProject(username, projectId);
+	}
 
-    @Override
+	@Override
 	public Promise<JsonNode> delete(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
@@ -255,7 +268,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	/**
 	 * taken from http://www.mkyong.com/java/java-sha-hashing-example/
-	 *
+	 * 
 	 * @return
 	 */
 	private static String getFileCheckSum(DigestInputStream inputStream) {
@@ -289,8 +302,8 @@ public class HashBasedProjectService implements ProjectService {
 		while (it.hasNext()) {
 			list.add(it.next());
 		}
-        cursor.close();
-        return list;
+		cursor.close();
+		return list;
 	}
 
 	private String addLeadingSlash(String path) {
