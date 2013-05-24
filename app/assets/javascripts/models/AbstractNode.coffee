@@ -49,15 +49,12 @@ define ['logger'], (logger)->
       @set 'locked', false
 
     save: (unlock = true)->
-      document.log "node.save() called"
       if $.inArray('SERVER_SYNC', document.features) > -1
         persistenceHandler = @get 'persistenceHandler'
         
         me = @
-        document.log "sending changes to persistence handler #{persistenceHandler}"
         persistenceHandler.persistChanges @, @get('changes'), ->
           if unlock
-            document.log "unlocking node"
             persistenceHandler.unlock(me)
         @resetChanges()
       @

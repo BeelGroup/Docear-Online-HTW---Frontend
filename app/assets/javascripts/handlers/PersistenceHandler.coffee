@@ -32,18 +32,14 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
       objectName
 
     persistChanges: (object, changes, callback)->
-      objectName = @getObjectName(object)
       params = {'nodeId': object.get('id')}
-      document.log "Persist: #{objectName}: #{object.get('id')} via: #{@persistenceApi.change[objectName]}"
-      if @persistenceApi.change[objectName] != undefined
-        changesToPersist = false
-        
-        $.each changes, (index, attr)->
-          document.log "set #{attr} = #{object.get attr}"
-          params[attr] = object.get attr
-          changesToPersist = true
-        if changesToPersist
-          $.post(@persistenceApi.change[objectName], params, callback)
+      changesToPersist = false
+      
+      $.each changes, (index, attr)->
+        params[attr] = object.get attr
+        changesToPersist = true
+      if changesToPersist
+        $.post(@persistenceApi.change.Node, params, callback)
 
     persistNew: (object, params)->
       document.log "TODO: persist node"
