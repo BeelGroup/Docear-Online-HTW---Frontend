@@ -78,6 +78,10 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
         @minimap.drawMiniNodes @rootView.setChildPositions()
       , 500)
 
+      @rootView.model.on 'updateMinimap', => setTimeout( => 
+        @minimap.drawMiniNodes @rootView.setChildPositions()
+      , 500)
+
 
       # first part of map is loaded - fadeout
       @$el.parent().find(".loading-map-overlay").fadeOut()

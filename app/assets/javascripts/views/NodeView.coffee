@@ -64,6 +64,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
       
       totalChildrenHeight = 0
       totalChildrenWidth = 0
+
       if $children.length > 0
         for child in $children
           childSize = @alignChildrenofElement($(child).children('.children'), sideOfTree, i+1)
@@ -109,7 +110,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
 
       if $(element).attr('folded') is 'true'      
-        diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
+        #diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
         [elementHeight + 0, totalChildrenWidth]
         #[elementHeight + @verticalSpacer, totalChildrenWidth]
       else
@@ -117,6 +118,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
 
     render: (@rootView)->
+      document.nodeCount++
       @$el.html @template @getRenderData()
       @$el.append(@model.get 'purehtml')
       @$el.attr('folded', @model.get 'folded')
@@ -168,7 +170,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
           @switchFoldButtons()
           @$el.find('.children:first').toggle()
           @renderOnExpand = true
-          @$el.find('.action-fold').hide()
+          @$el.find('.expand-icon').hide()
       # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()

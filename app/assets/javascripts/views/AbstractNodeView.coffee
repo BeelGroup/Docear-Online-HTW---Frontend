@@ -122,12 +122,13 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       else
         shouldBeVisible = !@model.get('folded')
         domVisible = @$el.children('.children').is ':visible'
-        @privateUpdateFoldStatus(shouldBeVisible, domVisible, false)
+        if shouldBeVisible isnt domVisible
+          @privateUpdateFoldStatus()
+          (@model.get 'rootNodeModel').trigger 'updateMinimap'
+
       
 
-    privateUpdateFoldStatus:(shouldBeVisible, domVisible, firstLayouting)->
-      if shouldBeVisible isnt domVisible
-        
+    privateUpdateFoldStatus:()->
         $children = @$el.children('.children')
         $myself = @$el.children('.inner-node')
 
@@ -148,6 +149,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         
         # toggle visibilety of childs
         $children.fadeToggle(document.fadeDuration)
+
 
     switchFoldButtons:->
       $nodesToFold = @$el.children('.inner-node').children('.action-fold')

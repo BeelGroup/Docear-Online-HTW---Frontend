@@ -2,6 +2,8 @@ document.zoomStep = 20
 document.maxZoom = 200
 document.minZoom = 20
 
+document.nodeCount = 0
+
 document.navigation = {}
 document.navigation.key = {}
 document.navigation.key.allowed = [37, 38, 39, 40, 32]
@@ -25,8 +27,9 @@ document.graph.defaultWidth = 2
 document.currentZoom = 1
 
 document.initialLoad = false
-document.loadChunkSize = 100
-document.initialLoadChunkSize = 500
+document.loadChunkSize = 50
+document.initialLoadChunkSize = 200
+document.sleepTimeOnPartialLoading = 40
 
 document.lockRefresh = 10000
 document.unlockDelay = 400
