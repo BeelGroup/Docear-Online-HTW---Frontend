@@ -152,7 +152,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
 
 
     switchFoldButtons:->
-      $nodesToFold = @$el.children('.inner-node').children('.action-fold')
+      $nodesToFold = @$el.children('.inner-node').children('.action-fold.node-control')
       # toggle +/- button
       $nodesToFold.toggleClass 'invisible'
 

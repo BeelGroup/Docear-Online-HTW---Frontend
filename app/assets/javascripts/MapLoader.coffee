@@ -81,6 +81,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
         if (parentNode.get 'folded') and !(parentNode.get 'foldedShow')
           $('#'+parentNode.get 'id').find('.inner-node .expand-icon').show()
           parentNode.set 'foldedShow', true
+          $('#'+parentNode.get 'id').children('.inner-node').children('.action-fold.loading-icon').toggleClass 'invisible'
 
         # append the new childs to the dom
         $childElement = $('#'+parentNode.get 'id').find('.children:first')

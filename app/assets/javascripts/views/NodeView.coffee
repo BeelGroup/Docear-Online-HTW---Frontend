@@ -171,6 +171,9 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
           @$el.find('.children:first').toggle()
           @renderOnExpand = true
           @$el.find('.expand-icon').hide()
+
+          @$el.children('.inner-node').children('.action-fold.loading-icon').toggleClass 'invisible'
+
       # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()
