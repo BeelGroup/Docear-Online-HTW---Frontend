@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static models.mongo.MongoPlugin.*;
@@ -46,42 +47,6 @@ public class MongoFileIndexStoreTest extends MongoTest {
         return doc("_id", new ObjectId("507f191e810c19729de860ea"));
     }
 
-    @Deprecated
-    public void testAddRevisionToProject() throws Exception {
-        final BasicDBObject updatedFile = updateFileInfos();
-        final BasicDBObject updatedProject = updateProjectWithNewFileVersion(updatedFile);
-        final int newProjectRevision = updatedProject.getInt("revision");
-        assertThat(newProjectRevision).isEqualTo(4);
-    }
-
-    private BasicDBObject updateProjectWithNewFileVersion(BasicDBObject updatedFile) {
-        final int revisionOfFile = updatedFile.getInt("revision");
-        final String pathOfFile = updatedFile.getString("_id.path");
-        BasicDBObject revisionInfo = new BasicDBObject("changes", new BasicDBObject("path", pathOfFile).append("revision", revisionOfFile));
-        final BasicDBObject settings = new BasicDBObject().
-                append("$inc", new BasicDBObject("revision", 1)).
-                append("$push", revisionInfo);
-        return (BasicDBObject) projects().findAndModify(queryForExampleProject(), new BasicDBObject(), new BasicDBObject(), false, settings, true, false);
-    }
-
-    private BasicDBObject updateFileInfos() {
-        final String newFileHash = "12abc";
-        BasicDBObject revisionInfo = new BasicDBObject("revisions", new BasicDBObject("filehash", newFileHash).append("timestamp", new Date()));
-        BasicDBObject settings = new BasicDBObject("$inc", new BasicDBObject("revision", 1)).
-                append("$push", revisionInfo);
-        BasicDBObject fields = new BasicDBObject().
-                append("revision", 1).
-                append("revisions", 1);
-        final BasicDBObject sort = new BasicDBObject();
-        final BasicDBObject updatedFile = (BasicDBObject) files().findAndModify(queryForExampleFile(), fields, sort, false, settings, true, false);
-        assertThat(updatedFile.getString("revision")).isEqualTo("2");
-
-        final BasicDBList revisions = (BasicDBList) updatedFile.get("revisions");
-        final BasicDBObject latestRevision = (BasicDBObject) revisions.get(2);
-        assertThat(latestRevision.getString("filehash")).isEqualTo(newFileHash);
-        return updatedFile;
-    }
-
     private BasicDBObject queryForExampleFile() {
         final BasicDBObject idField = new BasicDBObject("project", new ObjectId("507f191e810c19729de860ea")).
                 append("path", "/README.md");
@@ -100,10 +65,14 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testFindProjectsFromUser() throws Exception {
-        final Iterable<Project> alexProjects = store.findProjectsFromUser("Alex");
+        final EntityCursor<Project> alexProjects = store.findProjectsFromUser("Alex");
         final List<String> projectNames = newArrayList();
-        for (final Project project : alexProjects) {
-            projectNames.add(project.getName());
+        try {
+            for (final Project project : alexProjects) {
+                projectNames.add(project.getName());
+            }
+        } finally {
+            alexProjects.close();
         }
         assertThat(projectNames).hasSize(2);
         assertThat(projectNames).isEqualTo(newArrayList(PROJECT_NAME, "Docear Sync"));
@@ -139,11 +108,36 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testInsertFile() throws Exception {
+        final String path = "/src/main/java/Util" + UUID.randomUUID() + ".java";
+        final String hash = "32432423";
+        assertThat(store.getMetaData(PROJECT_ID, path)).isNull();
+        final int bytes = 500;
+        final boolean isDir = false;
+        final boolean isDeleted = false;
+        final FileMetaData metaData = new FileMetaData(path, hash, bytes, isDir, isDeleted);
+        store.upsertFile(PROJECT_ID, metaData);
+        final FileMetaData storeMetaData = store.getMetaData(PROJECT_ID, path);
+        assertThat(storeMetaData).isNotNull();
+        assertThat(storeMetaData.getPath()).isEqualTo(path);
+        assertThat(storeMetaData.getHash()).isEqualTo(hash);
+        assertThat(storeMetaData.getBytes()).isEqualTo(bytes);
+        assertThat(storeMetaData.isDir()).isEqualTo(isDir);
+        assertThat(storeMetaData.isDeleted()).isEqualTo(isDeleted);
+        assertThat(store.getProjectChangesSinceRevision(PROJECT_ID, 0).getChangedPaths()).contains(path);
+    }
+
+    @Test
+    public void testInsertFolder() throws Exception {
 
     }
 
     @Test
     public void testUpdateFile() throws Exception {
+
+    }
+
+    @Test
+    public void testDeleteFile() throws Exception {
 
     }
 
@@ -169,5 +163,11 @@ public class MongoFileIndexStoreTest extends MongoTest {
         final Changes changes = store.getProjectChangesSinceRevision(PROJECT_ID, 1);
         assertThat(changes.getChangedPaths()).contains("/README.md", "/src/main/java/Main.java");
         assertThat(new HashSet<String>(changes.getChangedPaths())).hasSize(changes.getChangedPaths().size());
+    }
+
+    @Test
+    public void testUserBelongsToProject() throws Exception {
+        assertThat(store.userBelongsToProject("Julius", PROJECT_ID)).isTrue();
+        assertThat(store.userBelongsToProject("Nobody", PROJECT_ID)).isFalse();
     }
 }

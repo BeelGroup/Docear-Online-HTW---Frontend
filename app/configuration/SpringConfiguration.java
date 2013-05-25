@@ -23,7 +23,7 @@ import java.net.URI;
  * Configuration for Spring Dependency Injection.
  * (Switch between mock and prod implementations)
  */
-@ComponentScan({"controllers", "services", "services.backend.mindmap", "services.backend.project", "services.backend.project.filestore", "services.backend.project.filestore.hadoop"})//add here packages containing @Component annotated classes
+@ComponentScan({"controllers", "services", "services.backend.mindmap", "services.backend.project", "services.backend.project.filestore", "services.backend.project.filestore.hadoop", "models.project.persistance"})//add here packages containing @Component annotated classes
 public class SpringConfiguration {
 
 

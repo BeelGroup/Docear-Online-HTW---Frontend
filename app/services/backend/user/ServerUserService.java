@@ -3,6 +3,8 @@ package services.backend.user;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.libs.F;
-import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.libs.WS.Response;
@@ -30,19 +31,25 @@ public class ServerUserService extends UserService {
 
 	@Override
 	public Promise<String> authenticate(String username, String password) {
-		final Promise<Response> wsResponsePromise = WS.url("https://api.docear.org/authenticate/" + username).post("password=" + password);
-		return wsResponsePromise.map(new F.Function<Response, String>() {
-			@Override
-			public String apply(Response response) throws Throwable {
-				final boolean authenticationSuccessful = response.getStatus() == 200;
-				if (authenticationSuccessful) {
-					String accessToken = response.getHeader("accessToken");
-					return accessToken;
-				} else {
-					return null;
+		try {
+			final String user = URLEncoder.encode(username, "UTF-8");
+			final String pwd = URLEncoder.encode(password, "UTF-8");
+			final Promise<Response> wsResponsePromise = WS.url("https://api.docear.org/authenticate/" + user).post("password=" + pwd);
+			return wsResponsePromise.map(new F.Function<Response, String>() {
+				@Override
+				public String apply(Response response) throws Throwable {
+					final boolean authenticationSuccessful = response.getStatus() == 200;
+					if (authenticationSuccessful) {
+						String accessToken = response.getHeader("accessToken");
+						return accessToken;
+					} else {
+						return null;
+					}
 				}
-			}
-		});
+			});
+		} catch (UnsupportedEncodingException e) {
+			throw new SendResultException("Used unsupported encding", Controller.INTERNAL_SERVER_ERROR, e);
+		}
 	}
 
 	@Override

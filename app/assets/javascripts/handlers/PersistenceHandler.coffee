@@ -31,18 +31,15 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         objectName = 'Node'
       objectName
 
-    persistChanges: (object, changes)->
-      objectName = @getObjectName(object)
+    persistChanges: (object, changes, callback)->
       params = {'nodeId': object.get('id')}
-      if @persistenceApi.change[objectName] != undefined
-        changesToPersist = false
-        
-        $.each changes.changed, (attr, value)->
-          if attr in object.get('attributesToPersist')
-            params[attr] = object.get attr
-            changesToPersist = true
-        if changesToPersist
-          $.post(@persistenceApi.change[objectName], params)
+      changesToPersist = false
+      
+      $.each changes, (index, attr)->
+        params[attr] = object.get attr
+        changesToPersist = true
+      if changesToPersist
+        $.post(@persistenceApi.change.Node, params, callback)
 
     persistNew: (object, params)->
       document.log "TODO: persist node"
@@ -70,7 +67,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         }
         $.ajax(params)
       
-    unlock: (node, timeout = 0)->
+    unlock: (node)->
       if $.inArray('LOCK_NODE', document.features) > -1
         params = {
             url: @persistenceApi.unlock.Node
@@ -80,12 +77,13 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
             statusCode: {
               200: (response)->
                 document.log "node "+node.get('id')+" unlocked"
+                # this is also done by the UpdateHandler when recieving updates,
+                # but calling it here is for usability
+                node.unlock()
               412: (response)->
                 document.log "error while unlocking node "+node.get('id')
             }
         }
-        setTimeout(->
-          $.ajax(params)
-        , timeout)
+        $.ajax(params)
 
   module.exports = PersistenceHandler

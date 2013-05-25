@@ -22,22 +22,36 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         type: 'GET'
         cache: false
         complete: (jqXHR, textStatus )->
-          me.listen()
+          # document.log textStatus
         statusCode: {
           200: ()->
             document.log "changed -> calling getChanges()"
             me.getChanges()
+            me.listen()
           304: ()->
             document.log "no changes -> listen()"
+            me.listen()
+          401: ()->
+            document.log "user is not logged in -> stop listening"
+          503: ()->
+            document.log "Service Temporarily Unavailable"
+            me.listenWithDelay(1000)
           0: ()->
-            document.log "request timeout -> listen()"
+            document.log "Unecpected response code 0"
+            me.listenWithDelay(1000)
+            
         }
         dataType: 'json' 
       }
       if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
         document.log "listen for updates"
         $.ajax(params)
-      
+    
+    listenWithDelay: (delay)->
+      setTimeout(->
+        @listen()
+      , delay)
+    
     getChanges: ()->
       me = @
       rootNode = @rootNode
@@ -65,9 +79,9 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         else
           node.unlock()
           document.log "UPDATE: node #{node.id} SET unlocked"
-      else if update.attribute is 'isHTML'
+      else if update.attribute is 'isHtml'
         document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value} "
-        node.setAttributeWithoutPersist 'isHTML', update.value
+        node.setAttributeWithoutPersist 'isHtml', update.value
       else if update.attribute is 'nodeText'
         document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value}"
         node.setAttributeWithoutPersist 'nodeText', update.value

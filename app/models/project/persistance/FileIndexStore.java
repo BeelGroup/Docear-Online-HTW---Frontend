@@ -19,12 +19,12 @@ public interface FileIndexStore {
      * Finds the projects a user is associated.
      * Implementations can be lazy fetching from the database.
      * It is used as iterable to make it work in for loops.
-     * Do not use the iterable twice.
+     * Do not use the iterable twice. It must be closed after usage.
      * @param username the name of the who belongs to projects
      * @return an iterable with projects of username
      * @throws IOException
      */
-    Iterable<Project> findProjectsFromUser(String username) throws IOException;
+    EntityCursor<Project> findProjectsFromUser(String username) throws IOException;
 
     /**
      * Adds an user to an existing project.
@@ -70,11 +70,11 @@ public interface FileIndexStore {
 
     /**
      * Retrieves metadata of the children of a folder.
-     * Do not use the iterable twice.
+     * Do not use the iterable twice. It must be closed after usage.
      * @param id the id of the associated project
      * @param path the path of the folder
      * @param max the maximal number of results
-     * @return an iterable with all files and folders of the specified folder. The first element is the folder itself.
+     * @return an iterable with all files and folders of the specified folder. It works not recursive, only the direct children of path are found.
      * @throws IOException
      */
     Iterable<FileMetaData> getMetaData(String id, String path, int max) throws IOException;
@@ -87,4 +87,9 @@ public interface FileIndexStore {
      * @throws IOException
      */
     Changes getProjectChangesSinceRevision(String id, long revision) throws IOException;
+
+    /**
+     * @see services.backend.project.ProjectService#userBelongsToProject(java.lang.String, java.lang.String)
+     */
+    boolean userBelongsToProject(String username, String projectId);
 }

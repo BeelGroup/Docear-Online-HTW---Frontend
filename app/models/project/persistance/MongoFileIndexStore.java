@@ -1,20 +1,23 @@
 package models.project.persistance;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.mongodb.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import static com.google.common.collect.Iterables.transform;
 import static models.mongo.MongoPlugin.*;
 import static com.google.common.collect.Lists.newArrayList;
 
 
+@Profile("mongoFileIndexStore")
+@Component
 public class MongoFileIndexStore implements FileIndexStore {
 
     public static final BasicDBObject DEFAULT_PRESENT_FIELDS_PROJECT = presentFields("name", "authUsers", "revision");
@@ -39,19 +42,19 @@ public class MongoFileIndexStore implements FileIndexStore {
     }
 
     @Override
-    public Iterable<Project> findProjectsFromUser(String username) throws IOException {
+    public EntityCursor<Project> findProjectsFromUser(String username) throws IOException {
         final BasicDBObject query = doc("authUsers", username);
-        DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
-        return transform(cursor, new Function<DBObject, Project>() {
+        final DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+        return new EntityCursorBase<Project>(cursor) {
             @Override
-            public Project apply(DBObject dbObject) {
+            protected Project convert(DBObject dbObject) {
                 Project result = null;
                 if (dbObject instanceof BasicDBObject) {
                     result = convertToProject((BasicDBObject) dbObject);
                 }
                 return result;
             }
-        });
+        };
     }
 
     @Override
@@ -81,7 +84,38 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public void upsertFile(String id, FileMetaData file) throws IOException {
-        throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues/462");
+        if (getMetaData(id, file.getPath()) == null) {
+            insertFileWithoutRevisions(id, file.getPath());
+        }
+        final BasicDBObject updatedFileBson = addNewFileRevisionToFileDocument(id, file);
+        updateProjectForNewFileRevision(id, file, updatedFileBson);
+    }
+
+    private void updateProjectForNewFileRevision(String id, FileMetaData file, BasicDBObject updatedFileBson) {
+        final int fileRevision = updatedFileBson.getInt("revision");
+        BasicDBObject revisionInfo = doc("changes", doc("path", file.getPath()).append("revision", fileRevision));
+        final BasicDBObject settings = doc("$inc", doc("revision", 1)).append("$push", revisionInfo);
+        final BasicDBObject fields = doc();
+        final BasicDBObject sort = doc();
+        projects().findAndModify(queryById(id), fields, sort, false, settings, true, false);
+    }
+
+    private BasicDBObject addNewFileRevisionToFileDocument(String id, FileMetaData file) {
+        final DBObject fields = presentFields("revision", "revisions");
+        final DBObject sort = doc();
+        BasicDBObject revisionInfo = doc("revisions", doc("hash", file.getHash()).
+                append("timestamp", new Date()).
+                append("bytes", file.getBytes()).
+                append("is_dir", file.isDir()).
+                append("is_deleted", file.isDeleted())
+        );
+        final DBObject update = doc("$inc", doc("revision", 1)).append("$push", revisionInfo);
+        return (BasicDBObject) files().findAndModify(queryForFile(id, file.getPath()), fields, sort, false, update, true, false);
+    }
+
+    private void insertFileWithoutRevisions(String id, String path) {
+        final BasicDBObject newFileDocument = queryForFile(id, path).append("revision", -1);
+        files().insert(newFileDocument);
     }
 
     @Override
@@ -91,20 +125,23 @@ public class MongoFileIndexStore implements FileIndexStore {
         );
         final BasicDBObject fields = presentFields("revision").append("revisions", doc("$slice", -1));
         final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, fields);
-        final BasicDBList revisions = (BasicDBList) fileBson.get("revisions");//the only element is the last revision
-        final BasicDBObject revisionBson = (BasicDBObject) revisions.get(0);
-        final boolean isDir = revisionBson.getBoolean("is_dir");
-        final boolean isDeleted = revisionBson.getBoolean("is_deleted");
-        final long revision = fileBson.getLong("revision");
-        FileMetaData result;
-        if (isDir) {
-            result = FileMetaData.folder(path, isDeleted);
-        } else {
-            final String hash = revisionBson.getString("hash");
-            final long bytes = revisionBson.getInt("bytes");
-            result = FileMetaData.file(path, hash, bytes, isDeleted);
+        FileMetaData result = null;
+        if (fileBson != null) {
+            final BasicDBList revisions = (BasicDBList) fileBson.get("revisions");//the only element is the last revision
+            final BasicDBObject revisionBson = (BasicDBObject) revisions.get(0);
+            final boolean isDir = revisionBson.getBoolean("is_dir");
+            final boolean isDeleted = revisionBson.getBoolean("is_deleted");
+            final long revision = fileBson.getLong("revision");
+
+            if (isDir) {
+                result = FileMetaData.folder(path, isDeleted);
+            } else {
+                final String hash = revisionBson.getString("hash");
+                final long bytes = revisionBson.getInt("bytes");
+                result = FileMetaData.file(path, hash, bytes, isDeleted);
+            }
+            result.setRevision(revision);
         }
-        result.setRevision(revision);
         return result;
     }
 
@@ -123,5 +160,15 @@ public class MongoFileIndexStore implements FileIndexStore {
         final AggregationOutput output = projects().aggregate(query, selectOnlyChangesArray, unwindChangesArray, skipPreviousRevisions, selectOnlyChangesArray, groupPaths);
         final BasicDBObject result = (BasicDBObject) Iterables.getFirst(output.results(), null);
         return new Changes(getStringList(result, "paths"));
+    }
+
+    @Override
+    public boolean userBelongsToProject(String username, String id) {
+        boolean belongs = false;
+        if (username != null && id != null) {
+            final BasicDBObject query = queryById(id).append("authUsers", username);
+            belongs = projects().count(query) == 1;
+        }
+        return belongs;
     }
 }

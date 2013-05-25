@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import play.Logger;
-import play.Play;
 import play.data.Form;
 import play.libs.F;
 import play.libs.F.Function;

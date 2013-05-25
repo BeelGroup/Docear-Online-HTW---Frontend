@@ -80,12 +80,12 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
               container.append $("<div>#{currentLine.concat '&nbsp;'}</div>")
             else
               container.append $("<div>#{currentLine}</div>")
-          # in this case force isHTML to true and set text 
+          # in this case force isHtml to true and set text 
           data.isHtml = true
           data.nodeText = container.html()
 
       node.set 'nodeText', data.nodeText
-      node.set 'isHTML', data.isHtml
+      node.set 'isHtml', data.isHtml
       
       node.set 'xPos', 0
       node.set 'yPos', 0
@@ -106,8 +106,8 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'connectionUpdated', 0
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
-      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML']
-      node.set 'persist', true
+      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHtml']
+      node.set 'autoPersist', false
 
       node.set 'foldedShow', false
       node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url

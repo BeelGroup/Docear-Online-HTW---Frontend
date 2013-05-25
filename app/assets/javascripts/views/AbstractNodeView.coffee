@@ -23,7 +23,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
-      @model.bind "change:isHTML",@changeNodeText , @
+      @model.bind "change:isHtml",@changeNodeText , @
       @addEvents()
 
 
@@ -167,13 +167,13 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       parentIsHeigher = preHeight > childrenHeight
 
       $contentContainer = $node.children('.inner-node').children('.content')
-      if @model.get 'isHTML'
+      if @model.get 'isHtml'
         document.log "Changing text as HTML"
-        $contentContainer.addClass('isHTML')
+        $contentContainer.addClass('isHtml')
         $contentContainer.html(@model.get 'nodeText')
       else
         document.log "Changing text as PLAIN"
-        $contentContainer.removeClass('isHTML')
+        $contentContainer.removeClass('isHtml')
         $contentContainer.text(@model.get 'nodeText')
       
       
