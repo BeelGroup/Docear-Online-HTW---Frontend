@@ -15,7 +15,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
       }
       @listen()
       
-    listen: ()->
+    listen: (delay = 0)->
       me = @
       params = {
         url: @updateApi.listenForUpdate.Node
@@ -27,25 +27,33 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
           200: ()->
             document.log "changed -> calling getChanges()"
             me.getChanges()
-            me.listen()
+            me.listenIfMapIsOpen(0)
           304: ()->
             document.log "no changes -> listen()"
-            me.listen()
+            me.listenIfMapIsOpen(0)
           401: ()->
             document.log "user is not logged in -> stop listening"
           503: ()->
             document.log "Service Temporarily Unavailable"
-            me.listenWithDelay(1000)
+            me.listenIfMapIsOpen(1000)
           0: ()->
             document.log "Unecpected response code 0"
-            me.listenWithDelay(1000)
+            me.listenIfMapIsOpen(1000)
             
         }
         dataType: 'json' 
       }
-      if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
-        document.log "listen for updates"
-        $.ajax(params)
+      setTimeout(->
+        if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
+          document.log "listen for updates"
+          $.ajax(params)
+      , delay)
+        
+    listenIfMapIsOpen: (delay = 0)->
+      if $(".node.root .map-id[value=#{@mapId}]").size() > 0
+        @listen(delay)
+      else
+        document.log "map: #{@mapId} seems to be closed, stop listening"
     
     listenWithDelay: (delay)->
       setTimeout(->
