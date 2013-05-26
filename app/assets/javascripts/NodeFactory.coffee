@@ -22,16 +22,17 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       rootNode.set 'rightChildren', []
       
       # data.id should be filename
-      rootNode.set 'mapId', data.id
+      rootNode.set 'mapId', @mapId
+      rootNode.set 'mapName', data.id
       rootNode.set 'folded', false
       rootNode.set 'revision', data.revision
 
-      if persistenceHandlers[data.id] == undefined
-        persistenceHandlers[data.id] = new PersistenceHandler(@mapId)
+      if persistenceHandlers[@mapId] == undefined
+        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId)
 
-      if updateHandlers[data.id] == undefined
-        updateHandlers[data.id] = new UpdateHandler(@mapId, rootNode)
-      rootNode.set 'updateHandler', updateHandlers[data.id]
+      if updateHandlers[@mapId] == undefined
+        updateHandlers[@mapId] = new UpdateHandler(@mapId, rootNode)
+      rootNode.set 'updateHandler', updateHandlers[@mapId]
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
