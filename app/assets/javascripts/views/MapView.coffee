@@ -46,6 +46,10 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
         document.log 'delete old map'
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
+        
+        # close edit view if opend (defined in main.coffee)
+        $editNodeContainer = $('.node-edit-container')
+        $editNodeContainer.addClass('close-and-destroy').hide()
 
       document.log "call: loadMap #{data.id} (MapController)"     
 
