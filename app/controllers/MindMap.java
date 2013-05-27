@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
+import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.frontend.formdata.ChangeEdgeData;
 import models.frontend.formdata.ChangeNodeData;
 import models.frontend.formdata.CreateNodeData;
@@ -26,6 +27,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
+import services.backend.project.ProjectService;
 import services.backend.user.UserService;
 
 @Component
@@ -38,24 +40,30 @@ public class MindMap extends Controller {
 	private final static Form<ReleaseLockData> releaseLockForm = Form.form(ReleaseLockData.class);
 	private final static Form<ChangeEdgeData> changeEdgeForm = Form.form(ChangeEdgeData.class);
 
+	private final static String COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID = "-1";
+
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
+
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private ProjectService projectService;
+
 	// cannot be secured, because we load the welcome map
-	public Result mapAsJson(final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
+	public Result mapAsJson(final String projectId, final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId + "; nodeCount: " + nodeCount);
-		
-		//for welcome map allways take cached json
-		if(mapId.equals("welcome")) {
+
+		// for welcome map allways take cached json
+		if (mapId.equals("welcome")) {
 			return ok(util.Input.resourceToString("rest/v1/map/welcome.json"));
 		}
-		// check if welcome map or user authenticated
-		if (!userService.isAuthenticated())
-			return redirect(routes.Application.index());
 
-		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(source(), username(), mapId, nodeCount);
+		//throws unauthorized if no user is logged in
+		final models.backend.User user = user(source());
+		
+		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(user, mapId, nodeCount);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String mindMap) throws Throwable {
@@ -64,13 +72,12 @@ public class MindMap extends Controller {
 		}));
 	}
 
+	@Security.Authenticated(Secured.class)
 	public Result mapAsXml(final String mapId) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId);
-		// check if welcome map or user authenticated
-		if (!mapId.equals("welcome") && !userService.isAuthenticated())
-			return redirect(routes.Application.index());
 
-		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(source(), username(), mapId);
+		final models.backend.User user = user(source());
+		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(user, mapId);
 
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override
@@ -90,7 +97,8 @@ public class MindMap extends Controller {
 		else {
 			final RequestLockData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final F.Promise<Boolean> promise = mindMapCrudService.requestLock(source(), username(), mapId, nodeId);
+			final models.backend.User user = user(source());
+			final F.Promise<Boolean> promise = mindMapCrudService.requestLock(user, mapId, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 
 				@Override
@@ -115,7 +123,8 @@ public class MindMap extends Controller {
 		else {
 			final ReleaseLockData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final F.Promise<Boolean> promise = mindMapCrudService.releaseLock(source(), username(), mapId, nodeId);
+			final models.backend.User user = user(source());
+			final F.Promise<Boolean> promise = mindMapCrudService.releaseLock(user, mapId, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 
 				@Override
@@ -134,7 +143,8 @@ public class MindMap extends Controller {
 	public Result fetchUpdatesSinceRevision(String mapId, Integer revision) {
 		Logger.debug("MindMap.fetchUpdatesSinceRevision <- mapId=" + mapId + "; revision: " + revision);
 
-		final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(source(), username(), mapId, revision);
+		final models.backend.User user = user(source());
+		final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(user, mapId, revision);
 		return async(updatePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String updates) throws Throwable {
@@ -152,7 +162,8 @@ public class MindMap extends Controller {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final String parentNodeId = filledForm.get().getParentNodeId();
-			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(source(), username(), mapId, parentNodeId);
+			final models.backend.User user = user(source());
+			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(user, mapId, parentNodeId);
 			return async(addNodePromise.map(new F.Function<String, Result>() {
 				@Override
 				public Result apply(String node) throws Throwable {
@@ -165,8 +176,10 @@ public class MindMap extends Controller {
 	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("MindMap.getNode <- mapId=" + mapId + ", nodeId=" + nodeId + ", nodeCount= " + nodeCount);
 		if (!mapId.equals("welcome") && !userService.isAuthenticated())
-			return unauthorized();
-		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(source(), username(), mapId, nodeId, nodeCount);
+			throw new UnauthorizedException("No user logged in");
+		
+		final models.backend.User user = user(source());
+		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(user, mapId, nodeId, nodeCount);
 		return async(addNodePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String node) throws Throwable {
@@ -199,7 +212,8 @@ public class MindMap extends Controller {
 				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 
-			final F.Promise<String> promise = mindMapCrudService.changeNode(source(), username(), mapId, nodeId, attributeValueMap);
+			final models.backend.User user = user(source());
+			final F.Promise<String> promise = mindMapCrudService.changeNode(user, mapId, nodeId, attributeValueMap);
 			return async(promise.map(new Function<String, Result>() {
 				@Override
 				public Result apply(String json) throws Throwable {
@@ -222,7 +236,8 @@ public class MindMap extends Controller {
 			final String nodeToMoveId = data.getNodetoMoveId();
 			final Integer newIndex = data.getNewIndex();
 
-			final F.Promise<Boolean> promise = mindMapCrudService.moveNodeTo(source(), username(), mapId, newParentNodeId, nodeToMoveId, newIndex);
+			final models.backend.User user = user(source());
+			final F.Promise<Boolean> promise = mindMapCrudService.moveNodeTo(user, mapId, newParentNodeId, nodeToMoveId, newIndex);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
@@ -246,7 +261,9 @@ public class MindMap extends Controller {
 		else {
 			final RemoveNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final F.Promise<Boolean> promise = mindMapCrudService.removeNode(source(), username(), mapId, nodeId);
+			
+			final models.backend.User user = user(source());
+			final F.Promise<Boolean> promise = mindMapCrudService.removeNode(user, mapId, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
@@ -283,7 +300,9 @@ public class MindMap extends Controller {
 				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 			Logger.debug(attributeValueMap.toString());
-			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(source(), username(), mapId, nodeId, attributeValueMap);
+			
+			final models.backend.User user = user(source());
+			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(user, mapId, nodeId, attributeValueMap);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
@@ -298,7 +317,8 @@ public class MindMap extends Controller {
 	}
 
 	public Result listenForUpdates(final String mapId) {
-		return async(mindMapCrudService.listenForUpdates(source(), username(), mapId).map(new Function<Boolean, Result>() {
+		final models.backend.User user = user(source());
+		return async(mindMapCrudService.listenForUpdates(user, mapId).map(new Function<Boolean, Result>() {
 
 			@Override
 			public Result apply(Boolean hasChanged) throws Throwable {
@@ -319,16 +339,8 @@ public class MindMap extends Controller {
 		return badRequest("Deprecated! Use " + routes.MindMap.createNode("NODE_ID").toString() + " instead");
 	}
 
-	/**
-	 * 
-	 * @return name of currently logged in user
-	 */
-	private String username() {
-		final models.backend.User user = userService.getCurrentUser();
-		if (user != null)
-			return user.getUsername();
-		else
-			return null;
+	private models.backend.User user(final String source) {
+		return userService.getCurrentUser(source);
 	}
 
 	private String source() {
