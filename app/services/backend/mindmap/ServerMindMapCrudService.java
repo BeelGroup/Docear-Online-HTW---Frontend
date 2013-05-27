@@ -403,7 +403,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			// test & welcome maps
 			if (mapIdentifier.getMapId().length() == 1 || mapIdentifier.getMapId().equals("welcome")) {
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo/welcome map, loading from resources");
-				in = Play.application().resourceAsStream("mindmaps/" + mapIdentifier + ".mm");
+				in = Play.application().resourceAsStream("mindmaps/" + mapIdentifier.getMapId() + ".mm");
 				fileName = mapIdentifier + ".mm";
 			}
 			// map from user account
@@ -483,7 +483,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			Logger.debug("ServerMindMapCrudService.hasCurrentUserMapAccessRights => loaded mapInfos. Count: " + infos.size());
 			boolean canAccess = false;
 			for (UserMindmapInfo info : infos) {
-				if (info.mmIdOnServer.equals(mapIdentifier)) {
+				if (info.mmIdOnServer.equals(mapIdentifier.getMapId())) {
 					canAccess = true;
 					break;
 				}
