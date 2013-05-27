@@ -44,7 +44,7 @@ object ApplicationBuild extends Build {
         , "org.apache.hadoop" % "hadoop-common" % hadoopVersion excludeAll(ExclusionRule(organization = "javax.activation"), ExclusionRule(organization = "org.codehaus.jettison"))
         , "com.typesafe.akka" %% "akka-remote" % "2.1.2"
         , "info.schleichardt" %% "play-embed-mongo" % "0.2"
-        , "org.mongojack" % "mongojack" % "2.0.0-RC4" //working with JSON and POJOs using a MongoDB http://mongojack.org/
+        , "org.mongodb" % "mongo-java-driver" % "2.10.1"
       )
     }
 
