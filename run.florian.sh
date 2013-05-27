@@ -1,0 +1,1 @@
+sbt -Dconfig.file=conf/florian.conf run
