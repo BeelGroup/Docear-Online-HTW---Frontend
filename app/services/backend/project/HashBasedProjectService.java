@@ -31,6 +31,7 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import static services.backend.project.filestore.PathFactory.path;
 
 import play.Logger;
 import play.libs.F;
@@ -95,7 +96,7 @@ public class HashBasedProjectService implements ProjectService {
 
 			final String fileHash = metadata.getHash();
 
-			return Promise.pure((InputStream) fileStore.open(FOLDER_ZIPPED + "/" + fileHash + ".zip"));
+			return Promise.pure((InputStream) fileStore.open(path().hash(fileHash).zipped()));
 
 		} catch (FileNotFoundException e) {
 			throw new NotFoundException("File not found!", e);
@@ -165,8 +166,8 @@ public class HashBasedProjectService implements ProjectService {
 		String fileHash = null;
 
 		try {
-			final String zippedTmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000) + ".zip";
-			final String tmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000);
+			final String zippedTmpPath = path().tmp();
+			final String tmpPath = path().tmp();
 
 			// copy zipfile to tmp dir
 			out = fileStore.create(zippedTmpPath);
@@ -183,8 +184,8 @@ public class HashBasedProjectService implements ProjectService {
 			IOUtils.closeQuietly(out);
 			// get hash
 			fileHash = getFileCheckSum(digestIn);
-			final String unzippedPath = FOLDER_UNZIPPED + "/" + fileHash;
-			final String zippedPath = FOLDER_ZIPPED + "/" + fileHash + ".zip";
+            final String unzippedPath = path().hash(fileHash).raw();
+            final String zippedPath = path().hash(fileHash).zipped();
 
 			fileStore.move(tmpPath, unzippedPath);
 			fileStore.move(zippedTmpPath, zippedPath);
@@ -204,31 +205,31 @@ public class HashBasedProjectService implements ProjectService {
 		String fileHash = null;
 
 		try {
-			final String tmpPath = "tmp/" + (new Random().nextInt(899999999) + 100000000);
+            final String tmpPath = path().tmp();
 
-			// copy file to tmp dir
-			digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
-			out = fileStore.create(tmpPath);
-			outBytes = IOUtils.copy(digestIn, out);
-			IOUtils.closeQuietly(out);
+            // copy file to tmp dir
+            digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
+            out = fileStore.create(tmpPath);
+            outBytes = IOUtils.copy(digestIn, out);
+            IOUtils.closeQuietly(out);
 
-			// get hash
-			fileHash = getFileCheckSum(digestIn);
+            // get hash
+            fileHash = getFileCheckSum(digestIn);
 
-			final String unzippedPath = FOLDER_UNZIPPED + "/" + fileHash;
-			final String zippedPath = FOLDER_ZIPPED + "/" + fileHash + ".zip";
+            final String unzippedPath = path().hash(fileHash).raw();
+            final String zippedPath = path().hash(fileHash).zipped();
 
-			// write zipped file
-			out = fileStore.create(zippedPath);
-			zipStream = new ZipOutputStream(out);
-			zipStream.putNextEntry(new ZipEntry("file"));
-			IOUtils.write(fileBytes, zipStream);
-			zipStream.closeEntry();
-			IOUtils.closeQuietly(zipStream);
-			IOUtils.closeQuietly(out);
+            // write zipped file
+            out = fileStore.create(zippedPath);
+            zipStream = new ZipOutputStream(out);
+            zipStream.putNextEntry(new ZipEntry("file"));
+            IOUtils.write(fileBytes, zipStream);
+            zipStream.closeEntry();
+            IOUtils.closeQuietly(zipStream);
+            IOUtils.closeQuietly(out);
 
-			fileStore.move(tmpPath, unzippedPath);
-		} finally {
+            fileStore.move(tmpPath, unzippedPath);
+        } finally {
 			IOUtils.closeQuietly(zipStream);
 			IOUtils.closeQuietly(digestIn);
 			IOUtils.closeQuietly(out);
