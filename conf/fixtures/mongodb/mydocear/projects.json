@@ -5,12 +5,17 @@
         },
         "name": "Mein Projekt",
         "authUsers": ["Alex", "Micha", "Julius"],
-        "revision": 3,
+        "revision": 8,
         "changes":[
             {"path":"/README.md", "revision": 0},
             {"path":"/README.md", "revision": 1},
             {"path":"/src/main/java/Main.java", "revision": 0},
-            {"path":"/README.md", "revision": 2}
+            {"path":"/README.md", "revision": 2},
+            {"path":"/src/main/java/Main.java", "revision": 1},
+            {"path":"/src/main/java/models", "revision": 0},
+            {"path":"/src/main/java/models/Person.java", "revision": 0},
+            {"path":"/src/main/java/models/project", "revision": 0},
+            {"path":"/src/main/java/models/project/domain", "revision": 0}
         ]
     },
     {
