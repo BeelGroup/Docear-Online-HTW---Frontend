@@ -12,6 +12,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
       "click .action-new-node" : "actionNewNode"
       "click .action-share"    : "actionShare"
       "click .action-move"    : "actionMove"
+      "click .action-trash" : "actionDelete"
  
     constructor:(@nodeModel, @nodeView, @$node)->
       super()    
@@ -46,6 +47,13 @@ define ['views/NodeEditView'], (NodeEditView) ->
         $mindmapCanvas = $($node).closest('#mindmap-container')
         nodeEditView = new NodeEditView(node, @nodeView)
         nodeEditView.renderAndAppendTo($mindmapCanvas)
+
+    actionDelete:(event)->
+      
+      @nodeView.model.get('parent').removeCild @nodeView.model
+      @nodeView.destroy()
+      @nodeView.model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+
       
     actionNewNode: (event)->
       document.log "newNode @ "+@nodeView.model.get 'id'
@@ -71,6 +79,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
           foldable: ($.inArray('FOLD_NODE', document.features) > -1)
           lockable: ($.inArray('LOCK_NODE', document.features) > -1)
           movable: ($.inArray('MOVE_NODE', document.features) > -1)
+          deletable: ($.inArray('DELETE_NODE', document.features) > -1)
           isRoot: (@nodeModel.constructor.name == 'RootNode')
       }
       @$el.html @template attrs
