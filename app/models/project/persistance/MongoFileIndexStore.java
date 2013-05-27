@@ -2,7 +2,6 @@ package models.project.persistance;
 
 import com.google.common.collect.Iterables;
 import com.mongodb.*;
-import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -13,9 +12,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static java.util.regex.Pattern.quote;
-import static models.mongo.MongoPlugin.*;
 import static com.google.common.collect.Lists.newArrayList;
+import static models.mongo.MongoPlugin.*;
 
 
 @Profile("mongoFileIndexStore")
@@ -125,14 +123,10 @@ public class MongoFileIndexStore implements FileIndexStore {
     public FileMetaData getMetaData(String id, String path) throws IOException {
         final BasicDBObject query = doc("project", new ObjectId(id)).append("path", path);
         final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
-        System.err.println("fileBson");
-        System.err.println(fileBson);
         return convertToFileMetaData(fileBson);
     }
 
     private FileMetaData convertToFileMetaData(BasicDBObject fileBson) {
-        System.err.println("----");
-        System.err.println(fileBson);
         FileMetaData result = null;
         if (fileBson != null) {
             final BasicDBList revisions = (BasicDBList) fileBson.get("revisions");//the only element is the last revision
@@ -140,7 +134,7 @@ public class MongoFileIndexStore implements FileIndexStore {
             final boolean isDir = revisionBson.getBoolean("is_dir");
             final boolean isDeleted = revisionBson.getBoolean("is_deleted");
             final long revision = fileBson.getLong("revision");
-            final String filePath = ((BasicDBObject) fileBson).getString("path");
+            final String filePath = fileBson.getString("path");
             if (isDir) {
                 result = FileMetaData.folder(filePath, isDeleted);
             } else {
@@ -150,21 +144,14 @@ public class MongoFileIndexStore implements FileIndexStore {
             }
             result.setRevision(revision);
         }
-        System.err.println(result);
         return result;
     }
 
     @Override
-    public Iterable<FileMetaData> getMetaDataOfDirectFolderChildren(String id, String path, int max) throws IOException {
+    public EntityCursor<FileMetaData> getMetaDataOfDirectFolderChildren(String id, String path, int max) throws IOException {
         final String folderPath = path.endsWith("/") ? path : path + "/";
-//        Pattern childrenOfFolderPattern = Pattern.compile("^" + quote(folderPath) + "[^/]+$");
-        Pattern childrenOfFolderPattern = Pattern.compile("" + (folderPath) + ".+");
-        System.out.println("pattern " + childrenOfFolderPattern);
-        final BasicDBObject query = doc("_id",
-                doc("path", Pattern.compile(".*"))
-//                doc("project", new ObjectId(id)).append("path", childrenOfFolderPattern)
-        );
-        System.out.println(query);
+        Pattern childrenOfFolderPattern = Pattern.compile("^" + (folderPath) + "[^/]+$");
+        final BasicDBObject query = doc("path", childrenOfFolderPattern).append("project", new ObjectId(id));
         final DBCursor cursor = files().find(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
         return new EntityCursorBase<FileMetaData>(cursor) {
             @Override

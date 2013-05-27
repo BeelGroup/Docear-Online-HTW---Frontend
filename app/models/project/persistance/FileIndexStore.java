@@ -77,7 +77,7 @@ public interface FileIndexStore {
      * @return an iterable with all files and folders of the specified folder. It works not recursive, only the direct children of path are found.
      * @throws IOException
      */
-    Iterable<FileMetaData> getMetaDataOfDirectFolderChildren(String id, String path, int max) throws IOException;
+    EntityCursor<FileMetaData> getMetaDataOfDirectFolderChildren(String id, String path, int max) throws IOException;
 
     /**
      * Receives information about the changed files since a revision.
