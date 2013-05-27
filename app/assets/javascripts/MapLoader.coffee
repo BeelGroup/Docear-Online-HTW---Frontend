@@ -7,7 +7,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
     mapLoader = new MapLoader(data);
     rootView = new RootNodeView mapLoader.firstLoad()
 
-    // continue loading in 400ms steps (now you can browse the map during loading)
+    // continue loading in 50ms steps (now you can browse the map while loading)
     mapLoader.continueLoading()
 
     // be happy
@@ -21,6 +21,17 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
       @rendering = off
       @removeFromList = Array()
       @continue = true
+      @showUs = Array()
+      @renderAllNNodes = 200
+      @renderTimes = 1
+
+
+    render:->
+      for element in @showUs
+        #document.log 'partial rendering'
+        element.show()
+      @showUs = []
+      @rootView.model.trigger 'refreshDomConnectionsAndBoundaries'
 
     injectRootView:(@rootView)->
 
@@ -38,54 +49,60 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
 
     continueLoading:->
       if @rootNode.getParentsToLoadSize() > 0 and @continue = true
-        window.setTimeout @loadMore, 40
-      else
-        @rootView.model.trigger 'refreshDomConnectionsAndBoundaries' 
-        document.log 'finished loading'
-
-
-    # load / render / append next nodes
-    loadMore:=>
-      @loadStep @rootNode.getNextParentToLoad()
-      
-      # only do that, when unfolded!
-      @rootView.model.trigger 'refreshDomConnectionsAndBoundaries'
-      document.log 'load step'
+        @loadStep @rootNode.getNextParentToLoad()
 
 
     loadStep:(parentToLoadNode)=>
+      #document.log 'Amount of nodes: '+document.nodeCount+' Current parent node id: '+parentToLoadNode.get 'id'
+      # render all n nodes
+      if (document.nodeCount - (document.nodeCount % @renderAllNNodes)) is @renderAllNNodes*@renderTimes
+        @renderTimes++
+        @render()
+
       if @continue
         if parentToLoadNode isnt undefined and parentToLoadNode isnt 'undefined'
           @getDataAndRenderNodesByID parentToLoadNode
         if @rootNode.getParentsToLoadSize() > 0 and @continue = true
-          window.setTimeout @loadStep,200, @rootNode.getNextParentToLoad()
+          window.setTimeout @loadStep,document.sleepTimeOnPartialLoading, @rootNode.getNextParentToLoad()
         else
-          @continueLoading()
-
+          document.log 'finished loading'
+          @render()
 
     appendNodesToParent:(dataOfParentNode, parentNode)=>
       if dataOfParentNode isnt null
+
+        # create child node models
         childs = @nodeFactory.createChildrenRecursive dataOfParentNode.children, parentNode, @rootNode
-        # add children to list of childerns
+
+        # add children to list of childerns 
         parentNode.set 'children', (parentNode.get 'children').concat childs
-        #newNode.set 'children', childs
 
+        # show the + sign, when childs of the current parent are loaded
         if (parentNode.get 'folded') and !(parentNode.get 'foldedShow')
-          $('#'+parentNode.get 'id').find('.inner-node .action-fold').show()
+          $('#'+parentNode.get 'id').find('.inner-node .expand-icon').show()
           parentNode.set 'foldedShow', true
+          $('#'+parentNode.get 'id').children('.inner-node').children('.action-fold.loading-icon').toggleClass 'invisible'
 
-        # append to dom
-        @rootView.recursiveRender $('#'+parentNode.get 'id').find('.children:first'), childs
-        #@rootView.model.trigger 'refreshDomConnectionsAndBoundaries'
+        # append the new childs to the dom
+        $childElement = $('#'+parentNode.get 'id').find('.children:first')
+        @rootView.recursiveRender $childElement, childs
 
+        # hide the new childs ... they will be shown again and also layouted in the render method of this class
+        if (parentNode.get 'folded') isnt on
+          $childElement.hide()
+          @showUs.push $childElement
 
     getDataAndRenderNodesByID:(parentToLoadNode)=>
       href = jsRoutes.controllers.MindMap.getNode(@mapId, parentToLoadNode.get 'id', document.loadChunkSize).url
+      
+      # WORKAROUND
+      correctURL = href.replace '-1', 'nodeCount='+document.loadChunkSize
+
       request = $.ajax(
         invokedata:
           maploader: @
           parentToLoadNode: parentToLoadNode
-        url: href
+        url: correctURL
         type: 'GET',
         async: true,
         dataType: "json"
@@ -102,8 +119,4 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
       else 
         null
 
-    ### 
-      appendNodesToParent called by getDataById (when ajax request was successfull)
-      appentNodeToParent calls continueLOading. when nodes were added
-    ###
   module.exports = MapLoader      

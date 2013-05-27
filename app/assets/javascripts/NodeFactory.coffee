@@ -22,16 +22,17 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       rootNode.set 'rightChildren', []
       
       # data.id should be filename
-      rootNode.set 'mapId', data.id
+      rootNode.set 'mapId', @mapId
+      rootNode.set 'mapName', data.id
       rootNode.set 'folded', false
       rootNode.set 'revision', data.revision
 
-      if persistenceHandlers[data.id] == undefined
-        persistenceHandlers[data.id] = new PersistenceHandler(@mapId)
+      if persistenceHandlers[@mapId] == undefined
+        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId)
 
-      if updateHandlers[data.id] == undefined
-        updateHandlers[data.id] = new UpdateHandler(@mapId, rootNode)
-      rootNode.set 'updateHandler', updateHandlers[data.id]
+      if updateHandlers[@mapId] == undefined
+        updateHandlers[@mapId] = new UpdateHandler(@mapId, rootNode)
+      rootNode.set 'updateHandler', updateHandlers[@mapId]
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
@@ -80,12 +81,12 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
               container.append $("<div>#{currentLine.concat '&nbsp;'}</div>")
             else
               container.append $("<div>#{currentLine}</div>")
-          # in this case force isHTML to true and set text 
+          # in this case force isHtml to true and set text 
           data.isHtml = true
           data.nodeText = container.html()
 
       node.set 'nodeText', data.nodeText
-      node.set 'isHTML', data.isHtml
+      node.set 'isHtml', data.isHtml
       
       node.set 'xPos', 0
       node.set 'yPos', 0
@@ -106,12 +107,13 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       node.set 'connectionUpdated', 0
 
       node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
-      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHTML']
-      node.set 'persist', true
+      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHtml']
+      node.set 'autoPersist', false
 
       node.set 'foldedShow', false
       node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
       node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
+      node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
 
       node.setEdgestyle(data.edgeStyle)
 

@@ -29,9 +29,6 @@ define ->
       
     
     hide: (event)->
-      # call unlock after document.unlockDelay Sec to give model time to submit changes
-      @nodeModel.get('persistenceHandler').unlock(@nodeModel, document.unlockDelay)
-      
       @$node.children('.inner-node').animate({
         opacity: 1.0
       }, 0)
@@ -50,8 +47,13 @@ define ->
       
       newNodeText = $(@$el).find('.node-editor:first').html()
       if newNodeText isnt @nodeModel.get('nodeText')
-        @nodeModel.set 'isHTML', true
+        @nodeModel.set 'isHtml', true
         @nodeModel.set 'nodeText', $(@$el).find('.node-editor:first').html()
+        
+        @nodeModel.save(unlock = true)
+      else
+        @nodeModel.get('persistenceHandler').unlock(@nodeModel)
+        
       
     # found @ http://stackoverflow.com/questions/985272/jquery-selecting-text-in-an-element-akin-to-highlighting-with-your-mouse/987376#987376
     selectText: (nodeId)->

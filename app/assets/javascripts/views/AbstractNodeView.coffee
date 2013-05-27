@@ -23,7 +23,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:selected",@changeSelectStatus , @   
       @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
-      @model.bind "change:isHTML",@changeNodeText , @
+      @model.bind "change:isHtml",@changeNodeText , @
       @addEvents()
 
 
@@ -122,12 +122,13 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       else
         shouldBeVisible = !@model.get('folded')
         domVisible = @$el.children('.children').is ':visible'
-        @privateUpdateFoldStatus(shouldBeVisible, domVisible, false)
+        if shouldBeVisible isnt domVisible
+          @privateUpdateFoldStatus()
+          (@model.get 'rootNodeModel').trigger 'updateMinimap'
+
       
 
-    privateUpdateFoldStatus:(shouldBeVisible, domVisible, firstLayouting)->
-      if shouldBeVisible isnt domVisible
-        
+    privateUpdateFoldStatus:()->
         $children = @$el.children('.children')
         $myself = @$el.children('.inner-node')
 
@@ -149,8 +150,9 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         # toggle visibilety of childs
         $children.fadeToggle(document.fadeDuration)
 
+
     switchFoldButtons:->
-      $nodesToFold = @$el.children('.inner-node').children('.action-fold')
+      $nodesToFold = @$el.children('.inner-node').children('.action-fold.node-control')
       # toggle +/- button
       $nodesToFold.toggleClass 'invisible'
 
@@ -165,13 +167,13 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       parentIsHeigher = preHeight > childrenHeight
 
       $contentContainer = $node.children('.inner-node').children('.content')
-      if @model.get 'isHTML'
+      if @model.get 'isHtml'
         document.log "Changing text as HTML"
-        $contentContainer.addClass('isHTML')
+        $contentContainer.addClass('isHtml')
         $contentContainer.html(@model.get 'nodeText')
       else
         document.log "Changing text as PLAIN"
-        $contentContainer.removeClass('isHTML')
+        $contentContainer.removeClass('isHtml')
         $contentContainer.text(@model.get 'nodeText')
       
       

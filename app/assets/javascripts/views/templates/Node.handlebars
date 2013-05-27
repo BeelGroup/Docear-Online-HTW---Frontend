@@ -1,12 +1,15 @@
 <div class='children'></div>
 <div class='inner-node'>
-  <div class='content {{#if isHTML}}isHTML{{/if}}'>{{#if isHTML}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
+  <div class='content {{#if isHtml}}isHtml{{/if}}'>{{#if isHtml}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
   {{#if foldable}}
     <div class='action-fold collapse-icon node-control'>
       <img class='action-fold-all' src="{{minusIcon}}">
     </div>
     <div class='action-fold expand-icon invisible node-control'>
       <img class='action-fold-all' src="{{plusIcon}}">
+    </div>
+    <div class='action-fold loading-icon invisible'>
+      <img class='' src="{{loadingIcon}}">
     </div>
   {{/if}}
   
