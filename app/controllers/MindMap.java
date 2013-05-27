@@ -16,6 +16,8 @@ import models.frontend.formdata.RequestLockData;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.docear.messages.models.MapIdentifier;
+import org.docear.messages.models.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +42,7 @@ public class MindMap extends Controller {
 	private final static Form<ReleaseLockData> releaseLockForm = Form.form(ReleaseLockData.class);
 	private final static Form<ChangeEdgeData> changeEdgeForm = Form.form(ChangeEdgeData.class);
 
-	private final static String COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID = "-1";
+	public final static String COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID = "-1";
 
 	@Autowired
 	private MindMapCrudService mindMapCrudService;
@@ -59,11 +61,12 @@ public class MindMap extends Controller {
 		if (mapId.equals("welcome")) {
 			return ok(util.Input.resourceToString("rest/v1/map/welcome.json"));
 		}
-
-		//throws unauthorized if no user is logged in
-		final models.backend.User user = user(source());
 		
-		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(user, mapId, nodeCount);
+		// short version, throws NotLoggedInException
+		final UserIdentifier userIdentifier = userIdentifier();
+			
+		final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);		
+		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsJsonString(userIdentifier, mapIdentifier, nodeCount);
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String mindMap) throws Throwable {
@@ -76,8 +79,8 @@ public class MindMap extends Controller {
 	public Result mapAsXml(final String mapId) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId);
 
-		final models.backend.User user = user(source());
-		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(user, mapId);
+		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(userIdentifier(), mapIdentifier);
 
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
 			@Override
@@ -97,8 +100,9 @@ public class MindMap extends Controller {
 		else {
 			final RequestLockData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final models.backend.User user = user(source());
-			final F.Promise<Boolean> promise = mindMapCrudService.requestLock(user, mapId, nodeId);
+
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<Boolean> promise = mindMapCrudService.requestLock(userIdentifier(), mapIdentifier, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 
 				@Override
@@ -123,8 +127,9 @@ public class MindMap extends Controller {
 		else {
 			final ReleaseLockData data = filledForm.get();
 			final String nodeId = data.getNodeId();
-			final models.backend.User user = user(source());
-			final F.Promise<Boolean> promise = mindMapCrudService.releaseLock(user, mapId, nodeId);
+			
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<Boolean> promise = mindMapCrudService.releaseLock(userIdentifier(), mapIdentifier, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 
 				@Override
@@ -143,8 +148,8 @@ public class MindMap extends Controller {
 	public Result fetchUpdatesSinceRevision(String mapId, Integer revision) {
 		Logger.debug("MindMap.fetchUpdatesSinceRevision <- mapId=" + mapId + "; revision: " + revision);
 
-		final models.backend.User user = user(source());
-		final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(user, mapId, revision);
+		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(userIdentifier(), mapIdentifier, revision);
 		return async(updatePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String updates) throws Throwable {
@@ -162,8 +167,9 @@ public class MindMap extends Controller {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final String parentNodeId = filledForm.get().getParentNodeId();
-			final models.backend.User user = user(source());
-			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(user, mapId, parentNodeId);
+
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(userIdentifier(), mapIdentifier, parentNodeId);
 			return async(addNodePromise.map(new F.Function<String, Result>() {
 				@Override
 				public Result apply(String node) throws Throwable {
@@ -178,8 +184,8 @@ public class MindMap extends Controller {
 		if (!mapId.equals("welcome") && !userService.isAuthenticated())
 			throw new UnauthorizedException("No user logged in");
 		
-		final models.backend.User user = user(source());
-		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(user, mapId, nodeId, nodeCount);
+		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(userIdentifier(), mapIdentifier, nodeId, nodeCount);
 		return async(addNodePromise.map(new F.Function<String, Result>() {
 			@Override
 			public Result apply(String node) throws Throwable {
@@ -212,8 +218,8 @@ public class MindMap extends Controller {
 				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 
-			final models.backend.User user = user(source());
-			final F.Promise<String> promise = mindMapCrudService.changeNode(user, mapId, nodeId, attributeValueMap);
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<String> promise = mindMapCrudService.changeNode(userIdentifier(), mapIdentifier, nodeId, attributeValueMap);
 			return async(promise.map(new Function<String, Result>() {
 				@Override
 				public Result apply(String json) throws Throwable {
@@ -236,8 +242,8 @@ public class MindMap extends Controller {
 			final String nodeToMoveId = data.getNodetoMoveId();
 			final Integer newIndex = data.getNewIndex();
 
-			final models.backend.User user = user(source());
-			final F.Promise<Boolean> promise = mindMapCrudService.moveNodeTo(user, mapId, newParentNodeId, nodeToMoveId, newIndex);
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<Boolean> promise = mindMapCrudService.moveNodeTo(userIdentifier(), mapIdentifier, newParentNodeId, nodeToMoveId, newIndex);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
@@ -262,8 +268,8 @@ public class MindMap extends Controller {
 			final RemoveNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 			
-			final models.backend.User user = user(source());
-			final F.Promise<Boolean> promise = mindMapCrudService.removeNode(user, mapId, nodeId);
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<Boolean> promise = mindMapCrudService.removeNode(userIdentifier(), mapIdentifier, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
@@ -301,8 +307,8 @@ public class MindMap extends Controller {
 			}
 			Logger.debug(attributeValueMap.toString());
 			
-			final models.backend.User user = user(source());
-			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(user, mapId, nodeId, attributeValueMap);
+			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(userIdentifier(), mapIdentifier, nodeId, attributeValueMap);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
 				public Result apply(Boolean success) throws Throwable {
@@ -317,8 +323,8 @@ public class MindMap extends Controller {
 	}
 
 	public Result listenForUpdates(final String mapId) {
-		final models.backend.User user = user(source());
-		return async(mindMapCrudService.listenForUpdates(user, mapId).map(new Function<Boolean, Result>() {
+		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		return async(mindMapCrudService.listenForUpdates(userIdentifier(), mapIdentifier).map(new Function<Boolean, Result>() {
 
 			@Override
 			public Result apply(Boolean hasChanged) throws Throwable {
@@ -341,6 +347,12 @@ public class MindMap extends Controller {
 
 	private models.backend.User user(final String source) {
 		return userService.getCurrentUser(source);
+	}
+	
+	private UserIdentifier userIdentifier() {
+		final models.backend.User user = user(source());
+		final UserIdentifier userIdentifier = new UserIdentifier(user.getSource(),user.getUsername());
+		return userIdentifier;
 	}
 
 	private String source() {
