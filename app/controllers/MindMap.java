@@ -76,10 +76,10 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result mapAsXml(final String mapId) throws DocearServiceException, IOException {
+	public Result mapAsXml(final String projectId, final String mapId) throws DocearServiceException, IOException {
 		Logger.debug("MindMap.map <- mapId=" + mapId);
 
-		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 		final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(userIdentifier(), mapIdentifier);
 
 		return async(mindMapPromise.map(new F.Function<String, Result>() {
@@ -91,7 +91,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result requestLock(final String mapId) {
+	public Result requestLock(final String projectId, final String mapId) {
 		final Form<RequestLockData> filledForm = requestLockForm.bindFromRequest();
 		Logger.debug("MindMap.requestLock => mapId=" + mapId + ", form=" + filledForm.toString());
 
@@ -101,7 +101,7 @@ public class MindMap extends Controller {
 			final RequestLockData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<Boolean> promise = mindMapCrudService.requestLock(userIdentifier(), mapIdentifier, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 
@@ -118,7 +118,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result releaseLock(final String mapId) {
+	public Result releaseLock(final String projectId, final String mapId) {
 		final Form<ReleaseLockData> filledForm = releaseLockForm.bindFromRequest();
 		Logger.debug("MindMap.requestLock => mapId=" + mapId + ", form=" + filledForm.toString());
 
@@ -128,7 +128,7 @@ public class MindMap extends Controller {
 			final ReleaseLockData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 			
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<Boolean> promise = mindMapCrudService.releaseLock(userIdentifier(), mapIdentifier, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 
@@ -145,10 +145,10 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result fetchUpdatesSinceRevision(String mapId, Integer revision) {
+	public Result fetchUpdatesSinceRevision(final String projectId, String mapId, Integer revision) {
 		Logger.debug("MindMap.fetchUpdatesSinceRevision <- mapId=" + mapId + "; revision: " + revision);
 
-		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 		final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(userIdentifier(), mapIdentifier, revision);
 		return async(updatePromise.map(new F.Function<String, Result>() {
 			@Override
@@ -159,7 +159,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result createNode(final String mapId) {
+	public Result createNode(final String projectId, final String mapId) {
 		final Form<CreateNodeData> filledForm = createNodeForm.bindFromRequest();
 		Logger.debug("MindMap.createNode <- mapId=" + mapId + ", form=" + filledForm.toString());
 
@@ -168,7 +168,7 @@ public class MindMap extends Controller {
 		} else {
 			final String parentNodeId = filledForm.get().getParentNodeId();
 
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(userIdentifier(), mapIdentifier, parentNodeId);
 			return async(addNodePromise.map(new F.Function<String, Result>() {
 				@Override
@@ -179,12 +179,12 @@ public class MindMap extends Controller {
 		}
 	}
 
-	public Result getNode(final String mapId, final String nodeId, final Integer nodeCount) {
+	public Result getNode(final String projectId, final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("MindMap.getNode <- mapId=" + mapId + ", nodeId=" + nodeId + ", nodeCount= " + nodeCount);
 		if (!mapId.equals("welcome") && !userService.isAuthenticated())
 			throw new UnauthorizedException("No user logged in");
 		
-		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+		final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 		final F.Promise<String> addNodePromise = mindMapCrudService.getNode(userIdentifier(), mapIdentifier, nodeId, nodeCount);
 		return async(addNodePromise.map(new F.Function<String, Result>() {
 			@Override
@@ -195,7 +195,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result changeNode(final String mapId) {
+	public Result changeNode(final String projectId, final String mapId) {
 		final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
 
 		Logger.debug("MindMap.changeNode => mapId=" + mapId + ", form=" + filledForm.toString());
@@ -218,7 +218,7 @@ public class MindMap extends Controller {
 				attributeValueMap.put(entry.getKey(), value.isEmpty() ? null : value);
 			}
 
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<String> promise = mindMapCrudService.changeNode(userIdentifier(), mapIdentifier, nodeId, attributeValueMap);
 			return async(promise.map(new Function<String, Result>() {
 				@Override
@@ -230,7 +230,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result moveNode(final String mapId) throws JsonParseException, JsonMappingException, IOException {
+	public Result moveNode(final String projectId, final String mapId) throws JsonParseException, JsonMappingException, IOException {
 		final Form<MoveNodeData> filledForm = moveNodeForm.bindFromRequest();
 		Logger.debug("MindMap.moveNode => mapId=" + mapId + ", form=" + filledForm.toString());
 
@@ -242,7 +242,7 @@ public class MindMap extends Controller {
 			final String nodeToMoveId = data.getNodetoMoveId();
 			final Integer newIndex = data.getNewIndex();
 
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<Boolean> promise = mindMapCrudService.moveNodeTo(userIdentifier(), mapIdentifier, newParentNodeId, nodeToMoveId, newIndex);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
@@ -258,7 +258,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result deleteNode(final String mapId) {
+	public Result deleteNode(final String projectId, final String mapId) {
 		final Form<RemoveNodeData> filledForm = removeNodeForm.bindFromRequest();
 		Logger.debug("MindMap.deleteNode => mapId=" + mapId + ", form=" + filledForm.toString());
 
@@ -268,7 +268,7 @@ public class MindMap extends Controller {
 			final RemoveNodeData data = filledForm.get();
 			final String nodeId = data.getNodeId();
 			
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<Boolean> promise = mindMapCrudService.removeNode(userIdentifier(), mapIdentifier, nodeId);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
@@ -284,7 +284,7 @@ public class MindMap extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public Result changeEdge(final String mapId) throws JsonParseException, JsonMappingException, IOException {
+	public Result changeEdge(final String projectId, final String mapId) throws JsonParseException, JsonMappingException, IOException {
 		final Form<ChangeEdgeData> filledForm = changeEdgeForm.bindFromRequest();
 		Logger.debug("MindMap.changeEdge => mapId=" + mapId + ", form=" + filledForm.toString());
 
@@ -307,7 +307,7 @@ public class MindMap extends Controller {
 			}
 			Logger.debug(attributeValueMap.toString());
 			
-			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+			final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 			final F.Promise<Boolean> promise = mindMapCrudService.changeEdge(userIdentifier(), mapIdentifier, nodeId, attributeValueMap);
 			return async(promise.map(new Function<Boolean, Result>() {
 				@Override
@@ -322,8 +322,8 @@ public class MindMap extends Controller {
 		}
 	}
 
-	public Result listenForUpdates(final String mapId) {
-		final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+	public Result listenForUpdates(final String projectId, final String mapId) {
+		final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
 		return async(mindMapCrudService.listenForUpdates(userIdentifier(), mapIdentifier).map(new Function<Boolean, Result>() {
 
 			@Override

@@ -11,28 +11,33 @@ GET	    /help						controllers.Application.help()
 
 POST	/feedback					controllers.Application.feedback()
 
-# Mindmap
+# Mindmap (old)
 ## get information
 ### json
 GET		/api/v1/map/:mapId/json					   @controllers.MindMap.mapAsJson(projectId = "-1", mapId: String, nodeCount : Integer ?= -1)
-GET		/api/v1/project/:projectId/map/:mapId/json @controllers.MindMap.mapAsJson(projectId: String, mapId: String, nodeCount : Integer ?= -1)
-GET		/api/v1/map/:mapId/json/node/:nodeId 	@controllers.MindMap.getNode(mapId: String, nodeId: String,nodeCount : Integer ?= -1)
+GET		/api/v1/map/:mapId/json/node/:nodeId 		@controllers.MindMap.getNode(projectId = "-1", mapId: String, nodeId: String,nodeCount : Integer ?= -1)
 
 ### xml
-GET		/api/v1/map/:mapId/xml					@controllers.MindMap.mapAsXml(mapId: String)
+GET		/api/v1/map/:mapId/xml					@controllers.MindMap.mapAsXml(projectId = "-1",mapId: String)
 
 ### updates
-GET		/api/v1/map/:mapId/listen				@controllers.MindMap.listenForUpdates(mapId: String)
-GET		/api/v1/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(mapId: String, revision: Integer)
+GET		/api/v1/map/:mapId/listen				@controllers.MindMap.listenForUpdates(projectId = "-1",mapId: String)
+GET		/api/v1/map/:mapId/updates/:revision	@controllers.MindMap.fetchUpdatesSinceRevision(projectId = "-1",mapId: String, revision: Integer)
 
 ## altering actions
-DELETE	/api/v1/map/:mapId/node/delete			@controllers.MindMap.deleteNode(mapId: String)
-POST	/api/v1/map/:mapId/node/create			@controllers.MindMap.createNode(mapId: String)
-POST	/api/v1/map/:mapId/node/change			@controllers.MindMap.changeNode(mapId: String)
-POST	/api/v1/map/:mapId/node/move			@controllers.MindMap.moveNode(mapId: String)
-POST	/api/v1/map/:mapId/node/requestLock		@controllers.MindMap.requestLock(mapId: String)
-POST	/api/v1/map/:mapId/node/releaseLock		@controllers.MindMap.releaseLock(mapId: String)
-POST	/api/v1/map/:mapId/node/changeEdge		@controllers.MindMap.changeEdge(mapId: String)
+DELETE	/api/v1/map/:mapId/node/delete			@controllers.MindMap.deleteNode(projectId = "-1",mapId: String)
+POST	/api/v1/map/:mapId/node/create			@controllers.MindMap.createNode(projectId = "-1",mapId: String)
+POST	/api/v1/map/:mapId/node/change			@controllers.MindMap.changeNode(projectId = "-1",mapId: String)
+POST	/api/v1/map/:mapId/node/move			@controllers.MindMap.moveNode(projectId = "-1",mapId: String)
+POST	/api/v1/map/:mapId/node/requestLock		@controllers.MindMap.requestLock(projectId = "-1",mapId: String)
+POST	/api/v1/map/:mapId/node/releaseLock		@controllers.MindMap.releaseLock(projectId = "-1",mapId: String)
+POST	/api/v1/map/:mapId/node/changeEdge		@controllers.MindMap.changeEdge(projectId = "-1",mapId: String)
+
+# Mindmap (new)
+## get information
+### json
+GET		/api/v1/project/:projectId/map/:mapId/json @controllers.MindMap.mapAsJson(projectId: String, mapId: String, nodeCount : Integer ?= -1)
+
 
 # Projects
 ## manage
