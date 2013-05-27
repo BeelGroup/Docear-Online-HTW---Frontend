@@ -35,9 +35,14 @@ public class MongoPlugin extends Plugin {
             final Integer port = port();
             Logger.info(String.format("Starting MongoClient for %s:%d", host, port));
             mongoClient = new MongoClient(host, port);
+            ensureIndexes();
         } catch (UnknownHostException e) {
             Logger.error("can't connect ");
         }
+    }
+
+    private void ensureIndexes() {
+        files().ensureIndex(doc("project", 1).append("path", 1), doc("unique", true));
     }
 
     private String host() {
@@ -109,6 +114,6 @@ public class MongoPlugin extends Plugin {
     }
 
     public static BasicDBObject queryForFile(String id, String path) {
-        return doc("_id", doc("project", new ObjectId(id)).append("path", path));
+        return doc("project", new ObjectId(id)).append("path", path);
     }
 }

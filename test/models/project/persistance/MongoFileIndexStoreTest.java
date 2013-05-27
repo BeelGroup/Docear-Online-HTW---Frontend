@@ -42,14 +42,11 @@ public class MongoFileIndexStoreTest extends MongoTest {
     }
 
     private BasicDBObject queryForExampleProject() {
-        return doc("_id", new ObjectId("507f191e810c19729de860ea"));
+        return doc("_id", new ObjectId(PROJECT_ID));
     }
 
     private BasicDBObject queryForExampleFile() {
-        final BasicDBObject idField = new BasicDBObject("project", new ObjectId("507f191e810c19729de860ea")).
-                append("path", "/README.md");
-        final BasicDBObject query = new BasicDBObject("_id", idField);
-        return query;
+        return queryForFile(PROJECT_ID, "/README.md");
     }
 
     @Test

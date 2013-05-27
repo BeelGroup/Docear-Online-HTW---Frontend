@@ -1,9 +1,10 @@
 [
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/README.md"
+            "$oid": "51a396d7322b7f437e36873e"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/README.md",
         "revision": 1,
         "revisions": [
             {
@@ -24,9 +25,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src"
+            "$oid": "51a396d7322b7f437e36873f"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src",
         "revision": 0,
         "revisions": [
             {
@@ -38,9 +40,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main"
+            "$oid": "51a396d8322b7f437e368740"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main",
         "revision": 0,
         "revisions": [
             {
@@ -52,9 +55,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main/java"
+            "$oid": "51a396d8322b7f437e368741"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main/java",
         "revision": 0,
         "revisions": [
             {
@@ -66,9 +70,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main/java/Main.java"
+            "$oid": "51a396d9322b7f437e368742"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main/java/Main.java",
         "revision": 1,
         "revisions": [
             {
@@ -89,9 +94,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main/java/models"
+            "$oid": "51a396d9322b7f437e368743"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main/java/models",
         "revision": 0,
         "revisions": [
             {
@@ -103,9 +109,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main/java/models/Person.java"
+            "$oid": "51a396d9322b7f437e368744"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main/java/models/Person.java",
         "revision": 0,
         "revisions": [
             {
@@ -119,9 +126,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main/java/models/project"
+            "$oid": "51a396d9322b7f437e368745"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main/java/models/project",
         "revision": 0,
         "revisions": [
             {
@@ -133,9 +141,10 @@
     },
     {
         "_id": {
-            "project": { "$oid": "507f191e810c19729de860ea" },
-            "path": "/src/main/java/models/project/domain"
+            "$oid": "51a396d9322b7f437e368746"
         },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/src/main/java/models/project/domain",
         "revision": 0,
         "revisions": [
             {

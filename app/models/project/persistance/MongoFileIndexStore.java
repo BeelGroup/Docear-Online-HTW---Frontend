@@ -23,7 +23,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public class MongoFileIndexStore implements FileIndexStore {
 
     public static final BasicDBObject DEFAULT_PRESENT_FIELDS_PROJECT = presentFields("name", "authUsers", "revision");
-    public static final BasicDBObject DEFAULT_PRESENT_FIELDS_FILE_METADATA = presentFields("revision", "_id.path").append("revisions", doc("$slice", -1));
+    public static final BasicDBObject DEFAULT_PRESENT_FIELDS_FILE_METADATA = presentFields("revision", "path").append("revisions", doc("$slice", -1));
 
     @Override
     public Project findProjectById(String id) throws IOException {
@@ -123,9 +123,7 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public FileMetaData getMetaData(String id, String path) throws IOException {
-        final BasicDBObject query = doc("_id",
-                doc("project", new ObjectId(id)).append("path", path)
-        );
+        final BasicDBObject query = doc("project", new ObjectId(id)).append("path", path);
         final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
         System.err.println("fileBson");
         System.err.println(fileBson);
@@ -142,7 +140,7 @@ public class MongoFileIndexStore implements FileIndexStore {
             final boolean isDir = revisionBson.getBoolean("is_dir");
             final boolean isDeleted = revisionBson.getBoolean("is_deleted");
             final long revision = fileBson.getLong("revision");
-            final String filePath = ((BasicDBObject) fileBson.get("_id")).getString("path");
+            final String filePath = ((BasicDBObject) fileBson).getString("path");
             if (isDir) {
                 result = FileMetaData.folder(filePath, isDeleted);
             } else {
