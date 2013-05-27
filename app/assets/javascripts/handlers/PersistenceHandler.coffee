@@ -43,6 +43,10 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
 
     persistNew: (object, params)->
       $.post(@persistenceApi.create.Node, params)
+
+    deleteNode: (node, callback)->
+      params = {'nodeId': object.get('id')}
+      $.post(@persistenceApi.delete.Node, params, callback)
       
     lock: (node)->
       if $.inArray('LOCK_NODE', document.features) > -1
