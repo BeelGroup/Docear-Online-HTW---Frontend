@@ -342,7 +342,7 @@ public class MindMap extends Controller {
 	@Security.Authenticated(Secured.class)
 	@Deprecated
 	public Result addNode() {
-		return badRequest("Deprecated! Use " + routes.MindMap.createNode("NODE_ID").toString() + " instead");
+		return badRequest("Deprecated! Use " + routes.MindMap.createNode("ProjectId","NODE_ID").toString() + " instead");
 	}
 
 	private models.backend.User user(final String source) {
