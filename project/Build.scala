@@ -128,5 +128,4 @@ object ApplicationBuild extends Build {
       , javacOptions ++= Seq("-Xlint:-options")
       , javacOptions ++= Seq("-Xlint:deprecation")
     )
-
 }
