@@ -1,6 +1,7 @@
 package models.project.persistance;
 
-import com.mongodb.BasicDBList;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -10,10 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static models.mongo.MongoPlugin.*;
@@ -44,14 +42,11 @@ public class MongoFileIndexStoreTest extends MongoTest {
     }
 
     private BasicDBObject queryForExampleProject() {
-        return doc("_id", new ObjectId("507f191e810c19729de860ea"));
+        return doc("_id", new ObjectId(PROJECT_ID));
     }
 
     private BasicDBObject queryForExampleFile() {
-        final BasicDBObject idField = new BasicDBObject("project", new ObjectId("507f191e810c19729de860ea")).
-                append("path", "/README.md");
-        final BasicDBObject query = new BasicDBObject("_id", idField);
-        return query;
+        return queryForFile(PROJECT_ID, "/README.md");
     }
 
     @Test
@@ -155,7 +150,18 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testGetMetaDataFolder() throws Exception {
-
+        //since we test we can consume all at once
+        final List<FileMetaData> data = newArrayList(store.getMetaDataOfDirectChildren(PROJECT_ID, "/src/main/java", 100));
+        assertThat(data.size()).isGreaterThanOrEqualTo(2);
+        final List<String> paths = Lists.transform(data, new Function<FileMetaData, String>() {
+            @Override
+            public String apply(FileMetaData fileMetaData) {
+                return fileMetaData.getPath();
+            }
+        });
+        assertThat(paths).contains("/src/main/java/models", "/src/main/java/Main.java");
+        assertThat(paths.contains("/README.md")).overridingErrorMessage("should not contain elements from above folders").isFalse();
+        assertThat(paths.contains("/src/main/java/models/Person.java")).overridingErrorMessage("should not return transitive child elements").isFalse();
     }
 
     @Test

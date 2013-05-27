@@ -118,7 +118,7 @@ public class HashBasedProjectService implements ProjectService {
 		// get children for dir
 		if (metadata.isDir()) {
 			List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
-			final Iterable<FileMetaData> iterable = fileIndexStore.getMetaData(projectId, path, 5000);
+			final EntityCursor<FileMetaData> iterable = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
 			Iterator<FileMetaData> it = iterable.iterator();
 			while (it.hasNext()) {
 				childrenData.add(it.next());

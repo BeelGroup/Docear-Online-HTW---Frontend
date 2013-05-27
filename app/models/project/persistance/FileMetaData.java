@@ -51,4 +51,16 @@ public class FileMetaData {
     public void setRevision(Long revision) {
         this.revision = revision;
     }
+
+    @Override
+    public String toString() {
+        return "FileMetaData{" +
+                "bytes=" + bytes +
+                ", path='" + path + '\'' +
+                ", hash='" + hash + '\'' +
+                ", isDir=" + isDir +
+                ", isDeleted=" + isDeleted +
+                ", revision=" + revision +
+                '}';
+    }
 }
