@@ -24,6 +24,8 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
       @model.bind "change:isHtml",@changeNodeText , @
+
+      @model.on 'deleteNode', @destroy
       @addEvents()
 
 

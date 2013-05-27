@@ -126,26 +126,31 @@ define ['logger'], (logger)->
         currentNode = currentNode.get 'parent'
       currentNode
 
+    deleteNode:()->
+      @get('parent').removeChild @
+      @trigger 'deleteNode'
+      
     getCurrentMapId: ()->
       root = @getRoot()
       root.get 'mapId'
- 
+
     updateConnection: ()->
       @.trigger 'updateConnection'
-    
-    
+
     setAttributeWithoutPersist: (attribute, value)->
       autoPersistEnabled = @get 'autoPersist'
       @set 'autoPersist', false
       @set attribute, value
       @set 'autoPersist', autoPersistEnabled
       
-    removeCild: (child)->
+    removeChild: (child)->
       document.log 'removing '+child.get('id')+' from '+@get('id')
       children = []
+
       $.each(@get('children'), (index, node)->
         if node != child
           children.push(node)
+      )
       @set 'children', children
   
   module.exports = AbstractNode

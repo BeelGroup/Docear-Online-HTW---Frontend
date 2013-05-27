@@ -190,6 +190,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         view.destroy()
 
       @$el.remove()
+      @get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
 
     # pass a final function, if u want to
     leave: (done = ->) ->
