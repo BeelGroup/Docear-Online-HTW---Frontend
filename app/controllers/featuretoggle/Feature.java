@@ -32,6 +32,7 @@ public enum Feature {
     NODE_CONTROLS("enables node controls to edit/add/delete nodes "),
     FOLD_NODE("enables to fold/unfold nodes "),
     MOVE_NODE("enables to move nodes into an other node or to anouter position"),
+    ADD_NODE("enables to add nodes"),
     FEEDBACK("enables a feedback dialog for the user"),
     USER_PROFILE("enables the user profile"),
     SERVER_SYNC("synchronizes all changes in the frontend with the backend"),
@@ -41,7 +42,8 @@ public enum Feature {
     RIBBONS("display ribbons on top of page"),
     RIBBON_HOME("display home ribbon"),
     RIBBON_EDIT("display edit ribbon"),
-    RIBBON_WORKSPACE("display workspace ribbon");
+    RIBBON_WORKSPACE("display workspace ribbon"),
+    ANIMATE_TREE_RESIZE("enable animation when tree is resized (e.g. new node added)");
 
     String description;
     boolean isEnabled = false;
