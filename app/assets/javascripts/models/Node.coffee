@@ -16,15 +16,14 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
 
       
 
-    addChild: (id, text)->
-      newChild = new Node(id, false, text, false,0,0,0,0,false, @)
+    addChild: (newChild)->
       @get('children').push(newChild)
       @set 'lastAddedChild', newChild
       
     createAndAddChild: ()->
       values = {}
       values['mapId'] = @getCurrentMapId 'id'
-      values['parentNodeId'] = @get('parent').get 'id'
+      values['parentNodeId'] = @get 'id'
       @get('persistenceHandler').persistNew(@, values)
       
       

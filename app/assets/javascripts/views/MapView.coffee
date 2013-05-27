@@ -22,7 +22,7 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
       if @mapLoader isnt undefined
         @mapLoader.stop()
         
-      @href = jsRoutes.controllers.MindMap.mapAsJson(@mapId, document.initialLoadChunkSize).url
+      @href = jsRoutes.controllers.MindMap.mapAsJson(-1, @mapId, document.initialLoadChunkSize).url
 
       $.ajax(
         url: @href

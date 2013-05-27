@@ -21,30 +21,32 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         
 
     changeChildren: ->
-      ## TODO -> render and align new child
+      $node = $(@$el)
+      $childrenContainer = $node.children('.children')
+      previousHeight = $childrenContainer.outerHeight()
+      
       newChild = @model.get 'lastAddedChild'
       nodeView = new NodeView(newChild, @rootView)
       $nodeHtml = $($(nodeView.render().el))
-      $node = @$el
       
-      $node.children('.children').append($nodeHtml)
+      $childrenContainer.append($nodeHtml)
+      $nodeHtml.show()
       
-    adjustNodeHierarchy: (parent, children, treeIdentifier)->
-      parentId = parent.get 'id'
-      $parent = $('#'+parentId)
-
-      $.each(children, (index, node)=>
-        childId = node.get 'id' 
-        $child = $('#'+childId)
-        $child.addClass(treeIdentifier)
-        children = node.get 'children'
-        if children != undefined
-          @adjustNodeHierarchy(node, children)
-        $parent.children('.children:first').append($child)
-        connectNodes $parent, $child
+      if $.inArray('ANIMATE_TREE_RESIZE', document.features) > -1
+        side = 'right'
+        if $node.hasClass('left')
+          side = 'left'
+        @alignChildrenofElement($node.children('.children'), side)
+        diff = previousHeight - $childrenContainer.outerHeight()
+        @resizeTree $node, @model, diff
+      else
+        @model.getRoot().trigger 'refreshDomConnectionsAndBoundaries'
+      
+      $.each(@model.get('children'), (index, child)->
+        child.updateConnection()
       )
-
-
+      
+    
     getCenterCoordinates: ($element) ->
       leftCenter = $element.position().left + $element.width() / 2
       topCenter = $element.position().top + $element.height() / 2

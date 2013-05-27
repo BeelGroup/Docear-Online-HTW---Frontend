@@ -42,7 +42,24 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
         $.post(@persistenceApi.change.Node, params, callback)
 
     persistNew: (object, params)->
-      document.log "TODO: persist node"
+      $.post(@persistenceApi.create.Node, params)
+
+    deleteNode: (node, errorCallback)->
+      params = {
+          url: @persistenceApi.delete.Node
+          type: 'DELETE'
+          data: {'nodeId': node.get('id')}
+          dataType: 'json'
+          cache: false
+          statusCode: {
+            200: (response)->
+              document.log "node "+node.get('id')+" deleted OK"
+            412: (response)->
+              document.log "node "+node.get('id')+" could not be deleted"
+              errorCallback()
+          }
+      }
+      $.ajax(params)
       
     lock: (node)->
       if $.inArray('LOCK_NODE', document.features) > -1

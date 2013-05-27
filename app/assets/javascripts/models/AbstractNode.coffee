@@ -120,15 +120,12 @@ define ['logger'], (logger)->
             nodes = $.merge(nodes, node.get('children').slice())
       return null
     
+    # deprecated: use  @get('rootNodeModel') instead
     getRoot: ()->
-      currentNode = @
-      while currentNode.constructor.name != 'RootNode'
-        currentNode = currentNode.get 'parent'
-      currentNode
+      @get('rootNodeModel')
 
     getCurrentMapId: ()->
-      root = @getRoot()
-      root.get 'mapId'
+      @get('rootNodeModel').get 'mapId'
  
     updateConnection: ()->
       @.trigger 'updateConnection'

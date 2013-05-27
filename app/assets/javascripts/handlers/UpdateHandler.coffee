@@ -1,4 +1,4 @@
-define ['routers/DocearRouter'],  (DocearRouter) ->  
+define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->  
   module = () ->
   
   class UpdateHandler extends Backbone.Model
@@ -63,15 +63,16 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
     getChanges: ()->
       me = @
       rootNode = @rootNode
-
       params = {
         url: jsRoutes.controllers.MindMap.fetchUpdatesSinceRevision(@mapId, @rootNode.get('revision')).url
         type: 'GET'
         cache: false
-        success: (data, textStatus, xhr)->
+        success: (data)->
           for update in data.orderedUpdates
             switch update.type
               when "ChangeNodeAttribute" then me.updateNode(update)
+              when "AddNode" then me.addNode(update)
+              when "DeleteNode" then me.deleteNode(update)
           document.log "set current revision to "+data.currentRevision
           rootNode.set 'revision', data.currentRevision
         dataType: 'json' 
@@ -93,6 +94,58 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
       else if update.attribute is 'nodeText'
         document.log "UPDATE: node #{node.id} SET #{update.attribute} = #{update.value}"
         node.setAttributeWithoutPersist 'nodeText', update.value
+    
+    addNode: (update)->
+      parentNode = @rootNode.findById update.parentNodeId
+      ###
+      
+      mapLoader = new MapLoader()
+      maploader.appendNodesToParent([update], parentNode)
+      ###
+      node = new Node()
+      node.set 'children', []
+      node.set 'parent', parentNode
+      
+      node.set 'id', update.nodeAsJson.id
+      node.set 'nodeText', update.nodeAsJson.nodeText
+      node.set 'isHtml', update.nodeAsJson.isHtml
+      node.set 'folded', update.nodeAsJson.folded
+
+      node.set 'xPos', 0
+      node.set 'yPos', 0
+      node.set 'hGap', update.nodeAsJson.hGap
+      node.set 'shiftY', update.nodeAsJson.shiftY
+
+      node.set 'rootNodeModel', @rootNode
+      node.set 'selected', false
+      node.set 'previouslySelected', false
+      node.set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
+      node.set 'lastAddedChild', 'undefined'
+      node.set 'connectionUpdated', 0
+
+      node.set 'persistenceHandler', parentNode.get('persistenceHandler')
+      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHtml']
+      node.set 'autoPersist', false
+
+      node.set 'foldedShow', false
+      node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
+      node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
+      node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
+      node.set 'edgeStyle', parentNode.get('edgeStyle')
+
+      if parentNode.get('id') is @rootNode.get('id')
+        if update.side isnt null
+          document.log "TODO: add node to root using side: #{update.side}"
+      else
+        parentNode.addChild(node)
+      
+      node
+      
+    deleteNode: (update)->
+      node = @rootNode.findById update.nodeId
+      if node isnt null
+        node.deleteNode()
+      
       
       
     
