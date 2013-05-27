@@ -72,6 +72,7 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
             switch update.type
               when "ChangeNodeAttribute" then me.updateNode(update)
               when "AddNode" then me.addNode(update)
+              when "DeleteNode" then me.deleteNode(update)
           document.log "set current revision to "+data.currentRevision
           rootNode.set 'revision', data.currentRevision
         dataType: 'json' 
@@ -140,6 +141,10 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
       
       node
       
+    deleteNode: (update)->
+      node = @rootNode.findById update.nodeId
+      if node isnt null
+        node.deleteNode()
       
       
       
