@@ -24,8 +24,9 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:folded",@updateFoldStatus , @
       @model.bind "change:nodeText",@changeNodeText , @
       @model.bind "change:isHtml",@changeNodeText , @
-
+      @model.bind "change:lastAddedChild",@changeChildren , @
       @model.on 'deleteNode', @destroy
+
       @addEvents()
 
 
@@ -266,6 +267,7 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
         # to make it visible inside the timeout
         parent = nodeModel.get 'parent'
         setTimeout(->
+          parent.updateConnection()
           for child in parent.get('children')
             child.updateConnection()
         , document.fadeDuration)
