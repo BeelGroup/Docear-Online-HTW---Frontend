@@ -32,6 +32,10 @@ public abstract class UserService {
 	 * @return User or null if non is logged-in
 	 */
 	public User getCurrentUser() throws UserNotFoundException {
+		return getCurrentUser(null);
+	}
+	
+	public User getCurrentUser(final String source) {
 		//get aT and username from queryString
 		String accessToken = Controller.request().getQueryString(QUERY_ACCESS_TOKEN);
 		String username = Controller.request().getQueryString(QUERY_USERNAME);

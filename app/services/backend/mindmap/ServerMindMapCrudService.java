@@ -96,10 +96,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> mindMapAsJsonString(String source, String username, final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
+	public Promise<String> mindMapAsJsonString(User user, final String mapId, final Integer nodeCount) throws DocearServiceException, IOException {
 		Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => mapId: " + mapId);
 
-		final MindmapAsJsonRequest request = new MindmapAsJsonRequest(source, username, mapId, nodeCount);
+		final MindmapAsJsonRequest request = new MindmapAsJsonRequest(user.getSource(), user.getUsername(), mapId, nodeCount);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
@@ -116,10 +116,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> mindMapAsXmlString(String source, String username, String mapId) throws DocearServiceException, IOException {
+	public Promise<String> mindMapAsXmlString(User user, String mapId) throws DocearServiceException, IOException {
 		Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => mapId: " + mapId);
 
-		final MindmapAsXmlRequest request = new MindmapAsXmlRequest(source, username, mapId);
+		final MindmapAsXmlRequest request = new MindmapAsXmlRequest(user.getSource(), user.getUsername(), mapId);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
@@ -135,8 +135,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> listenForUpdates(String source, String username, final String mapId) {
-		final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(source, username, mapId);
+	public Promise<Boolean> listenForUpdates(User user, final String mapId) {
+		final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(user.getSource(), user.getUsername(), mapId);
 
 		// two minutes for longpolling
 		final long twoMinutesInMillis = 120000;
@@ -174,9 +174,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> createNode(String source, String username, final String mapId, final String parentNodeId) {
+	public Promise<String> createNode(User user, final String mapId, final String parentNodeId) {
 		Logger.debug("mapId: " + mapId + "; parentNodeId: " + parentNodeId);
-		final AddNodeRequest request = new AddNodeRequest(source, username, mapId, parentNodeId);
+		final AddNodeRequest request = new AddNodeRequest(user.getSource(), user.getUsername(), mapId, parentNodeId);
 
 		final Promise<String> promise = performActionOnMindMap(request, new ActionOnMindMap<String>() {
 
@@ -191,9 +191,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> getNode(String source, String username, final String mapId, final String nodeId, final Integer nodeCount) {
+	public Promise<String> getNode(User user, final String mapId, final String nodeId, final Integer nodeCount) {
 		Logger.debug("getNode => mapId: " + mapId + "; nodeId: " + nodeId + ", nodeCount: " + nodeCount);
-		final GetNodeRequest request = new GetNodeRequest(source, username, mapId, nodeId, nodeCount);
+		final GetNodeRequest request = new GetNodeRequest(user.getSource(), user.getUsername(), mapId, nodeId, nodeCount);
 
 		final Promise<String> promise = performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
@@ -205,10 +205,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> changeNode(String source, String username, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
+	public Promise<String> changeNode(User user, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
 		Logger.debug("ServerMindMapCrudService.changeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());
 
-		final ChangeNodeRequest request = new ChangeNodeRequest(source, username, mapId, nodeId, attributeValueMap);
+		final ChangeNodeRequest request = new ChangeNodeRequest(user.getSource(), user.getUsername(), mapId, nodeId, attributeValueMap);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 
@@ -221,10 +221,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> moveNodeTo(String source, String username, String mapId, String newParentNodeId, String nodetoMoveId, Integer newIndex) {
+	public Promise<Boolean> moveNodeTo(User user, String mapId, String newParentNodeId, String nodetoMoveId, Integer newIndex) {
 		Logger.debug("ServerMindMapCrudService.moveNodeTo => mapId: " + mapId + "; newParentNodeId: " + newParentNodeId + "; nodeId: " + nodetoMoveId + "; newIndex: " + newIndex);
 
-		final MoveNodeToRequest request = new MoveNodeToRequest(source, username, mapId, newParentNodeId, nodetoMoveId, newIndex);
+		final MoveNodeToRequest request = new MoveNodeToRequest(user.getSource(), user.getUsername(), mapId, newParentNodeId, nodetoMoveId, newIndex);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 
@@ -237,9 +237,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> removeNode(String source, String username, String mapId, String nodeId) {
-		Logger.debug("ServerMindMapCrudService.removeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; username: " + username);
-		final RemoveNodeRequest request = new RemoveNodeRequest(source, username, mapId, nodeId);
+	public Promise<Boolean> removeNode(User user, String mapId, String nodeId) {
+		Logger.debug("ServerMindMapCrudService.removeNode => mapId: " + mapId + "; nodeId: " + nodeId + "; user.getUsername(): " + user.getUsername());
+		final RemoveNodeRequest request = new RemoveNodeRequest(user.getSource(), user.getUsername(), mapId, nodeId);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 
@@ -252,9 +252,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> fetchUpdatesSinceRevision(String source, String username, String mapId, Integer revision) {
-		Logger.debug("ServerMindMapCrudService.fetchUpdatesSinceRevision " + "=> mapId: " + mapId + "; revision: " + revision + "; username: " + username);
-		final FetchMindmapUpdatesRequest request = new FetchMindmapUpdatesRequest(source, username, mapId, revision);
+	public Promise<String> fetchUpdatesSinceRevision(User user, String mapId, Integer revision) {
+		Logger.debug("ServerMindMapCrudService.fetchUpdatesSinceRevision " + "=> mapId: " + mapId + "; revision: " + revision + "; user.getUsername(): " + user.getUsername());
+		final FetchMindmapUpdatesRequest request = new FetchMindmapUpdatesRequest(user.getSource(), user.getUsername(), mapId, revision);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<String>() {
 			@Override
@@ -267,10 +267,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> requestLock(String source, String username, String mapId, String nodeId) {
-		Logger.debug("ServerMindMapCrudService.requestLock => mapId: " + mapId + "; nodeId: " + nodeId + "; username: " + username);
-		final RequestLockRequest request = new RequestLockRequest(source, username, mapId, nodeId);
-		Logger.debug("username: " + request.getUsername());
+	public Promise<Boolean> requestLock(User user, String mapId, String nodeId) {
+		Logger.debug("ServerMindMapCrudService.requestLock => mapId: " + mapId + "; nodeId: " + nodeId + "; user.getUsername(): " + user.getUsername());
+		final RequestLockRequest request = new RequestLockRequest(user.getSource(), user.getUsername(), mapId, nodeId);
+		Logger.debug("user.getUsername(): " + request.getUsername());
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 			@Override
 			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
@@ -289,10 +289,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> releaseLock(String source, String username, String mapId, String nodeId) {
-		Logger.debug("ServerMindMapCrudService.releaseLock => mapId: " + mapId + "; nodeId: " + nodeId + "; username: " + username);
+	public Promise<Boolean> releaseLock(User user, String mapId, String nodeId) {
+		Logger.debug("ServerMindMapCrudService.releaseLock => mapId: " + mapId + "; nodeId: " + nodeId + "; user.getUsername(): " + user.getUsername());
 
-		final ReleaseLockRequest request = new ReleaseLockRequest(source, username, mapId, nodeId);
+		final ReleaseLockRequest request = new ReleaseLockRequest(user.getSource(), user.getUsername(), mapId, nodeId);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 			@Override
@@ -312,10 +312,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<Boolean> changeEdge(String source, String username, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
+	public Promise<Boolean> changeEdge(User user, String mapId, String nodeId, Map<String, Object> attributeValueMap) {
 		Logger.debug("ServerMindMapCrudService.changeEdge => mapId: " + mapId + "; nodeId: " + nodeId + "; attributeMap: " + attributeValueMap.toString());
 
-		final ChangeEdgeRequest request = new ChangeEdgeRequest(source, username, mapId, nodeId, attributeValueMap);
+		final ChangeEdgeRequest request = new ChangeEdgeRequest(user.getSource(), user.getUsername(), mapId, nodeId, attributeValueMap);
 
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 
@@ -366,7 +366,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 					// Map was closed on server, reopen and perform action again
 					Logger.info("ServerMindMapCrudService.performActionOnMindMap => mind map was not present in freeplane. Reopening...");
 					final String mapIdNotFound = exception.getMapId();
-					sendMindMapToServer(message.getSource(), message.getUsername(), mapIdNotFound);
+					sendMindMapToServer(user, mapIdNotFound);
 					Logger.debug("ServerMindMapCrudService.performActionOnMindMap => re-sending request to freeplane");
 					final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
 					try {
@@ -391,7 +391,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
 	}
 
-	private Boolean sendMindMapToServer(String source, String username, String mapId) throws NoUserLoggedInException {
+	private Boolean sendMindMapToServer(final User user, String mapId) throws NoUserLoggedInException {
 		Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => mapId: " + mapId);
 		InputStream in = null;
 		String fileName = null;
@@ -405,10 +405,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			}
 			// map from user account
 			else {
-				final User user = user();
-				if (user == null)
-					throw new NoUserLoggedInException();
-
 				final StringBuilder outfileName = new StringBuilder();
 				Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is real map, loading from docear server");
 				final byte[] filebytes = getMindMapInputStreamFromDocearServer(user, mapId, outfileName);
@@ -430,7 +426,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			// send file to server and put in open maps set
 			openMapIds.add(mapId);
 
-			final OpenMindMapRequest request = new OpenMindMapRequest(source, username, mapId, fileContentAsString, fileName);
+			final OpenMindMapRequest request = new OpenMindMapRequest(user.getSource(), user.getUsername(), mapId, fileContentAsString, fileName);
 
 			return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 				@Override
