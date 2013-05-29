@@ -54,6 +54,7 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
           statusCode: {
             200: (response)->
               document.log "node "+node.get('id')+" deleted OK"
+              
             412: (response)->
               document.log "node "+node.get('id')+" could not be deleted"
               errorCallback()

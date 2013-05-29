@@ -127,8 +127,10 @@ define ['logger'], (logger)->
       currentNode
 
     deleteNode:()->
+      document.log 'delete node (AbstractNode)'
       @get('parent').removeChild @
       @trigger 'deleteNode'
+      @
       
     getCurrentMapId: ()->
       root = @getRoot()
