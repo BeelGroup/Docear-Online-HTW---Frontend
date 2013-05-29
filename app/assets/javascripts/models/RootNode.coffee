@@ -118,7 +118,7 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
       @set sideIdentifier, children
     
     removeChild: (child)->
-      removeChildBySide(child, 'leftChildren')
-      removeChildBySide(child, 'rightChildren')
+      @removeChildBySide(child, 'leftChildren')
+      @removeChildBySide(child, 'rightChildren')
       
   module.exports = RootNode
