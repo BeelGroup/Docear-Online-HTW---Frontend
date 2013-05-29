@@ -82,15 +82,15 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
       @get('rightChildren').push(child)
     
     addChild: (child, treeSide)->
-      if treeSide is 'left'
+      if treeSide is 'Left'
         @addLeftChild child
       else
         @addRightChild child
-      
-      @set 'lastAddedChild', child
-      @set 'lastAddedChildSide', treeSide
 
-    createAndAddChild: (treeSide)->
+      @set 'lastAddedChildSide', treeSide
+      @set 'lastAddedChild', child
+
+    createAndAddChild: (treeSide = "Left")->
       values = {}
       values['mapId'] = @getCurrentMapId 'id'
       values['parentNodeId'] = @get 'id'

@@ -25,8 +25,9 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
           
       $node = $(@$el)
       
+      document.log "AAAAA "+@model.typeName+" "+@model.get('lastAddedChildSide')
       if @model.typeName is 'rootModel'
-        if @model.get 'lastAddedChildSide' is 'left'
+        if @model.get('lastAddedChildSide') is 'Left'
           $childrenContainer = $node.children('.leftChildren:first')
         else
           $childrenContainer = $node.children('.rightChildren:first')

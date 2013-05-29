@@ -85,7 +85,14 @@ define ['logger'], (logger) ->
       Mousetrap.bind document.navigation.key.addSibling, (event)=>
         selectedNode = @rootView.model.getSelectedNode()
         if selectedNode != null
-          selectedNode.get('parent').createAndAddChild()
+          parent = selectedNode.get('parent')
+          if parent.get('id') == @rootView.model.get('id')
+            side = 'Left'
+            if $("##{selectedNode.get('id')}").hasClass('right')  
+              side = 'Right'
+            selectedNode.get('parent').createAndAddChild(side)
+          else
+            selectedNode.get('parent').createAndAddChild()
       
       Mousetrap.bind document.navigation.key.addChild, (event)=>
         selectedNode = @rootView.model.getSelectedNode()
