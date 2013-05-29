@@ -39,7 +39,6 @@ define ['logger'], (logger) ->
           @center(true)
       
       Mousetrap.bind document.navigation.key.left, (event)=>
-        console.log document.navigation.key.left
         selectedNode = @rootView.model.getSelectedNode()
         if selectedNode != null
           $selectedNode = $('#'+(selectedNode.get 'id')) 
