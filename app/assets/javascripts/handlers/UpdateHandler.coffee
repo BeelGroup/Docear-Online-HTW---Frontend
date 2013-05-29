@@ -10,7 +10,7 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
       
       @updateApi = {
         'listenForUpdate': {
-          'Node': jsRoutes.controllers.MindMap.listenForUpdates(mapId).url
+          'Node': jsRoutes.controllers.MindMap.listenForUpdates(-1, mapId).url
         }
       }
       @listen()
@@ -64,7 +64,7 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
       me = @
       rootNode = @rootNode
       params = {
-        url: jsRoutes.controllers.MindMap.fetchUpdatesSinceRevision(@mapId, @rootNode.get('revision')).url
+        url: jsRoutes.controllers.MindMap.fetchUpdatesSinceRevision(-1, @mapId, @rootNode.get('revision')).url
         type: 'GET'
         cache: false
         success: (data)->

@@ -32,8 +32,8 @@ public interface MindMapCrudService {
 	 * @param parentNodeId
 	 * @return the generated node
 	 */
-	Promise<String> createNode(UserIdentifier user, MapIdentifier mapIdentifier, String parentNodeId);
-	Promise<String> createNode(UserIdentifier user, MapIdentifier mapIdentifier, String parentNodeId, String side);
+	Promise<String> createNode(UserIdentifier userIdentifier, MapIdentifier mapIdentifier, String parentNodeId);
+	Promise<String> createNode(UserIdentifier userIdentifier, MapIdentifier mapIdentifier, String parentNodeId, String side);
 
 	/**
 	 * Get Node
