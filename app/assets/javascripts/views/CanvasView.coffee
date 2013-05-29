@@ -24,24 +24,66 @@ define ['logger'], (logger) ->
           @move({x: 0, y: document.scrollStep*dir}, false, document.scrollDuration)
           event.preventDefault() 
 
-      $(document).keydown (event)=>
-        code = @getKeycode(event)
-        if code is document.navigation.key.strg
-          document.strgPressed = on
-          document.log 'strg on'
+      Mousetrap.bind document.navigation.key.strg, (event)=>
+        document.strgPressed = on
+        document.log 'strg on'
+      , 'keydown'
 
+      Mousetrap.bind document.navigation.key.strg, (event)=>
+        document.strgPressed = off
+        document.log 'strg off'
+      , 'keyup'
+      
+      Mousetrap.bind document.navigation.key.centerMap, (event)=>
+        if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
+          @center(true)
+      
+      Mousetrap.bind document.navigation.key.left, (event)=>
+        console.log document.navigation.key.left
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          $selectedNode = $('#'+(selectedNode.get 'id')) 
+          if $($selectedNode).hasClass('right')  
+            @rootView.selectParent selectedNode
+          else
+            @rootView.selectNextChild selectedNode, 'left'
         else
-          if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
-            if event.keyCode == 27
-              @center(true)
-            else if !$('.node-editor:first').is(':visible')
-              @rootView.userKeyInput event
+          @rootView.model.set 'selected', true
 
-       $(document).keyup (event)=>
-        if @getKeycode(event) is document.navigation.key.strg
-          document.strgPressed = off
-          document.log 'strg off'
+      Mousetrap.bind document.navigation.key.right, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          $selectedNode = $('#'+(selectedNode.get 'id')) 
+          if $($selectedNode).hasClass('left')  
+            @rootView.selectParent selectedNode
+          else
+            @rootView.selectNextChild selectedNode, 'right'
+        else
+          @rootView.model.set 'selected', true
 
+      Mousetrap.bind document.navigation.key.up, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          @rootView.selectBrother selectedNode, false
+        else
+          @rootView.model.set 'selected', true
+          
+      Mousetrap.bind document.navigation.key.down, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          @rootView.selectBrother selectedNode, true
+        else
+          @rootView.model.set 'selected', true
+
+      Mousetrap.bind document.navigation.key.fold, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          if selectedNode.typeName is 'rootModel' 
+            @rootView.changeFoldedStatus 'both'
+          else
+            selectedNode.set 'folded', not selectedNode.get 'folded'
+      
+      
 
 
     getKeycode:(event)->

@@ -114,37 +114,6 @@ define ['logger', 'views/NodeView', 'models/RootNode', 'views/NodeControlsView']
             @childPositions $(child).children('.children:first'), positions, canvas
           )
       positions
-
-    userKeyInput: (event)->   
-      code = if event.keyCode == 0 then event.charCode  else event.keyCode
-      if (code) in document.navigation.key.allowed
-        selectedNode = @model.getSelectedNode()
-        if selectedNode != null
-          $selectedNode = $('#'+(selectedNode.get 'id')) 
-          switch (event.keyCode)
-            when document.navigation.key.selectLeftChild
-              if $($selectedNode).hasClass('right')  
-                @selectParent selectedNode
-              else
-                @selectNextChild selectedNode, 'left'
-            when document.navigation.key.selectPrevBrother #TOP
-              @selectBrother selectedNode, false
-            when document.navigation.key.selectRightChild #RIGHT
-              if $($selectedNode).hasClass('left')  
-                @selectParent selectedNode
-              else
-                @selectNextChild selectedNode, 'right'
-            when document.navigation.key.selectNextBrother #DOWN
-              @selectBrother selectedNode, true
-            when document.navigation.key.fold #F
-              if selectedNode.typeName is 'rootModel' 
-                @changeFoldedStatus 'both'
-              else
-                selectedNode.set 'folded', not selectedNode.get 'folded'
-
-        else
-          @model.set 'selected', true
-        event.preventDefault()
       
     selectNextChild: (selectedNode, side = 'left')->
       $selectedNode = $('#'+(selectedNode.get 'id')) 
