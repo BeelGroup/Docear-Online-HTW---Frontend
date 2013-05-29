@@ -130,14 +130,10 @@ define ['logger'], (logger)->
       @
       
     getCurrentMapId: ()->
-<<<<<<< HEAD
       root = @getRoot()
       root.get 'mapId'
 
-=======
-      @get('rootNodeModel').get 'mapId'
- 
->>>>>>> 2b56f76f720eda14d4844064ab285e539433b657
+
     updateConnection: ()->
       @.trigger 'updateConnection'
 
