@@ -116,7 +116,7 @@ define ['logger'], (logger)->
         while node = nodes.shift()
           if node.get('id') == id
             return node
-          else
+          else if node.get('children') != undefined
             nodes = $.merge(nodes, node.get('children').slice())
       return null
     
@@ -136,13 +136,5 @@ define ['logger'], (logger)->
       @set 'autoPersist', false
       @set attribute, value
       @set 'autoPersist', autoPersistEnabled
-      
-    removeCild: (child)->
-      document.log 'removing '+child.get('id')+' from '+@get('id')
-      children = []
-      $.each(@get('children'), (index, node)->
-        if node != child
-          children.push(node)
-      @set 'children', children
   
   module.exports = AbstractNode

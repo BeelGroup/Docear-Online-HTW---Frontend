@@ -107,5 +107,18 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
 
       for node in @allNodes
         node.updateConnection()
+    
+    removeChildBySide: (child, sideIdentifier)->
+      children = []
+      for node in @get(sideIdentifier)
+        if node.get('id') != child.get('id')
+          children.push(node)
+        else
+          document.log 'removing #{child.get("id")} from root #{sideIdentifier} (#{@get("id")})'
+      @set sideIdentifier, children
+    
+    removeChild: (child)->
+      removeChildBySide(child, 'leftChildren')
+      removeChildBySide(child, 'rightChildren')
       
   module.exports = RootNode

@@ -17,7 +17,10 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
       
 
     addChild: (newChild)->
+      if @get('children') is undefined
+        @set 'children', []
       @get('children').push(newChild)
+      newChild.set 'parent', @
       @set 'lastAddedChild', newChild
       
     createAndAddChild: ()->
@@ -29,8 +32,26 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
       
     move: (newParent, position = -1)->
       document.log 'moving '+@get('id')+' to parent '+newParent.get('id')
-      #@get('parent').removeCild(@)
-      #newParent.addChild(@)
       
+      @get('parent').removeChild(@)
+      newParent.addChild(@)
+      
+      $.each(newParent.get('children'), (index, child)->
+        child.updateConnection()
+      )
+      @get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+      @updateConnection()
+
+      
+    removeChild: (child)->
+      currentChildren = @get('children')
+      children = []
+      
+      for node in currentChildren
+        if node.get('id') != child.get('id')
+          children.push(node)
+        else
+          document.log 'removing '+child.get('id')+' from '+@get('id')
+      @set 'children', children
       
   module.exports = Node

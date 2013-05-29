@@ -144,41 +144,37 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
     
       @
 
+      
+    makeDraggable: ()->
+      model = @model
+      
+      $innerNode = $(@$el).find('.inner-node:first')
+      if $.inArray('MOVE_NODE', document.features) > -1
+        $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: $innerNode.find(".action-move") });
+      $innerNode.droppable({
+        accept: '.node',
+        hoverClass: 'droppable-hover'
+        drop: ( event, ui )->
+          rootModel = model.get('rootNodeModel')
+          
+          nodeId = ui.draggable.attr("id")
+          node = rootModel.findById(nodeId)
+          
+          newParentId = $( this ).closest('.node').attr('id')
+          newParent = rootModel.findById(newParentId)
+          
+          node.move(newParent)
+      })
 
+      
 
     renderAndAppendTo:($element, @rootView)->
       @render(@rootView)
       @renderOnExpand = false 
+
       
-      model = @model
-      if $.inArray('MOVE_NODE', document.features) > -1
-        $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });
-        $(@$el).find('.inner-node:first').droppable({
-          accept: '.node',
-          hoverClass: 'droppable-hover'
-          drop: ( event, ui )->
-            nodeId = ui.draggable.attr("id")
-            newParentId = $( this ).closest('.node').attr('id')
-            
-            document.log "add #{nodeId} to parent: #{newParentId}"
-            
-            rootModel = model.get('rootNodeModel')
-            
-            nodeModel = rootModel.findById(nodeId)
-            nodeModel.get('parent').removeCild(model)
-            $("##{nodeId}").fadeOut(document.fadeDuration, ->
-              $(this).remove()
-            )
-            
-            parentNode = rootModel.findById(newParentId)
-            parentNode.addChild(nodeModel)
-            rootModel.trigger 'refreshDomConnectionsAndBoundaries'
-
-            $.each(parentNode.get('children'), (index, child)->
-              child.updateConnection()
-            )
-        })
-
+      @makeDraggable()
+        
       $element.append(@$el)
       @alignButtons()
 
@@ -208,7 +204,6 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
       # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()
-
 
         
       
