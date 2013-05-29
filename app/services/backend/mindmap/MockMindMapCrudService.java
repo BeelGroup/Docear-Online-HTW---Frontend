@@ -47,6 +47,18 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			return null;
 		}
 	}
+	
+	public Promise<String> createNode(UserIdentifier user, final MapIdentifier mapIdentifier, final String parentNodeId, final String side) {
+		try {
+			Random ran = new Random();
+			int id = ran.nextInt() * ran.nextInt();
+			String result = "{\"id\":\"ID_" + id + "\",\"nodeText\":\"New Mock Node\",\"side\":\"Left\"}";
+
+			return Promise.pure(result);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 
 	@Override
 	public Promise<String> getNode(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId, Integer nodeCount) {

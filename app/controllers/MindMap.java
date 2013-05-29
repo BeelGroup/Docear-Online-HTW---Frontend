@@ -167,9 +167,18 @@ public class MindMap extends Controller {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final String parentNodeId = filledForm.get().getParentNodeId();
-
+			String side = null;
+			
+			final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
+			Logger.debug((formUrlEncoded != null) + "");
+			for (Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
+				if (entry.getKey().equals("side")) {
+					side = entry.getValue()[0];
+				}
+			}
+				
 			final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
-			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(userIdentifier(), mapIdentifier, parentNodeId);
+			final F.Promise<String> addNodePromise = mindMapCrudService.createNode(userIdentifier(), mapIdentifier, parentNodeId, side);
 			return async(addNodePromise.map(new F.Function<String, Result>() {
 				@Override
 				public Result apply(String node) throws Throwable {
