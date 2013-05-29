@@ -25,6 +25,8 @@ define ['logger', 'models/Node', 'views/SyncedView', 'views/NodeEditView'], (log
       @model.bind "change:nodeText",@changeNodeText , @
       @model.bind "change:isHtml",@changeNodeText , @
       @model.bind "change:lastAddedChild",@changeChildren , @
+      @model.on 'deleteNode', @destroy
+
       @addEvents()
 
 

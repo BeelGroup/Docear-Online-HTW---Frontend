@@ -49,10 +49,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
         nodeEditView.renderAndAppendTo($mindmapCanvas)
 
     actionDelete:(event)->
-      
-      @nodeView.model.get('parent').removeCild @nodeView.model
-      @nodeView.destroy()
-      @nodeView.model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+      @nodeView.model.get('persistenceHandler').deleteNode @nodeView.model
 
       
     actionNewNode: (event)->

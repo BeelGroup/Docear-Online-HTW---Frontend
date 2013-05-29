@@ -24,7 +24,6 @@ define ['logger'], (logger)->
         # is catched in mapview to update mininodes in minimap
         $("##{rootID}").trigger 'refreshMinimap'
 
-
       @bind 'change',(changes)->
         myChanges = @get('changes')
         attributesToPersist = @get 'attributesToPersist'
@@ -124,17 +123,25 @@ define ['logger'], (logger)->
     getRoot: ()->
       @get('rootNodeModel')
 
+    deleteNode:()->
+      document.log 'delete node (AbstractNode)'
+      @get('parent').removeChild @
+      @trigger 'deleteNode'
+      @
+      
     getCurrentMapId: ()->
-      @get('rootNodeModel').get 'mapId'
- 
+      root = @getRoot()
+      root.get 'mapId'
+
+
     updateConnection: ()->
       @.trigger 'updateConnection'
-    
-    
+
     setAttributeWithoutPersist: (attribute, value)->
       autoPersistEnabled = @get 'autoPersist'
       @set 'autoPersist', false
       @set attribute, value
       @set 'autoPersist', autoPersistEnabled
+
   
   module.exports = AbstractNode
