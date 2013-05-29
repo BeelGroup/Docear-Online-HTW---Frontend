@@ -89,6 +89,13 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
       else
         addRightChild child
 
+    createAndAddChild: (treeSide)->
+      values = {}
+      values['mapId'] = @getCurrentMapId 'id'
+      values['parentNodeId'] = @get 'id'
+      values['side'] = treeSide
+      @get('persistenceHandler').persistNew(@, values)
+      
     updateAllConnections: ->
       #nodes = []
       #nodes = $.merge(nodes, @get('children').slice()  )

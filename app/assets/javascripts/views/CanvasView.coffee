@@ -82,8 +82,16 @@ define ['logger'], (logger) ->
             @rootView.changeFoldedStatus 'both'
           else
             selectedNode.set 'folded', not selectedNode.get 'folded'
+            
+      Mousetrap.bind document.navigation.key.addSibling, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          selectedNode.get('parent').createAndAddChild()
       
-      
+      Mousetrap.bind document.navigation.key.addChild, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if selectedNode != null
+          selectedNode.createAndAddChild()
 
 
     getKeycode:(event)->

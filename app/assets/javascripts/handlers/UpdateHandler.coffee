@@ -97,11 +97,7 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
     
     addNode: (update)->
       parentNode = @rootNode.findById update.parentNodeId
-      ###
-      
-      mapLoader = new MapLoader()
-      maploader.appendNodesToParent([update], parentNode)
-      ###
+
       node = new Node()
       node.set 'children', []
       node.set 'parent', parentNode
@@ -135,7 +131,7 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
 
       if parentNode.get('id') is @rootNode.get('id')
         if update.side isnt null
-          document.log "TODO: add node to root using side: #{update.side}"
+          @rootNode.addChild(node, update.side)
       else
         parentNode.addChild(node)
       

@@ -15,6 +15,9 @@ document.navigation.key.fold = "space"
 document.navigation.key.centerMap = "esc"
 document.navigation.key.strg = "ctrl"
 
+document.navigation.key.addSibling = "enter"
+document.navigation.key.addChild = "ins"
+
 document.fadeDuration = 150
 document.scrollStep = 20
 document.scrollDuration = 50
