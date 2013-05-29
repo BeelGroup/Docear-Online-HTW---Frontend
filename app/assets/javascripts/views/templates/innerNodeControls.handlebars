@@ -7,7 +7,9 @@
   {{/if}}
   <a class='icon-globe action-share'></a>
   {{#if movable}}
-  <a class='icon-move action-move'></a>
+      {{#unless isRoot}}
+      <a class='icon-move action-move'></a>
+      {{/unless}}
   {{/if}}
   {{#if deletable}}
   <a class='icon-trash action-trash'></a>

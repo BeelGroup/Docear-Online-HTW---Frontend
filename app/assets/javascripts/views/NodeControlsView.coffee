@@ -80,7 +80,7 @@ define ['views/NodeEditView'], (NodeEditView) ->
           lockable: ($.inArray('LOCK_NODE', document.features) > -1)
           movable: ($.inArray('MOVE_NODE', document.features) > -1)
           deletable: ($.inArray('DELETE_NODE', document.features) > -1)
-          isRoot: (@nodeModel.constructor.name == 'RootNode')
+          isRoot: (@nodeModel.typeName == 'rootModel')
       }
       @$el.html @template attrs
       @
