@@ -181,11 +181,14 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		});
 	}
 
-	@Override
 	public Promise<String> createNode(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier, final String parentNodeId) {
-		Logger.debug("ServerMindMapCrudService.createNode => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier + "; parentNodeId: " + parentNodeId);
-		final AddNodeRequest request = new AddNodeRequest(userIdentifier, mapIdentifier, parentNodeId);
-
+		return createNode(userIdentifier, mapIdentifier, parentNodeId, null);
+	}
+	
+	@Override
+	public Promise<String> createNode(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier, final String parentNodeId, final String side) {
+		Logger.debug("mapIdentifier: " + mapIdentifier + "; parentNodeId: " + parentNodeId + "; side: " + side);
+		final AddNodeRequest request = new AddNodeRequest(userIdentifier, mapIdentifier, parentNodeId, side);
 		final Promise<String> promise = performActionOnMindMap(request, new ActionOnMindMap<String>() {
 
 			@Override
