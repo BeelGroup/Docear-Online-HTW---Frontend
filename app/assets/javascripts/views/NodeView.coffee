@@ -21,11 +21,20 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         
 
     changeChildren: ->
+      newChild = @model.get 'lastAddedChild'
+          
       $node = $(@$el)
-      $childrenContainer = $node.children('.children')
+      
+      if @model.typeName is 'rootModel'
+        if @model.get 'lastAddedChildSide' is 'left'
+          $childrenContainer = $node.children('.leftChildren:first')
+        else
+          $childrenContainer = $node.children('.rightChildren:first')
+      else
+        $childrenContainer = $node.children('.children:first')
+      
       previousHeight = $childrenContainer.outerHeight()
       
-      newChild = @model.get 'lastAddedChild'
       nodeView = new NodeView(newChild, @rootView)
       $nodeHtml = $($(nodeView.render().el))
       
@@ -141,13 +150,33 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
       @render(@rootView)
       @renderOnExpand = false 
       
-      if @controls.movable
+      model = @model
+      if $.inArray('MOVE_NODE', document.features) > -1
         $(@$el).draggable({ opacity: 0.7, helper: "clone", handle: ".action-move" });
         $(@$el).find('.inner-node:first').droppable({
           accept: '.node',
           hoverClass: 'droppable-hover'
           drop: ( event, ui )->
+            nodeId = ui.draggable.attr("id")
             newParentId = $( this ).closest('.node').attr('id')
+            
+            document.log "add #{nodeId} to parent: #{newParentId}"
+            
+            rootModel = model.get('rootNodeModel')
+            
+            nodeModel = rootModel.findById(nodeId)
+            nodeModel.get('parent').removeCild(model)
+            $("##{nodeId}").fadeOut(document.fadeDuration, ->
+              $(this).remove()
+            )
+            
+            parentNode = rootModel.findById(newParentId)
+            parentNode.addChild(nodeModel)
+            rootModel.trigger 'refreshDomConnectionsAndBoundaries'
+
+            $.each(parentNode.get('children'), (index, child)->
+              child.updateConnection()
+            )
         })
 
       $element.append(@$el)

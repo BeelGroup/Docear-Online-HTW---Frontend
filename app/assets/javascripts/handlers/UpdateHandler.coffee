@@ -132,6 +132,8 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
       if parentNode.get('id') is @rootNode.get('id')
         if update.side isnt null
           @rootNode.addChild(node, update.side)
+        else
+          @rootNode.addChild(node, "right")
       else
         parentNode.addChild(node)
       

@@ -77,17 +77,18 @@ define ['logger', 'models/AbstractNode'],  (logger, AbstractNode) ->
 
     addLeftChild: (child)->
       @get('leftChildren').push(child)
-      @set 'lastAddedChild', newChild
       
     addRightChild: (child)->
       @get('rightChildren').push(child)
-      @set 'lastAddedChild', newChild
     
     addChild: (child, treeSide)->
-      if treeSide == 'left'
-        addLeftChild child
+      if treeSide is 'left'
+        @addLeftChild child
       else
-        addRightChild child
+        @addRightChild child
+      
+      @set 'lastAddedChild', child
+      @set 'lastAddedChildSide', treeSide
 
     createAndAddChild: (treeSide)->
       values = {}
