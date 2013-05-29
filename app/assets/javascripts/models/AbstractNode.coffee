@@ -130,8 +130,7 @@ define ['logger'], (logger)->
       @
       
     getCurrentMapId: ()->
-      root = @getRoot()
-      root.get 'mapId'
+      @get('rootNodeModel').get 'mapId' 
 
 
     updateConnection: ()->

@@ -50,7 +50,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
         diff = previousHeight - $childrenContainer.outerHeight()
         @resizeTree $node, @model, diff
       else
-        @get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
       
       $.each(@model.get('children'), (index, child)->
         child.updateConnection()
@@ -218,7 +218,7 @@ define ['logger','views/AbstractNodeView','views/ConnectionView', 'views/NodeCon
 
       $('#'+@get('id')).fadeOut(document.fadeDuration, ()=>
         $('#'+@.get('id')).remove()
-        @.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
       )
   
 
