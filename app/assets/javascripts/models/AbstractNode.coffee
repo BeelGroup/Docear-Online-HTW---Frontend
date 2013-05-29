@@ -24,7 +24,6 @@ define ['logger'], (logger)->
         # is catched in mapview to update mininodes in minimap
         $("##{rootID}").trigger 'refreshMinimap'
 
-
       @bind 'change',(changes)->
         myChanges = @get('changes')
         attributesToPersist = @get 'attributesToPersist'
@@ -120,11 +119,9 @@ define ['logger'], (logger)->
             nodes = $.merge(nodes, node.get('children').slice())
       return null
     
+    # deprecated: use  @get('rootNodeModel') instead
     getRoot: ()->
-      currentNode = @
-      while currentNode.constructor.name != 'RootNode'
-        currentNode = currentNode.get 'parent'
-      currentNode
+      @get('rootNodeModel')
 
     deleteNode:()->
       document.log 'delete node (AbstractNode)'
@@ -133,9 +130,14 @@ define ['logger'], (logger)->
       @
       
     getCurrentMapId: ()->
+<<<<<<< HEAD
       root = @getRoot()
       root.get 'mapId'
 
+=======
+      @get('rootNodeModel').get 'mapId'
+ 
+>>>>>>> 2b56f76f720eda14d4844064ab285e539433b657
     updateConnection: ()->
       @.trigger 'updateConnection'
 

@@ -72,12 +72,12 @@ public interface FileIndexStore {
      * Retrieves metadata of the children of a folder.
      * Do not use the iterable twice. It must be closed after usage.
      * @param id the id of the associated project
-     * @param path the path of the folder
+     * @param path the path of the folder, it won't be checked if it is really a folder
      * @param max the maximal number of results
      * @return an iterable with all files and folders of the specified folder. It works not recursive, only the direct children of path are found.
      * @throws IOException
      */
-    Iterable<FileMetaData> getMetaData(String id, String path, int max) throws IOException;
+    EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException;
 
     /**
      * Receives information about the changed files since a revision.

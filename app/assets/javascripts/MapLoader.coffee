@@ -93,7 +93,7 @@ define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/Per
           @showUs.push $childElement
 
     getDataAndRenderNodesByID:(parentToLoadNode)=>
-      href = jsRoutes.controllers.MindMap.getNode(@mapId, parentToLoadNode.get 'id', document.loadChunkSize).url
+      href = jsRoutes.controllers.MindMap.getNode(-1, @mapId, parentToLoadNode.get 'id', document.loadChunkSize).url
       
       # WORKAROUND
       correctURL = href.replace '-1', 'nodeCount='+document.loadChunkSize
