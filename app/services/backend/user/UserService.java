@@ -54,7 +54,7 @@ public abstract class UserService {
 		
 		User user = null;
 		if (accessToken != null && username != null) {
-			user = new User(username, accessToken);
+			user = new User(username, accessToken,source);
 			if (!isValid(user))
 				user = null;
 		}

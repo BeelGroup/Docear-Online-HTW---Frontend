@@ -1,5 +1,7 @@
 package services.backend.project;
 
+import static services.backend.project.filestore.PathFactory.path;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -31,7 +32,6 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import static services.backend.project.filestore.PathFactory.path;
 
 import play.Logger;
 import play.libs.F;
@@ -41,8 +41,6 @@ import services.backend.project.filestore.FileStore;
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
-	private final String FOLDER_UNZIPPED = "filesUnzipped";
-	private final String FOLDER_ZIPPED = "filesZipped";
 
 	@Autowired
 	private FileStore fileStore;
@@ -120,8 +118,10 @@ public class HashBasedProjectService implements ProjectService {
 			List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
 			final EntityCursor<FileMetaData> iterable = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
 			Iterator<FileMetaData> it = iterable.iterator();
-			while (it.hasNext()) {
-				childrenData.add(it.next());
+			while (it.hasNext()) { //only add non deleted entries
+				final FileMetaData childMetadata = it.next();
+				if(!childMetadata.isDeleted())
+					childrenData.add(childMetadata);
 			}
 			final JsonNode contentsJson = mapper.valueToTree(childrenData);
 			metadataJson.put("contents", contentsJson);
@@ -132,16 +132,37 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
+		upsertFoldersInPath(projectId, path);
 
 		final FileMetaData metadata = FileMetaData.folder(path, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
+	
+	private void upsertFoldersInPath(String projectId, String path) throws IOException {
+		path = addLeadingSlash(path);
+		
+		//check that root exists
+		if(fileIndexStore.getMetaData(projectId, "/") == null) {
+			fileIndexStore.upsertFile(projectId, FileMetaData.folder("/", false));
+		}
+		final String[] folders = path.split("/");
+		//dont check before first slash, dont check last part (new resoource)
+		String currentPath = "";
+		for(int i = 1; i < folders.length-1; i++) {
+			currentPath+= "/"+folders[i];
+			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, currentPath); 
+			if(metadata == null || !metadata.isDir() || metadata.isDeleted())
+				fileIndexStore.upsertFile(projectId, FileMetaData.folder(currentPath, false));
+		}
+		
+	}
 
 	@Override
 	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException {
 		path = addLeadingSlash(path);
+		upsertFoldersInPath(projectId, path);
 
 		Integer bytes = 0;
 		final String fileHash = isZip ? putFileInStoreWithZippedFileBytes(fileBytes, bytes) : putFileInStoreWithFileBytes(fileBytes, bytes);
@@ -257,7 +278,18 @@ public class HashBasedProjectService implements ProjectService {
 	public Promise<JsonNode> delete(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
 
-		final FileMetaData metadata = FileMetaData.folder(path, true);
+		final FileMetaData oldMetadata = fileIndexStore.getMetaData(projectId, path);
+		
+		//check if already deleted
+		if(oldMetadata.isDeleted())
+			return Promise.pure(new ObjectMapper().valueToTree(oldMetadata));
+		
+		FileMetaData metadata = null;
+		if(oldMetadata.isDir())
+			metadata = FileMetaData.folder(path, true);
+		else
+			metadata = FileMetaData.file(path, "", 0L, true);
+		
 		fileIndexStore.upsertFile(projectId, metadata);
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}

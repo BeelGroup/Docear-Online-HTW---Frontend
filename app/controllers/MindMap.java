@@ -354,6 +354,7 @@ public class MindMap extends Controller {
 
 	private String source() {
 		final String source = request().getQueryString("source");
+		Logger.debug("MindMap.source => source: "+source);
 		if (source != null)
 			return source;
 		else

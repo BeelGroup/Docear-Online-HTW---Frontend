@@ -8,6 +8,7 @@ import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.AddUserToProjectData;
 import models.project.formdatas.CreateFolderData;
 import models.project.formdatas.CreateProjectData;
+import models.project.formdatas.DeleteFileData;
 import models.project.formdatas.ProjectDeltaData;
 import models.project.formdatas.RemoveUserFromProjectData;
 
@@ -33,6 +34,7 @@ public class ProjectController extends Controller {
 	final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);
 	final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
 
+	final Form<DeleteFileData> deleteFileForm = Form.form(DeleteFileData.class);
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
 
@@ -152,6 +154,23 @@ public class ProjectController extends Controller {
 				return ok(fileMeta);
 			}
 		}));
+	}
+
+	public Result deleteFile(String projectId) throws IOException {
+		assureUserBelongsToProject(projectId);
+		Form<DeleteFileData> filledForm = deleteFileForm.bindFromRequest();
+
+		if (filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final DeleteFileData data = filledForm.get();
+			return async(projectService.delete(projectId, data.getPath()).map(new Function<JsonNode, Result>() {
+				@Override
+				public Result apply(JsonNode folderMetadata) throws Throwable {
+					return ok(folderMetadata);
+				}
+			}));
+		}
 	}
 
 	public Result createFolder(String projectId) throws IOException {
