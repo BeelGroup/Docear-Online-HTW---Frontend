@@ -1,4 +1,4 @@
-define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode', 'collections/Workspace', 'views/WorkspaceView'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel, Workspace, WorkspaceView) ->  
+define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode', 'collections/Workspace', 'views/WorkspaceView', 'handlers/WorkspaceUpdateHandler'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel, Workspace, WorkspaceView, WorkspaceUpdateHandler) ->  
   module = ->
 
   class MapView extends Backbone.View
@@ -204,6 +204,9 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
       if $.inArray('WORKSPACE', document.features)
         @workspace = new Workspace()
         @workspace.loadAllUserProjects()
+        @workspaceUpdateHandler = new WorkspaceUpdateHandler(@workspace)
+        @workspaceUpdateHandler.listen(5000)
+        
         @workspaceView = new WorkspaceView(@workspace);
         $('#mindmap-container').before(@workspaceView.render().element())
 

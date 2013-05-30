@@ -8,6 +8,7 @@ define ['logger', 'views/FileView'], (logger, FileView) ->
     template : Handlebars.templates['Project']
 
     constructor:(@model)->
+      @id = @model.get('id')
       super()
       
       

@@ -3,27 +3,15 @@ define ['logger', 'collections/Files'], (logger, Files)->
 
   class Project extends Backbone.Model 
 
-    constructor: (name, @files = null)->
+    constructor: (data, @files = null)->
       super()
-      @set 'name',  name
-      
+      @set 'id', data.id
+      @set 'name', data.name
+      @set 'revision', data.revision
+      @set 'authorizedUsers', data.authorizedUsers
+    
     initialize : ()->
       if @files is null
         @files = new Files()
-      
-      
-      
-    
-    createProject: (name)->
-      params = {
-        url: jsRoutes.controllers.ProjectController.createProject().url
-        type: 'POST'
-        cache: false
-        data: {'name': name}
-        success: (data)->
-          console.log data
-        dataType: 'json' 
-      }
-      $.ajax(params)
       
   module.exports = Project

@@ -59,7 +59,8 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
   
   workspaceVisible = false
   $('.toggle-workspace-sidebar').live('click', (event)=>
-    width = $('.workspace-container:first').outerWidth()
+    $workspaceContainer = $('#workspace-container')
+    width = $workspaceContainer.outerWidth()
     if !workspaceVisible
       $('#mindmap-container').animate({
         "margin-left": "#{width}px"
@@ -72,20 +73,4 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
       })
     workspaceVisible = !workspaceVisible
     false
-  )
-  
-  
-  $("#add-new-project").live('click', ->
-    name = $(this).parent().find('input.project-name').val();
-
-    params = {
-      url: jsRoutes.controllers.ProjectController.createProject().url
-      type: 'POST'
-      cache: false
-      data: {"name": name}
-      success: (data)->
-        console.log data
-      dataType: 'json' 
-    }
-    $.ajax(params)
   )

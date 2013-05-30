@@ -5,15 +5,18 @@ define ['logger', 'models/Project'], (logger, Project)->
     model: Project
 
     loadAllUserProjects: ()->
+      me = @
       params = {
         url: jsRoutes.controllers.User.projectListFromDB().url
         type: 'GET'
         cache: false
         success: (data)->
-          console.log data
+          $.each(data, (index, projectData)->
+            project = new Project(projectData)
+            me.add(project)
+          )
         dataType: 'json' 
       }
       $.ajax(params)
-      @add 
-    
+      
   module.exports = Workspace
