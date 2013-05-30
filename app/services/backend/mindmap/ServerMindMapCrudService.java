@@ -181,6 +181,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		});
 	}
 
+	@Override
 	public Promise<String> createNode(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier, final String parentNodeId) {
 		return createNode(userIdentifier, mapIdentifier, parentNodeId, null);
 	}
