@@ -16,7 +16,10 @@ define ['logger', 'views/ProjectView'], (logger, ProjectView) ->
         @projectViews.push(new ProjectView(project))
     
     events:
-      'click': (event)-> @updatePositionClick(event)
+      "click .add-project-toggle" : -> 
+        $(this).find('workspace-controls').hide()
+        $(this).find('add-project').show()
+        
 
     element:-> @$el
 

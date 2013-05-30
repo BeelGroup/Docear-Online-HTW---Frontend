@@ -1,4 +1,4 @@
-require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features', 'ribbons'],  (logger, templates, NodeFactory, FeedbackForm, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features, ribbons) -> 
+require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'views/MapView','routers/DocearRouter', 'views/RootNodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/RootNode', 'config', 'features', 'ribbons', 'collections/Workspace', 'collections/Files', 'models/Project', 'models/File', 'views/WorkspaceView'],  (logger, templates, NodeFactory, FeedbackForm, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features, ribbons, Workspace, Files, Project, File, WorkspaceView) -> 
 
   # load user maps for dropdown menu
   loadUserMaps = ->
@@ -46,3 +46,46 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
   
   if($.inArray('RIBBONS', document.features) > -1)
     initRibbons()
+  
+    ###
+  files = new Files([new File('file1'), new File('file2'), new File('file3')])
+  project1 = new Project("Project1", files)
+  project2 = new Project("Project2", files)
+  workspace = new Workspace([project1, project2])
+  
+  workspaceView = new WorkspaceView(workspace)
+  $('#mindmap-container').before(workspaceView.render().element())
+  ###
+  
+  workspaceVisible = false
+  $('.toggle-workspace-sidebar').live('click', (event)=>
+    width = $('.workspace-container:first').outerWidth()
+    if !workspaceVisible
+      $('#mindmap-container').animate({
+        "margin-left": "#{width}px"
+        "width": "-=#{width}"
+      })
+    else
+      $('#mindmap-container').animate({
+        "margin-left": "0px"
+        "width": "+=#{width}"
+      })
+    workspaceVisible = !workspaceVisible
+    false
+  )
+  
+  
+  $("#add-new-project").live('click', ->
+    name = $(this).parent().find('input.project-name').val();
+
+    params = {
+      url: jsRoutes.controllers.ProjectController.createProject().url
+      type: 'POST'
+      cache: false
+      data: {"name": name}
+      success: (data)->
+        console.log data
+      dataType: 'json' 
+    }
+    $.ajax(params)
+  )
