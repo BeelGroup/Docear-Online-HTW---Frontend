@@ -23,7 +23,7 @@ define ['logger', 'models/Project', 'views/ProjectView'], (logger, Project, Proj
       @projectViews.push(projectView)
       
       if @_rendered
-        $(@el).children('ul.projects').append $(projectView.render().el)
+        $(@el).find('ul.projects:first').append $(projectView.render().el)
 
     #http://liquidmedia.org/blog/2011/02/backbone-js-part-3/
     remove: (model)->
@@ -56,10 +56,12 @@ define ['logger', 'models/Project', 'views/ProjectView'], (logger, Project, Proj
     render:()->
       @_rendered = true
       @$el.html @template
-      $projectsContainer = $(@el).children('ul.projects')
+      $workspaceTree = $(@el).children('#workspace-tree')
+      
+      $projectsContainer = $($workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       @
-
+      
 
   module.exports = Workspace
