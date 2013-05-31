@@ -60,6 +60,7 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
   workspaceVisible = false
   $('.toggle-workspace-sidebar').live('click', (event)=>
     $workspaceContainer = $('#workspace-container')
+    $workspaceContainer.show()
     width = $workspaceContainer.outerWidth()
     if !workspaceVisible
       $('#mindmap-container').animate({
