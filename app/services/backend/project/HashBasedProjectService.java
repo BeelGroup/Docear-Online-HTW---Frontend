@@ -16,8 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -144,7 +143,7 @@ public class HashBasedProjectService implements ProjectService {
 		fileIndexStore.upsertFile(projectId, metadata);
 
 		callListenersForChange(projectId);
-		
+
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
@@ -180,7 +179,7 @@ public class HashBasedProjectService implements ProjectService {
 		fileIndexStore.upsertFile(projectId, metadata);
 
 		callListenersForChange(projectId);
-		
+
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
@@ -271,84 +270,55 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<JsonNode> listenIfUpdateOccurs(Map<String, Long> projectRevisionMap) throws IOException {
 		boolean hasUpdates = false;
-		
+
 		final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap);
-		final Promise<JsonNode> promise = Akka.future(callable);
-		
-		
-		//put in listener maps and check of update already happened
-		for(Map.Entry<String, Long> entry : projectRevisionMap.entrySet()) {
+		final Promise<JsonNode> promise = Akka.future(callable);// Akka.timeout(callable,2L,TimeUnit.SECONDS);
+
+		// put in listener maps and check of update already happened
+		for (Map.Entry<String, Long> entry : projectRevisionMap.entrySet()) {
 			final String projectId = entry.getKey();
 			final Long revision = entry.getValue();
-			
-			//check if projectId has entry in listener map
-			if(!projectListenersMap.containsKey(projectId)) {
+
+			// check if projectId has entry in listener map
+			if (!projectListenersMap.containsKey(projectId)) {
 				projectListenersMap.put(projectId, Collections.synchronizedList(new ArrayList<UpdateCallable>()));
 			}
 			projectListenersMap.get(projectId).add(callable);
-			
+
 			final Project project = fileIndexStore.findProjectById(projectId);
-			if(project.getRevision() != revision)
+			if (project.getRevision() != revision)
 				hasUpdates = true;
 		}
-		
-		if(hasUpdates)
+
+		if (hasUpdates)
 			callable.send();
-		
+
 		return promise;
 	};
 
 	private void callListenersForChange(String projectId) {
-		if(projectListenersMap.containsKey(projectId)) {
+		if (projectListenersMap.containsKey(projectId)) {
 			final List<UpdateCallable> callableList = projectListenersMap.get(projectId);
-			while(callableList.size() > 0) {
+			while (callableList.size() > 0) {
 				final UpdateCallable callable = callableList.get(0);
-				if(!callable.hasBeenCalled())
+				if (!callable.hasBeenCalled())
 					callable.send();
-				
+
 				callableList.remove(callable);
 			}
 		}
 	}
-	
-	public static class UpdateCallable implements Callable<JsonNode> {
-		private final FileIndexStore fileIndexStore;
-		private final Map<String, Long> projectRevisionMap;
-		private Semaphore semaphore = new Semaphore(0);
-
-		private boolean hasBeenCalled = false;
-
-		public UpdateCallable(FileIndexStore fileIndexStore, Map<String, Long> projectRevisionMap) {
-			this.fileIndexStore = fileIndexStore;
-			this.projectRevisionMap = projectRevisionMap;
-		}
-
-		public void send() {
-			semaphore.release();
-		}
-
-		public boolean hasBeenCalled() {
-			return hasBeenCalled;
-		}
-
-		@Override
-		public JsonNode call() throws Exception {
-			semaphore.acquireUninterruptibly();
-
-			final Map<String, Long> newProjectRevisionMap = new HashMap<String, Long>();
-			for (String projectId : projectRevisionMap.keySet()) {
-				newProjectRevisionMap.put(projectId, fileIndexStore.findProjectById(projectId).getRevision());
-			}
-
-			hasBeenCalled = true;
-			return new ObjectMapper().valueToTree(newProjectRevisionMap);
-		}
-
-	}
 
 	@Override
 	public F.Promise<JsonNode> versionDelta(String projectId, Long cursor) throws IOException {
-		final Changes changes = fileIndexStore.getProjectChangesSinceRevision(projectId, cursor);
+		final Project project = fileIndexStore.findProjectById(projectId);
+		Changes changes = null;
+		if (project.getRevision() > cursor) {
+			changes = fileIndexStore.getProjectChangesSinceRevision(projectId, cursor);
+		} else {
+			changes = new Changes(new ArrayList<String>());
+		}
+
 		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
 	}
 
@@ -374,9 +344,9 @@ public class HashBasedProjectService implements ProjectService {
 			metadata = FileMetaData.file(path, "", 0L, true);
 
 		fileIndexStore.upsertFile(projectId, metadata);
-		
+
 		callListenersForChange(projectId);
-		
+
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 

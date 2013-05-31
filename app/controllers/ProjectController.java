@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.AddUserToProjectData;
@@ -208,6 +209,7 @@ public class ProjectController extends Controller {
 		final Map<String,String[]> urlEncodedBody = request().body().asFormUrlEncoded();
 		
 		for(Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+			assureUserBelongsToProject(entry.getKey());
 			try {
 				projectRevisonMap.put(entry.getKey(), Long.parseLong(entry.getValue()[0]));
 			} catch(NumberFormatException e) {
@@ -225,13 +227,24 @@ public class ProjectController extends Controller {
 			public Result apply(JsonNode result) throws Throwable {
 				return ok(result);
 			}
+		}).recover(new Function<Throwable, Result>() {
+			@Override
+			public Result apply(Throwable t) throws Throwable {
+				if(t instanceof TimeoutException) {
+					return status(Controller.NOT_MODIFIED);
+				} else
+					throw t;
+			}
 		}));
 	}
 
 	public Result projectVersionDelta(String projectId) throws IOException {
 		assureUserBelongsToProject(projectId);
 		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
-
+		
+		if(projectId.equals("-1"))
+			return status(NOT_MODIFIED);
+		
 		if (filledForm.hasErrors()) {
 			return badRequest(filledForm.errorsAsJson());
 		} else {

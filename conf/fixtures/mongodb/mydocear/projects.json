@@ -24,7 +24,7 @@
         },
         "name": "Docear Sync",
         "authUsers": ["Alex", "Micha", "Julius"],
-        "revision": -1,
+        "revision": 0,
         "changes":[]
     },
     {
@@ -33,7 +33,7 @@
         },
         "name": "Docear Sync",
         "authUsers": ["Paul", "Florian"],
-        "revision": -1,
+        "revision": 0,
         "changes":[]
     }
 ]
