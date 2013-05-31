@@ -145,6 +145,7 @@ public class Application extends Controller {
                     routes.javascript.ProjectController.metadata(),
                     routes.javascript.ProjectController.projectVersionDelta(),
                     routes.javascript.ProjectController.putFile(),
+                    routes.javascript.ProjectController.listenForUpdates(),
                     routes.javascript.ProjectController.removeUserFromProject(),
                     routes.javascript.Application.index(),
                     routes.javascript.Assets.at()
