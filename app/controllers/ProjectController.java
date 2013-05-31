@@ -3,6 +3,8 @@ package controllers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.AddUserToProjectData;
@@ -12,6 +14,7 @@ import models.project.formdatas.DeleteFileData;
 import models.project.formdatas.ProjectDeltaData;
 import models.project.formdatas.RemoveUserFromProjectData;
 
+import org.apache.commons.lang.Validate;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -197,6 +200,31 @@ public class ProjectController extends Controller {
 			@Override
 			public Result apply(JsonNode entry) throws Throwable {
 				return ok(entry);
+			}
+		}));
+	}
+	
+	public Result listenForUpdates() throws IOException {
+		final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
+		final Map<String,String[]> urlEncodedBody = request().body().asFormUrlEncoded();
+		
+		for(Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+			try {
+				projectRevisonMap.put(entry.getKey(), Long.parseLong(entry.getValue()[0]));
+			} catch(NumberFormatException e) {
+				return badRequest("Revisions must be long value!");
+			}
+		}
+		
+		//check that project has been send
+		if(projectRevisonMap.size() == 0) {
+			return badRequest("specify at least one project!");
+		}
+		
+		return async(projectService.listenIfUpdateOccurs(projectRevisonMap).map(new Function<JsonNode, Result>() {
+			@Override
+			public Result apply(JsonNode result) throws Throwable {
+				return ok(result);
 			}
 		}));
 	}

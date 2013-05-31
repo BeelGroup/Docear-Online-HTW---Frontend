@@ -2,6 +2,7 @@ package services.backend.project;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.codehaus.jackson.JsonNode;
 
@@ -42,7 +43,7 @@ public interface ProjectService {
 
 	Promise<JsonNode> delete(String projectId, String path) throws IOException;
 
-	Promise<Boolean> listenIfUpdateOccurs(String projectId) throws IOException;
+	Promise<JsonNode> listenIfUpdateOccurs(Map<String, Long> projectRevisionMap) throws IOException;
 
 	Promise<JsonNode> versionDelta(String projectId, Long revision) throws IOException;
 

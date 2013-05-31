@@ -11,8 +11,13 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -25,7 +30,6 @@ import models.project.persistance.FileMetaData;
 import models.project.persistance.Project;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
@@ -34,6 +38,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import play.Logger;
+import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
@@ -41,6 +46,7 @@ import services.backend.project.filestore.FileStore;
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
+	private final Map<String, List<UpdateCallable>> projectListenersMap = new HashMap<String, List<UpdateCallable>>();
 
 	@Autowired
 	private FileStore fileStore;
@@ -111,22 +117,22 @@ public class HashBasedProjectService implements ProjectService {
 		}
 
 		final ObjectMapper mapper = new ObjectMapper();
-		final ObjectNode metadataJson = (ObjectNode)mapper.valueToTree(metadata);
+		final ObjectNode metadataJson = (ObjectNode) mapper.valueToTree(metadata);
 
 		// get children for dir
 		if (metadata.isDir()) {
 			List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
 			final EntityCursor<FileMetaData> iterable = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
 			Iterator<FileMetaData> it = iterable.iterator();
-			while (it.hasNext()) { //only add non deleted entries
+			while (it.hasNext()) { // only add non deleted entries
 				final FileMetaData childMetadata = it.next();
-				if(!childMetadata.isDeleted())
+				if (!childMetadata.isDeleted())
 					childrenData.add(childMetadata);
 			}
 			final JsonNode contentsJson = mapper.valueToTree(childrenData);
 			metadataJson.put("contents", contentsJson);
 		}
-		return Promise.pure((JsonNode)metadataJson);
+		return Promise.pure((JsonNode) metadataJson);
 	}
 
 	@Override
@@ -137,26 +143,28 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData metadata = FileMetaData.folder(path, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
+		callListenersForChange(projectId);
+		
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
-	
+
 	private void upsertFoldersInPath(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
-		
-		//check that root exists
-		if(fileIndexStore.getMetaData(projectId, "/") == null) {
+
+		// check that root exists
+		if (fileIndexStore.getMetaData(projectId, "/") == null) {
 			fileIndexStore.upsertFile(projectId, FileMetaData.folder("/", false));
 		}
 		final String[] folders = path.split("/");
-		//dont check before first slash, dont check last part (new resoource)
+		// dont check before first slash, dont check last part (new resoource)
 		String currentPath = "";
-		for(int i = 1; i < folders.length-1; i++) {
-			currentPath+= "/"+folders[i];
-			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, currentPath); 
-			if(metadata == null || !metadata.isDir() || metadata.isDeleted())
+		for (int i = 1; i < folders.length - 1; i++) {
+			currentPath += "/" + folders[i];
+			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, currentPath);
+			if (metadata == null || !metadata.isDir() || metadata.isDeleted())
 				fileIndexStore.upsertFile(projectId, FileMetaData.folder(currentPath, false));
 		}
-		
+
 	}
 
 	@Override
@@ -171,6 +179,8 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData metadata = FileMetaData.file(path, fileHash, bytes, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
+		callListenersForChange(projectId);
+		
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
@@ -205,8 +215,8 @@ public class HashBasedProjectService implements ProjectService {
 			IOUtils.closeQuietly(out);
 			// get hash
 			fileHash = getFileCheckSum(digestIn);
-            final String unzippedPath = path().hash(fileHash).raw();
-            final String zippedPath = path().hash(fileHash).zipped();
+			final String unzippedPath = path().hash(fileHash).raw();
+			final String zippedPath = path().hash(fileHash).zipped();
 
 			fileStore.move(tmpPath, unzippedPath);
 			fileStore.move(zippedTmpPath, zippedPath);
@@ -226,31 +236,31 @@ public class HashBasedProjectService implements ProjectService {
 		String fileHash = null;
 
 		try {
-            final String tmpPath = path().tmp();
+			final String tmpPath = path().tmp();
 
-            // copy file to tmp dir
-            digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
-            out = fileStore.create(tmpPath);
-            outBytes = IOUtils.copy(digestIn, out);
-            IOUtils.closeQuietly(out);
+			// copy file to tmp dir
+			digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
+			out = fileStore.create(tmpPath);
+			outBytes = IOUtils.copy(digestIn, out);
+			IOUtils.closeQuietly(out);
 
-            // get hash
-            fileHash = getFileCheckSum(digestIn);
+			// get hash
+			fileHash = getFileCheckSum(digestIn);
 
-            final String unzippedPath = path().hash(fileHash).raw();
-            final String zippedPath = path().hash(fileHash).zipped();
+			final String unzippedPath = path().hash(fileHash).raw();
+			final String zippedPath = path().hash(fileHash).zipped();
 
-            // write zipped file
-            out = fileStore.create(zippedPath);
-            zipStream = new ZipOutputStream(out);
-            zipStream.putNextEntry(new ZipEntry("file"));
-            IOUtils.write(fileBytes, zipStream);
-            zipStream.closeEntry();
-            IOUtils.closeQuietly(zipStream);
-            IOUtils.closeQuietly(out);
+			// write zipped file
+			out = fileStore.create(zippedPath);
+			zipStream = new ZipOutputStream(out);
+			zipStream.putNextEntry(new ZipEntry("file"));
+			IOUtils.write(fileBytes, zipStream);
+			zipStream.closeEntry();
+			IOUtils.closeQuietly(zipStream);
+			IOUtils.closeQuietly(out);
 
-            fileStore.move(tmpPath, unzippedPath);
-        } finally {
+			fileStore.move(tmpPath, unzippedPath);
+		} finally {
 			IOUtils.closeQuietly(zipStream);
 			IOUtils.closeQuietly(digestIn);
 			IOUtils.closeQuietly(out);
@@ -259,8 +269,81 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<Boolean> listenIfUpdateOccurs(String projectId) throws IOException {
-		throw new NotImplementedException("see https://github.com/Docear/HTW-Frontend/issues?labels=workspace-sync&milestone=&page=1&state=open");
+	public F.Promise<JsonNode> listenIfUpdateOccurs(Map<String, Long> projectRevisionMap) throws IOException {
+		boolean hasUpdates = false;
+		
+		final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap);
+		final Promise<JsonNode> promise = Akka.future(callable);
+		
+		
+		//put in listener maps and check of update already happened
+		for(Map.Entry<String, Long> entry : projectRevisionMap.entrySet()) {
+			final String projectId = entry.getKey();
+			final Long revision = entry.getValue();
+			
+			//check if projectId has entry in listener map
+			if(!projectListenersMap.containsKey(projectId)) {
+				projectListenersMap.put(projectId, Collections.synchronizedList(new ArrayList<UpdateCallable>()));
+			}
+			projectListenersMap.get(projectId).add(callable);
+			
+			final Project project = fileIndexStore.findProjectById(projectId);
+			if(project.getRevision() != revision)
+				hasUpdates = true;
+		}
+		
+		if(hasUpdates)
+			callable.send();
+		
+		return promise;
+	};
+
+	private void callListenersForChange(String projectId) {
+		if(projectListenersMap.containsKey(projectId)) {
+			final List<UpdateCallable> callableList = projectListenersMap.get(projectId);
+			while(callableList.size() > 0) {
+				final UpdateCallable callable = callableList.get(0);
+				if(!callable.hasBeenCalled())
+					callable.send();
+				
+				callableList.remove(callable);
+			}
+		}
+	}
+	
+	public static class UpdateCallable implements Callable<JsonNode> {
+		private final FileIndexStore fileIndexStore;
+		private final Map<String, Long> projectRevisionMap;
+		private Semaphore semaphore = new Semaphore(0);
+
+		private boolean hasBeenCalled = false;
+
+		public UpdateCallable(FileIndexStore fileIndexStore, Map<String, Long> projectRevisionMap) {
+			this.fileIndexStore = fileIndexStore;
+			this.projectRevisionMap = projectRevisionMap;
+		}
+
+		public void send() {
+			semaphore.release();
+		}
+
+		public boolean hasBeenCalled() {
+			return hasBeenCalled;
+		}
+
+		@Override
+		public JsonNode call() throws Exception {
+			semaphore.acquireUninterruptibly();
+
+			final Map<String, Long> newProjectRevisionMap = new HashMap<String, Long>();
+			for (String projectId : projectRevisionMap.keySet()) {
+				newProjectRevisionMap.put(projectId, fileIndexStore.findProjectById(projectId).getRevision());
+			}
+
+			hasBeenCalled = true;
+			return new ObjectMapper().valueToTree(newProjectRevisionMap);
+		}
+
 	}
 
 	@Override
@@ -279,18 +362,21 @@ public class HashBasedProjectService implements ProjectService {
 		path = addLeadingSlash(path);
 
 		final FileMetaData oldMetadata = fileIndexStore.getMetaData(projectId, path);
-		
-		//check if already deleted
-		if(oldMetadata.isDeleted())
+
+		// check if already deleted
+		if (oldMetadata.isDeleted())
 			return Promise.pure(new ObjectMapper().valueToTree(oldMetadata));
-		
+
 		FileMetaData metadata = null;
-		if(oldMetadata.isDir())
+		if (oldMetadata.isDir())
 			metadata = FileMetaData.folder(path, true);
 		else
 			metadata = FileMetaData.file(path, "", 0L, true);
-		
+
 		fileIndexStore.upsertFile(projectId, metadata);
+		
+		callListenersForChange(projectId);
+		
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
 
@@ -317,7 +403,6 @@ public class HashBasedProjectService implements ProjectService {
 
 		IOUtils.closeQuietly(inputStream);
 		return sb.toString();
-
 	}
 
 	private static MessageDigest createMessageDigest() {
