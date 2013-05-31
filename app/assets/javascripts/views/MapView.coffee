@@ -1,4 +1,4 @@
-define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel) ->  
+define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode', 'collections/Workspace', 'views/WorkspaceView', 'handlers/WorkspaceUpdateHandler'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel, Workspace, WorkspaceView, WorkspaceUpdateHandler) ->  
   module = ->
 
   class MapView extends Backbone.View
@@ -200,6 +200,15 @@ define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/Ca
 
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
+
+      if $.inArray('WORKSPACE', document.features)
+        @workspace = new Workspace()
+        @workspace.loadAllUserProjects()
+        @workspaceUpdateHandler = new WorkspaceUpdateHandler(@workspace)
+        @workspaceUpdateHandler.listen(5000)
+        
+        @workspaceView = new WorkspaceView(@workspace);
+        $('#mindmap-container').before(@workspaceView.render().element())
 
       @addLoadingOverlay()
 

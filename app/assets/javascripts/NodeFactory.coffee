@@ -1,10 +1,10 @@
-define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler', 'handlers/UpdateHandler'],  (logger, RootNode, Node, PersistenceHandler, UpdateHandler) ->  
+define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler', 'handlers/MindMapUpdateHandler'],  (logger, RootNode, Node, PersistenceHandler, MindMapUpdateHandler) ->  
   module = ->
 
   class NodeFactory
 
     persistenceHandlers = []
-    updateHandlers = []
+    mindMapUpdateHandlers = []
   
     ###
       todo:
@@ -30,9 +30,9 @@ define ['logger', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler
       if persistenceHandlers[@mapId] == undefined
         persistenceHandlers[@mapId] = new PersistenceHandler(@mapId)
 
-      if updateHandlers[@mapId] == undefined
-        updateHandlers[@mapId] = new UpdateHandler(@mapId, rootNode)
-      rootNode.set 'updateHandler', updateHandlers[@mapId]
+      if mindMapUpdateHandlers[@mapId] == undefined
+        mindMapUpdateHandlers[@mapId] = new MindMapUpdateHandler(@mapId, rootNode)
+      rootNode.set 'mindMapUpdateHandler', mindMapUpdateHandlers[@mapId]
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()

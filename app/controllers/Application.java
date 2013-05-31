@@ -125,6 +125,7 @@ public class Application extends Controller {
              /* this currently looks like errors in IntelliJ IDEA */
             Routes.javascriptRouter("jsRoutes",
                     routes.javascript.User.mapListFromDB(),
+                    routes.javascript.User.projectListFromDB(),
                     routes.javascript.MindMap.mapAsJson(),
                     routes.javascript.MindMap.getNode(),
                     routes.javascript.MindMap.createNode(),

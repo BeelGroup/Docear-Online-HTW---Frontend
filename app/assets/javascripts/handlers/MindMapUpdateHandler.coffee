@@ -1,7 +1,7 @@
 define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->  
   module = () ->
   
-  class UpdateHandler extends Backbone.Model
+  class MindMapUpdateHandler extends Backbone.Model
 
     constructor: (mapId, rootNode)->
       super()
@@ -145,4 +145,4 @@ define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->
       
       
     
-  module.exports = UpdateHandler
+  module.exports = MindMapUpdateHandler
