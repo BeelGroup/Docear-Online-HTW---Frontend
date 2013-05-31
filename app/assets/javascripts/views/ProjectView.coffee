@@ -26,8 +26,8 @@ define ['logger', 'views/FileView', 'views/UserView'], (logger, FileView, UserVi
 
     render:()->
       @$el.html @template @model.toJSON()
-      $filesContainer = $(@el).children('ul.files')
-      $usersContainer = $(@el).children('ul.users')
+      $filesContainer = $(@el).find('ul > li > ul.files')
+      $usersContainer = $(@el).find('ul > li > ul.users')
       for fileView in @fileViews
         $($filesContainer).append $(fileView.render().el)
         

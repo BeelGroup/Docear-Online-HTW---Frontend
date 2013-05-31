@@ -61,6 +61,7 @@ define ['logger', 'models/Project', 'views/ProjectView'], (logger, Project, Proj
       $projectsContainer = $($workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
+      
       @
       
 
