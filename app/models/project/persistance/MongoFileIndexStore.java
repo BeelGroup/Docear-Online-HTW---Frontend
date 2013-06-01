@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static models.mongo.MongoPlugin.*;
 
 
@@ -170,11 +171,16 @@ public class MongoFileIndexStore implements FileIndexStore {
         final BasicDBObject query = doc("$match", queryById(id));
         final BasicDBObject selectOnlyChangesArray = doc("$project", presentFields("changes").append("_id", 0));
         final BasicDBObject unwindChangesArray = doc("$unwind", "$changes");
-        final BasicDBObject skipPreviousRevisions = doc("$skip", revision);
+        final BasicDBObject skipCurrentAndPreviousRevisions = doc("$skip", revision + 1);
         final BasicDBObject groupPaths = doc("$group", doc("_id", 0).append("paths", doc("$addToSet", "$changes.path")));
-        final AggregationOutput output = projects().aggregate(query, selectOnlyChangesArray, unwindChangesArray, skipPreviousRevisions, selectOnlyChangesArray, groupPaths);
-        final BasicDBObject result = (BasicDBObject) Iterables.getFirst(output.results(), null);
-        return new Changes(getStringList(result, "paths"));
+        final AggregationOutput output = projects().aggregate(query, selectOnlyChangesArray, unwindChangesArray, skipCurrentAndPreviousRevisions, selectOnlyChangesArray, groupPaths);
+        final Iterable<DBObject> aggregationResult = output.results();
+        final BasicDBObject result = (BasicDBObject) Iterables.getFirst(aggregationResult, null);
+        List<String> changedPaths = emptyList();
+        if (result != null) {
+            changedPaths = getStringList(result, "paths");
+        }
+        return new Changes(changedPaths);
     }
 
     @Override

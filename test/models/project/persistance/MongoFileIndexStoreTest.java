@@ -172,6 +172,15 @@ public class MongoFileIndexStoreTest extends MongoTest {
     }
 
     @Test
+    public void testGetProjectChangesSinceRevisionForCurrentRevision() throws Exception {
+        final Project project = store.findProjectById(PROJECT_ID);
+        final long revision = project.getRevision();
+        final Changes changes = store.getProjectChangesSinceRevision(PROJECT_ID, revision);
+        assertThat(changes.getChangedPaths()).overridingErrorMessage("Given the participant is on the current project revision" +
+                "then he should not receive any changes").hasSize(0);
+    }
+
+    @Test
     public void testUserBelongsToProject() throws Exception {
         assertThat(store.userBelongsToProject("Julius", PROJECT_ID)).isTrue();
         assertThat(store.userBelongsToProject("Nobody", PROJECT_ID)).isFalse();
