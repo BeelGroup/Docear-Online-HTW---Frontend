@@ -56,8 +56,6 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public Promise<JsonNode> createProject(String username, String name) throws IOException {
 		final Project project = fileIndexStore.createProject(name, username);
-		// add root "/" as base entry
-		fileIndexStore.upsertFile(project.getId(), FileMetaData.folder("/", false));
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
 

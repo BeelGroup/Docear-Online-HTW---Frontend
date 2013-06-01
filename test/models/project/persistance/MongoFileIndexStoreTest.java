@@ -98,7 +98,13 @@ public class MongoFileIndexStoreTest extends MongoTest {
         assertThat(project.getId()).isNotEmpty();
         assertThat(project.getName()).isEqualTo(newProjectName);
         assertThat(project.getAuthorizedUsers()).contains(projectOwnerName);
-        assertThat(project.getRevision()).isEqualTo(-1);
+        assertThat(project.getRevision()).isEqualTo(0);
+        //on creation of the project the base folder should be created
+        final FileMetaData metaData = store.getMetaData(id, "/");
+        assertThat(metaData).isNotNull();
+        assertThat(metaData.isDir()).isTrue();
+        assertThat(metaData.isDeleted()).isFalse();
+        assertThat(metaData.getRevision()).isEqualTo(0);
     }
 
     @Test

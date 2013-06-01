@@ -81,6 +81,7 @@ public class MongoFileIndexStore implements FileIndexStore {
                 append("authUsers", authorizedUsers);
         projects().insert(document);
         final String id = document.get("_id").toString();
+        upsertFile(id, FileMetaData.folder("/", false));// add root "/" as base entry
         return new Project(id, name, revision, authorizedUsers);
     }
 
