@@ -6,6 +6,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import play.test.FakeApplication;
+import play.test.Helpers;
+import play.test.WithApplication;
 import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
@@ -14,17 +17,20 @@ import java.io.DataOutputStream;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.fest.assertions.Assertions.assertThat;
 
-public class HadoopFileStoreTest {
+public class HadoopFileStoreTest extends WithApplication {
 
     FileStore fileStore;
 
     @Before
     public void setUp() throws Exception {
+        FakeApplication app = Helpers.fakeApplication();
+        start(app);
         fileStore = new HadoopFileStore(new SpringConfiguration().fileSystem());
     }
 
     @After
     public void tearDown() throws Exception {
+        stopPlay();
         fileStore = null;
     }
 

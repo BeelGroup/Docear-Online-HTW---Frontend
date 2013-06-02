@@ -1,5 +1,6 @@
 package configuration;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -16,7 +17,11 @@ import controllers.MindMap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
+import java.util.Date;
+
+import static java.nio.charset.Charset.defaultCharset;
 
 /**
  * 
@@ -61,9 +66,13 @@ public class SpringConfiguration {
     @Bean
     public FileSystem fileSystem() throws IOException {
         final FileSystem fileSystem = new RawLocalFileSystem();
-        final URI uri = new File("hadoop-fs").toURI();//TODO not suitable for prod, writes directly in working directory
+        final String pathToStorage = Play.application().configuration().getString("fileStore.rawLocalFileSystem.path");
+        final URI uri = new File(pathToStorage).toURI();
         fileSystem.initialize(uri, new org.apache.hadoop.conf.Configuration());
         fileSystem.setWorkingDirectory(new Path(uri));
+        final OutputStream out = fileSystem.create(new Path("maintenance/startup-info.properties"), true);
+        IOUtils.write("starttime:" + new Date(), out, defaultCharset());
+        IOUtils.closeQuietly(out);
         return fileSystem;
     }
 }
