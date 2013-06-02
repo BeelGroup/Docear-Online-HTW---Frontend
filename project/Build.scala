@@ -108,8 +108,8 @@ object ApplicationBuild extends Build {
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
       coffeescriptOptions := Seq("bare")//coffee script code will not be wrapped in an anonymous function, necessary for tests
-     // , resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots" //commented out because sonatype is offline on 21.03.2013 12:28
-      , resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/" //temporary. delete if sonatype is up again
+      , resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+      , resolvers += "schleichardts Github" at "http://schleichardt.github.io/jvmrepo/" //temporary. delete if sonatype is up again
       , templatesImport += "views.TemplateUtil._"
       , handlebarsEntryPoints <<= (sourceDirectory in Compile)(base => base / "assets" / "javascripts" / "views" / "templates" ** "*.handlebars")
       , handlebarsOptions := Seq.empty[String]
