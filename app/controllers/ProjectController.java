@@ -209,7 +209,6 @@ public class ProjectController extends Controller {
 		final Map<String,String[]> urlEncodedBody = request().body().asFormUrlEncoded();
 		
 		for(Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
-			assureUserBelongsToProject(entry.getKey());
 			try {
 				projectRevisonMap.put(entry.getKey(), Long.parseLong(entry.getValue()[0]));
 			} catch(NumberFormatException e) {
@@ -222,7 +221,7 @@ public class ProjectController extends Controller {
 			return badRequest("specify at least one project!");
 		}
 		
-		return async(projectService.listenIfUpdateOccurs(projectRevisonMap).map(new Function<JsonNode, Result>() {
+		return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap).map(new Function<JsonNode, Result>() {
 			@Override
 			public Result apply(JsonNode result) throws Throwable {
 				return ok(result);
