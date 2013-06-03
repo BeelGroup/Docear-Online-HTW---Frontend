@@ -4,13 +4,14 @@ import play.data.validation.Constraints.Required;
 
 public class ProjectDeltaData {
 	@Required
-	private Long cursor;
+	private Long projectRevision;
 
-	public Long getCursor() {
-		return cursor;
+	public Long getProjectRevision() {
+		return projectRevision;
 	}
 
-	public void setCursor(Long cursor) {
-		this.cursor = cursor;
+	public void setProjectRevision(Long projectRevision) {
+		this.projectRevision = projectRevision;
 	}
+
 }

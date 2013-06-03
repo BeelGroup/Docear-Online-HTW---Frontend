@@ -115,7 +115,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<JsonNode> metadata(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
-		Logger.debug("HashBasedProjectService => projectId: "+projectId+"; path: "+path);
+		Logger.debug("HashBasedProjectService => projectId: " + projectId + "; path: " + path);
 
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
 		if (metadata == null) {
@@ -178,11 +178,11 @@ public class HashBasedProjectService implements ProjectService {
 		String actualPath = addLeadingSlash(path);
 		upsertFoldersInPath(projectId, actualPath);
 
-		
 		// check that file is newest revision
 		final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
-		Logger.debug(currentServerMetaData+"");
-		//Logger.debug("server meta data:" + currentServerMetaData == null ? "null" : currentServerMetaData.toString());
+		Logger.debug(currentServerMetaData + "");
+		// Logger.debug("server meta data:" + currentServerMetaData == null ?
+		// "null" : currentServerMetaData.toString());
 		if (currentServerMetaData != null) {
 			final Long currentServerRevision = currentServerMetaData.getRevision();
 			Logger.debug(currentServerRevision + " > " + parentRevision);
@@ -212,7 +212,7 @@ public class HashBasedProjectService implements ProjectService {
 		final String fileHash = isZip ? putFileInStoreWithZippedFileBytes(fileBytes, bytes) : putFileInStoreWithFileBytes(fileBytes, bytes);
 
 		// update file in index
-		Logger.debug("actualPath: "+actualPath);
+		Logger.debug("actualPath: " + actualPath);
 		final FileMetaData metadata = FileMetaData.file(actualPath, fileHash, bytes, false);
 		Logger.debug(metadata.toString());
 		fileIndexStore.upsertFile(projectId, metadata);
@@ -359,14 +359,42 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<JsonNode> versionDelta(String projectId, Long cursor) throws IOException {
 		final Project project = fileIndexStore.findProjectById(projectId);
+		final Long currentRevision = project.getRevision();
+		final Map<String, FileMetaData> resources = new HashMap<String, FileMetaData>();
 		Changes changes = null;
 		if (project.getRevision() > cursor) {
 			changes = fileIndexStore.getProjectChangesSinceRevision(projectId, cursor);
 		} else {
 			changes = new Changes(new ArrayList<String>());
 		}
+		
+		for(String resource : changes.getChangedPaths()) {
+			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, resource);
+			resources.put(resource, metadata);
+		}
 
-		return Promise.pure(new ObjectMapper().valueToTree(changes.getChangedPaths()));
+		final VersionDeltaResponse response = new VersionDeltaResponse(currentRevision, resources);
+		return Promise.pure(new ObjectMapper().valueToTree(response));
+	}
+
+	public static class VersionDeltaResponse {
+		private final Long currentRevision;
+		private final Map<String, FileMetaData> resources;
+
+		public VersionDeltaResponse(Long currentRevision, Map<String, FileMetaData> resources) {
+
+			this.currentRevision = currentRevision;
+			this.resources = resources;
+		}
+
+		public Long getCurrentRevision() {
+			return currentRevision;
+		}
+
+		public Map<String, FileMetaData> getResources() {
+			return resources;
+		}
+
 	}
 
 	@Override
