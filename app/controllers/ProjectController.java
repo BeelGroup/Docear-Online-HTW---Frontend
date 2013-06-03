@@ -140,15 +140,12 @@ public class ProjectController extends Controller {
 		Long parentRev = null;
 		try {
 			final String parentRevString = request().getQueryString("parentRev");
-			if(parentRevString  == null)
-				return badRequest("parentRev is missing");
-			parentRev = Long.parseLong(parentRevString);
-			
+			if(parentRevString != null)
+				parentRev = Long.parseLong(parentRevString);
 		} catch (NumberFormatException e) {
 			return badRequest("parentRev must be a valid Long");
 		}
 		 
-
 		/**
 		 * To verify if file really is a zip we can check for the signature, a
 		 * zip file starts with: 0x504b0304

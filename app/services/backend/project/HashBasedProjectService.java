@@ -178,14 +178,13 @@ public class HashBasedProjectService implements ProjectService {
 		String actualPath = addLeadingSlash(path);
 		upsertFoldersInPath(projectId, actualPath);
 
-		// check that file is newest revision
+		// check if file is present and not deleted
 		final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
-		Logger.debug(currentServerMetaData + "");
-		// Logger.debug("server meta data:" + currentServerMetaData == null ?
-		// "null" : currentServerMetaData.toString());
-		if (currentServerMetaData != null) {
+		if (currentServerMetaData != null && !currentServerMetaData.isDeleted()) {
 			final Long currentServerRevision = currentServerMetaData.getRevision();
-			Logger.debug(currentServerRevision + " > " + parentRevision);
+			//when file is present it is important that parentRev has been
+			if(parentRevision == null)
+				throw new SendResultException("parentRevision is mandatory, because file is present", 400);
 			if (currentServerRevision > parentRevision) {
 				// Conflict! change path to a conflicted version path
 				Logger.debug("Conflict");
