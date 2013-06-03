@@ -1,4 +1,4 @@
-define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/Node', 'models/RootNode', 'collections/workspace/Workspace', 'views/workspace/WorkspaceView', 'handlers/WorkspaceUpdateHandler'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel, Workspace, WorkspaceView, WorkspaceUpdateHandler) ->  
+define ['logger', 'MapLoader', 'views/RootNodeView', 'views/NodeView', 'views/CanvasView', 'views/MinimapView', 'views/ZoomPanelView', 'models/mindmap/Node', 'models/mindmap/RootNode', 'collections/workspace/Workspace', 'views/workspace/WorkspaceView', 'handlers/WorkspaceUpdateHandler'],  (logger, MapLoader, RootNodeView, NodeView, CanvasView, MinimapView, ZoomPanelView, NodeModel, RootNodeModel, Workspace, WorkspaceView, WorkspaceUpdateHandler) ->  
   module = ->
 
   class MapView extends Backbone.View

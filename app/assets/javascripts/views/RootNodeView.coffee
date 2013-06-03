@@ -1,4 +1,4 @@
-define ['logger', 'views/NodeView', 'models/RootNode', 'views/NodeControlsView'], (logger, NodeView, RootNode, NodeControlsView) ->
+define ['logger', 'views/NodeView', 'models/mindmap/RootNode', 'views/NodeControlsView'], (logger, NodeView, RootNode, NodeControlsView) ->
   module = ->
   
   class RootNodeView extends NodeView

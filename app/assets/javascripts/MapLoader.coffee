@@ -1,4 +1,4 @@
-define ['logger', 'NodeFactory', 'models/RootNode', 'models/Node', 'handlers/PersistenceHandler'],  (logger, NodeFactory, RootNode, Node, PersistenceHandler) ->  
+define ['logger', 'NodeFactory', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/PersistenceHandler'],  (logger, NodeFactory, RootNode, Node, PersistenceHandler) ->  
   module = ->
 
   ###
