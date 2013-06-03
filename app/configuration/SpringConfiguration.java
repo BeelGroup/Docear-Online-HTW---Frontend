@@ -1,5 +1,6 @@
 package configuration;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -67,6 +68,10 @@ public class SpringConfiguration {
     public FileSystem fileSystem() throws IOException {
         final FileSystem fileSystem = new RawLocalFileSystem();
         final String pathToStorage = Play.application().configuration().getString("fileStore.rawLocalFileSystem.path");
+        final File folderForStorage = new File(pathToStorage);
+        if (!folderForStorage.exists()) {
+            FileUtils.forceMkdir(folderForStorage);
+        }
         final URI uri = new File(pathToStorage).toURI();
         fileSystem.initialize(uri, new org.apache.hadoop.conf.Configuration());
         fileSystem.setWorkingDirectory(new Path(uri));
