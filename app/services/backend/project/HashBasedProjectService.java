@@ -127,11 +127,9 @@ public class HashBasedProjectService implements ProjectService {
 
 		// get children for dir
 		if (metadata.isDir()) {
-			List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
-			final EntityCursor<FileMetaData> iterable = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
-			Iterator<FileMetaData> it = iterable.iterator();
-			while (it.hasNext()) { // only add non deleted entries
-				final FileMetaData childMetadata = it.next();
+			final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
+			final EntityCursor<FileMetaData> childrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
+			for (FileMetaData childMetadata : childrenMetadatas) {
 				if (!childMetadata.isDeleted())
 					childrenData.add(childMetadata);
 			}
@@ -182,8 +180,8 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
 		if (currentServerMetaData != null && !currentServerMetaData.isDeleted()) {
 			final Long currentServerRevision = currentServerMetaData.getRevision();
-			//when file is present it is important that parentRev has been
-			if(parentRevision == null)
+			// when file is present it is important that parentRev has been
+			if (parentRevision == null)
 				throw new SendResultException("parentRevision is mandatory, because file is present", 400);
 			if (currentServerRevision > parentRevision) {
 				// Conflict! change path to a conflicted version path
@@ -219,6 +217,69 @@ public class HashBasedProjectService implements ProjectService {
 		callListenersForChangeInProject(projectId);
 
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
+	}
+
+	@Override
+	public Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException {
+		oldPath = addLeadingSlash(oldPath);
+		newPath = addLeadingSlash(newPath);
+
+		// check that old resource is present
+		final FileMetaData oldMeta = fileIndexStore.getMetaData(projectId, oldPath);
+		if (oldMeta == null || oldMeta.isDeleted()) {
+			throw new NotFoundException("file not found");
+		}
+
+		upsertFoldersInPath(projectId, newPath);
+
+		if (oldMeta.isDir()) {
+			// directory handling
+			// check if resource is already a folder
+			final FileMetaData currentNewMeta = fileIndexStore.getMetaData(projectId, newPath);
+			final FileMetaData newMeta = FileMetaData.folder(newPath, false);
+			if (currentNewMeta == null || currentNewMeta.isDeleted() || !currentNewMeta.isDir()) {
+				// when not present or no folder, make it a folder
+				fileIndexStore.upsertFile(projectId, newMeta);
+			}
+
+			moveFileRecursion(projectId, oldMeta, newMeta);
+			fileIndexStore.upsertFile(projectId, FileMetaData.folder(oldPath, true));
+		} else {
+			// file handling
+			final FileMetaData newMeta = FileMetaData.file(newPath, oldMeta.getHash(), oldMeta.getBytes(), false);
+			fileIndexStore.upsertFile(projectId, newMeta);
+			fileIndexStore.upsertFile(projectId, FileMetaData.file(oldPath, "", 0, true));
+		}
+
+		return Promise.pure(new ObjectMapper().readTree("[\"success\"]"));
+	}
+
+	private void moveFileRecursion(String projectId, FileMetaData folderMetadata, FileMetaData newFolderMetadata) throws IOException {
+		final EntityCursor<FileMetaData> oldChildrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, folderMetadata.getPath(), Integer.MAX_VALUE);
+		Logger.debug("HashBasedProjectService.moveFileRecursion => folderMeta: " + folderMetadata + "; newFolderMeta: " + newFolderMetadata);
+
+		final String oldBasePath = folderMetadata.getPath();
+		final String newBasePath = newFolderMetadata.getPath();
+		for (final FileMetaData oldMetadata : oldChildrenMetadatas) {
+			// ignore deleted files
+			if (oldMetadata.isDeleted())
+				continue;
+
+			final String newPath = oldMetadata.getPath().replace(oldBasePath, newBasePath);
+			// create and upsert on new position
+			final FileMetaData newMetadata = oldMetadata.isDir() ? FileMetaData.folder(newPath, false) : FileMetaData.file(newPath, oldMetadata.getHash(), oldMetadata.getBytes(), false);
+			fileIndexStore.upsertFile(projectId, newMetadata);
+
+			// trigger recursion for folders
+			if (newMetadata.isDir()) {
+				// delete on old position
+				fileIndexStore.upsertFile(projectId, FileMetaData.folder(oldMetadata.getPath(), true));
+				moveFileRecursion(projectId, oldMetadata, newMetadata);
+			} else {
+				// delete on old position
+				fileIndexStore.upsertFile(projectId, FileMetaData.file(oldMetadata.getPath(), "", 0, true));
+			}
+		}
 	}
 
 	/**
@@ -366,8 +427,8 @@ public class HashBasedProjectService implements ProjectService {
 		} else {
 			changes = new Changes(new ArrayList<String>());
 		}
-		
-		for(String resource : changes.getChangedPaths()) {
+
+		for (String resource : changes.getChangedPaths()) {
 			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, resource);
 			resources.put(resource, metadata);
 		}

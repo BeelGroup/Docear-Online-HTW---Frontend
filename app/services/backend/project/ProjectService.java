@@ -41,6 +41,8 @@ public interface ProjectService {
 
 	Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision) throws IOException;
 
+	Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException;
+	
 	Promise<JsonNode> delete(String projectId, String path) throws IOException;
 
 	Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException;
