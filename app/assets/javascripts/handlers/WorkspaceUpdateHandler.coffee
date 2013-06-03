@@ -11,12 +11,30 @@ define ['routers/DocearRouter', 'collections/Workspace', 'models/File', 'models/
       if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
         document.log "listen for updates on workspace"
         me = @
-        @workspace.each (project)=>
-          me.getChangesByProject(project)
         
-        setTimeout(=>
-          @listen(delay)
-        , delay)
+        if @workspace.length > 0
+          projects = {}
+          @workspace.each (project)=>
+            projects[project.id] = project.get('revision');
+          
+          params = {
+              url: jsRoutes.controllers.ProjectController.listenForUpdates().url
+              type: 'POST'
+              cache: false
+              data: projects
+              success: (projectData)=>
+                #project = new Project(projectData)
+                #me.add(project)
+                console.log(projectData);
+                document.log "Workspace updates available"
+                
+              dataType: 'json' 
+            }
+            $.ajax(params)
+        else
+          setTimeout(=>
+            @listen(delay)
+          , 2000)
       
     getChangesByProject: (project)->
       params = {
