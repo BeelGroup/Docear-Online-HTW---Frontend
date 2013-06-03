@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -45,6 +44,10 @@ import services.backend.project.filestore.FileStore;
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
+	/**
+	 * TODO UpdateCallables could cause performance issue. 
+	 * Implementing an Actor for the action might be better.
+	 */
 	private final Map<String, List<UpdateCallable>> projectListenersMap = new HashMap<String, List<UpdateCallable>>();
 
 	@Autowired

@@ -43,7 +43,7 @@ public class Application extends Controller {
     
 
     @Autowired
-    private UserService userService;
+    private UserService  userService;
     
 	/** 
 	 * displays current mind map drawing 
