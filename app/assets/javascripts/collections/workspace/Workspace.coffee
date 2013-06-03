@@ -1,4 +1,4 @@
-define ['logger', 'models/Project'], (logger, Project)->
+define ['logger', 'models/workspace/Project'], (logger, Project)->
   module = () ->
 
   class Workspace extends Backbone.Collection 

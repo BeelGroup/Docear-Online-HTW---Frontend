@@ -1,4 +1,4 @@
-define ['logger', 'models/Project', 'views/ProjectView'], (logger, Project, ProjectView) ->
+define ['logger', 'models/workspace/Project', 'views/ProjectView'], (logger, Project, ProjectView) ->
   module = () ->
 
   class Workspace extends Backbone.View
