@@ -1,4 +1,4 @@
-define ['logger', 'models/Node', 'models/RootNode'],  (logger, NodeModel, RootNodeModel) ->  
+define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, NodeModel, RootNodeModel) ->  
   module = ->
 
   class ConnectionView extends Backbone.View

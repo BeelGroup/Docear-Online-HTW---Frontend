@@ -1,4 +1,4 @@
-define ['routers/DocearRouter', 'models/Node'],  (DocearRouter, Node) ->  
+define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->  
   module = () ->
   
   class MindMapUpdateHandler extends Backbone.Model

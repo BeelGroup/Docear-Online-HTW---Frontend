@@ -1,4 +1,4 @@
-define ['views/NodeEditView'], (NodeEditView) ->
+define ['views/mindmap/NodeEditView'], (NodeEditView) ->
   module = () ->
 
   class NodeControls extends Backbone.View

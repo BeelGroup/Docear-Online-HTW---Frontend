@@ -1,4 +1,4 @@
-define ['logger', 'models/User'], (logger, User)->
+define ['logger', 'models/workspace/User'], (logger, User)->
   module = () ->
 
   class Users extends Backbone.Collection 
