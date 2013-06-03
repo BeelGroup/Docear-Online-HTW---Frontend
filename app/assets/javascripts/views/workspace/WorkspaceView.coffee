@@ -23,7 +23,19 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       @projectViews.push(projectView)
       
       if @_rendered
-        $(@el).find('ul.projects:first').append $(projectView.render().el)
+        console.log projectView.render().el
+        $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
+        @$workspaceTree.jstree({
+        "plugins": ["themes", "html_data", "ui", "crrm", "contextmenu" ]
+        }).bind("move_node.jstree rename_node.jstree create_node.jstree", (event, data)-> 
+          type = event.type
+          if(type is 'move_node') 
+            document.log 'move node'
+          else if (type is 'rename_node') 
+            document.log 'rename node'
+          else if (type is 'create_node') 
+            document.log 'create node'
+        )
 
     #http://liquidmedia.org/blog/2011/02/backbone-js-part-3/
     remove: (model)->
@@ -56,12 +68,13 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
     render:()->
       @_rendered = true
       @$el.html @template
-      $workspaceTree = $(@el).children('#workspace-tree')
+      @$workspaceTree = $(@el).children('#workspace-tree')
       
-      $projectsContainer = $($workspaceTree).children('ul.projects')
+      $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       
+      @$workspaceTree.jstree()
       @
       
 
