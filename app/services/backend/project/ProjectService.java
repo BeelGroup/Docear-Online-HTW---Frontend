@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.codehaus.jackson.JsonNode;
-import org.docear.messages.models.UserIdentifier;
 
 import play.libs.F.Promise;
 
