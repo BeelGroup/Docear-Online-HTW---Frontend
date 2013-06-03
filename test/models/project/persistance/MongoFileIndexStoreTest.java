@@ -54,7 +54,7 @@ public class MongoFileIndexStoreTest extends MongoTest {
         final Project project = store.findProjectById(PROJECT_ID);
         assertThat(project.getName()).isEqualTo(PROJECT_NAME);
         assertThat(project.getId()).isEqualTo(PROJECT_ID);
-        assertThat(project.getAuthorizedUsers()).isEqualTo(newArrayList("Alex", "Micha", "Julius"));
+        assertThat(project.getAuthorizedUsers()).isEqualTo(newArrayList("Alex", "Micha", "Julius", "Paul", "Florian"));
         assertThat(project.getRevision()).isGreaterThanOrEqualTo(3);
     }
 
@@ -75,7 +75,7 @@ public class MongoFileIndexStoreTest extends MongoTest {
 
     @Test
     public void testAddUserToProject() throws Exception {
-        final String newAuthorizedUser = "Florian";
+        final String newAuthorizedUser = "Andrea";
         assertThat(store.findProjectById(PROJECT_ID).getAuthorizedUsers()).excludes(newAuthorizedUser);
         store.addUserToProject(PROJECT_ID, newAuthorizedUser);
         assertThat(store.findProjectById(PROJECT_ID).getAuthorizedUsers()).contains(newAuthorizedUser);
