@@ -40,7 +40,7 @@ public interface ProjectService {
 
 	Promise<JsonNode> createFolder(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException;
+	Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision) throws IOException;
 
 	Promise<JsonNode> delete(String projectId, String path) throws IOException;
 

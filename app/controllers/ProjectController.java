@@ -137,6 +137,17 @@ public class ProjectController extends Controller {
 	public Result putFile(String projectId, String path, boolean isZip) throws IOException {
 		assureUserBelongsToProject(projectId);
 		final byte[] content = request().body().asRaw().asBytes();
+		Long parentRev = null;
+		try {
+			final String parentRevString = request().getQueryString("parentRev");
+			if(parentRevString  == null)
+				return badRequest("parentRev is missing");
+			parentRev = Long.parseLong(parentRevString);
+			
+		} catch (NumberFormatException e) {
+			return badRequest("parentRev must be a valid Long");
+		}
+		 
 
 		/**
 		 * To verify if file really is a zip we can check for the signature, a
@@ -150,7 +161,7 @@ public class ProjectController extends Controller {
 			return badRequest("File was send as zip but isn't.");
 		}
 
-		return async(projectService.putFile(projectId, path, content, isZip).map(new Function<JsonNode, Result>() {
+		return async(projectService.putFile(projectId, path, content, isZip, parentRev).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {

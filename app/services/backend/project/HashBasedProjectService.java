@@ -21,6 +21,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
+import models.backend.exceptions.sendResult.SendResultException;
 import models.project.persistance.Changes;
 import models.project.persistance.EntityCursor;
 import models.project.persistance.FileIndexStore;
@@ -114,6 +115,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<JsonNode> metadata(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
+		Logger.debug("HashBasedProjectService => projectId: "+projectId+"; path: "+path);
 
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
 		if (metadata == null) {
@@ -172,15 +174,47 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip) throws IOException {
-		path = addLeadingSlash(path);
-		upsertFoldersInPath(projectId, path);
+	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision) throws IOException {
+		String actualPath = addLeadingSlash(path);
+		upsertFoldersInPath(projectId, actualPath);
+
+		
+		// check that file is newest revision
+		final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
+		Logger.debug(currentServerMetaData+"");
+		//Logger.debug("server meta data:" + currentServerMetaData == null ? "null" : currentServerMetaData.toString());
+		if (currentServerMetaData != null) {
+			final Long currentServerRevision = currentServerMetaData.getRevision();
+			Logger.debug(currentServerRevision + " > " + parentRevision);
+			if (currentServerRevision > parentRevision) {
+				// Conflict! change path to a conflicted version path
+				Logger.debug("Conflict");
+				int indexOfLastDot = actualPath.lastIndexOf('.');
+				final int indexOfLastSignBeforeExtension = indexOfLastDot != -1 ? indexOfLastDot : actualPath.length();
+
+				String conflictedPath;
+				boolean resourcePresent;
+				int currentConflictedNumber = 0;
+				do {
+					currentConflictedNumber++;
+					conflictedPath = new StringBuffer(actualPath).insert(indexOfLastSignBeforeExtension, "(Conflicted Version " + currentConflictedNumber + ")").toString();
+					final FileMetaData meta = fileIndexStore.getMetaData(projectId, conflictedPath);
+					resourcePresent = meta == null ? false : meta.isDeleted() == true ? false : true;
+				} while (resourcePresent);
+
+				actualPath = conflictedPath;
+			} else if (parentRevision > currentServerRevision) {
+				throw new SendResultException("Given Revision is too big!", 400);
+			}
+		}
 
 		Integer bytes = 0;
 		final String fileHash = isZip ? putFileInStoreWithZippedFileBytes(fileBytes, bytes) : putFileInStoreWithFileBytes(fileBytes, bytes);
 
 		// update file in index
-		final FileMetaData metadata = FileMetaData.file(path, fileHash, bytes, false);
+		Logger.debug("actualPath: "+actualPath);
+		final FileMetaData metadata = FileMetaData.file(actualPath, fileHash, bytes, false);
+		Logger.debug(metadata.toString());
 		fileIndexStore.upsertFile(projectId, metadata);
 
 		callListenersForChangeInProject(projectId);
