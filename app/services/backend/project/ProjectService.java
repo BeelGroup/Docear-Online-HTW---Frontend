@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.codehaus.jackson.JsonNode;
+import org.docear.messages.models.UserIdentifier;
 
 import play.libs.F.Promise;
 
@@ -43,7 +44,7 @@ public interface ProjectService {
 
 	Promise<JsonNode> delete(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> listenIfUpdateOccurs(Map<String, Long> projectRevisionMap) throws IOException;
+	Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException;
 
 	Promise<JsonNode> versionDelta(String projectId, Long revision) throws IOException;
 

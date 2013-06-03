@@ -45,10 +45,11 @@ import services.backend.project.filestore.FileStore;
 @Component
 public class HashBasedProjectService implements ProjectService {
 	/**
-	 * TODO UpdateCallables could cause performance issue. 
-	 * Implementing an Actor for the action might be better.
+	 * TODO UpdateCallables could cause performance issue. Implementing an Actor
+	 * for the action might be better.
 	 */
 	private final Map<String, List<UpdateCallable>> projectListenersMap = new HashMap<String, List<UpdateCallable>>();
+	private final Map<String, List<UpdateCallable>> userListenerMap = new HashMap<String, List<UpdateCallable>>();
 
 	@Autowired
 	private FileStore fileStore;
@@ -59,18 +60,21 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public Promise<JsonNode> createProject(String username, String name) throws IOException {
 		final Project project = fileIndexStore.createProject(name, username);
+		callListenerForChangeForUser(username);
 		return Promise.pure(new ObjectMapper().valueToTree(project));
 	}
 
 	@Override
 	public Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException {
 		fileIndexStore.addUserToProject(projectId, usernameToAdd);
+		callListenerForChangeForUser(usernameToAdd);
 		return Promise.pure(true);
 	}
 
 	@Override
 	public Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException {
 		fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
+		callListenerForChangeForUser(usernameToRemove);
 		return Promise.pure(true);
 	}
 
@@ -143,7 +147,7 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData metadata = FileMetaData.folder(path, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
-		callListenersForChange(projectId);
+		callListenersForChangeInProject(projectId);
 
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
@@ -179,7 +183,7 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData metadata = FileMetaData.file(path, fileHash, bytes, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
-		callListenersForChange(projectId);
+		callListenersForChangeInProject(projectId);
 
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
@@ -269,37 +273,45 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> listenIfUpdateOccurs(Map<String, Long> projectRevisionMap) throws IOException {
-		boolean hasUpdates = false;
+	public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException {
+		final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, username);
+		final Promise<JsonNode> promise = Akka.future(callable);
 
-		final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap);
-		final Promise<JsonNode> promise = Akka.future(callable);// Akka.timeout(callable,2L,TimeUnit.SECONDS);
-
-		// put in listener maps and check of update already happened
+		// put in listener maps and check if update already happened
 		for (Map.Entry<String, Long> entry : projectRevisionMap.entrySet()) {
 			final String projectId = entry.getKey();
-			final Long revision = entry.getValue();
 
 			// check if projectId has entry in listener map
 			if (!projectListenersMap.containsKey(projectId)) {
 				projectListenersMap.put(projectId, Collections.synchronizedList(new ArrayList<UpdateCallable>()));
 			}
 			projectListenersMap.get(projectId).add(callable);
-
-			final Project project = fileIndexStore.findProjectById(projectId);
-			if (project.getRevision() != revision)
-				hasUpdates = true;
 		}
 
-		if (hasUpdates)
-			callable.send();
+		// put in User listener map
+		if (!userListenerMap.containsKey(username))
+			userListenerMap.put(username, new ArrayList<UpdateCallable>());
+		userListenerMap.get(username).add(callable);
 
 		return promise;
 	};
 
-	private void callListenersForChange(String projectId) {
+	private void callListenersForChangeInProject(String projectId) {
 		if (projectListenersMap.containsKey(projectId)) {
 			final List<UpdateCallable> callableList = projectListenersMap.get(projectId);
+			while (callableList.size() > 0) {
+				final UpdateCallable callable = callableList.get(0);
+				if (!callable.hasBeenCalled())
+					callable.send();
+
+				callableList.remove(callable);
+			}
+		}
+	}
+
+	private void callListenerForChangeForUser(String username) {
+		if (userListenerMap.containsKey(username)) {
+			final List<UpdateCallable> callableList = userListenerMap.get(username);
 			while (callableList.size() > 0) {
 				final UpdateCallable callable = callableList.get(0);
 				if (!callable.hasBeenCalled())
@@ -346,7 +358,7 @@ public class HashBasedProjectService implements ProjectService {
 
 		fileIndexStore.upsertFile(projectId, metadata);
 
-		callListenersForChange(projectId);
+		callListenersForChangeInProject(projectId);
 
 		return Promise.pure(new ObjectMapper().valueToTree(metadata));
 	}
