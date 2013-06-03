@@ -1,4 +1,4 @@
-define ['logger', 'collections/Files', 'collections/Users', 'models/User'], (logger, Files, Users, User)->
+define ['logger', 'collections/workspace/Files', 'collections/workspace/Users', 'models/User'], (logger, Files, Users, User)->
   module = () ->
 
   class Project extends Backbone.Model 

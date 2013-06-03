@@ -1,4 +1,4 @@
-define ['routers/DocearRouter', 'collections/Workspace', 'models/File', 'models/Project'],  (DocearRouter, Workspace, File, Project) ->  
+define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/File', 'models/Project'],  (DocearRouter, Workspace, File, Project) ->  
   module = () ->
   
   class MindMapUpdateHandler extends Backbone.Model
