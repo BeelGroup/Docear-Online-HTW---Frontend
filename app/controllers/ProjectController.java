@@ -136,17 +136,13 @@ public class ProjectController extends Controller {
 	 * @return
 	 * @throws IOException
 	 */
-	public Result putFile(String projectId, String path, boolean isZip) throws IOException {
+	public Result putFile(String projectId, String path, boolean isZip, Long parentRev) throws IOException {
 		assureUserBelongsToProject(projectId);
 		final byte[] content = request().body().asRaw().asBytes();
-		Long parentRev = null;
-		try {
-			final String parentRevString = request().getQueryString("parentRev");
-			if (parentRevString != null)
-				parentRev = Long.parseLong(parentRevString);
-		} catch (NumberFormatException e) {
-			return badRequest("parentRev must be a valid Long");
-		}
+		
+		//can't use null in router, so -1 is given and will be mapped to null
+		if(parentRev == -1)
+			parentRev = null;
 
 		/**
 		 * To verify if file really is a zip we can check for the signature, a
