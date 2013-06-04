@@ -93,18 +93,24 @@ public class MongoFileIndexStoreTest extends MongoTest {
     public void testCreateProject() throws Exception {
         final String newProjectName = "Docear 4Word";
         final String projectOwnerName = "Stefan";
-        final String id = store.createProject(newProjectName, projectOwnerName).getId();
-        final Project project = store.findProjectById(id);
-        assertThat(project.getId()).isNotEmpty();
-        assertThat(project.getName()).isEqualTo(newProjectName);
-        assertThat(project.getAuthorizedUsers()).contains(projectOwnerName);
-        assertThat(project.getRevision()).isEqualTo(0);
+        final Project createdProject = store.createProject(newProjectName, projectOwnerName);
+        checkValuesOfNewProject(createdProject, newProjectName, projectOwnerName);
+        final String id = createdProject.getId();
+        final Project projectFromDatabase = store.findProjectById(id);
+        checkValuesOfNewProject(projectFromDatabase, newProjectName, projectOwnerName);
         //on creation of the project the base folder should be created
         final FileMetaData metaData = store.getMetaData(id, "/");
         assertThat(metaData).isNotNull();
         assertThat(metaData.isDir()).isTrue();
         assertThat(metaData.isDeleted()).isFalse();
         assertThat(metaData.getRevision()).isEqualTo(0);
+    }
+
+    private void checkValuesOfNewProject(Project project, String newProjectName, String projectOwnerName) {
+        assertThat(project.getId()).isNotEmpty();
+        assertThat(project.getName()).isEqualTo(newProjectName);
+        assertThat(project.getAuthorizedUsers()).contains(projectOwnerName);
+        assertThat(project.getRevision()).isEqualTo(0);
     }
 
     @Test
