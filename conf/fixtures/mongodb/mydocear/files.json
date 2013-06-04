@@ -1,7 +1,7 @@
 [
     {
         "_id": {
-            "$oid": "51a396d7322b7f437e36873e"
+            "$oid": "51a396d8322b7f437e368773"
         },
         "project": { "$oid": "507f191e810c19729de860ea" },
         "path": "/README.md",
@@ -25,7 +25,24 @@
     },
     {
         "_id": {
-            "$oid": "51a396d7322b7f437e36873f"
+            "$oid": "51a396d8322b7f437e368738"
+        },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/",
+        "revision": 0,
+        "revisions": [
+            {
+                "hash": "",
+                "timestamp": { "$date": "2013-05-21T07:50:18.981Z"},
+                "bytes": 0,
+                "is_dir": true,
+                "is_deleted": false
+            }
+        ]
+    },
+    {
+        "_id": {
+            "$oid": "51a396d8322b7f437e368739"
         },
         "project": { "$oid": "507f191e810c19729de860ea" },
         "path": "/src",
@@ -149,6 +166,40 @@
         "revisions": [
             {
                 "timestamp": { "$date": "2013-05-21T07:50:18.981Z"},
+                "is_dir": true,
+                "is_deleted": false
+            }
+        ]
+    },
+    {
+        "_id": {
+            "$oid": "51a396d9322b7f437e368747"
+        },
+        "project": { "$oid": "508963723aed14a714a59591" },
+        "path": "/",
+        "revision": 0,
+        "revisions": [
+            {
+                "hash": "",
+                "timestamp": { "$date": "2013-05-21T07:50:18.981Z"},
+                "bytes": 0,
+                "is_dir": true,
+                "is_deleted": false
+            }
+        ]
+    },
+    {
+        "_id": {
+            "$oid": "51a396d9322b7f437e368748"
+        },
+        "project": { "$oid": "519c73a00f089cc3e429c15f" },
+        "path": "/",
+        "revision": 0,
+        "revisions": [
+            {
+                "hash": "",
+                "timestamp": { "$date": "2013-05-21T07:50:18.981Z"},
+                "bytes": 0,
                 "is_dir": true,
                 "is_deleted": false
             }
