@@ -43,7 +43,7 @@ object ApplicationBuild extends Build {
           )
         , "org.apache.hadoop" % "hadoop-common" % hadoopVersion excludeAll(ExclusionRule(organization = "javax.activation"), ExclusionRule(organization = "org.codehaus.jettison"))
         , "com.typesafe.akka" %% "akka-remote" % "2.1.2"
-        , "info.schleichardt" %% "play-embed-mongo" % "0.2"
+        , "info.schleichardt" %% "play-embed-mongo" % "0.2.1"
         , "org.mongodb" % "mongo-java-driver" % "2.10.1"
       )
     }
