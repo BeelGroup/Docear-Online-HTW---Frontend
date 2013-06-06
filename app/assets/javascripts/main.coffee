@@ -1,4 +1,4 @@
-require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'views/mindmap/MapView','routers/DocearRouter', 'views/mindmap/RootNodeView', 'views/mindmap/CanvasView', 'views/mindmap/MinimapView', 'views/mindmap/ZoomPanelView', 'models/mindmap/RootNode', 'config', 'features', 'ribbons', 'collections/workspace/Workspace', 'collections/workspace/Files', 'models/workspace/Project', 'models/workspace/File', 'views/workspace/WorkspaceView'],  (logger, templates, NodeFactory, FeedbackForm, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features, ribbons, Workspace, Files, Project, File, WorkspaceView) -> 
+require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'views/mindmap/MapView','routers/DocearRouter', 'views/mindmap/RootNodeView', 'views/mindmap/CanvasView', 'views/mindmap/MinimapView', 'views/mindmap/ZoomPanelView', 'models/mindmap/RootNode', 'config', 'features', 'ribbons', 'collections/workspace/Workspace', 'collections/workspace/Resources', 'models/workspace/Project', 'models/workspace/Resource', 'views/workspace/WorkspaceView'],  (logger, templates, NodeFactory, FeedbackForm, MapView, DocearRouter, RootNodeView, CanvasView, MinimapView, ZoomPanelView, RootNodeModel, config, features, ribbons, Workspace, Files, Project, File, WorkspaceView) -> 
 
   # load user maps for dropdown menu
   loadUserMaps = ->
@@ -46,16 +46,6 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
   
   if($.inArray('RIBBONS', document.features) > -1)
     initRibbons()
-  
-    ###
-  files = new Files([new File('file1'), new File('file2'), new File('file3')])
-  project1 = new Project("Project1", files)
-  project2 = new Project("Project2", files)
-  workspace = new Workspace([project1, project2])
-  
-  workspaceView = new WorkspaceView(workspace)
-  $('#mindmap-container').before(workspaceView.render().element())
-  ###
   
   workspaceVisible = false
   $('.toggle-workspace-sidebar').live('click', (event)=>

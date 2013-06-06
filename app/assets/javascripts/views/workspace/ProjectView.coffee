@@ -1,4 +1,4 @@
-define ['logger', 'views/workspace/FileView', 'views/workspace/UserView'], (logger, FileView, UserView) ->
+define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView'], (logger, ResourceView, UserView) ->
   module = () ->
 
   class Project extends Backbone.View
@@ -13,10 +13,9 @@ define ['logger', 'views/workspace/FileView', 'views/workspace/UserView'], (logg
       
       
     initialize : ()->
-      @fileViews = []
+      @resourceViews = []
       @userViews = []
-      @model.files.each (file)=>
-        @fileViews.push(new FileView(file))
+      @resourceViews.push(new ResourceView(@model.resource))
         
       @model.users.each (user)=>
         @userViews.push(new UserView(user))
@@ -26,11 +25,12 @@ define ['logger', 'views/workspace/FileView', 'views/workspace/UserView'], (logg
 
     render:()->
       @$el.html @template @model.toJSON()
-      $filesContainer = $(@el).find('ul > li > ul.files')
+      
+      $resourcesContainer = $(@el).find('ul > li > ul.resources')
+      for resourceView in @resourceViews
+        $($resourcesContainer).append $(resourceView.render().el)
+
       $usersContainer = $(@el).find('ul > li > ul.users')
-      for fileView in @fileViews
-        $($filesContainer).append $(fileView.render().el)
-        
       for userView in @userViews
         $($usersContainer).append $(userView.render().el)
       @

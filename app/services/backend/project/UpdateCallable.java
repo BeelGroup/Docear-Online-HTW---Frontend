@@ -31,8 +31,8 @@ public class UpdateCallable implements Callable<JsonNode> {
 		this.fileIndexStore = fileIndexStore;
 		this.projectRevisionMap = projectRevisionMap;
 		this.username = username;
-		
-		if(hasAlreadyUpdates())
+
+		if (hasAlreadyUpdates())
 			semaphore.release();
 	}
 
@@ -43,21 +43,17 @@ public class UpdateCallable implements Callable<JsonNode> {
 	public boolean hasBeenCalled() {
 		return hasBeenCalled;
 	}
-	
+
 	private boolean hasAlreadyUpdates() throws IOException {
 		final RevisionsResponse response = getRevisionsResponse();
-		if(response.getDeletedProjects().size() > 0)
+		if (response.getDeletedProjects().size() > 0)
 			return true;
-		if(response.getNewProjects().size() > 0)
+		if (response.getNewProjects().size() > 0)
 			return true;
-		
-		//check for each project if new revision is different
-		for(Map.Entry<String, Long> entry : response.getKnownProjects().entrySet()) {
-			if(!projectRevisionMap.get(entry.getKey()).equals(entry.getValue())) {
-				return true;
-			}
-		}
-		
+
+		if(response.getUpdatedProjects().size() >0 )
+			return true;
+
 		return false;
 	}
 
@@ -70,12 +66,12 @@ public class UpdateCallable implements Callable<JsonNode> {
 		hasBeenCalled = true;
 		return new ObjectMapper().valueToTree(response);
 	}
-	
+
 	private RevisionsResponse getRevisionsResponse() throws IOException {
-		
+
 		final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
 		final Map<String, Long> projectRevisionMapCopy = new HashMap<String, Long>(projectRevisionMap);
-		final Map<String, Long> knownProjects = new HashMap<String, Long>();
+		final Map<String, Long> updatedProjects = new HashMap<String, Long>();
 		final Map<String, Long> newProjects = new HashMap<String, Long>();
 		final List<String> deletedProjects = new ArrayList<String>();
 
@@ -87,7 +83,8 @@ public class UpdateCallable implements Callable<JsonNode> {
 			final Long projectRevision = project.getRevision();
 
 			if (projectRevisionMapCopy.containsKey(projectId)) {
-				knownProjects.put(projectId, projectRevision);
+				if(projectRevisionMapCopy.get(projectId) != projectRevision)
+					updatedProjects.put(projectId, projectRevision);
 				projectRevisionMapCopy.remove(projectId);
 			} else {
 				newProjects.put(projectId, projectRevision);
@@ -96,26 +93,25 @@ public class UpdateCallable implements Callable<JsonNode> {
 		// Left over ids must have been removed from the user
 		deletedProjects.addAll(projectRevisionMapCopy.keySet());
 
-		Logger.debug("known: "+knownProjects.size()+"; new: "+newProjects.size()+"; deleted: "+deletedProjects.size());
-		 
-		
-		return new RevisionsResponse(knownProjects, newProjects, deletedProjects);
+		Logger.debug("updated: " + updatedProjects.size() + "; new: " + newProjects.size() + "; deleted: " + deletedProjects.size());
+
+		return new RevisionsResponse(updatedProjects, newProjects, deletedProjects);
 	}
 
 	private static class RevisionsResponse {
-		private final Map<String, Long> knownProjects;
+		private final Map<String, Long> updatedProjects;
 		private final Map<String, Long> newProjects;
 		private final List<String> deletedProjects;
 
-		public RevisionsResponse(Map<String, Long> knownProjects, Map<String, Long> newProjects, List<String> deletedProjects) {
+		public RevisionsResponse(Map<String, Long> updatedProjects, Map<String, Long> newProjects, List<String> deletedProjects) {
 			super();
-			this.knownProjects = knownProjects;
+			this.updatedProjects = updatedProjects;
 			this.newProjects = newProjects;
 			this.deletedProjects = deletedProjects;
 		}
 
-		public Map<String, Long> getKnownProjects() {
-			return knownProjects;
+		public Map<String, Long> getUpdatedProjects() {
+			return updatedProjects;
 		}
 
 		public Map<String, Long> getNewProjects() {

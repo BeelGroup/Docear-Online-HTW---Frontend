@@ -19,4 +19,13 @@ define ['logger', 'models/workspace/Project'], (logger, Project)->
       }
       $.ajax(params)
       
+    getFileByPath: (path)->
+      result = null
+      @each (project)=>
+        file = project.getFileByPath(path)
+        if file isnt null
+          result = file
+          return result
+      result
+      
   module.exports = Workspace

@@ -82,7 +82,7 @@ public class MongoFileIndexStore implements FileIndexStore {
         projects().insert(document);
         final String id = document.get("_id").toString();
         upsertFile(id, FileMetaData.folder("/", false));// add root "/" as base entry
-        return new Project(id, name, revision, authorizedUsers);
+        return findProjectById(id);
     }
 
     @Override

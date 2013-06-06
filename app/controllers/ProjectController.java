@@ -12,6 +12,7 @@ import models.project.formdatas.AddUserToProjectData;
 import models.project.formdatas.CreateFolderData;
 import models.project.formdatas.CreateProjectData;
 import models.project.formdatas.DeleteFileData;
+import models.project.formdatas.MoveData;
 import models.project.formdatas.ProjectDeltaData;
 import models.project.formdatas.RemoveUserFromProjectData;
 
@@ -38,6 +39,7 @@ public class ProjectController extends Controller {
 	final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
 
 	final Form<DeleteFileData> deleteFileForm = Form.form(DeleteFileData.class);
+	final Form<MoveData> moveForm = Form.form(MoveData.class);
 	final Form<CreateFolderData> createFolderForm = Form.form(CreateFolderData.class);
 	final Form<ProjectDeltaData> projectDeltaForm = Form.form(ProjectDeltaData.class);
 
@@ -134,20 +136,13 @@ public class ProjectController extends Controller {
 	 * @return
 	 * @throws IOException
 	 */
-	public Result putFile(String projectId, String path, boolean isZip) throws IOException {
+	public Result putFile(String projectId, String path, boolean isZip, Long parentRev) throws IOException {
 		assureUserBelongsToProject(projectId);
 		final byte[] content = request().body().asRaw().asBytes();
-		Long parentRev = null;
-		try {
-			final String parentRevString = request().getQueryString("parentRev");
-			if(parentRevString  == null)
-				return badRequest("parentRev is missing");
-			parentRev = Long.parseLong(parentRevString);
-			
-		} catch (NumberFormatException e) {
-			return badRequest("parentRev must be a valid Long");
-		}
-		 
+		
+		//can't use null in router, so -1 is given and will be mapped to null
+		if(parentRev == -1)
+			parentRev = null;
 
 		/**
 		 * To verify if file really is a zip we can check for the signature, a
@@ -168,6 +163,23 @@ public class ProjectController extends Controller {
 				return ok(fileMeta);
 			}
 		}));
+	}
+
+	public Result moveFile(String projectId) throws IOException {
+		assureUserBelongsToProject(projectId);
+		Form<MoveData> filledForm = moveForm.bindFromRequest();
+
+		if (filledForm.hasErrors()) {
+			return badRequest(filledForm.errorsAsJson());
+		} else {
+			final MoveData data = filledForm.get();
+			return async(projectService.moveFile(projectId, data.getCurrentPath(), data.getMoveToPath()).map(new Function<JsonNode, Result>() {
+				@Override
+				public Result apply(JsonNode folderMetadata) throws Throwable {
+					return ok(folderMetadata);
+				}
+			}));
+		}
 	}
 
 	public Result deleteFile(String projectId) throws IOException {
@@ -214,24 +226,24 @@ public class ProjectController extends Controller {
 			}
 		}));
 	}
-	
+
 	public Result listenForUpdates() throws IOException {
 		final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
-		final Map<String,String[]> urlEncodedBody = request().body().asFormUrlEncoded();
-		
-		for(Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+		final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
+
+		for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
 			try {
 				projectRevisonMap.put(entry.getKey(), Long.parseLong(entry.getValue()[0]));
-			} catch(NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				return badRequest("Revisions must be long value!");
 			}
 		}
-		
-		//check that project has been send
-		if(projectRevisonMap.size() == 0) {
+
+		// check that project has been send
+		if (projectRevisonMap.size() == 0) {
 			return badRequest("specify at least one project!");
 		}
-		
+
 		return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap).map(new Function<JsonNode, Result>() {
 			@Override
 			public Result apply(JsonNode result) throws Throwable {
@@ -240,7 +252,7 @@ public class ProjectController extends Controller {
 		}).recover(new Function<Throwable, Result>() {
 			@Override
 			public Result apply(Throwable t) throws Throwable {
-				if(t instanceof TimeoutException) {
+				if (t instanceof TimeoutException) {
 					return status(Controller.NOT_MODIFIED);
 				} else
 					throw t;
@@ -251,15 +263,15 @@ public class ProjectController extends Controller {
 	public Result projectVersionDelta(String projectId) throws IOException {
 		assureUserBelongsToProject(projectId);
 		Form<ProjectDeltaData> filledForm = projectDeltaForm.bindFromRequest();
-		
-		if(projectId.equals("-1"))
+
+		if (projectId.equals("-1"))
 			return status(NOT_MODIFIED);
-		
+
 		if (filledForm.hasErrors()) {
 			return badRequest(filledForm.errorsAsJson());
 		} else {
 			final ProjectDeltaData data = filledForm.get();
-			return async(projectService.versionDelta(projectId, data.getCursor()).map(new Function<JsonNode, Result>() {
+			return async(projectService.versionDelta(projectId, data.getProjectRevision()).map(new Function<JsonNode, Result>() {
 
 				@Override
 				public Result apply(JsonNode updates) throws Throwable {
