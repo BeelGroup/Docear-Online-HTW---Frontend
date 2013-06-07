@@ -1,12 +1,11 @@
 package services.backend.project;
 
+import org.codehaus.jackson.JsonNode;
+import play.libs.F.Promise;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
-import org.codehaus.jackson.JsonNode;
-
-import play.libs.F.Promise;
 
 /**
  * The defined projectservice-API is inspired by the Dropbox-API
@@ -22,8 +21,7 @@ public interface ProjectService {
 	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
 	
 	/**
-	 * 
-	 * @param username important for user rights validation
+	 *
 	 * @param projectId id of the project
 	 * @return
 	 * @throws IOException
