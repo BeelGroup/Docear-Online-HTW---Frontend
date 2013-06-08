@@ -6,14 +6,6 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
     persistenceHandlers = []
     mindMapUpdateHandlers = []
   
-    ###
-      todo:
-        remember nodes with childs, which still need to be rendered
-           - List of nodes to be rendered
-             - each with their parent objects (for adding)
-        getter for this childs
-        should be used in a loader class
-    ###
 
     createRootNodeByData:(data, containerID, @mapId)->
       rootNode = new RootNode()
