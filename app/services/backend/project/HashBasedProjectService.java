@@ -1,33 +1,8 @@
 package services.backend.project;
 
-import static services.backend.project.filestore.PathFactory.path;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
-import models.project.persistance.Changes;
-import models.project.persistance.EntityCursor;
-import models.project.persistance.FileIndexStore;
-import models.project.persistance.FileMetaData;
-import models.project.persistance.Project;
-
+import models.project.persistance.*;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -35,12 +10,22 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
 import play.Logger;
 import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
+
+import java.io.*;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import static services.backend.project.filestore.PathFactory.path;
 
 @Profile("projectHashImpl")
 @Component
@@ -147,9 +132,12 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData metadata = FileMetaData.folder(path, false);
 		fileIndexStore.upsertFile(projectId, metadata);
 
+        final FileMetaData newMetaData = fileIndexStore.getMetaData(projectId,path);
+
+
 		callListenersForChangeInProject(projectId);
 
-		return Promise.pure(new ObjectMapper().valueToTree(metadata));
+		return Promise.pure(new ObjectMapper().valueToTree(newMetaData));
 	}
 
 	private void upsertFoldersInPath(String projectId, String path) throws IOException {
@@ -213,10 +201,10 @@ public class HashBasedProjectService implements ProjectService {
 		final FileMetaData metadata = FileMetaData.file(actualPath, fileHash, bytes, false);
 		Logger.debug(metadata.toString());
 		fileIndexStore.upsertFile(projectId, metadata);
-
+        final FileMetaData newMetaData = fileIndexStore.getMetaData(projectId,actualPath);
 		callListenersForChangeInProject(projectId);
 
-		return Promise.pure(new ObjectMapper().valueToTree(metadata));
+		return Promise.pure(new ObjectMapper().valueToTree(newMetaData));
 	}
 
 	@Override
@@ -465,8 +453,13 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public Promise<JsonNode> delete(String projectId, String path) throws IOException {
 		path = addLeadingSlash(path);
+        Logger.debug("HashBasedProjectService => projectId: "+ projectId + "; path: "+path);
 
 		final FileMetaData oldMetadata = fileIndexStore.getMetaData(projectId, path);
+
+        if(oldMetadata == null) {
+            throw new NotFoundException("File is not present");
+        }
 
 		// check if already deleted
 		if (oldMetadata.isDeleted())
