@@ -46,7 +46,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       items = 
         deleteItem:
           label: "Remove",
+          separator_before  : false,
+          separator_after : true,
           action: @deleteNodeInJsTree
+
          
       if ($(node).hasClass("folder")) 
         items.addFile =  # upload
@@ -73,19 +76,31 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       document.log 'add file'
 
 
-    addFolderToJsTree:()=>
-      console.log @$workspaceTree.jstree('get_selected')
+    addFolderToJsTree:(liNode)->
       position = 'inside'
-      parent = @$workspaceTree.jstree('get_selected')
-      newNode = { state: "open", data: "New nooooode!" }
-      @$workspaceTree.jstree("create_node", parent, position, newNode, false, false);
+      parent = $('#workspace-tree').jstree('get_selected')
+      $('#workspace-tree').jstree('open_node', parent)
+      newNode = { attr: {class: 'folder'}, state: "open", data: "New folder"}
+      obj = $('#workspace-tree').jstree("create_node", parent, position, newNode, false, false);
 
+      # instant renaming
+      @.rename(obj)
 
-    deleteNodeInJsTree:(node)=>
-      document.log 'delete node'
+    deleteNodeInJsTree:(node)->
+      if this.is_selected(node)
+        this.remove()
+      else 
+        this.remove(node) 
       
-    addUserInJsTree:()=>
-      document.log 'add user'
+    addUserInJsTree:()->
+      position = 'inside'
+      parent = $('#workspace-tree').jstree('get_selected')
+      $('#workspace-tree').jstree('open_node', parent)
+      newNode = { attr: {class: 'user'}, state: "close", data: "New user"}
+      obj = $('#workspace-tree').jstree("create_node", parent, position, newNode, false, false);
+
+      # instant renaming
+      @.rename(obj)
 
 
 
