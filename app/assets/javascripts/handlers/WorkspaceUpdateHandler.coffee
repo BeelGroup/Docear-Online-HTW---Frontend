@@ -1,4 +1,4 @@
-define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/workspace/Resource', 'models/workspace/Project'],  (DocearRouter, Workspace, File, Project) ->  
+define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/workspace/Resource', 'models/workspace/Project'],  (DocearRouter, Workspace, Resource, Project) ->  
   module = () ->
   
   class MindMapUpdateHandler extends Backbone.Model
@@ -59,10 +59,10 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           project.set 'revision', projectsData.currentRevision
           
           for path, meta of projectsData.resources
-            file = project.createOrRecieveRecursiveByPath path
-            if file != undefined
-              file.fillFromData(meta)
-            document.log "File #{path} updated"
+            resource = project.createOrRecieveResourceByPath path
+            if resource != undefined
+              resource.fillFromData(meta)
+            document.log "Resource #{path} updated"
           
         dataType: 'json' 
       }
