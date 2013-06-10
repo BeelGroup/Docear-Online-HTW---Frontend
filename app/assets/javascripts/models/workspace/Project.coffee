@@ -26,52 +26,51 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Users', 'm
       if @resource is undefined
         @resource = new Resource(@, @get('path'))
     
-    getFileByPath: (path)->
+    getResourceByPath: (path)->
       resources = new Resources()
       resources.add(@resource); 
       
       result = undefined
-      while result == undefined and files.length > 0
-        files.each (file)=>
-          if file.path is path
-            result = file
+      while result == undefined and resources.length > 0
+        resources.each (resource)=>
+          if resource.path is path
+            result = resource
             return result
-          else if file.isFolder
-            files.add file
+          else if resource.isFolder
+            resources.add resource
       result
       
     ###
-    # this function look for a file in the tree. If the parent folder exists, 
+    # this function look for a resource in the tree. If the parent folder exists, 
     # it is created and added to the model (also rendered)
     # if the parent node doesn't exist, we assume that this part of the 
     # tree hasn't been loaded yet, so undefined is returned
     ###
-    createOrRecieveRecursiveByPath: (path)->
-      filePaths = path.split("/")
-      levels = filePaths.length
+    createOrRecieveResourceByPath: (path)->
+      resourcePaths = path.split("/")
+      levels = resourcePaths.length
       
       result = undefined
-      currentFile = undefined
+      currentResource = undefined
 
-      files = @files
+      resources = new Resources()
+      resources.add(@resource); 
       if levels > 1
         currentPath = ''
-        for i, path in filePaths
-          if files isnt undefined and i+1 < levels
+        for i, path in resourcePaths
+          if i+1 < levels
             currentPath = "{currentPath}/#{path}"
-            file = files.get currentPath
-            if file isnt undefined
-              files = file.get 'files'
+            resource = resources.get currentPath
+            if resource isnt undefined
+              resources = resource.get 'resources'
             else
-              files = undefined
+              resources = undefined
               return undefined
           else
-            result = files.get currentPath
+            result = resources.get currentPath
             if result is undefined
-              result = new File(currentPath)
-      else
-        result = @files.get path
-        if result is undefined
-          result = new File(path)
+              result = new Resource(currentPath)
+      else if result is undefined
+        result = new Resource(path)
         
   module.exports = Project

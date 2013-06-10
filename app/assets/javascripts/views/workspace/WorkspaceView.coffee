@@ -16,10 +16,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
     initialize : ()->
       @projectViews = []
       @model.each (project)=>
-        @projectViews.push(new ProjectView(project))
+        @projectViews.push(new ProjectView(project, @))
     
     add: (project)->
-      projectView = new ProjectView(project)
+      projectView = new ProjectView(project, @)
       @projectViews.push(projectView)
       
       if @_rendered
@@ -37,6 +37,9 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
             document.log 'create node'
         )
 
+    refreshNode: ($node) =>
+      @$workspaceTree.jstree 'refresh', $node
+        
     customMenu:(node) =>
 
       @$workspaceTree.jstree 'deselect_all'
@@ -127,14 +130,15 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
           dataType: 'json' 
         }
         $.ajax(params)
-        
 
     element:-> @$el
 
 
     render:()->
       @_rendered = true
-      @$el.html @template
+      options = {}
+      options.upload_enabled = $.inArray('WORKSPACE_UPLOAD', document.features) > -1
+      @$el.html @template options
       @$workspaceTree = $(@el).children('#workspace-tree')
       
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
@@ -144,5 +148,4 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       @$workspaceTree.jstree()
       @
       
-
   module.exports = Workspace

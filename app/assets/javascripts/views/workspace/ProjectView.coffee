@@ -1,4 +1,4 @@
-define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView'], (logger, ResourceView, UserView) ->
+define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'views/workspace/WorkspaceView'], (logger, ResourceView, UserView, WorkspaceView) ->
   module = () ->
 
   class Project extends Backbone.View
@@ -7,7 +7,7 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView'], (
     className: 'project'
     template : Handlebars.templates['Project']
 
-    constructor:(@model)->
+    constructor:(@model, @workspaceView)->
       @id = @model.get('id')
       super()
       
@@ -15,13 +15,15 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView'], (
     initialize : ()->
       @resourceViews = []
       @userViews = []
-      @resourceViews.push(new ResourceView(@model.resource))
+      @resourceViews.push(new ResourceView(@model.resource, @, @$el))
         
       @model.users.each (user)=>
         @userViews.push(new UserView(user))
         
     element:-> @$el
-
+    
+    refresh: ($node = -1)=>
+      @workspaceView.refreshNode $node
 
     render:()->
       @$el.html @template @model.toJSON()

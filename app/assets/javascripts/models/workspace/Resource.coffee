@@ -19,9 +19,13 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
       @set 'dir', data.dir
       @set 'deleted', data.deleted
       
-      for resourceData in data.contents
-        if @resources.get(resourceData.path) == undefined
-          @resources.add(new Resource(@project, resourceData.path))
+      if data.contents isnt undefined
+        for resourceData in data.contents
+          if @resources.get(resourceData.path) == undefined
+            resource = new Resource(@project, resourceData.path)
+            @resources.add(resource)
+            if $.inArray('WORKSPACE_LAZY_LOADING', document.features) > -1
+              resource.update()
       
       
     update: ()->
