@@ -19,12 +19,12 @@ define ['logger', 'models/workspace/Project'], (logger, Project)->
       }
       $.ajax(params)
       
-    getFileByPath: (path)->
+    getResourceByPath: (path)->
       result = null
       @each (project)=>
-        file = project.getFileByPath(path)
-        if file isnt null
-          result = file
+        resource = project.getResourceByPath(path)
+        if resource isnt null
+          result = resource
           return result
       result
       
