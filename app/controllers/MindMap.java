@@ -6,6 +6,7 @@ import models.frontend.formdata.*;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.models.MapIdentifier;
 import org.docear.messages.models.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,12 @@ public class MindMap extends Controller {
             final UserIdentifier userIdentifier = userIdentifier();
             final MapIdentifier mapIdentifier = new MapIdentifier(projectId, path);
             if (mindMapCrudService.createMindmap(userIdentifier(), mapIdentifier).get()) {
-                final String xmlString = mindMapCrudService.mindMapAsXmlString(userIdentifier, mapIdentifier).get();
+                final String mindMapAsXmlResponse = mindMapCrudService.mindMapAsXmlString(userIdentifier, mapIdentifier).get();
+                Logger.debug(mindMapAsXmlResponse);
+                final JsonNode responseJson = new ObjectMapper().readTree(mindMapAsXmlResponse);
+                Logger.debug(responseJson.getFieldNames().toString());
+                final String xmlString = responseJson.get("xmlString").toString();
+                Logger.debug(xmlString);
                 return async(projectService.putFile(projectId, path, xmlString.getBytes(), false, 0L).map(new Function<JsonNode, Result>() {
                     @Override
                     public Result apply(JsonNode jsonNode) throws Throwable {
