@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public abstract class MongoTest extends WithApplication {
     @Before
-    public void setUp() throws Exception {
+    public void setUpApplication() throws Exception {
         final HashMap<String, Object> additionalConfiguration = Maps.newHashMap();
         additionalConfiguration.put("embed.mongo.enabled", "true");
         additionalConfiguration.put("mongo.enabled", true);
@@ -20,7 +20,7 @@ public abstract class MongoTest extends WithApplication {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDownApplication() throws Exception {
         stopPlay();
     }
 }

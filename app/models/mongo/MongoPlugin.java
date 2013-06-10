@@ -44,6 +44,7 @@ public class MongoPlugin extends Plugin {
     private void ensureIndexes() {
         files().ensureIndex(doc("project", 1).append("path", 1), doc("unique", true));
         projects().ensureIndex(doc("_id", 1).append("authUsers", 1));
+        mindMapMetaData().ensureIndex(doc("projectId", 1).append("mindMapResource", 1), doc("unique", true));
     }
 
     private String host() {
@@ -66,6 +67,10 @@ public class MongoPlugin extends Plugin {
 
     public static DB db() {
         return mongoClient().getDB(Play.application().configuration().getString("mongo.db.default.name"));
+    }
+
+    public static DBCollection mindMapMetaData() {
+        return db().getCollection("mindMapMetaData");
     }
 
     public static DBCollection projects() {
