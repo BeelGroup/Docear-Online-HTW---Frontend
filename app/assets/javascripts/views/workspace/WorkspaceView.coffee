@@ -138,7 +138,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       @_rendered = true
       options = {}
       options.upload_enabled = $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-      @$el.html @template 
+      @$el.html @template options
       @$workspaceTree = $(@el).children('#workspace-tree')
       
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
