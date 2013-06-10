@@ -79,9 +79,11 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<InputStream> getFile(String projectId, String path) throws IOException {
+        Logger.debug("HashBasedProjectService.getFile => projectId: "+projectId+"; path: "+path);
 		path = addLeadingSlash(path);
 
 		try {
+            Logger.debug("HashBasedProjectService.getFile => test");
 			// look for file in fileIndexStore
 			final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
 			if (metadata == null) {
@@ -89,6 +91,7 @@ public class HashBasedProjectService implements ProjectService {
 			}
 
 			final String fileHash = metadata.getHash();
+            Logger.debug("HashBasedProjectService.getFile => fileHash: "+fileHash);
 
 			return Promise.pure((InputStream) fileStore.open(path().hash(fileHash).zipped()));
 
