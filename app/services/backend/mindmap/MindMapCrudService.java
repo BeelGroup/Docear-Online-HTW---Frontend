@@ -12,9 +12,11 @@ import play.libs.F.Promise;
 
 public interface MindMapCrudService {
 
+
+    Promise<Boolean> createMindmap(UserIdentifier user, MapIdentifier mapIdentifier);
+
 	/** 
 	 * Obtains a mind map as JSONString  with a specific id.
-	 * @param mapId id of the map
 	 * @param nodeCount soft limit of maxmium nodes to receive, -1 for unlimited
 	 * @return mind map as json string
 	 */

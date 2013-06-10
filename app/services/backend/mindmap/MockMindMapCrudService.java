@@ -1,6 +1,14 @@
 package services.backend.mindmap;
 
-import static util.Input.resourceToString;
+import models.backend.exceptions.DocearServiceException;
+import org.apache.commons.lang.NotImplementedException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.docear.messages.models.MapIdentifier;
+import org.docear.messages.models.UserIdentifier;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import play.libs.Akka;
+import play.libs.F.Promise;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,23 +17,18 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
-import models.backend.exceptions.DocearServiceException;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.docear.messages.models.MapIdentifier;
-import org.docear.messages.models.UserIdentifier;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import play.libs.Akka;
-import play.libs.F.Promise;
+import static util.Input.resourceToString;
 
 @Profile("backendMock")
 @Component
 public class MockMindMapCrudService implements MindMapCrudService {
 
-	@Override
+    @Override
+    public Promise<Boolean> createMindmap(UserIdentifier user, MapIdentifier mapIdentifier) {
+        throw new NotImplementedException("not implemented");
+    }
+
+    @Override
 	public Promise<String> mindMapAsJsonString(UserIdentifier user, MapIdentifier mapIdentifier, Integer nodeCount) throws DocearServiceException, IOException {
 		return Promise.pure(resourceToString("rest/v1/map/" + mapIdentifier.getMapId() + ".json"));
 	}

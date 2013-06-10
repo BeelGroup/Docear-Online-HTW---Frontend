@@ -12,6 +12,9 @@ GET	    /help						controllers.Application.help()
 POST	/feedback					controllers.Application.feedback()
 
 # Mindmap (new)
+## create
+POST	/api/v1/project/:projectId/map/create    					@controllers.MindMap.createNewMap(projectId: String)
+
 ## get information
 ### json
 GET		/api/v1/project/:projectId/map/:mapId/json 					@controllers.MindMap.mapAsJson(projectId: String, mapId: String, nodeCount : Integer ?= -1)
