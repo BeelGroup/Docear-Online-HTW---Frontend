@@ -12,4 +12,6 @@ public interface MetaDataCrudService {
     void delete(String projectId, String mindMapResource) throws IOException;
 
     EntityCursor<MetaData> findAll() throws IOException;
+
+    EntityCursor<MetaData> findByNotSavedSince(long millis) throws IOException;
 }

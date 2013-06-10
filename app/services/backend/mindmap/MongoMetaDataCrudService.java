@@ -69,4 +69,20 @@ public class MongoMetaDataCrudService implements MetaDataCrudService {
             }
         };
     }
+
+    @Override
+    public EntityCursor<MetaData> findByNotSavedSince(long millis) throws IOException {
+        final BasicDBObject query = doc("lastSaved", doc("$gt", millis));
+        final DBCursor cursor = mindMapMetaData().find(query);
+        return new EntityCursorBase<MetaData>(cursor) {
+            @Override
+            protected MetaData convert(DBObject dbObject) {
+                MetaData result = null;
+                if (dbObject instanceof BasicDBObject) {
+                    result = convertToPojo((BasicDBObject) dbObject);
+                }
+                return result;
+            }
+        };
+    }
 }
