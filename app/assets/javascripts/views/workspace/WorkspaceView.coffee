@@ -24,18 +24,19 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       
       if @_rendered
         $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
-        @$workspaceTree.jstree({
-        "plugins": ["themes", "html_data", "ui", "crrm", "contextmenu" ],
-        contextmenu: {items: @customMenu}
-        }).bind("rename_node.jstree create_node.jstree", (event, data)-> 
-          type = event.type
-          if(type is 'move_node')
-            document.log 'moving a node is currently not implemented!'
-          else if (type is 'rename_node')
-            document.log 'rename node'
-          else if (type is 'create_node')
-            document.log 'create node'
-        )
+        if $.inArray('WORKSPACE_JSTREE', document.features) > -1
+          @$workspaceTree.jstree({
+          "plugins": ["themes", "html_data", "ui", "crrm", "contextmenu" ],
+          contextmenu: {items: @customMenu}
+          }).bind("rename_node.jstree create_node.jstree", (event, data)-> 
+            type = event.type
+            if(type is 'move_node')
+              document.log 'moving a node is currently not implemented!'
+            else if (type is 'rename_node')
+              document.log 'rename node'
+            else if (type is 'create_node')
+              document.log 'create node'
+          )
 
     refreshNode: ($node) =>
       @$workspaceTree.jstree 'refresh', $node
@@ -145,7 +146,6 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       
-      @$workspaceTree.jstree()
       @
       
   module.exports = Workspace
