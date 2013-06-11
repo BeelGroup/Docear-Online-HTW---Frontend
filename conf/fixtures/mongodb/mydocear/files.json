@@ -1,6 +1,30 @@
 [
     {
         "_id": {
+            "$oid": "51a396d8322b7f437e368712"
+        },
+        "project": { "$oid": "507f191e810c19729de860ea" },
+        "path": "/README.md",
+        "revision": 1,
+        "revisions": [
+            {
+                "hash": "4343a",
+                "timestamp": { "$date": "2013-05-21T07:50:18.981Z"},
+                "bytes": 132324,
+                "is_dir": false,
+                "is_deleted": false
+            },
+            {
+                "hash": "122233a",
+                "timestamp": { "$date": "2013-05-21T07:52:18.981Z"},
+                "bytes": 1323,
+                "is_dir": false,
+                "is_deleted": false
+            }
+        ]
+    },
+    {
+        "_id": {
             "$oid": "51a396d8322b7f437e368773"
         },
         "project": { "$oid": "507f191e810c19729de860ea" },
