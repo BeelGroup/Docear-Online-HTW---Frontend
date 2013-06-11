@@ -3,6 +3,7 @@ package services.backend.mindmap;
 import models.backend.exceptions.DocearServiceException;
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.models.MapIdentifier;
 import org.docear.messages.models.UserIdentifier;
 import org.springframework.context.annotation.Profile;
@@ -34,7 +35,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> mindMapAsXmlString(UserIdentifier user, MapIdentifier mapIdentifier) throws DocearServiceException, IOException {
+	public Promise<MindmapAsXmlResponse> mindMapAsXmlString(UserIdentifier user, MapIdentifier mapIdentifier) throws DocearServiceException, IOException {
 		throw new NotImplementedException();
 	}
 

@@ -163,13 +163,13 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	@Override
-	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision) throws IOException {
+	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
 		String actualPath = addLeadingSlash(path);
 		upsertFoldersInPath(projectId, actualPath);
 
-		// check if file is present and not deleted
+		// check if file is present, not deleted and not forced to be overriden
 		final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
-		if (currentServerMetaData != null && !currentServerMetaData.isDeleted()) {
+		if (currentServerMetaData != null && !currentServerMetaData.isDeleted() && !forceOverride) {
 			final Long currentServerRevision = currentServerMetaData.getRevision();
 			// when file is present it is important that parentRev has been
 			if (parentRevision == null)

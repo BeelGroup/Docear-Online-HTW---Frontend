@@ -153,7 +153,7 @@ public class ProjectController extends Controller {
 			return badRequest("File was send as zip but isn't.");
 		}
 
-		return async(projectService.putFile(projectId, path, content, isZip, parentRev).map(new Function<JsonNode, Result>() {
+		return async(projectService.putFile(projectId, path, content, isZip, parentRev,false).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {

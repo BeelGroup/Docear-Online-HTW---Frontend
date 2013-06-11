@@ -2,6 +2,7 @@ package services.backend.mindmap;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Cancellable;
 import com.typesafe.config.ConfigFactory;
 import controllers.MindMap;
 import controllers.Secured;
@@ -26,19 +27,19 @@ import org.springframework.stereotype.Component;
 import play.Logger;
 import play.Play;
 import play.libs.Akka;
+import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.mvc.Controller;
+import scala.concurrent.duration.Duration;
 import services.backend.project.ProjectService;
 import services.backend.user.UserService;
 import util.backend.ZipUtils;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
 
 import static akka.pattern.Patterns.ask;
@@ -54,21 +55,43 @@ import static akka.pattern.Patterns.ask;
 public class ServerMindMapCrudService implements MindMapCrudService {
     private final ActorSystem system;
     private final ActorRef remoteActor;
+    private final Cancellable saveMindmapsJob;
+    private final UserIdentifier serverUserIdentifier = new UserIdentifier("SERVER", "SERVER");
     private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
     private Set<MapIdentifier> openMapIds = new HashSet<MapIdentifier>();
     @Autowired
     private UserService userService;
     @Autowired
     private ProjectService projectService;
+    @Autowired
+    private MetaDataCrudService metaDataCrudService;
 
     public ServerMindMapCrudService() {
         final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
         system = ActorSystem.create("freeplaneSystem", ConfigFactory.load().getConfig("local"));
         remoteActor = system.actorFor(freeplaneActorUrl);
+
+        // job to auto save maps that haven't been saved for 5 minutes but are open
+        saveMindmapsJob = system.scheduler().schedule(Duration.Zero(), Duration.apply(1, TimeUnit.MINUTES), new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //1000 * 1 ms = 1s * 60 = 1m * 5 = 5m = 1000 * 60 * 5 = 300000 ms
+
+                    Iterator<MetaData> metaIt = metaDataCrudService.findByNotSavedSince(300000).iterator();
+                    while (metaIt.hasNext()) {
+                        final MetaData metaData = metaIt.next();
+                        saveMindMapInProjectService(new MapIdentifier(metaData.getProjectId(), metaData.getMindMapResource()));
+                    }
+                } catch (IOException e) {
+                    Logger.error("Problem with metadataservice. Retrying in 5 Minutes! ", e);
+                }
+            }
+        }, system.dispatcher());
     }
 
     @Override
-    public Promise<Boolean> createMindmap(UserIdentifier userIdentifier, MapIdentifier mapIdentifier) {
+    public Promise<Boolean> createMindmap(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
         Logger.debug("ServerMindMapCrudService.createMindmap => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier);
 
         final CreateMindmapRequest request = new CreateMindmapRequest(userIdentifier, mapIdentifier);
@@ -76,8 +99,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
             @Override
             public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
-
                 final CreateMindmapResponse response = (CreateMindmapResponse) promise.get();
+                metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(),mapIdentifier.getMapId(),0L,System.currentTimeMillis()));
                 Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
                 return Promise.pure(response.isSuccess());
             }
@@ -106,20 +129,16 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     }
 
     @Override
-    public Promise<String> mindMapAsXmlString(UserIdentifier userIdentifier, MapIdentifier mapIdentifier) throws DocearServiceException, IOException {
+    public Promise<MindmapAsXmlResponse> mindMapAsXmlString(UserIdentifier userIdentifier, MapIdentifier mapIdentifier) throws DocearServiceException, IOException {
         Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier);
 
         final MindmapAsXmlRequest request = new MindmapAsXmlRequest(userIdentifier, mapIdentifier);
 
-        return performActionOnMindMap(request, new ActionOnMindMap<String>() {
+        return performActionOnMindMap(request, new ActionOnMindMap<MindmapAsXmlResponse>() {
             @Override
-            public Promise<String> perform(Promise<Object> promise) throws Exception {
+            public Promise<MindmapAsXmlResponse> perform(Promise<Object> promise) throws Exception {
                 final MindmapAsXmlResponse response = (MindmapAsXmlResponse) promise.get();
-                Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => response received");
-                String xmlString = new ObjectMapper().writeValueAsString(response);
-
-                Logger.debug("ServerMindMapCrudService.mindMapAsXmlString => returning map as xml string : " + xmlString.substring(0, 10));
-                return Promise.pure(xmlString);
+                return Promise.pure(response);
             }
         });
     }
@@ -146,7 +165,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                     @Override
                     public Boolean apply(Throwable t) throws Throwable {
                         /*
-						 * When map was not found, something must have happened
+                         * When map was not found, something must have happened
 						 * since the last interaction Probably the laptop was in
 						 * standby and tries now to reconnect, which should
 						 * result in a reload. When the frontend tries to load
@@ -170,7 +189,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
     @Override
     public Promise<String> createNode(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier, final String parentNodeId, final String side) {
-        Logger.debug("mapIdentifier: " + mapIdentifier + "; parentNodeId: " + parentNodeId + "; side: " + side);
+        Logger.debug("ServerMindMapCrudService.createNode => mapIdentifier: " + mapIdentifier + "; parentNodeId: " + parentNodeId + "; side: " + side);
         final AddNodeRequest request = new AddNodeRequest(userIdentifier, mapIdentifier, parentNodeId, side);
         final Promise<String> promise = performActionOnMindMap(request, new ActionOnMindMap<String>() {
 
@@ -227,7 +246,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             @Override
             public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
                 final MoveNodeToResponse response = (MoveNodeToResponse) promise.get();
-                return Promise.pure(response.getSuccess());
+                return Promise.pure(response.isSuccess());
             }
         });
     }
@@ -243,7 +262,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             @Override
             public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
                 final RemoveNodeResponse response = (RemoveNodeResponse) promise.get();
-                return Promise.pure(response.getDeleted());
+                return Promise.pure(response.isSuccess());
             }
         });
     }
@@ -274,7 +293,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             @Override
             public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
                 final RequestLockResponse response = (RequestLockResponse) promise.get();
-                return Promise.pure(response.getLockGained());
+                return Promise.pure(response.isSuccess());
             }
 
             @Override
@@ -298,7 +317,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             @Override
             public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
                 final ReleaseLockResponse response = (ReleaseLockResponse) promise.get();
-                return Promise.pure(response.getLockReleased());
+                return Promise.pure(response.isSuccess());
             }
 
             @Override
@@ -354,6 +373,31 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         try {
             Logger.debug("ServerMindMapCrudService.performActionOnMindMap => sending request to freeplane");
             final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
+
+            //link into promise for saving mechanism, save every 50 revisions
+            promise.onRedeem(new F.Callback<Object>() {
+                @Override
+                public void invoke(Object o) throws Throwable {
+                    Logger.debug("WAEFAWGAVAWVAV________________________________AWFAWF");
+
+                    if (o instanceof MindMapChangeResponse) {
+                        final MindMapChangeResponse response = (MindMapChangeResponse) o;
+                        try {
+                            final MetaData metaData = metaDataCrudService.find(message.getProjectId(), message.getMapId());
+                            Logger.debug(metaData.getCurrentRevision() + "; " + response.getCurrentRevision());
+                            Logger.debug("" + (metaData.getCurrentRevision() % 3));
+                            Logger.debug("" + (response.getCurrentRevision() % 3));
+                            if (metaData.getCurrentRevision() % 3 >= response.getCurrentRevision() % 3) {
+                                saveMindMapInProjectService(mapIdentifier);
+                            }
+                        } catch (Throwable t) {
+                            Logger.error("Problem with metaDataService", t);
+                            throw t;
+                        }
+
+                    }
+                }
+            });
             result = actionOnMindMap.perform(promise);
         } catch (Exception e) {
             Logger.debug("ServerMindMapCrudService.performActionOnMindMap => Exception catched! Type: " + e.getClass().getSimpleName());
@@ -392,10 +436,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
     }
 
-    private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, MapIdentifier mapIdentifier) throws NoUserLoggedInException {
+    private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) throws NoUserLoggedInException {
         Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier);
         InputStream in = null;
         String fileName = null;
+
 
         try {
             // test & welcome maps
@@ -437,12 +482,20 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
             final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, fileContentAsString, fileName);
 
+            //sending map to freeplane
             return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
                 @Override
                 public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
-                    ;
+
                     final OpenMindMapResponse response = (OpenMindMapResponse) promise.get();
-                    return Promise.pure(response.getSuccess());
+                    final boolean success = response.isSuccess();
+                    if (success) {
+                        //put in meta database
+                        final MetaData metaData = new MetaData(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), 0L, System.currentTimeMillis());
+                        metaDataCrudService.upsert(metaData);
+                    }
+
+                    return Promise.pure(success);
                 }
 
             }).get();
@@ -453,6 +506,37 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         } finally {
             IOUtils.closeQuietly(in);
         }
+    }
+
+    private void saveMindMapInProjectService(final MapIdentifier mapIdentifier) throws IOException {
+        final String projectId = mapIdentifier.getProjectId();
+        final String path = mapIdentifier.getMapId();
+
+        //compatibility! Don't try to save projectId -1
+        if (mapIdentifier.getProjectId().equals(MindMap.COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID))
+            return;
+
+        Logger.debug("ServerMindMapCrudService.saveMindMapInProjectService => saving map in project: " + mapIdentifier);
+        //get map xml
+        final MindmapAsXmlResponse mindmapAsXmlResponse = performActionOnMindMap(new MindmapAsXmlRequest(serverUserIdentifier, mapIdentifier), new ActionOnMindMap<MindmapAsXmlResponse>() {
+            @Override
+            public Promise<MindmapAsXmlResponse> perform(Promise<Object> promise) throws Exception {
+                return Promise.pure((MindmapAsXmlResponse) promise.get());
+            }
+        }).get();
+
+        Logger.debug(mindmapAsXmlResponse.getFileBytes().toString());
+
+        //convert to bytes for put
+        final byte[] fileBytes = mindmapAsXmlResponse.getFileBytes();
+        final long currentRevision = mindmapAsXmlResponse.getCurrentRevision();
+
+        //upload to server
+        projectService.putFile(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), fileBytes, false, 0L, true);
+
+        //update metadata
+        final MetaData newMetaData = new MetaData(projectId, path, currentRevision, System.currentTimeMillis());
+        metaDataCrudService.upsert(newMetaData);
     }
 
     private byte[] getMindMapInputStreamFromDocearServer(final UserIdentifier userIdentifier, final String mmIdOnServer, final StringBuilder outFileName) throws IOException {

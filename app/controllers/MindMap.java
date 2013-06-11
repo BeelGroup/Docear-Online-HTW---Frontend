@@ -3,10 +3,12 @@ package controllers;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.frontend.formdata.*;
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.docear.messages.Messages;
+import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.models.MapIdentifier;
 import org.docear.messages.models.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,9 @@ import services.backend.mindmap.MindMapCrudService;
 import services.backend.project.ProjectService;
 import services.backend.user.UserService;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,13 +58,9 @@ public class MindMap extends Controller {
             final UserIdentifier userIdentifier = userIdentifier();
             final MapIdentifier mapIdentifier = new MapIdentifier(projectId, path);
             if (mindMapCrudService.createMindmap(userIdentifier(), mapIdentifier).get()) {
-                final String mindMapAsXmlResponse = mindMapCrudService.mindMapAsXmlString(userIdentifier, mapIdentifier).get();
-                Logger.debug(mindMapAsXmlResponse);
-                final JsonNode responseJson = new ObjectMapper().readTree(mindMapAsXmlResponse);
-                Logger.debug(responseJson.getFieldNames().toString());
-                final String xmlString = responseJson.get("xmlString").toString();
-                Logger.debug(xmlString);
-                return async(projectService.putFile(projectId, path, xmlString.getBytes(), false, 0L).map(new Function<JsonNode, Result>() {
+                final MindmapAsXmlResponse mindMapAsXmlResponse = mindMapCrudService.mindMapAsXmlString(userIdentifier, mapIdentifier).get();
+
+                return async(projectService.putFile(projectId, path, mindMapAsXmlResponse.getFileBytes(), false, 0L, true).map(new Function<JsonNode, Result>() {
                     @Override
                     public Result apply(JsonNode jsonNode) throws Throwable {
                         return ok(jsonNode);
@@ -96,17 +96,24 @@ public class MindMap extends Controller {
 
     @Security.Authenticated(Secured.class)
     public Result mapAsXml(final String projectId, final String mapId) throws DocearServiceException, IOException {
-        Logger.debug("MindMap.map <- projectId= " + projectId + "; mapId=" + mapId);
+        Logger.debug("MindMap.mapAsXml <- projectId= " + projectId + "; mapId=" + mapId);
 
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
-        final F.Promise<String> mindMapPromise = mindMapCrudService.mindMapAsXmlString(userIdentifier(), mapIdentifier);
+        final F.Promise<Messages.MindmapAsXmlResponse> mindMapPromise = mindMapCrudService.mindMapAsXmlString(userIdentifier(), mapIdentifier);
 
-        return async(mindMapPromise.map(new F.Function<String, Result>() {
-            @Override
-            public Result apply(String mindMap) throws Throwable {
-                return ok(mindMap);
-            }
-        }));
+        final Messages.MindmapAsXmlResponse response = mindMapPromise.get();
+
+        InputStream in = null;
+        String xmlString = "";
+        try {
+            in = new ByteArrayInputStream(response.getFileBytes());
+            xmlString = IOUtils.toString(in);
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+        Logger.debug("MindMap.mapAsXml => returning map as xml string : " + xmlString.substring(0, 10));
+        response().setHeader("currentRevision", response.getCurrentRevision() + "");
+        return ok(xmlString);
     }
 
     @Security.Authenticated(Secured.class)
@@ -185,18 +192,11 @@ public class MindMap extends Controller {
         if (filledForm.hasErrors()) {
             return badRequest(filledForm.errorsAsJson());
         } else {
-            final String parentNodeId = filledForm.get().getParentNodeId();
-            String side = null;
+            final CreateNodeData data = filledForm.get();
+            final String parentNodeId = data.getParentNodeId();
+            String side = data.getSide();
 
-            final Map<String, String[]> formUrlEncoded = request().body().asFormUrlEncoded();
-            Logger.debug((formUrlEncoded != null) + "");
-            for (Map.Entry<String, String[]> entry : formUrlEncoded.entrySet()) {
-                if (entry.getKey().equals("side")) {
-                    side = entry.getValue()[0];
-                }
-            }
-
-            final MapIdentifier mapIdentifier = new MapIdentifier("-1", mapId);
+            final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
             final F.Promise<String> addNodePromise = mindMapCrudService.createNode(userIdentifier(), mapIdentifier, parentNodeId, side);
             return async(addNodePromise.map(new F.Function<String, Result>() {
                 @Override
