@@ -5,7 +5,6 @@ import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
 import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
@@ -24,14 +23,14 @@ import java.io.IOException;
 public class HadoopFileStore implements FileStore {
     @Autowired
     private FileSystem fileSystem;
-    
-    public HadoopFileStore() {
+
+    public HadoopFileStore() throws IOException {
     }
 
     public HadoopFileStore(FileSystem fileSystem) throws IOException {
         this.fileSystem = fileSystem;
-    }
 
+    }
 
     @Override
     public DataOutputStream create(String path) throws IOException {
@@ -43,12 +42,12 @@ public class HadoopFileStore implements FileStore {
     public DataInputStream open(String path) throws IOException {
         return fileSystem.open(new Path(path));
     }
-    
+
     @Override
     public void move(String fromPath, String toPath) throws IOException, FileNotFoundException {
-    	final Path from = new Path(fromPath);
-    	final Path to = new Path(toPath);
-    	fileSystem.moveFromLocalFile(from, to);
+        final Path from = new Path(fromPath);
+        final Path to = new Path(toPath);
+        fileSystem.moveFromLocalFile(from, to);
     }
 
     @Override

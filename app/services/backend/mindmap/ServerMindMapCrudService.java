@@ -371,10 +371,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
         Promise<A> result = null;
         try {
-            //check that mindmap is open somewhere
-            if(metaDataCrudService.find(mapIdentifier.getProjectId(),mapIdentifier.getMapId()) == null) {
-                sendMindMapToServer(user,mapIdentifier);
-            }
 
             Logger.debug("ServerMindMapCrudService.performActionOnMindMap => sending request to freeplane");
             final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
@@ -443,15 +439,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) throws NoUserLoggedInException {
         Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier);
         InputStream in = null;
-        String fileName = null;
-
-
         try {
             // test & welcome maps
             if (mapIdentifier.getMapId().length() == 1 || mapIdentifier.getMapId().equals("welcome")) {
                 Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => map is demo/welcome map, loading from resources");
                 in = Play.application().resourceAsStream("mindmaps/" + mapIdentifier.getMapId() + ".mm");
-                fileName = mapIdentifier + ".mm";
             }
             // map from user account
             else if (mapIdentifier.getProjectId().equals(MindMap.COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID)) {
@@ -464,7 +456,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                     throw new FileNotFoundException("Map not found");
                 }
 
-                fileName = outfileName.toString();
                 in = new ByteArrayInputStream(filebytes);
             }
             // map from project
@@ -473,7 +464,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
                 in = new ZipInputStream(projectService.getFile(mapIdentifier.getProjectId(), mapIdentifier.getMapId()).get());
                 ((ZipInputStream) in).getNextEntry();
-                fileName = mapId.substring(mapId.lastIndexOf("/"));
             }
 
             // copy map data to a string
@@ -484,7 +474,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             // send file to server and put in database
             metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(),mapIdentifier.getMapId(),0L,System.currentTimeMillis()));
 
-            final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, fileContentAsString, fileName);
+            final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, fileContentAsString, "");
 
             //sending map to freeplane
             return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
