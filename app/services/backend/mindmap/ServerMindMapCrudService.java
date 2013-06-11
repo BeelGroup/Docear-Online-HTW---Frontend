@@ -58,7 +58,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     private final Cancellable saveMindmapsJob;
     private final UserIdentifier serverUserIdentifier = new UserIdentifier("SERVER", "SERVER");
     private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
-    private Set<MapIdentifier> openMapIds = new HashSet<MapIdentifier>();
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -371,14 +371,18 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
         Promise<A> result = null;
         try {
+            //check that mindmap is open somewhere
+            if(metaDataCrudService.find(mapIdentifier.getProjectId(),mapIdentifier.getMapId()) == null) {
+                sendMindMapToServer(user,mapIdentifier);
+            }
+
             Logger.debug("ServerMindMapCrudService.performActionOnMindMap => sending request to freeplane");
             final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
 
-            //link into promise for saving mechanism, save every 50 revisions
+            //link into promise for saving mechanism, save every 25 revisions
             promise.onRedeem(new F.Callback<Object>() {
                 @Override
                 public void invoke(Object o) throws Throwable {
-                    Logger.debug("WAEFAWGAVAWVAV________________________________AWFAWF");
 
                     if (o instanceof MindMapChangeResponse) {
                         final MindMapChangeResponse response = (MindMapChangeResponse) o;
@@ -387,7 +391,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                             Logger.debug(metaData.getCurrentRevision() + "; " + response.getCurrentRevision());
                             Logger.debug("" + (metaData.getCurrentRevision() % 3));
                             Logger.debug("" + (response.getCurrentRevision() % 3));
-                            if (metaData.getCurrentRevision() % 3 >= response.getCurrentRevision() % 3) {
+                            if (metaData.getCurrentRevision() % 25 >= response.getCurrentRevision() % 25) {
                                 saveMindMapInProjectService(mapIdentifier);
                             }
                         } catch (Throwable t) {
@@ -477,8 +481,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             IOUtils.copy(in, writer);
             final String fileContentAsString = writer.toString();
 
-            // send file to server and put in open maps set
-            openMapIds.add(mapIdentifier);
+            // send file to server and put in database
+            metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(),mapIdentifier.getMapId(),0L,System.currentTimeMillis()));
 
             final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, fileContentAsString, fileName);
 
