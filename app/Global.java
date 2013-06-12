@@ -43,35 +43,7 @@ public class Global extends GlobalSettings {
         super.onStart(application);
         initializeFeatureToggles(conf);
         logGit(application);
-
-        //insertMockData();
     }
-
-//    private void insertMockData() {
-//
-//
-//        InputStream in = null;
-//        OutputStream out = null;
-//        try {
-//            final FileStore fileStore = new HadoopFileStore(new SpringConfiguration().fileSystem());
-//            //write mock mindmap
-//            in = Play.application().resourceAsStream("fixtures.hadoop.files.raw.new");
-//            out = fileStore.create("raw/5a3/ba4452a752864d0b3e48d8647cab354dc2ef22020a7d31789bc75f342e4fb3005f5111ce3fa0c48be085313c21cf5286476344e69e8d2c097a4eceb903f5d");
-//            IOUtils.copy(in, out);
-//            IOUtils.closeQuietly(in);
-//            IOUtils.closeQuietly(out);
-//
-//            in = Play.application().resourceAsStream("fixtures.hadoop.files.zipped.new");
-//            out = fileStore.create("zipped/5a3/ba4452a752864d0b3e48d8647cab354dc2ef22020a7d31789bc75f342e4fb3005f5111ce3fa0c48be085313c21cf5286476344e69e8d2c097a4eceb903f5d");
-//            IOUtils.copy(in, out);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            IOUtils.closeQuietly(in);
-//            IOUtils.closeQuietly(out);
-//        }
-//    }
 
     private void logGit(Application application) {
         try {
@@ -135,7 +107,12 @@ public class Global extends GlobalSettings {
         final Throwable realThrowable = throwable.getCause();
         if (realThrowable instanceof SendResultException) {
             final SendResultException e = (SendResultException) realThrowable;
-            return Controller.status(e.getStatusCode(), e.getMessage());
+            final ErrorResult errorResult = new ErrorResult(e.getMessage());
+            final ObjectNode jsonNode = org.codehaus.jackson.node.JsonNodeFactory.instance.objectNode();
+            jsonNode.put("type", "error");
+            jsonNode.put("message", e.getMessage());
+
+            return Controller.status(e.getStatusCode(), jsonNode);
         } else if (realThrowable instanceof UserNotFoundException) {
             return Controller.unauthorized();
         }
@@ -196,6 +173,23 @@ public class Global extends GlobalSettings {
             ObjectNode result = Json.newObject();
             result.put("message", "not found");
             return notFound(result);
+        }
+    }
+
+    private static final class ErrorResult {
+        private final String type = "error";
+        private final String message;
+
+        private ErrorResult(String message) {
+            this.message = message;
+        }
+
+        private String getMessage() {
+            return message;
+        }
+
+        private String getType() {
+            return type;
         }
     }
 }
