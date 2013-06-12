@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import play.Play;
 import services.backend.project.filestore.FileStore;
 
 import java.io.DataInputStream;
@@ -40,6 +41,22 @@ public class HadoopFileStore implements FileStore {
 
     @Override
     public DataInputStream open(String path) throws IOException {
+
+        //mocking file
+        if (path.contains("431/f6c688f6acaf438fd02be3b487aed4407b4377d3bf2b8cbb7cc40e745282723a9c216d9b40f347fe984426ad98a92a6888022a9cea810997cad8e18856a2c")) {
+            //check if file is in hadoop
+            try {
+                final DataInputStream dataInputStream = fileSystem.open(new Path(path));
+                return dataInputStream;
+            } catch (FileNotFoundException e) {
+                if (path.contains("zipped"))
+                    return new DataInputStream(Play.application().resourceAsStream("/fixtures/hadoop/files/zipped/new"));
+                else
+                    return new DataInputStream(Play.application().resourceAsStream("/fixtures/hadoop/files/raw/new"));
+            }
+
+        }
+
         return fileSystem.open(new Path(path));
     }
 
