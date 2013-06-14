@@ -49,7 +49,7 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
           success: (data)->
             me.updated = true
             me.fillFromData(data)
-            document.log "files data received"
+            document.log "files data for "+(me.get 'filename')+ " received"
           dataType: 'json' 
         }
         $.ajax(params)
