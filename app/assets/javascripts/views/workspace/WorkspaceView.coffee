@@ -33,6 +33,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
             document.log 'moving a node is currently not implemented!'
           else if (type is 'rename_node')
             document.log 'rename node'
+            document.log data, 'console'
           else if (type is 'create_node')
             document.log 'create node'
         )
@@ -79,22 +80,60 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       document.log 'add file'
 
 
-    addFolderToJsTree:(liNode)->
-      position = 'inside'
-      parent = $('#workspace-tree').jstree('get_selected')
-      $('#workspace-tree').jstree('open_node', parent)
-      newNode = { attr: {class: 'folder'}, state: "open", data: "New folder"}
-      obj = $('#workspace-tree').jstree("create_node", parent, position, newNode, false, false);
+    addFolderToJsTree:(liNode, a, b)->
+      $parent = $('#workspace-tree').jstree('get_selected')
+
+      $('#workspace-tree').jstree('open_node', $parent)
+      newNode = { attr: {class: 'folder'}, state: "open", data: "New folder" }
+      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
 
       # instant renaming
-      @.rename(obj)
+      # own implementation of @.rename(obj)
+      obj = @._get_node(obj)
+      @.__rollback()
+      f = @.__callback
+      @._show_input(obj, (obj, new_name, old_name)-> 
+        f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
+
+        $parent  = $('#workspace-tree').jstree('get_selected')
+        $project = $($parent).closest('li.project')
+
+        # build path
+        currentPath = $parent.attr('id')
+        if currentPath[currentPath.length-1] isnt '/'
+          currentPath += "/"
+        currentPath += new_name
+
+        projectId   = $project.attr('id')
+
+        # set id in dom
+        obj[0].id = currentPath
+
+        params = {
+          url: jsRoutes.controllers.ProjectController.createFolder(projectId).url
+          type: 'POST'
+          cache: false
+          data: {"path": currentPath}
+          success:(data)=>
+            # create new model and add to parent
+            document.log "folder with path : "+currentPath+" to project "+projectId
+          error:()=>
+            document.log "error on folder adding with path : "+currentPath+" to project "+projectId
+          dataType: 'json' 
+        }
+
+        $.ajax(params)
+      )
+
+    newFolderToServer:()->
+
 
     deleteNodeInJsTree:(node)->
       if this.is_selected(node)
         this.remove()
       else 
         this.remove(node) 
-      
+
     addUserInJsTree:()->
       position = 'inside'
       parent = $('#workspace-tree').jstree('get_selected')
@@ -129,7 +168,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
             document.log "project added"
           dataType: 'json' 
         }
-        $.ajax(params)
+        $.ajax(params)  
 
     element:-> @$el
 
@@ -144,8 +183,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
-      
-      @$workspaceTree.jstree()
+
       @
       
   module.exports = Workspace

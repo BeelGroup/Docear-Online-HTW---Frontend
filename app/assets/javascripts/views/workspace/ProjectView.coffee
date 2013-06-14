@@ -28,7 +28,7 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
     render:()->
       @$el.html @template @model.toJSON()
       
-      $resourcesContainer = $(@el).find('ul > li > ul.resources')
+      $resourcesContainer = $(@el).children('ul')
       for resourceView in @resourceViews
         $($resourcesContainer).append $(resourceView.render().el)
 

@@ -18,6 +18,7 @@ define ['logger'], (logger) ->
         @resourceViews.push(new ResourceView(resource, @projectView, @$el))
       
     add: (resource)->
+      # TODO: Use jstree API
       resourceView = new ResourceView(resource, @projectView, @$el)
       @resourceViews.push(resourceView)
       
@@ -28,10 +29,11 @@ define ['logger'], (logger) ->
     element:-> @$el
 
     render:()->
+      # TODO: Use jstree Api (create_node)
       @_rendered = true
       @$el.html @template @model.toJSON()
       @$el.attr 'id', @model.get('id')
-      if @model.dir
+      if @model.get 'dir'
         $(@el).addClass('folder')  
       
       $resourcesContainer = $(@el).find('ul.resources:first')
