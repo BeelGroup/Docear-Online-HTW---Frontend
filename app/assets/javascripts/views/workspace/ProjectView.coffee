@@ -21,6 +21,9 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
         @userViews.push(new UserView(user))
         
     element:-> @$el
+
+    getId:->
+      @id
     
     refresh: ($node = -1)=>
       @workspaceView.refreshNode $node

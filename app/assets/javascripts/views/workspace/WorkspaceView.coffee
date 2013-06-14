@@ -133,7 +133,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       if this.is_selected(node)
         this.remove()
       else 
-        this.remove(node) 
+        this.remove(node)
 
     addUserInJsTree:()->
       position = 'inside'
