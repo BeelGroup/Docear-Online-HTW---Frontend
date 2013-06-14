@@ -21,6 +21,9 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
         @userViews.push(new UserView(user))
         
     element:-> @$el
+
+    getId:->
+      @id
     
     refresh: ($node = -1)=>
       @workspaceView.refreshNode $node
@@ -28,7 +31,7 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
     render:()->
       @$el.html @template @model.toJSON()
       
-      $resourcesContainer = $(@el).find('ul > li > ul.resources')
+      $resourcesContainer = $(@el).children('ul')
       for resourceView in @resourceViews
         $($resourcesContainer).append $(resourceView.render().el)
 

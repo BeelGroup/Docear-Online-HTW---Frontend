@@ -25,6 +25,7 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Users', 'm
         @users = new Users()
       if @resource is undefined
         @resource = new Resource(@, @get('path'))
+        @resource.set 'dir', true
     
     getResourceByPath: (path)->
       resources = new Resources()
