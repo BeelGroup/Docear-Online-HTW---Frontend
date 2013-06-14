@@ -13,8 +13,8 @@ define ['logger'], (logger) ->
       @model.resources.each (resource)=>
         @resourceViews.push(new ResourceView(resource, @projectView, @$el))
       
-    add: (resource)->
-      resourceView = new ResourceView(resource, @projectView, @$el)
+    add: (model)->
+      resourceView = new ResourceView(model, @projectView, @$el)
       @resourceViews.push(resourceView)
       
       if @_rendered
@@ -27,18 +27,28 @@ define ['logger'], (logger) ->
       if path isnt "/"
         # extract parentpath in order to find parent dom node via id
         lastSlashIndex = path.lastIndexOf '/'
-        parentPath = path.substr(0, lastSlashIndex+1)
-        $parent = $("#"+@projectView.getId()).find("#\\"+parentPath)
+
+        if lastSlashIndex isnt 0
+          parentPath = path.substr(0, lastSlashIndex)
+        else
+          parentPath = "/"
+
+        console.log path
+        console.log parentPath
+
+        cleanParentPath = parentPath.replace new RegExp("/", "g"), "\\/" 
+        console.log cleanParentPath
+        $parent = $("#"+@projectView.getId()).find "#" + cleanParentPath
 
         classes = 'resource '
         if @model.get 'dir'
           classes += 'folder '
 
-        thisState = 'closed'
+        thisState = 'leaf'
         if @model.get 'dir'
-          thisState = 'open'
+          thisState = 'closed'
 
-        newNode = { attr: {class: classes, id: @model.get('id')}, state: thisState, data: @model.get('filename') }
+        newNode = { attr: {class: classes, id: path}, state: thisState, data: @model.get('filename') }
         obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
 
       @_rendered = true

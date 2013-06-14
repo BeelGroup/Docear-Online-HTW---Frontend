@@ -3,11 +3,15 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
 
   class Resource extends Backbone.Model 
 
-    constructor: (@project, @path)->
+    constructor: (@project, data, @isRoot)->
       super()
-      @set 'path', @path
-      @set 'id', @path
-      @set 'filename', @path.substring(@path.lastIndexOf('/')+1);
+      if not isRoot
+        @fillFromData data
+      else
+        @set 'path', data
+        @set 'id', data
+        @set 'filename', data.substring(data.lastIndexOf('/')+1);
+
       
     initialize : ()->
       @resources = new Resources()
@@ -17,15 +21,18 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
       @set 'bytes', data.bytes
       @set 'revision', data.revision
       @set 'dir', data.dir
-      @set 'deleted', data.deleted
+      @set 'deleted', data.deleted      
+      @set 'path', data.path
+      @set 'id', data.path
+      @set 'filename', data.path.substring(data.path.lastIndexOf('/')+1);
       
       if data.contents isnt undefined
         for resourceData in data.contents
           if @resources.get(resourceData.path) == undefined
-            resource = new Resource(@project, resourceData.path)
+            resource = new Resource(@project, resourceData)
             @resources.add(resource)
-            if !($.inArray('WORKSPACE_LAZY_LOADING', document.features) > -1)
-              resource.update()
+            #if !($.inArray('WORKSPACE_LAZY_LOADING', document.features) > -1)
+            resource.update()
       
       
     update: ()->
