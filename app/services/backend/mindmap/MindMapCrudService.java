@@ -5,6 +5,7 @@ import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
 
+import org.docear.messages.Messages;
 import org.docear.messages.models.MapIdentifier;
 import org.docear.messages.models.UserIdentifier;
 
@@ -12,14 +13,16 @@ import play.libs.F.Promise;
 
 public interface MindMapCrudService {
 
+
+    Promise<Boolean> createMindmap(UserIdentifier user, MapIdentifier mapIdentifier);
+
 	/** 
 	 * Obtains a mind map as JSONString  with a specific id.
-	 * @param mapId id of the map
 	 * @param nodeCount soft limit of maxmium nodes to receive, -1 for unlimited
 	 * @return mind map as json string
 	 */
 	Promise<String> mindMapAsJsonString(UserIdentifier user, MapIdentifier mapIdentifier,Integer nodeCount) throws DocearServiceException, IOException;
-	Promise<String> mindMapAsXmlString(UserIdentifier user, MapIdentifier mapIdentifier) throws DocearServiceException, IOException;
+	Promise<Messages.MindmapAsXmlResponse> mindMapAsXmlString(UserIdentifier user, MapIdentifier mapIdentifier) throws DocearServiceException, IOException;
 	
 
 	Promise<Boolean> requestLock(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId);

@@ -5,10 +5,14 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import models.project.persistance.EntityCursor;
 import models.project.persistance.EntityCursorBase;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import static models.mongo.MongoPlugin.*;
 
+@Profile("mindMapMetaDataMongo")
+@Component
 public class MongoMetaDataCrudService implements MetaDataCrudService {
     @Override
     public void upsert(MetaData metaData) throws IOException {
@@ -58,6 +62,22 @@ public class MongoMetaDataCrudService implements MetaDataCrudService {
     @Override
     public EntityCursor<MetaData> findAll() throws IOException {
         final DBCursor cursor = mindMapMetaData().find();
+        return new EntityCursorBase<MetaData>(cursor) {
+            @Override
+            protected MetaData convert(DBObject dbObject) {
+                MetaData result = null;
+                if (dbObject instanceof BasicDBObject) {
+                    result = convertToPojo((BasicDBObject) dbObject);
+                }
+                return result;
+            }
+        };
+    }
+
+    @Override
+    public EntityCursor<MetaData> findByNotSavedSince(long millis) throws IOException {
+        final BasicDBObject query = doc("lastSaved", doc("$gt", millis));
+        final DBCursor cursor = mindMapMetaData().find(query);
         return new EntityCursorBase<MetaData>(cursor) {
             @Override
             protected MetaData convert(DBObject dbObject) {

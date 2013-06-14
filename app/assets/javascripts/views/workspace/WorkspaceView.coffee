@@ -24,6 +24,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       
       if @_rendered
         $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
+        #if $.inArray('WORKSPACE_JSTREE', document.features) > -1
         @$workspaceTree.jstree({
         "plugins": ["themes", "html_data", "ui", "crrm", "contextmenu" ],
         contextmenu: {items: @customMenu}
@@ -33,10 +34,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
             document.log 'moving a node is currently not implemented!'
           else if (type is 'rename_node')
             document.log 'rename node'
-            document.log data, 'console'
           else if (type is 'create_node')
             document.log 'create node'
         )
+
 
     refreshNode: ($node) =>
       @$workspaceTree.jstree 'refresh', $node
@@ -183,7 +184,11 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> f1a5dea515e22b751d38e37ed946c434d75f780d
       @
       
   module.exports = Workspace

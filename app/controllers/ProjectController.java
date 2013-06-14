@@ -1,25 +1,12 @@
 package controllers;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-
+import controllers.featuretoggle.Feature;
+import controllers.featuretoggle.ImplementedFeature;
 import models.backend.exceptions.sendResult.UnauthorizedException;
-import models.project.formdatas.AddUserToProjectData;
-import models.project.formdatas.CreateFolderData;
-import models.project.formdatas.CreateProjectData;
-import models.project.formdatas.DeleteFileData;
-import models.project.formdatas.MoveData;
-import models.project.formdatas.ProjectDeltaData;
-import models.project.formdatas.RemoveUserFromProjectData;
-
+import models.project.formdatas.*;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import play.data.Form;
 import play.libs.F.Function;
 import play.mvc.Controller;
@@ -27,8 +14,13 @@ import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.project.ProjectService;
 import services.backend.user.UserService;
-import controllers.featuretoggle.Feature;
-import controllers.featuretoggle.ImplementedFeature;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
@@ -138,11 +130,16 @@ public class ProjectController extends Controller {
 	 */
 	public Result putFile(String projectId, String path, boolean isZip, Long parentRev) throws IOException {
 		assureUserBelongsToProject(projectId);
-		final byte[] content = request().body().asRaw().asBytes();
+		byte[] content = request().body().asRaw().asBytes();
 		
 		//can't use null in router, so -1 is given and will be mapped to null
 		if(parentRev == -1)
 			parentRev = null;
+
+        //check that content is present
+        if(content == null) {
+            content = new byte[0];
+        }
 
 		/**
 		 * To verify if file really is a zip we can check for the signature, a
@@ -156,7 +153,7 @@ public class ProjectController extends Controller {
 			return badRequest("File was send as zip but isn't.");
 		}
 
-		return async(projectService.putFile(projectId, path, content, isZip, parentRev).map(new Function<JsonNode, Result>() {
+		return async(projectService.putFile(projectId, path, content, isZip, parentRev,false).map(new Function<JsonNode, Result>() {
 
 			@Override
 			public Result apply(JsonNode fileMeta) throws Throwable {

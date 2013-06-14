@@ -13,11 +13,11 @@ import static org.fest.assertions.Assertions.assertThat;
 import static com.google.common.collect.Lists.newArrayList;
 
 public class MongoMetaDataCrudServiceTest extends MongoTest {
-    public static final MetaData META_DATA_1 = new MetaData("demo-project-id", "mindMapResource-demo", 400L, 899999L);
+    public static final MetaData META_DATA_1 = new MetaData("demo-project-id", "mindMapResource-demo", 400L, 100L);
     public static final MetaData META_DATA_1_CHANGED = new MetaData(META_DATA_1.getProjectId(), META_DATA_1.getMindMapResource(), 500L, 1000000000L);
-    public static final MetaData META_DATA_2 = new MetaData("demo-project-id2", "mindMapResource-demo", 400L, 899999L);
-    public static final MetaData META_DATA_3 = new MetaData("demo-project-id", "mindMapResource-demo2", 400L, 899999L);
-    public static final MetaData META_DATA_4 = new MetaData("demo-project-id2", "mindMapResource-demo2", 400L, 899999L);
+    public static final MetaData META_DATA_2 = new MetaData("demo-project-id2", "mindMapResource-demo", 400L, 200L);
+    public static final MetaData META_DATA_3 = new MetaData("demo-project-id", "mindMapResource-demo2", 400L, 300L);
+    public static final MetaData META_DATA_4 = new MetaData("demo-project-id2", "mindMapResource-demo2", 400L, 500L);
     private MetaDataCrudService service;
 
     @Before
@@ -62,14 +62,18 @@ public class MongoMetaDataCrudServiceTest extends MongoTest {
 
     @Test
     public void testFindAllMultipleValues() throws Exception {
-        service.upsert(META_DATA_1);
-        service.upsert(META_DATA_2);
-        service.upsert(META_DATA_3);
-        service.upsert(META_DATA_4);
+        upsert4MetaDatas();
         final EntityCursor<MetaData> all = service.findAll();
         final List<MetaData> metaDatas = newArrayList(all);
         all.close();
         assertThat(metaDatas).hasSize(4);
+    }
+
+    private void upsert4MetaDatas() throws IOException {
+        service.upsert(META_DATA_1);
+        service.upsert(META_DATA_2);
+        service.upsert(META_DATA_3);
+        service.upsert(META_DATA_4);
     }
 
     @Test
@@ -79,5 +83,16 @@ public class MongoMetaDataCrudServiceTest extends MongoTest {
         final List<MetaData> metaDatas = newArrayList(all);
         all.close();
         assertThat(metaDatas).hasSize(0);
+    }
+
+    @Test
+    public void testFindByNotSavedSince() throws Exception {
+        upsert4MetaDatas();
+        assertThat(service.findByNotSavedSince(99)).hasSize(4);
+        assertThat(service.findByNotSavedSince(100)).hasSize(3);
+        assertThat(service.findByNotSavedSince(101)).hasSize(3);
+        assertThat(service.findByNotSavedSince(200)).hasSize(2);
+        assertThat(service.findByNotSavedSince(300)).hasSize(1);
+        assertThat(service.findByNotSavedSince(600)).hasSize(0);
     }
 }

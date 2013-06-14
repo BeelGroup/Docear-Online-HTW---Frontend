@@ -1,48 +1,33 @@
-import static controllers.Application.LOGGED_ERROR_CACHE_PREFIX;
-import static java.util.Collections.sort;
-import static org.apache.commons.lang.StringUtils.defaultString;
-import static play.mvc.Controller.flash;
-import static play.mvc.Results.notFound;
-import static play.mvc.Results.redirect;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-
+import configuration.SpringConfiguration;
+import controllers.featuretoggle.Feature;
+import controllers.featuretoggle.FeatureComparator;
+import controllers.routes;
 import models.backend.exceptions.UserNotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
-import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.frontend.LoggedError;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import play.Application;
-import play.Configuration;
-import play.GlobalSettings;
-import play.Logger;
-import play.Play;
+import play.*;
 import play.cache.Cache;
 import play.libs.Json;
 import play.mvc.Action;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import views.html.defaultpages.unauthorized;
-import configuration.SpringConfiguration;
-import controllers.Secured;
-import controllers.routes;
-import controllers.featuretoggle.Feature;
-import controllers.featuretoggle.FeatureComparator;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static controllers.Application.LOGGED_ERROR_CACHE_PREFIX;
+import static java.util.Collections.sort;
+import static org.apache.commons.lang.StringUtils.defaultString;
+import static play.mvc.Controller.flash;
+import static play.mvc.Results.notFound;
+import static play.mvc.Results.redirect;
 
 public class Global extends GlobalSettings {
     private int loggedErrorExpirationInSeconds;
@@ -91,7 +76,7 @@ public class Global extends GlobalSettings {
         final Configuration featureConf = conf.getConfig("application.features");
         List<String> enabledFeatureList = new LinkedList<String>();
         for (String feature : featureConf.keys()) {
-            if(featureConf.getBoolean(feature)) {
+            if (featureConf.getBoolean(feature)) {
                 Feature.enableFeature(feature, true);
                 enabledFeatureList.add(feature);
             }
@@ -117,14 +102,19 @@ public class Global extends GlobalSettings {
         So the error gets an ID, stored with that ID in the cache and the redirected action has a
         HTTP context and can restore the exceptions from the cache and use the standard templates.
          */
-        
+
         //check if exception needs special handling
         final Throwable realThrowable = throwable.getCause();
-        if(realThrowable instanceof SendResultException) {
-        	final SendResultException e = (SendResultException) realThrowable;
-        	return Controller.status(e.getStatusCode(),e.getMessage());
+        if (realThrowable instanceof SendResultException) {
+            final SendResultException e = (SendResultException) realThrowable;
+            final ErrorResult errorResult = new ErrorResult(e.getMessage());
+            final ObjectNode jsonNode = org.codehaus.jackson.node.JsonNodeFactory.instance.objectNode();
+            jsonNode.put("type", "error");
+            jsonNode.put("message", e.getMessage());
+
+            return Controller.status(e.getStatusCode(), jsonNode);
         } else if (realThrowable instanceof UserNotFoundException) {
-        	return Controller.unauthorized();
+            return Controller.unauthorized();
         }
         //default handling
         final String errorId = UUID.randomUUID().toString();
@@ -151,7 +141,7 @@ public class Global extends GlobalSettings {
     }
 
     private void logRequest(Http.Request request, Method method) {
-        if(Logger.isDebugEnabled() && !request.path().startsWith("/assets")) {
+        if (Logger.isDebugEnabled() && !request.path().startsWith("/assets")) {
             StringBuilder sb = new StringBuilder(request.toString());
             sb.append(" ").append(method.getDeclaringClass().getCanonicalName());
             sb.append(".").append(method.getName()).append("(");
@@ -183,6 +173,23 @@ public class Global extends GlobalSettings {
             ObjectNode result = Json.newObject();
             result.put("message", "not found");
             return notFound(result);
+        }
+    }
+
+    private static final class ErrorResult {
+        private final String type = "error";
+        private final String message;
+
+        private ErrorResult(String message) {
+            this.message = message;
+        }
+
+        private String getMessage() {
+            return message;
+        }
+
+        private String getType() {
+            return type;
         }
     }
 }

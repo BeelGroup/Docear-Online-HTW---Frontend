@@ -24,7 +24,7 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
           if @resources.get(resourceData.path) == undefined
             resource = new Resource(@project, resourceData.path)
             @resources.add(resource)
-            if $.inArray('WORKSPACE_LAZY_LOADING', document.features) > -1
+            if !($.inArray('WORKSPACE_LAZY_LOADING', document.features) > -1)
               resource.update()
       
       

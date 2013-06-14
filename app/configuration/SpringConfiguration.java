@@ -1,5 +1,6 @@
 package configuration;
 
+import controllers.MindMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -10,11 +11,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.ConfigurableEnvironment;
-
 import play.Configuration;
 import play.Logger;
 import play.Play;
-import controllers.MindMap;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,11 +24,11 @@ import java.util.Date;
 import static java.nio.charset.Charset.defaultCharset;
 
 /**
- * 
  * Configuration for Spring Dependency Injection.
  * (Switch between mock and prod implementations)
  */
-@ComponentScan({"controllers", "services", "services.backend.mindmap", "services.backend.project", "services.backend.project.filestore", "services.backend.project.filestore.hadoop", "models.project.persistance"})//add here packages containing @Component annotated classes
+@ComponentScan({"controllers", "services", "services.backend.mindmap", "services.backend.project", "services.backend.project.filestore", "services.backend.project.filestore.hadoop", "models.project.persistance"})
+//add here packages containing @Component annotated classes
 public class SpringConfiguration {
 
 
