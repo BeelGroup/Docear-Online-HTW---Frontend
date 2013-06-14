@@ -184,11 +184,6 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> f1a5dea515e22b751d38e37ed946c434d75f780d
       @
       
   module.exports = Workspace
