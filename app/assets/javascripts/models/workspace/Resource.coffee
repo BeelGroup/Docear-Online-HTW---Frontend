@@ -3,8 +3,9 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
 
   class Resource extends Backbone.Model 
 
-    constructor: (@project, data, @isRoot)->
+    constructor: (@project, data, @isRoot = false)->
       super()
+      @updated = false
       if not isRoot
         @fillFromData data
       else
@@ -31,20 +32,25 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
           if @resources.get(resourceData.path) == undefined
             resource = new Resource(@project, resourceData)
             @resources.add(resource)
-            #if !($.inArray('WORKSPACE_LAZY_LOADING', document.features) > -1)
-            resource.update()
+            if @isRoot
+              resource.update()
       
-      
-    update: ()->
-      me = @
-      params = {
-        url: jsRoutes.controllers.ProjectController.metadata(@project.id, encodeURI(@get('path'))).url
-        type: 'GET'
-        cache: false
-        success: (data)->
-          me.fillFromData(data)
-          document.log "files data received"
-        dataType: 'json' 
-      }
-      $.ajax(params)
+     
+    updateChilds:->
+
+
+    update: ()=>
+      if not @updated
+        me = @
+        params = {
+          url: jsRoutes.controllers.ProjectController.metadata(@project.id, encodeURI(@get('path'))).url
+          type: 'GET'
+          cache: false
+          success: (data)->
+            me.updated = true
+            me.fillFromData(data)
+            document.log "files data received"
+          dataType: 'json' 
+        }
+        $.ajax(params)
   module.exports = Resource

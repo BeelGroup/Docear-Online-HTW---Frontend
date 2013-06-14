@@ -7,6 +7,14 @@ define ['logger'], (logger) ->
       super()
       @model.resources.bind "add", @add , @   
       @_rendered = false
+      
+
+    addBindingsTo:(obj)->
+      obj.find(".jstree-icon:first").on "click", @updateChilds
+
+    updateChilds:=>
+      for resourceView in @resourceViews
+        resourceView.model.update()
 
     initialize : ()->
       @resourceViews = []
@@ -20,24 +28,19 @@ define ['logger'], (logger) ->
       if @_rendered
         resourceView.render()
     
-
     render:()->
-      path = @model.get 'path'
+      @path = @model.get 'path'
       # root folde was already rendered with projekt template
-      if path isnt "/"
+      if @path isnt "/"
         # extract parentpath in order to find parent dom node via id
-        lastSlashIndex = path.lastIndexOf '/'
+        lastSlashIndex = @path.lastIndexOf '/'
 
         if lastSlashIndex isnt 0
-          parentPath = path.substr(0, lastSlashIndex)
+          parentPath = @path.substr(0, lastSlashIndex)
         else
           parentPath = "/"
 
-        console.log path
-        console.log parentPath
-
         cleanParentPath = parentPath.replace new RegExp("/", "g"), "\\/" 
-        console.log cleanParentPath
         $parent = $("#"+@projectView.getId()).find "#" + cleanParentPath
 
         classes = 'resource '
@@ -48,13 +51,16 @@ define ['logger'], (logger) ->
         if @model.get 'dir'
           thisState = 'closed'
 
-        newNode = { attr: {class: classes, id: path}, state: thisState, data: @model.get('filename') }
+        newNode = { attr: {class: classes, id: @path}, state: thisState, data: @model.get('filename') }
         obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
+        @addBindingsTo(obj)
 
       @_rendered = true
  
       for resourceView in @resourceViews
         resourceView.render()
+
+
       @
 
 
