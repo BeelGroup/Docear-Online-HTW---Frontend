@@ -17,6 +17,7 @@ import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -80,7 +81,7 @@ public class HashBasedProjectService implements ProjectService {
 	@Override
 	public F.Promise<InputStream> getFile(String projectId, String path) throws IOException {
         Logger.debug("HashBasedProjectService.getFile => projectId: "+projectId+"; path: "+path);
-		path = addLeadingSlash(path);
+		path = normalizePath(path);
 
 		try {
             Logger.debug("HashBasedProjectService.getFile => test");
@@ -102,7 +103,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> metadata(String projectId, String path) throws IOException {
-		path = addLeadingSlash(path);
+		path = normalizePath(path);
 		Logger.debug("HashBasedProjectService => projectId: " + projectId + "; path: " + path);
 
 		final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
@@ -129,7 +130,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
-		path = addLeadingSlash(path);
+		path = normalizePath(path);
 		upsertFoldersInPath(projectId, path);
 
 		final FileMetaData metadata = FileMetaData.folder(path, false);
@@ -144,7 +145,7 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	private void upsertFoldersInPath(String projectId, String path) throws IOException {
-		path = addLeadingSlash(path);
+		path = normalizePath(path);
 
 		// check that root exists
 		if (fileIndexStore.getMetaData(projectId, "/") == null) {
@@ -164,7 +165,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
-		String actualPath = addLeadingSlash(path);
+		String actualPath = normalizePath(path);
 		upsertFoldersInPath(projectId, actualPath);
 
 		// check if file is present, not deleted and not forced to be overriden
@@ -212,8 +213,8 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException {
-		oldPath = addLeadingSlash(oldPath);
-		newPath = addLeadingSlash(newPath);
+		oldPath = normalizePath(oldPath);
+		newPath = normalizePath(newPath);
 
 		// check that old resource is present
 		final FileMetaData oldMeta = fileIndexStore.getMetaData(projectId, oldPath);
@@ -455,7 +456,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public Promise<JsonNode> delete(String projectId, String path) throws IOException {
-		path = addLeadingSlash(path);
+		path = normalizePath(path);
         Logger.debug("HashBasedProjectService => projectId: "+ projectId + "; path: "+path);
 
 		final FileMetaData oldMetadata = fileIndexStore.getMetaData(projectId, path);
@@ -525,10 +526,23 @@ public class HashBasedProjectService implements ProjectService {
 		return list;
 	}
 
-	private String addLeadingSlash(String path) {
-		if (!path.startsWith("/"))
-			return "/" + path;
+    /**
+     * applies url decode and adds leading slash
+     * @param path
+     * @return
+     */
+	private String normalizePath(String path) {
+        String normalizedPath = "";
 
-		return path;
+        try {
+            normalizedPath = URLDecoder.decode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError("Problem with UTF-8");
+        }
+
+		if (!normalizedPath.startsWith("/"))
+			return "/" + normalizedPath;
+
+		return normalizedPath;
 	}
 }

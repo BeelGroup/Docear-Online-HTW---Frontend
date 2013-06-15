@@ -142,6 +142,7 @@ public class Application extends Controller {
                     routes.javascript.ProjectController.createFolder(),
                     routes.javascript.ProjectController.getFile(),
                     routes.javascript.ProjectController.getProject(),
+                    routes.javascript.ProjectController.deleteFile(),
                     routes.javascript.ProjectController.metadata(),
                     routes.javascript.ProjectController.projectVersionDelta(),
                     routes.javascript.ProjectController.putFile(),
