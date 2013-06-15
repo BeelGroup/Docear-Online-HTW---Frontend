@@ -46,6 +46,8 @@ define ['logger'], (logger) ->
         classes = 'resource '
         if @model.get 'dir'
           classes += 'folder '
+        else
+          classes += 'file '
 
         thisState = 'leaf'
         if @model.get 'dir'
