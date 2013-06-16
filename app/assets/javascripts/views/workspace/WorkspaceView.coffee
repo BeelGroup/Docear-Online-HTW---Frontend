@@ -47,7 +47,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
 
                 checkresult          
                     
-        }).bind("move_node.jstree", (event, data)=>
+        }).bind("move_node.jstree rename_node.jstree create_node.jstree", (event, data)=>
           type = event.type
           if(type is 'move_node')
             # rollback movement
@@ -56,6 +56,8 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
             @requestMoveResource event, data
           else
             document.log "Action for event type \'"+type+"\' not implemented jet"
+          if(type is 'rename_node')
+            @moveResource()
         )
 
 
@@ -212,7 +214,14 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
           document.log "ERROR: The file \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
         dataType: 'json' 
       
-      $.ajax(params) 
+      $.ajax(params)
+
+
+    removeFolderOrFile:(path)->
+      cleanPath = path.replace new RegExp(".", "g"), "\\."
+      cleanPath = cleanPath.replace new RegExp("/", "g"), "\\/"      
+      obj = $("#"+cleanPath)
+      $('#workspace-tree').jstree("delete_node", obj)
 
 
     requestMoveResource:(event, data)=>
@@ -242,9 +251,22 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       $.ajax(params)  
 
 
-      moveResource:()->
-        # alter id to new path
-        #$(data.args[0].o).attr('id', newPath)
+    ###
+     old path might be something like "\\/README\\.md"
+     use:
+      cleanPath = path.replace new RegExp(".", "g"), "\\."
+      cleanPath = cleanPath.replace new RegExp("/", "g"), "\\/"
+    ###
+    moveResource:(oldPath, newPath, newParentsPath)->
+      obj = $("#"+oldPath)
+      parent = $("#"+newParentsPath)
+
+      @$workspaceTree.jstree('cut', obj)
+      @$workspaceTree.jstree('paste', parent)
+      @$workspaceTree.jstree 'refresh', obj
+
+      # alter id to new path
+      obj.attr('id', newPath)
 
 
 

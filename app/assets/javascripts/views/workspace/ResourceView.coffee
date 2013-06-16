@@ -49,7 +49,7 @@ define ['logger'], (logger) ->
         else
           parentPath = "/"
 
-        cleanParentPath = parentPath.replace new RegExp("/", "g"), "\\/" 
+        cleanParentPath = parentPath.replace new RegExp("/", "g"), "\\/"
         $parent = $("#"+@projectView.getId()).find "#" + cleanParentPath
 
         classes = 'resource '
