@@ -8,9 +8,18 @@ define ['logger'], (logger) ->
       @model.resources.bind "add", @add , @   
       @_rendered = false
       
-
     addBindingsTo:(obj)->
-      obj.find(".jstree-icon:first").on "click", @updateChilds
+      #obj.find(".jstree-icon:first").on "click", @updateChilds
+
+      # not very efficient, but currently the best solution
+      $('#workspace-tree').bind("open_node.jstree", (event, data)=>
+          # if opened node id equals my id
+          if @path == $(data.args[0][0]).attr('id')
+            @updateChilds()
+      )
+
+    test:->
+      console.log 'test'
 
     updateChilds:=>
       for resourceView in @resourceViews
@@ -55,13 +64,12 @@ define ['logger'], (logger) ->
 
         newNode = { attr: {class: classes, id: @path}, state: thisState, data: @model.get('filename') }
         obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
-        @addBindingsTo(obj)
+        @addBindingsTo(obj, @path.replace new RegExp("/", "g"))
 
       @_rendered = true
  
       for resourceView in @resourceViews
         resourceView.render()
-
 
       @
 

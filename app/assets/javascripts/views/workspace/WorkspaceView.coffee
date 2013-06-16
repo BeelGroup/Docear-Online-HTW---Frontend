@@ -28,47 +28,35 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
         $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
 
         @$workspaceTree.jstree({
-          "plugins": ["themes", "html_data", "ui", "crrm", "contextmenu","dnd"],
+          plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd"],
           contextmenu: {items: @customMenu},
-          "dnd" : {
-            "drop_finish" :->
-                
-    
-            "drag_check":(data)-> 
-                #if(data.r.attr("id") == "phtml_1")     
-                ###val=
-                    after : false,
-                    before : false,
-                    inside : true###
-                false
-            
-            "drag_finish":(data)-> 
-                
+          ui: 
+            select_limit: 1
+          ,  
+          crrm:
+            move:
+              check_move: (m)-> # http://www.jstree.com/documentation/core (for m)
+                checkresult = false
+                # .o - the node being moved
+                # .np - the new parent
+                sourceProjectId = $(m.o).closest('li.project').attr('id')
+                targetProjectId = $(m.np).closest('li.project').attr('id')
+                if sourceProjectId is targetProjectId
+                  if $(m.np).hasClass('folder') and not $(m.np).hasClass('users')
+                    checkresult = true
 
-        } ,
-        "crrm":
-          "move":
-            "check_move": (m)-> # http://www.jstree.com/documentation/core (for m)
-              checkresult = false
-              # .o - the node being moved
-              # .np - the new parent
-              sourceProjectId = $(m.o).closest('li.project').attr('id')
-              targetProjectId = $(m.np).closest('li.project').attr('id')
-              if sourceProjectId is targetProjectId
-                if $(m.np).hasClass('folder') and not $(m.np).hasClass('users')
-                  checkresult = true
-
-              checkresult             
-             
+                checkresult          
                     
-        }).bind("move_node.jstree", (event, data)->
+        }).bind("move_node.jstree", (event, data)=>
           type = event.type
           if(type is 'move_node')
-            document.log 'moving a node is currently not implemented!'
+            # rollback movement
+            $.jstree.rollback data.rlbk
+            # send move request to the server
+            @requestMoveResource event, data
           else
             document.log "Action for event type \'"+type+"\' not implemented jet"
         )
-
 
 
     refreshNode: ($node) =>
@@ -90,12 +78,12 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       if ($(node).hasClass("folder")) 
         items.addFile =  # upload
           label: "Add file",
-          action: @addFile
+          action: @reQuestAddFile
         items.addFolder =  
           label: "Add folder",
-          action: @addFolder
+          action: @requestAddFolder
         items.deleteItem.label = "Delete folder"
-        items.deleteItem.action = @removeFolderOrFile
+        items.deleteItem.action = @requestRemoveFolderOrFile
 
       if($(node).hasClass("users"))
         items.addUserItem =
@@ -108,22 +96,22 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
         delete items.deleteItem
 
       if($(node).hasClass("file"))
-        items.deleteItem.action = @removeFolderOrFile
+        items.deleteItem.action = @requestRemoveFolderOrFile
         items.deleteItem.label = "Delete file"
 
 
       if($(node).hasClass("user"))
-        items.deleteItem.action = @removeUser
+        items.deleteItem.action = @requestRemoveUser
         items.deleteItem.label = "Delete user"
 
       items
 
 
-    addFile:(a,b)=>
+    requestAddFile:(a,b)=>
       document.log 'add file'
 
 
-    addFolder:(liNode, a, b)->
+    requestAddFolder:(liNode, a, b)->
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
@@ -171,8 +159,8 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
         $.ajax(params)
       )
 
-    # jstree functions are required, so dont a fatarrow here
-    addUser:()->      
+    # jstree functions are required, so dont use a fatarrow here
+    requestAddUser:()->      
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
@@ -210,6 +198,74 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       )
 
 
+    requestRemoveFolderOrFile:()=>
+      itemData = @getSelectedItemData()
+
+      params = 
+        url: jsRoutes.controllers.ProjectController.deleteFile(itemData.projectId).url
+        type: 'POST'
+        cache: false
+        data: "path": itemData.path
+        success:(data)=>
+          document.log "SUCCESS: The file \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
+        error:()=>
+          document.log "ERROR: The file \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
+        dataType: 'json' 
+      
+      $.ajax(params) 
+
+
+    requestMoveResource:(event, data)=>
+      # get node informations
+      oldPath = $(data.args[0].o).attr('id')
+      name = data.args[0].o.text().replace /\s/g, ''
+      newParent = $(data.args[0].np).attr('id')
+      if newParent is "/"
+        newParent =  ""
+      newPath = newParent+"/"+name
+
+      projectId = $(data.args[0].o).closest('li.project').attr('id')
+
+      params = 
+        url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
+        type: 'POST'
+        cache: false
+        data: "currentPath": oldPath, "moveToPath": newPath, "name": name
+
+        success:(data)=>
+
+          document.log "SUCCESS: Resource \'"+name+"\' was be moved from "+oldPath+" to "+newPath
+        error:()=>
+          document.log "ERROR: resource \'"+name+"\' could not be moved from "+oldPath+" to "+newPath
+        dataType: 'json' 
+      
+      $.ajax(params)  
+
+
+      moveResource:()->
+        # alter id to new path
+        #$(data.args[0].o).attr('id', newPath)
+
+
+
+    requestRemoveUser:()=>
+      itemData = @getSelectedItemData()
+
+      params = {
+        url: jsRoutes.controllers.ProjectController.removeUserFromProject(itemData.projectId).url
+        type: 'POST'
+        cache: false
+        data: {"username": itemData.name, "itemData" : itemData}
+        success:(data)=>
+          document.log "SUCCESS: The user \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
+        error:()=>
+          document.log "ERROR: The user \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
+        dataType: 'json' 
+      }
+
+      $.ajax(params)  
+
+
     getSelectedItemData:->
       $selectedItem = $('#workspace-tree').jstree('get_selected')    
       $project = $($selectedItem).closest('li.project')
@@ -221,57 +277,6 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
         path: $selectedItem.attr('id')
 
       itemData
-
-    removeFolderOrFile:()=>
-      itemData = @getSelectedItemData()
-
-      params = 
-        url: jsRoutes.controllers.ProjectController.deleteFile(itemData.projectId).url
-        type: 'POST'
-        cache: false
-        data: "path": itemData.path
-        success:(data)=>
-          document.log "The file \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
-        error:()=>
-          document.log "ERROR: The file \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
-        dataType: 'json' 
-      
-      $.ajax(params) 
-
-    moveFile:()=>
-      itemData = @getSelectedItemData()
-
-      params = 
-        url: jsRoutes.controllers.ProjectController.moveFile(itemData.projectId).url
-        type: 'POST'
-        cache: false
-        data: "currentPath": itemData.path, "moveToPath": ""# TODO!
-
-        success:(data)=>
-          document.log "The file \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
-        error:()=>
-          document.log "ERROR: The file \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
-        dataType: 'json' 
-      
-      $.ajax(params)       
-
-
-    removeUser:()=>
-      itemData = @getSelectedItemData()
-
-      params = {
-        url: jsRoutes.controllers.ProjectController.removeUserFromProject(itemData.projectId).url
-        type: 'POST'
-        cache: false
-        data: {"username": itemData.name, "itemData" : itemData}
-        success:(data)=>
-          document.log "The user \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
-        error:()=>
-          document.log "ERROR: The user \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
-        dataType: 'json' 
-      }
-
-      $.ajax(params)  
 
 
     #http://liquidmedia.org/blog/2011/02/backbone-js-part-3/
