@@ -8,7 +8,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
       @workspace = workspace
       
     listen: ()->
-      if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
+      if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1 and $.inArray('WORKSPACE', document.features) > -1
         document.log "listen for updates on workspace"
         me = @
         
