@@ -5,6 +5,7 @@ import org.eclipse.jgit.storage.file.ReflogEntry
 import org.eclipse.jgit.util.FS
 import sbt._
 import sbt.ExclusionRule
+import sbt.File
 import sbt.Keys._
 import play.Project._
 import sbt.PlayExceptions.CompilationException
@@ -66,14 +67,13 @@ object ApplicationBuild extends Build {
     val handlebarsOptions = SettingKey[Seq[String]]("ember-options")
     val handlebarsEntryPoints = SettingKey[PathFinder]("ember-entry-points")
 
-    //TODO impove performance: in Play 2.1 the asset compilation mechanism changed, the current implementation compiles
-    // for every handlebars file all other files again
     def HandlebarsPrecompileTask(handlebarsJsFilename: String) = {
       val compiler = new sbt.handlebars.HandlebarsCompiler(handlebarsJsFilename)
 
-      AssetsCompiler("handlebars-precompile", (_ ** "*.handlebars"), handlebarsEntryPoints, { (name, min) => "javascripts/views/templates.pre" + (if (min) ".min.js" else ".js") },
+      AssetsCompiler("handlebars-precompile", (_ ** "*.handlebars"), handlebarsEntryPoints, { (name, min) => name + ".compiled" },
       { (handlebarsFile, options) =>
-        val (jsSource, dependencies) = compiler.compileDir(handlebarsFile.getParentFile, options)
+        val (jsSource, dependencies) = compiler.compileSingleFile(handlebarsFile, options)
+
         // Any error here would be because of Handlebars, not the developer;
         // so we don't want compilation to fail.
         import scala.util.control.Exception._
@@ -113,7 +113,31 @@ object ApplicationBuild extends Build {
       , templatesImport += "views.TemplateUtil._"
       , handlebarsEntryPoints <<= (sourceDirectory in Compile)(base => base / "assets" / "javascripts" / "views" / "templates" ** "*.handlebars")
       , handlebarsOptions := Seq.empty[String]
-      , resourceGenerators in Compile <+= HandlebarsPrecompileTask("handlebars-min-1.0.beta.js")
+      , resourceGenerators in Compile <+=  HandlebarsPrecompileTask("handlebars-min-1.0.beta.js")
+      , resourceGenerators in Compile <+= (sourceDirectory in Compile, resourceManaged in Compile, cacheDirectory) map { (srcDir, resMan, cacheDir) =>
+
+        val targetFolderMergedHandlebars = resMan / "public/javascripts/views"
+        val generatedTemplateFolder =targetFolderMergedHandlebars / "templates"
+        val compiledHandlebars = IO.listFiles(generatedTemplateFolder, new FileFilter {
+          def accept(file: File) = file.getName.endsWith("handlebars.compiled")
+        })
+        val combinedFile = targetFolderMergedHandlebars / "templates.pre.min.js"
+        val cacheFile = cacheDir / "handlebars"
+        val currentInfos = compiledHandlebars.map(f => f -> FileInfo.lastModified(f)).toMap
+        val (previousRelation, previousInfo) = Sync.readInfo(cacheFile)(FileInfo.lastModified.format)
+
+        if (previousInfo != currentInfos) {
+          val combinedContent =  """(function() {
+var template = Handlebars.template, templates = Handlebars.templates = Handlebars.templates || {};
+                                 """ +
+            compiledHandlebars.map(file => IO.read(file)).mkString("") +"})();\n"
+          IO.write(combinedFile, combinedContent)
+          Sync.writeInfo(cacheFile, Relation.empty[File, File], currentInfos)(FileInfo.lastModified.format)
+
+        } else {
+        }
+        Seq(combinedFile)
+      }
       , logBuffered in Test := false
       , parallelExecution in Test := false
       , testOptions in Test += Tests.Argument("sequential", "true")

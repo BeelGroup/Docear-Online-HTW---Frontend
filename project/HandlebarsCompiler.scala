@@ -132,6 +132,17 @@ var template = Handlebars.template, templates = Handlebars.templates = Handlebar
     (output.toString, dependencies.result)
   }
 
+  def compileSingleFile(file: File, options: Seq[String]): (String, Seq[File]) = {
+
+    val output = new StringBuilder
+    if (file.isFile && file.getName.endsWith(".handlebars")) {
+      val templateName = file.getName.replace(".handlebars", "")
+      val jsSource = compile(file, options)
+      output ++= "templates['%s'] = template(%s);\n\n".format(templateName, jsSource)
+    }
+    (output.toString, Seq.empty)
+  }
+
   private def compile(source: File, options: Seq[String]): String = {
     try {
       compiler(source)
