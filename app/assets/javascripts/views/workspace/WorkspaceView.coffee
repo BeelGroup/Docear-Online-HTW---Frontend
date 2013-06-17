@@ -87,6 +87,12 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         items.deleteItem.label = "Delete folder"
         items.deleteItem.action = @requestRemoveFolderOrFile
 
+      if ($(node).hasClass("mindmap-file"))
+        items.addFile =  # upload
+          label: "Open mindmap",
+          action: @openMindmap
+        items.deleteItem.label = "Delete mindmap"
+
       if($(node).hasClass("users"))
         items.addUserItem =
           label: "Add user",
@@ -101,12 +107,26 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         items.deleteItem.action = @requestRemoveFolderOrFile
         items.deleteItem.label = "Delete file"
 
-
       if($(node).hasClass("user"))
         items.deleteItem.action = @requestRemoveUser
         items.deleteItem.label = "Delete user"
 
       items
+
+
+    openMindmap:(obj)->
+      #projectId
+      #mapId
+      $project = $(obj).closest('li.project')
+
+      itemData = 
+        projectId : $project.attr('id')
+        # get text from node and remove whitespaces
+        name : obj.text().replace /\s/g, ''
+        path: obj.attr('id')
+
+      document.log "Trying to open mindmap \'"+itemData.name+"\' from project \'"+itemData.projectId+"\' (WorkspaceView.openMindmap()"
+      location.href = "http://127.0.0.1:9000/#project/#{itemData.projectId}/map/#{itemData.name}"
 
 
     requestAddFile:(a,b)=>

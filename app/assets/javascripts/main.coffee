@@ -20,7 +20,7 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
           $selectMinmap.empty()
           $.each(mapLatestRevision, (id,value)->
             date = $.datepicker.formatDate("dd.mm.yy", new Date(value.map.revision))
-            link = """<li><a class="dropdown-toggle" href="#{jsRoutes.controllers.Application.index().url}#map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
+            link = """<li><a class="dropdown-toggle" href="#{jsRoutes.controllers.Application.index().url}#/project/-1/map/#{value.map.mmIdOnServer}"> #{value.map.fileName} (#{date})</a></li>"""
             $selectMinmap.append link
           )
     })
@@ -40,7 +40,7 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
       router = new  DocearRouter(mapView)
 
       if typeof mapView.mapId == 'undefined'
-        mapView.loadMap("welcome")
+        mapView.loadMap '-1', 'welcome'
 
   initialLoad()
   

@@ -14,7 +14,7 @@ define ['logger', 'NodeFactory', 'models/mindmap/RootNode', 'models/mindmap/Node
   ###
   class MapLoader
 
-    constructor:(@data, @mapId)->
+    constructor:(@data, @projectId, @mapId)->
       @nodeFactory = new NodeFactory()
       @rootNodeWasPassed = false
       @stillDataToLoad = true
@@ -41,6 +41,7 @@ define ['logger', 'NodeFactory', 'models/mindmap/RootNode', 'models/mindmap/Node
 
     # load root data with some childs
     firstLoad:->
+      document.log "Load Map #{@mapId} from project #{@projectId} (MapLoader.firstLoad())" 
       @rootNode = @nodeFactory.createRootNodeByData(@data, null, @mapId)
       @rootNodeWasPassed = true
       @continue = true
@@ -92,11 +93,12 @@ define ['logger', 'NodeFactory', 'models/mindmap/RootNode', 'models/mindmap/Node
           $childElement.hide()
           @showUs.push $childElement
 
+
     getDataAndRenderNodesByID:(parentToLoadNode)=>
-      href = jsRoutes.controllers.MindMap.getNode(-1, @mapId, parentToLoadNode.get 'id', document.loadChunkSize).url
+      href = jsRoutes.controllers.MindMap.getNode(@projectId, @mapId, parentToLoadNode.get 'id', document.loadChunkSize).url
       
       # WORKAROUND
-      correctURL = href.replace '-1', 'nodeCount='+document.loadChunkSize
+      #correctURL = href.replace '-1', 'nodeCount='+document.loadChunkSize
 
       request = $.ajax(
         invokedata:

@@ -6,22 +6,19 @@ define ['logger'],(logger) ->
     ## splat parameter (*) (regex)
     ## reg ex example: '/^(.*?)$/' : 'doIt'
     routes:
-      'map/:mapId': 'loadMap'
-      'doSomathingWithMap/:id/*action':  'resource'
+      'project/:projectId/map/:mapId': 'loadMap'
       '*path': 'notFound'
 
-
-    constructor:(@mapController)->
+    constructor:(@mapView)->
       super()
       Backbone.history.stop()
       Backbone.history.start()
 
-    loadMap: (mapId)->
-      @mapController.renderMap mapId
+    loadMap: (projectId, mapId)->
+      document.log "Load map #{mapId} from project #{projectId} (DocearRouter.loadMap())" 
+      @mapView.loadMap projectId, mapId
 
-    notFound:()->
-      document.log 'Route not found', 'warn'
-
-
+    notFound:(params)->
+      document.log 'Route not found: #{params}', 'warn'
 
   module.exports = DocearRouter

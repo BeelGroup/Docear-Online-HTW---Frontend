@@ -10,7 +10,6 @@ define ['logger'], (logger) ->
       
     addBindingsTo:(obj)->
       #obj.find(".jstree-icon:first").on "click", @updateChilds
-
       # not very efficient, but currently the best solution
       $('#workspace-tree').bind("open_node.jstree", (event, data)=>
           # if opened node id equals my id
@@ -25,7 +24,7 @@ define ['logger'], (logger) ->
       for resourceView in @resourceViews
         resourceView.model.update()
 
-    initialize : ()->
+    initialize:()->
       @resourceViews = []
       @model.resources.each (resource)=>
         @resourceViews.push(new ResourceView(resource, @projectView, @$el))
@@ -57,6 +56,9 @@ define ['logger'], (logger) ->
           classes += 'folder '
         else
           classes += 'file '
+
+        if @path.indexOf(".mm") isnt -1
+          classes += 'mindmap-file '
 
         thisState = 'leaf'
         if @model.get 'dir'

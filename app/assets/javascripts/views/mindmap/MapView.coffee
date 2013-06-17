@@ -18,11 +18,12 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         @minimap.setViewportSize()
 
 
-    loadMap: (@mapId) ->
+    loadMap: (@projectId, @mapId) ->
       if @mapLoader isnt undefined
         @mapLoader.stop()
-        
-      @href = jsRoutes.controllers.MindMap.mapAsJson(-1, @mapId, document.initialLoadChunkSize).url
+
+      document.log "Load map #{@mapId} from project #{@projectId} (Mapview.loadMap())" 
+      @href = jsRoutes.controllers.MindMap.mapAsJson(@projectId, @mapId, document.initialLoadChunkSize).url
 
       $.ajax(
         url: @href
@@ -38,7 +39,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         alert a.responseText
       # otherwise redirect to welcome map
       else
-        @loadMap 'welcome'
+        @loadMap '-1', 'welcome'
 
 
     initMapLoading:(data)=>
@@ -49,9 +50,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         
         # close edit view if opend (defined in main.coffee)
         $editNodeContainer = $('.node-edit-container')
-        $editNodeContainer.addClass('close-and-destroy').hide()
-
-      document.log "call: loadMap #{data.id} (MapController)"     
+        $editNodeContainer.addClass('close-and-destroy').hide()    
 
       @$el.parent().find(".loading-map-overlay").fadeIn 400, =>
         @parseAndRenderMapByJsonData(data)
@@ -59,9 +58,8 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
 
     parseAndRenderMapByJsonData: (data)=>
       $('.current-mindmap-name').text(data.name)
-
-      
-      @mapLoader = new MapLoader data, @mapId
+     
+      @mapLoader = new MapLoader data, @projectId, @mapId
 
       @rootView = new RootNodeView @mapLoader.firstLoad()
       document.rootView = @rootView
@@ -212,9 +210,6 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
 
       @addLoadingOverlay()
 
-    renderMap:(mapId)->
-      ## called in router
-      @loadMap(mapId)
 
 
   module.exports = MapView  
