@@ -39,7 +39,6 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Resources'
       levels = resourcePaths.length
       
       parent = @resource
-      result = @resource
       
       currentResource = undefined
 
@@ -57,17 +56,17 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Resources'
           else
             if createNonExistence
               currentResource = new Resource(@, currentPath, false, parent)
-              result = currentResource;
+              parent = currentResource;
               document.log "creating new resource: #{path}"
             else
               document.log "resource '#{path}' does not exist"
-              result = undefined
+              parent = undefined
               return undefined
           parent = currentResource
           
           if path isnt ''
             currentPath = "#{currentPath}/"
-      result
+      parent
       
       
   module.exports = Project

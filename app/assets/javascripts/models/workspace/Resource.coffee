@@ -14,6 +14,9 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
     initialize : ()->
       @resources = new Resources()
       
+    deleteResourceByPath: (path)->
+      @resources.remove(path)
+      
     fillFromData: (data)->
       @set 'hash', data.hash
       @set 'bytes', data.bytes
