@@ -3,16 +3,13 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
 
   class Resource extends Backbone.Model 
 
-    constructor: (@project, data, @isRoot = false)->
+    constructor: (@project, path, @isRoot = false, parent = null)->
       super()
       @updated = false
-      if not isRoot
-        @fillFromData data
-      else
-        @set 'path', data
-        @set 'id', data
-        @set 'filename', data.substring(data.lastIndexOf('/')+1);
-
+      @set 'path', path
+      @set 'id', path
+      @set 'filename', path.substring(path.lastIndexOf('/')+1);
+      @set 'parent', parent
       
     initialize : ()->
       @resources = new Resources()
@@ -30,7 +27,9 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
       if data.contents isnt undefined
         for resourceData in data.contents
           if @resources.get(resourceData.path) == undefined
-            resource = new Resource(@project, resourceData)
+            resource = new Resource(@project, resourceData.path, false, @)
+            resource.fillFromData resourceData
+            
             @resources.add(resource)
             if @isRoot
               resource.update()
