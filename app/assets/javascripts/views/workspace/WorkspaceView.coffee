@@ -343,8 +343,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
 
       
     actionUpload: (event)->
-      uploadView = new UploadView("507f191e810c19729de860ea", "/");
-      uploadView.appendAndRender @$el
+      $.inArray('WORKSPACE_UPLOAD', document.features) > -1
+        uploadView = new UploadView("507f191e810c19729de860ea", "/");
+        uploadView.appendAndRender @$el
+        
       false
       
   module.exports = Workspace
