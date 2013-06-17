@@ -29,6 +29,7 @@ object ApplicationBuild extends Build {
         , "org.webjars" % "bootstrap" % "2.1.1"
         , "org.webjars" % "font-awesome" % "3.0.2"
         , "org.webjars" % "requirejs" % "2.1.5"
+        , "org.webjars" % "jquery-ui" % "1.9.2"
       )
     }
 
