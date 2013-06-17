@@ -1,4 +1,4 @@
-define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (logger, Project, ProjectView) ->
+define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'views/workspace/UploadView'], (logger, Project, ProjectView, UploadView) ->
   module = () ->
 
   class Workspace extends Backbone.View
@@ -324,6 +324,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
           dataType: 'json' 
         }
         $.ajax(params)  
+      "click .upload-file" : "actionUpload"
 
     element:-> @$el
 
@@ -339,5 +340,11 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView'], (l
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       @
+
+      
+    actionUpload: (event)->
+      uploadView = new UploadView("507f191e810c19729de860ea", "/");
+      uploadView.appendAndRender @$el
+      false
       
   module.exports = Workspace
