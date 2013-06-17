@@ -31,7 +31,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
                 #me.add(project)
                 for projectId, revision of projectData.updatedProjects
                   project = me.workspace.get(projectId)
-                  me.getChangesByProjectId.getChangesByProject(project)
+                  me.getChangesByProject(project)
                 
                 for projectId, revision of projectData.newProjects
                   me.getProject(projectId)
@@ -59,10 +59,16 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           project.set 'revision', projectsData.currentRevision
           
           for path, meta of projectsData.resources
-            resource = project.createOrRecieveResourceByPath path
-            if resource != undefined
-              resource.fillFromData(meta)
-            document.log "Resource #{path} updated"
+            
+            if meta.deleted
+              resource = project.getResourceByPath path, false
+              resource.get('parent').deleteResourceByPath(path)
+              document.log "Resource #{path} deleted"
+            else
+              resource = project.getResourceByPath path, true
+              if resource != undefined
+                resource.fillFromData(meta)
+                document.log "Resource #{path} updated"
           
         dataType: 'json' 
       }

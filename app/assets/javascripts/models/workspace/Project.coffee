@@ -1,4 +1,4 @@
-define ['logger', 'models/workspace/Resource', 'collections/workspace/Users', 'models/workspace/User'], (logger, Resource, Users, User)->
+define ['logger', 'models/workspace/Resource', 'collections/workspace/Resources', 'collections/workspace/Users', 'models/workspace/User'], (logger, Resource, Resources, Users, User)->
   module = () ->
 
   class Project extends Backbone.Model 
@@ -27,51 +27,46 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Users', 'm
         @resource = new Resource(@, @get('path'), true)
         @resource.set 'dir', true
     
-    getResourceByPath: (path)->
-      resources = new Resources()
-      resources.add(@resource); 
-      
-      result = undefined
-      while result == undefined and resources.length > 0
-        resources.each (resource)=>
-          if resource.path is path
-            result = resource
-            return result
-          else if resource.isFolder
-            resources.add resource
-      result
-      
+
     ###
     # this function look for a resource in the tree. If the parent folder exists, 
     # it is created and added to the model (also rendered)
     # if the parent node doesn't exist, we assume that this part of the 
     # tree hasn't been loaded yet, so undefined is returned
     ###
-    createOrRecieveResourceByPath: (path)->
+    getResourceByPath: (path, createNonExistence = false)->
       resourcePaths = path.split("/")
       levels = resourcePaths.length
       
-      result = undefined
+      parent = @resource
+      
       currentResource = undefined
 
       resources = new Resources()
-      resources.add(@resource); 
+      resources.add(@resource);
+      
       if levels > 1
-        currentPath = ''
-        for i, path in resourcePaths
-          if i+1 < levels
-            currentPath = "{currentPath}/#{path}"
-            resource = resources.get currentPath
-            if resource isnt undefined
-              resources = resource.get 'resources'
-            else
-              resources = undefined
-              return undefined
+        currentPath = '/'
+        for path in resourcePaths
+          currentPath = "#{currentPath}#{path}"
+          currentResource = resources.get(currentPath)
+          
+          if currentResource isnt undefined
+            resources = currentResource.resources
           else
-            result = resources.get currentPath
-            if result is undefined
-              result = new Resource(currentPath)
-      else if result is undefined
-        result = new Resource(path)
-        
+            if createNonExistence
+              currentResource = new Resource(@, currentPath, false, parent)
+              parent = currentResource;
+              document.log "creating new resource: #{path}"
+            else
+              document.log "resource '#{path}' does not exist"
+              parent = undefined
+              return undefined
+          parent = currentResource
+          
+          if path isnt ''
+            currentPath = "#{currentPath}/"
+      parent
+      
+      
   module.exports = Project

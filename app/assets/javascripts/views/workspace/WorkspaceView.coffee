@@ -225,7 +225,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
 
       params = 
         url: jsRoutes.controllers.ProjectController.deleteFile(itemData.projectId).url
-        type: 'POST'
+        type: 'DELETE'
         cache: false
         data: "path": itemData.path
         success:(data)=>
