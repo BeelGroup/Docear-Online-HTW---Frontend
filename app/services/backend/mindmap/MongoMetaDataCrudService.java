@@ -3,8 +3,8 @@ package services.backend.mindmap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import models.project.persistance.EntityCursor;
-import models.project.persistance.EntityCursorBase;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.EntityCursorBase;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 

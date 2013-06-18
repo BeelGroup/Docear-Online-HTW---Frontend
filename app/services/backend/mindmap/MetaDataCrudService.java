@@ -1,6 +1,6 @@
 package services.backend.mindmap;
 
-import models.project.persistance.EntityCursor;
+import services.backend.project.persistance.EntityCursor;
 
 import java.io.IOException;
 

@@ -2,7 +2,7 @@ package services.backend.project;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
-import models.project.persistance.*;
+import services.backend.project.persistance.*;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -243,6 +243,7 @@ public class HashBasedProjectService implements ProjectService {
 			fileIndexStore.upsertFile(projectId, FileMetaData.file(oldPath, "", 0, true));
 		}
 
+        callListenersForChangeInProject(projectId);
 		return Promise.pure(new ObjectMapper().readTree("[\"success\"]"));
 	}
 

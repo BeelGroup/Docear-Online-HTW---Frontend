@@ -1,6 +1,6 @@
 package services.backend.mindmap;
 
-import models.project.persistance.EntityCursor;
+import services.backend.project.persistance.EntityCursor;
 import mongo.MongoTest;
 import org.junit.After;
 import org.junit.Before;

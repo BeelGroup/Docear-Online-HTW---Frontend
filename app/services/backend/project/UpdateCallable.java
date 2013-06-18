@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
-import models.project.persistance.EntityCursor;
-import models.project.persistance.FileIndexStore;
-import models.project.persistance.Project;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileIndexStore;
+import services.backend.project.persistance.Project;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;

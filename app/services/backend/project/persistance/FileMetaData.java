@@ -1,4 +1,4 @@
-package models.project.persistance;
+package services.backend.project.persistance;
 
 public class FileMetaData {
     private final String path;
