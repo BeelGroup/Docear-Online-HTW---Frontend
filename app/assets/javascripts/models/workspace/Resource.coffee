@@ -36,10 +36,9 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
             @resources.add(resource)
             if @isRoot
               resource.update()
-      
-     
-    updateChilds:->
 
+    addResouce:(newChild)->
+      @resources.add(newChild)
 
     update: ()=>
       if not @updated

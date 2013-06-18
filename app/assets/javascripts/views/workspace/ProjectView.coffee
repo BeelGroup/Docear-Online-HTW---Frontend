@@ -33,7 +33,7 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
       
       $resourcesContainer = $(@el).children('ul')
       for resourceView in @resourceViews
-        $($resourcesContainer).append $(resourceView.render().el)
+        resourceView.render()
 
       $usersContainer = $(@el).find('ul > li > ul.users')
       for userView in @userViews

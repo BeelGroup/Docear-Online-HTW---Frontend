@@ -68,6 +68,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
               resource = project.getResourceByPath path, true
               if resource != undefined
                 resource.fillFromData(meta)
+                resource.get('parent').addResouce resource
                 document.log "Resource #{path} updated"
           
         dataType: 'json' 

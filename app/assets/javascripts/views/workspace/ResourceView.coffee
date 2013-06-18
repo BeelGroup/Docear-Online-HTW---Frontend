@@ -6,6 +6,7 @@ define ['logger'], (logger) ->
     constructor:(@model, @projectView, @parentView)->
       super()
       @model.resources.bind "add", @add , @   
+      @model.resources.bind "remove", @remove , @
       @_rendered = false
       
     addBindingsTo:(obj)->
@@ -17,9 +18,6 @@ define ['logger'], (logger) ->
             @updateChilds()
       )
 
-    test:->
-      console.log 'test'
-
     updateChilds:=>
       for resourceView in @resourceViews
         resourceView.model.update()
@@ -29,12 +27,31 @@ define ['logger'], (logger) ->
       @model.resources.each (resource)=>
         @resourceViews.push(new ResourceView(resource, @projectView, @$el))
       
-    add: (model)->
+    getCleanedPath:(dirtyPath)->
+      cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
+      cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
+
+    add:(model)->
       resourceView = new ResourceView(model, @projectView, @$el)
       @resourceViews.push(resourceView)
       
+      cleanPath = @getCleanedPath(model.get('path'))
+      $objToDelete = $("#"+cleanPath)
+
       if @_rendered
-        resourceView.render()
+        # if class "delete-me-on-update" is set, the folder was created on this client
+        if $objToDelete.hasClass("delete-me-on-update")
+          $('#workspace-tree').jstree("delete_node", $objToDelete)
+          $('#workspace-tree').jstree('open_node', resourceView.render())
+        else
+          resourceView.render()
+
+    remove:(resourceToDelete)->
+      document.log "Trying to remove node "+resourceToDelete.id
+
+      cleanPath = @getCleanedPath resourceToDelete.id
+      $objToDelete = $("#"+cleanPath)
+      $('#workspace-tree').jstree("delete_node", $objToDelete)
     
     render:()->
       @path = @model.get 'path'
@@ -73,7 +90,7 @@ define ['logger'], (logger) ->
       for resourceView in @resourceViews
         resourceView.render()
 
-      @
+      obj
 
 
   module.exports = ResourceView

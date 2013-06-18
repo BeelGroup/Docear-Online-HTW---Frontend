@@ -137,7 +137,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'folder'}, state: "open", data: "New folder" }
+      newNode = { attr: {class: 'folder delete-me-on-update'}, state: "closed", data: "New folder" }
       obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
 
       # instant renaming
@@ -150,9 +150,17 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
 
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
+        currentPath = $parent.attr('id')
+
+        if currentPath isnt "/"
+          $path = $parent.attr("id")+"/"+new_name 
+        else
+          $path = $parent.attr("id")+new_name 
+
+        # set path as id -> so it will be found and can be removed on update from server
+        $(obj).attr("id", $path)
 
         # build path
-        currentPath = $parent.attr('id')
         if currentPath[currentPath.length-1] isnt '/'
           currentPath += "/"
         currentPath += new_name
@@ -170,6 +178,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
           success:(data)=>
             # create new model and add to parent
             document.log "folder with path : "+currentPath+" to project "+projectId
+
           error:()=>
             document.log "error on folder adding with path : "+currentPath+" to project "+projectId
             # remove folder from view
@@ -177,7 +186,6 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
 
           dataType: 'json' 
         }
-
         $.ajax(params)
       )
 
