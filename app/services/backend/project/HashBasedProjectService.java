@@ -2,7 +2,6 @@ package services.backend.project;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
-import services.backend.project.persistance.*;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -15,6 +14,7 @@ import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
+import services.backend.project.persistance.*;
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -55,6 +55,7 @@ public class HashBasedProjectService implements ProjectService {
 	public Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException {
 		fileIndexStore.addUserToProject(projectId, usernameToAdd);
 		callListenerForChangeForUser(usernameToAdd);
+        callListenersForChangeInProject(projectId);
 		return Promise.pure(true);
 	}
 
@@ -62,6 +63,7 @@ public class HashBasedProjectService implements ProjectService {
 	public Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException {
 		fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
 		callListenerForChangeForUser(usernameToRemove);
+        callListenersForChangeInProject(projectId);
 		return Promise.pure(true);
 	}
 
@@ -276,7 +278,7 @@ public class HashBasedProjectService implements ProjectService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param zippedFileBytes
 	 * @return fileHash
 	 * @throws IOException
@@ -361,7 +363,12 @@ public class HashBasedProjectService implements ProjectService {
 
 	@Override
 	public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException {
-		final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, username);
+        final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
+        for(String projectId :  projectRevisionMap.keySet()) {
+            projectUserMap.put(projectId,fileIndexStore.findProjectById(projectId).getAuthorizedUsers());
+        }
+
+		final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, projectUserMap, username);
 		final Promise<JsonNode> promise = Akka.future(callable);
 
 		// put in listener maps and check if update already happened
@@ -490,7 +497,7 @@ public class HashBasedProjectService implements ProjectService {
 
 	/**
 	 * taken from http://www.mkyong.com/java/java-sha-hashing-example/
-	 * 
+	 *
 	 * @return
 	 */
 	private static String getFileCheckSum(DigestInputStream inputStream) {

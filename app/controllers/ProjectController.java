@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
@@ -234,8 +235,9 @@ public class ProjectController extends Controller {
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
 
         for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+            final String projectId = entry.getKey();
             try {
-                projectRevisonMap.put(entry.getKey(), Long.parseLong(entry.getValue()[0]));
+                projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
             } catch (NumberFormatException e) {
                 return badRequest("Revisions must be long value!");
             }
