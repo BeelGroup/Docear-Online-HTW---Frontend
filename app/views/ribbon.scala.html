@@ -50,6 +50,8 @@
                     @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
                         @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
                     }
+                    @menuItem("http://www.docear.org/imprint/", "Imprint")
+                    @menuItem(controllers.routes.Application.help().url, "Help")
                     @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
                 </ul>
             }else{
