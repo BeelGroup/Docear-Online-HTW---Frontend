@@ -50,6 +50,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           , 2000)
       
     getChangesByProject: (project)->
+      project.update()
       params = {
         url: jsRoutes.controllers.ProjectController.projectVersionDelta(project.get('id')).url
         type: 'POST'

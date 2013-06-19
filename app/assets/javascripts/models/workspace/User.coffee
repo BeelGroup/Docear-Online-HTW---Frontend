@@ -5,6 +5,7 @@ define ['logger'], (logger)->
 
     constructor: (name)->
       super()
+      @set 'id', name
       @set 'name', name
       
   module.exports = User

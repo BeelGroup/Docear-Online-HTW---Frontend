@@ -25,31 +25,43 @@
         <div id="ribbons">
             <div class="nav navbar nav-tabs">
             @if(isAuthenticated) {
-	            <ul class="nav nav-tabs pull-left ribbon-tabs">
-	                <li class="ribbon-logo">
-	                  <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
-	                </li>
-	                @if(RIBBON_HOME.isEnabled()) {
-	                <li class="tab">
-	                  <a href="#ribbon-home">Home</a>
-	                </li>
-	                }
-	                @if(RIBBON_EDIT.isEnabled()) {
-	                <li class="tab">
-	                  <a href="#ribbon-edit" class="ribbon-edit">Edit</a>
-	                </li>
-	                }
-	                @if(RIBBON_WORKSPACE.isEnabled()) {
-	                <li class="tab">
-	                  <a href="#ribbon-workspace">Workspace</a>
-	                </li>
-	                }
-	            </ul>
+                @if(controllers.routes.Application.help().url == request.uri ){
+                   <ul class="nav nav-tabs pull-left">
+                     <li class="ribbon-logo">
+                       <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
+                     </li>
+                     @menuItem(controllers.routes.Application.index().url, "Home")
+                   </ul>
+	            }else{
+                   <ul class="nav nav-tabs pull-left ribbon-tabs">
+                        <li class="ribbon-logo">
+                          <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
+                        </li>
+                        @if(RIBBON_HOME.isEnabled()) {
+                        <li class="tab">
+                          <a href="#ribbon-home">Home</a>
+                        </li>
+                        }
+                        @if(RIBBON_EDIT.isEnabled()) {
+                        <li class="tab">
+                          <a href="#ribbon-edit" class="ribbon-edit">Edit</a>
+                        </li>
+                        }
+                        @if(RIBBON_WORKSPACE.isEnabled()) {
+                        <li class="tab">
+                          <a href="#ribbon-workspace">Workspace</a>
+                        </li>
+                        }
+                    </ul>
+	            }
+	            
                 <ul class="nav pull-right">
                     @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
                     @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
                         @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
                     }
+                    @menuItem("http://www.docear.org/imprint/", "Imprint")
+                    @menuItem(controllers.routes.Application.help().url, "Help")
                     @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")
                 </ul>
             }else{
