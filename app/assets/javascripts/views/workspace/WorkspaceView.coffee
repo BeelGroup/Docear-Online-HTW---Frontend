@@ -96,7 +96,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       if($(node).hasClass("users"))
         items.addUserItem =
           label: "Add user",
-          action: @addUser
+          action: @requestAddUser
         # Users directory should not be deleted!
         delete items.deleteItem
 
@@ -190,7 +190,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       )
 
     # jstree functions are required, so dont use a fatarrow here
-    requestAddUser:()->      
+    requestAddUser:()->
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
@@ -205,6 +205,8 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       @._show_input(obj, (obj, new_name, old_name)-> 
         f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
 
+        $(obj).children('a').attr('id', new_name)
+        
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
 
@@ -308,6 +310,9 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         data: {"username": itemData.name, "itemData" : itemData}
         success:(data)=>
           document.log "SUCCESS: The user \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
+
+          $objToDelete = $("ul.users a##{itemData.name}").parent()
+          $('#workspace-tree').jstree("delete_node", $objToDelete)
         error:()=>
           document.log "ERROR: The user \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
         dataType: 'json' 
