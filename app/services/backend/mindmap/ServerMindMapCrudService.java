@@ -1,8 +1,6 @@
 package services.backend.mindmap;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Cancellable;
+import akka.actor.*;
 import com.typesafe.config.ConfigFactory;
 import controllers.MindMap;
 import controllers.Secured;
@@ -38,7 +36,9 @@ import services.backend.user.UserService;
 import util.backend.ZipUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
 
@@ -55,10 +55,10 @@ import static akka.pattern.Patterns.ask;
 public class ServerMindMapCrudService implements MindMapCrudService {
     private final ActorSystem system;
     private final ActorRef remoteActor;
+    private final ActorRef forceSavingAndClosingActor;
     private final Cancellable saveMindmapsJob;
     private final UserIdentifier serverUserIdentifier = new UserIdentifier("SERVER", "SERVER");
     private final long defaultTimeoutInMillis = Play.application().configuration().getLong("services.backend.mindmap.MindMapCrudService.timeoutInMillis");
-
     @Autowired
     private UserService userService;
     @Autowired
@@ -70,6 +70,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
         system = ActorSystem.create("freeplaneSystem", ConfigFactory.load().getConfig("local"));
         remoteActor = system.actorFor(freeplaneActorUrl);
+        forceSavingAndClosingActor = system.actorOf(new Props(new UntypedActorFactory(){
+            @Override
+            public Actor create() throws Exception {
+                return new ForceSavingAndClosingActor(metaDataCrudService,ServerMindMapCrudService.this);
+            }
+        }));
 
         // job to auto save maps that haven't been saved for 5 minutes but are open
         saveMindmapsJob = system.scheduler().schedule(Duration.Zero(), Duration.apply(1, TimeUnit.MINUTES), new Runnable() {
@@ -100,7 +106,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             @Override
             public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
                 final CreateMindmapResponse response = (CreateMindmapResponse) promise.get();
-                metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(),mapIdentifier.getMapId(),0L,System.currentTimeMillis()));
+                metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), 0L, System.currentTimeMillis()));
                 Logger.debug("ServerMindMapCrudService.mindMapAsJsonString => response received");
                 return Promise.pure(response.isSuccess());
             }
@@ -347,6 +353,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         });
     }
 
+
     /**
      * Central point to perform an action on a mindmap. Helps to centralise
      * error handling
@@ -433,7 +440,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     }
 
     private Promise<Object> sendMessageToServer(Object message, long timeoutInMillis) {
-        return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
+            return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
     }
 
     private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) throws NoUserLoggedInException {
@@ -472,27 +479,29 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             final String fileContentAsString = writer.toString();
 
             // send file to server and put in database
-            metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(),mapIdentifier.getMapId(),0L,System.currentTimeMillis()));
+            metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), 0L, System.currentTimeMillis()));
 
             final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, fileContentAsString, "");
 
-            //sending map to freeplane
-            return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
-                @Override
-                public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
-
-                    final OpenMindMapResponse response = (OpenMindMapResponse) promise.get();
-                    final boolean success = response.isSuccess();
-                    if (success) {
-                        //put in meta database
-                        final MetaData metaData = new MetaData(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), 0L, System.currentTimeMillis());
-                        metaDataCrudService.upsert(metaData);
-                    }
-
-                    return Promise.pure(success);
-                }
-
-            }).get();
+            remoteActor.tell(request,forceSavingAndClosingActor);
+            return true;
+//            //sending map to freeplane
+//            return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
+//                @Override
+//                public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
+//
+//                    final OpenMindMapResponse response = (OpenMindMapResponse) promise.get();
+//                    final boolean success = response.isSuccess();
+//                    if (success) {
+//                        //put in meta database
+//                        final MetaData metaData = new MetaData(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), 0L, System.currentTimeMillis());
+//                        metaDataCrudService.upsert(metaData);
+//                    }
+//
+//                    return Promise.pure(success);
+//                }
+//
+//            }).get();
 
         } catch (IOException e) {
             Logger.error("ServerMindMapCrudService.sendMapToDocearInstance => can't open mindmap file", e);
@@ -594,6 +603,28 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
     private User user() {
         return userService.getCurrentUser();
+    }
+
+    private static final class ForceSavingAndClosingActor extends UntypedActor {
+        private final MetaDataCrudService metaDataCrudService;
+        private final ServerMindMapCrudService serverMindMapCrudService;
+
+        private ForceSavingAndClosingActor(MetaDataCrudService metaDataCrudService, ServerMindMapCrudService serverMindMapCrudService) {
+            this.metaDataCrudService = metaDataCrudService;
+            this.serverMindMapCrudService = serverMindMapCrudService;
+        }
+
+        @Override
+        public void onReceive(Object message) throws Exception {
+            if (message instanceof ForceSaveAndCloseRequest) {
+                final ActorRef sender = getSender();
+                final ForceSaveAndCloseRequest request = (ForceSaveAndCloseRequest) message;
+                final MapIdentifier mapIdentifier = request.getMapIdentifier();
+                serverMindMapCrudService.saveMindMapInProjectService(mapIdentifier);
+                sender.tell(new CloseMapRequest(new UserIdentifier("Server","Server"),mapIdentifier),getSelf());
+                metaDataCrudService.delete(mapIdentifier.getProjectId(),mapIdentifier.getMapId());
+            }
+        }
     }
 
 }
