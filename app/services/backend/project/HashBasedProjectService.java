@@ -196,6 +196,10 @@ public class HashBasedProjectService implements ProjectService {
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
+        //check that path is not rootpath
+        if(actualPath.equals("/"))
+            throw new SendResultException("Cannot override root!",400);
+
         // check if file is present, not deleted and not forced to be overriden
         final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
         if (currentServerMetaData != null && !currentServerMetaData.isDeleted() && !forceOverride) {
