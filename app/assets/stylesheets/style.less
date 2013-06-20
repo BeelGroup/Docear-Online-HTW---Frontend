@@ -537,3 +537,26 @@ ul.nav .no-link {
 {
     padding: 0px 6px;
 }
+
+
+// upload button: http://blueimp.github.io/jQuery-File-Upload/css/jquery.fileupload-ui.css
+.fileinput-button {
+  position: relative;
+  overflow: hidden;
+}
+.fileinput-button input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  transform: translate(-300px, 0) scale(4);
+  font-size: 23px;
+  direction: ltr;
+  cursor: pointer;
+}
+.fileupload-buttonbar .btn,
+.fileupload-buttonbar .toggle {
+  margin-bottom: 5px;
+}

@@ -14,8 +14,64 @@ define ['logger'], (logger) ->
     element:-> @$el
 
     render:()->
-      @$el.html @template
-      $(@$el).children('form').attr('action', jsRoutes.controllers.ProjectController.putFile(@projectId, @path).url)
+      values = {
+          'action': jsRoutes.controllers.ProjectController.putFile(@projectId, @path).url
+          'method': 'PUT'
+          'path': @path
+          'projectId': @projectId
+          'target': @projectId+"_"+Math.random()
+      }
+      
+      @$el.html @template values
+
+          
+      $form = $(@$el).children('form.file-upload')
+      
+      $form.find('.file-to-upload').change (evt)=>
+        files = evt.target.files; 
+        fileInfos = []
+        
+        $fileList = $form.find('.selected-filenames');
+        
+        for f in files
+          #tempFunc is necessary to make sure file reader nows "filename"
+          tempFunc = (f)=>
+            filename = escape(f.name)
+            filepath = @path+filename
+            fileInfos.push({
+              "name": escape(f.name)
+              "type": f.type
+              "size": f.size
+              "modified": f.lastModifiedDate.toLocaleDateString()
+            })
+            $fileListItem = $("<li class=\"uploaded-file #{filepath}\"> #{escape(f.name)} (#{Math.round(f.size/1000)} kB) <span class=\"status\">...loading</span></li>")
+            $fileList.append($fileListItem)
+            
+            me = @
+            reader = new FileReader()
+            reader.onload = (event)=>
+              $.ajax({
+                url: jsRoutes.controllers.ProjectController.putFile(@projectId, @path+filename, false, -1).url
+                type: 'PUT'
+                processData: false
+                enctype: 'application/text'
+                contentType: 'application/text'
+                data: event.target.result
+                dataType: 'json'
+                complete: (data)->
+                  $fileListItem.find(".status").text("Done").addClass('alert-success')
+              })
+            reader.readAsText(f);
+          tempFunc(f)
+
+      
+      $form.submit =>
+        if (window.File && window.FileReader && window.FileList && window.Blob)
+          #ok
+        else
+          alert('The File APIs are not fully supported in this browser.');
+        
+        false
       @
     
     appendAndRender:($elem)->
@@ -26,83 +82,7 @@ define ['logger'], (logger) ->
           width: 500,
           height: 300,
           modal: true
+          title: "File upload"
         })
         
-      $('#fileupload').fileupload({
-          url: jsRoutes.controllers.ProjectController.putFile(@projectId, @path, false, -1).url
-          type: "PUT"
-          dataType: 'json'
-          done: (e, data)->
-            console.log(data)
-      })
-      ###
-      
-      uploadButton = $('<button/>').addClass('btn').text('Upload').on('click', ()->
-        $this = $(this)
-        data = $this.data()
-        $this.off('click').text('Abort').on('click', ()=>
-          $this.remove()
-          data.abort()
-          data.submit().always(()=>
-            $this.remove();
-          )
-        )
-      )
-      
-      $('#fileupload').fileupload({
-        url: url,
-        type: "PUT",
-        dataType: 'json',
-        autoUpload: false,
-        multipart: false
-        #acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
-        maxFileSize: 5000000, # 5 MB
-        disableImageResize: true,
-        previewMaxWidth: 100,
-        previewMaxHeight: 100,
-        previewCrop: true
-      }).on('fileuploadadd', (e, data)->
-        console.log "fileuploadadd"
-        data.context = $('#upload-files')
-        $.each(data.files, (index, file)->
-          node = $('<p/>').append($('<span/>').text(file.name))
-          node.append('<br>').append(uploadButton.clone(true).data(data))
-          node.appendTo(data.context)
-        )
-      ).on('fileuploadprocessalways', (e, data)->
-        console.log "fileuploadprocessalways"
-        index = data.index
-        file = data.files[index]
-        node = $(data.context.children()[index])
-        if file.preview
-          node.prepend('<br>').prepend(file.preview)
-        
-        if file.error
-          node.append('<br>').append(file.error)
-          
-        if (index + 1) is data.files.length
-          data.context.find('button').text('Upload').prop('disabled', !!data.files.error)
-
-      ).on('fileuploadprogressall', (e, data)->
-        console.log "fileuploadprogressall"
-        progress = parseInt(data.loaded / data.total * 100, 10)
-        $('#progress .bar').css(
-          'width',
-          progress + '%'
-        )
-      ).on('fileuploaddone', (e, data)->
-        console.log "fileuploaddone"
-        $.each(data.result.files, (index, file)->
-          link = $('<a>').attr('target', '_blank').prop('href', file.url)
-          $(data.context.children()[index]).wrap(link)
-        )
-      ).on('fileuploadfail', (e, data)->
-        console.log "fileuploadfail"
-        $.each(data.result.files, (index, file)->
-          error = $('<span/>').text(file.error)
-          $(data.context.children()[index]).append('<br>').append(error)
-        )
-      )
-      
-      ###
   module.exports = Upload

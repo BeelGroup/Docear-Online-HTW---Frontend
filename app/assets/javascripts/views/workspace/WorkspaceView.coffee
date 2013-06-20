@@ -80,7 +80,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       if ($(node).hasClass("folder")) 
         items.addFile =  # upload
           label: "Add file",
-          action: @reQuestAddFile
+          action: @requestAddFile
         items.addFolder =  
           label: "Add folder",
           action: @requestAddFolder
@@ -129,7 +129,24 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       location.href = "http://127.0.0.1:9000/#project/#{itemData.projectId}/map/#{itemData.name}"
 
 
-    requestAddFile:(a,b)=>
+    requestAddFile:(liNode, a,b)=>
+      $parent = $('#workspace-tree').jstree('get_selected')
+      parentPath = $parent.attr('id')
+      if $parent.hasClass 'file'
+        $parent.closest('.folder')
+        
+      
+      $project = $($parent).closest('li.project')
+      projectId = $project.attr('id')
+      
+      path = "/"
+      if(parentPath != projectId)
+        path = parentPath+'/'
+      
+      if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
+        uploadView = new UploadView(projectId, path);
+        uploadView.appendAndRender @$el
+      false
       document.log 'add file'
 
 
