@@ -459,7 +459,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> delete(String projectId, String path) throws IOException {
+    public FileMetaData delete(String projectId, String path) throws IOException {
         path = normalizePath(path);
         Logger.debug("HashBasedProjectService => projectId: " + projectId + "; path: " + path);
 
@@ -471,7 +471,7 @@ public class HashBasedProjectService implements ProjectService {
 
         // check if already deleted
         if (oldMetadata.isDeleted())
-            return Promise.pure(new ObjectMapper().valueToTree(oldMetadata));
+            return oldMetadata;
 
         FileMetaData metadata = null;
         if (oldMetadata.isDir())
@@ -483,7 +483,7 @@ public class HashBasedProjectService implements ProjectService {
 
         callListenersForChangeInProject(projectId);
 
-        return Promise.pure(new ObjectMapper().valueToTree(metadata));
+        return metadata;
     }
 
     @Override

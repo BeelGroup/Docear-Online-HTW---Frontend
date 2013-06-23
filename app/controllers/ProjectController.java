@@ -157,12 +157,7 @@ public class ProjectController extends DocearController {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final DeleteFileData data = filledForm.get();
-            return async(projectService.delete(projectId, data.getPath()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            return ok(projectService.delete(projectId, data.getPath()));
         }
     }
 
