@@ -18,7 +18,7 @@ public interface ProjectService {
 	//Project level
     Project createProject(String username, String name) throws IOException;
 	void addUserToProject(String projectId, String usernameToAdd) throws IOException;
-	Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
+	void removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
 	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
 	
 	/**

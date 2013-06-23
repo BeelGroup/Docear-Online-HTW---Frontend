@@ -84,16 +84,8 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final RemoveUserFromProjectData data = filledForm.get();
-            return async(projectService.removeUserFromProject(projectId, data.getUsername()).map(new Function<Boolean, Result>() {
-                @Override
-                public Result apply(Boolean success) throws Throwable {
-                    if (success)
-                        return ok();
-                    else {
-                        return internalServerError("Unknown Error occured");
-                    }
-                }
-            }));
+            projectService.removeUserFromProject(projectId, data.getUsername());
+            return ok();
         }
     }
 
