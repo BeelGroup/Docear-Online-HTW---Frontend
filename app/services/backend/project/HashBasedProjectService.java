@@ -433,7 +433,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> versionDelta(String projectId, Long cursor) throws IOException {
+    public VersionDeltaResponse versionDelta(String projectId, Long cursor) throws IOException {
         final Project project = fileIndexStore.findProjectById(projectId);
         final Long currentRevision = project.getRevision();
         final Map<String, FileMetaData> resources = new HashMap<String, FileMetaData>();
@@ -449,8 +449,7 @@ public class HashBasedProjectService implements ProjectService {
             resources.put(resource, metadata);
         }
 
-        final VersionDeltaResponse response = new VersionDeltaResponse(currentRevision, resources);
-        return Promise.pure(new ObjectMapper().valueToTree(response));
+        return new VersionDeltaResponse(currentRevision, resources);
     }
 
     @Override
@@ -542,25 +541,5 @@ public class HashBasedProjectService implements ProjectService {
         private long getBytes() {
             return bytes;
         }
-    }
-
-    public static class VersionDeltaResponse {
-        private final Long currentRevision;
-        private final Map<String, FileMetaData> resources;
-
-        public VersionDeltaResponse(Long currentRevision, Map<String, FileMetaData> resources) {
-
-            this.currentRevision = currentRevision;
-            this.resources = resources;
-        }
-
-        public Long getCurrentRevision() {
-            return currentRevision;
-        }
-
-        public Map<String, FileMetaData> getResources() {
-            return resources;
-        }
-
     }
 }

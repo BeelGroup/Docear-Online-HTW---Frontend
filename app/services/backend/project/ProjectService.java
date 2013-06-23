@@ -43,7 +43,7 @@ public interface ProjectService {
 
 	Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException;
 
-	Promise<JsonNode> versionDelta(String projectId, Long revision) throws IOException;
+    VersionDeltaResponse versionDelta(String projectId, Long revision) throws IOException;
 
     /**
      * Checks if the user with the name {@code username} belongs to the project.

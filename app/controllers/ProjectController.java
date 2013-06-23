@@ -16,6 +16,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.project.VersionDeltaResponse;
 import services.backend.project.persistance.EntityCursor;
 import services.backend.project.persistance.FileMetaData;
 import services.backend.project.persistance.Project;
@@ -245,13 +246,8 @@ public class ProjectController extends DocearController {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final ProjectDeltaData data = filledForm.get();
-            return async(projectService.versionDelta(projectId, data.getProjectRevision()).map(new Function<JsonNode, Result>() {
-
-                @Override
-                public Result apply(JsonNode updates) throws Throwable {
-                    return ok(updates);
-                }
-            }));
+            final VersionDeltaResponse response = projectService.versionDelta(projectId, data.getProjectRevision());
+            return ok(new ObjectMapper().valueToTree(response));
         }
 
     }
