@@ -17,7 +17,7 @@ import static org.apache.commons.io.FileUtils.readFileToByteArray;
 /**
  * This plugin is loads files from a local folder into the file store and the index db.
  * It only loads if the setting embed.mongo.enabled is true and the array application.projects.fixtures
- * contains a path to files. Example: application.projects.fixtures=["test/resources/projects/Freeplane"]
+ * contains a path to files. Example: application.projects.fixtures=["test/resources/projects/Freeplane", "/home/username"]
  * For performance reasons application.conf should not contain a lot of files to load.
  * Warning: this plugin is only for development and testing, it should not used in production.
  */
