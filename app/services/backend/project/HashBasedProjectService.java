@@ -224,7 +224,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException {
+    public void moveFile(String projectId, String oldPath, String newPath) throws IOException {
         oldPath = normalizePath(oldPath);
         newPath = normalizePath(newPath);
 
@@ -256,7 +256,6 @@ public class HashBasedProjectService implements ProjectService {
         }
 
         callListenersForChangeInProject(projectId);
-        return Promise.pure(new ObjectMapper().readTree("[\"success\"]"));
     }
 
     private void moveFileRecursion(String projectId, FileMetaData folderMetadata, FileMetaData newFolderMetadata) throws IOException {

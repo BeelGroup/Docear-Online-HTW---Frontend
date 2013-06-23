@@ -140,17 +140,12 @@ public class ProjectController extends DocearController {
     public Result moveFile(String projectId) throws IOException {
         assureUserBelongsToProject(projectId);
         Form<MoveData> filledForm = moveForm.bindFromRequest();
-
         if (filledForm.hasErrors()) {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final MoveData data = filledForm.get();
-            return async(projectService.moveFile(projectId, data.getCurrentPath(), data.getMoveToPath()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            projectService.moveFile(projectId, data.getCurrentPath(), data.getMoveToPath());
+            return ok(new ObjectMapper().readTree("[\"success\"]"));
         }
     }
 

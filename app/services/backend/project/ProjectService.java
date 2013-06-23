@@ -37,7 +37,7 @@ public interface ProjectService {
 
     FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException;
 
-	Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException;
+	void moveFile(String projectId, String oldPath, String newPath) throws IOException;
 	
 	Promise<JsonNode> delete(String projectId, String path) throws IOException;
 
