@@ -32,6 +32,7 @@ import play.libs.WS;
 import play.mvc.Controller;
 import scala.concurrent.duration.Duration;
 import services.backend.project.ProjectService;
+import services.backend.project.persistance.EntityCursor;
 import services.backend.user.UserService;
 import util.backend.ZipUtils;
 
@@ -84,10 +85,15 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                 try {
                     //1000 * 1 ms = 1s * 60 = 1m * 5 = 5m = 1000 * 60 * 5 = 300000 ms
 
-                    Iterator<MetaData> metaIt = metaDataCrudService.findByNotSavedSince(300000).iterator();
-                    while (metaIt.hasNext()) {
-                        final MetaData metaData = metaIt.next();
-                        saveMindMapInProjectService(new MapIdentifier(metaData.getProjectId(), metaData.getMindMapResource()));
+                    final EntityCursor<MetaData> byNotSavedSince = metaDataCrudService.findByNotSavedSince(300000);
+                    try {
+                        Iterator<MetaData> metaIt = byNotSavedSince.iterator();
+                        while (metaIt.hasNext()) {
+                            final MetaData metaData = metaIt.next();
+                            saveMindMapInProjectService(new MapIdentifier(metaData.getProjectId(), metaData.getMindMapResource()));
+                        }
+                    } finally {
+                        byNotSavedSince.close();
                     }
                 } catch (IOException e) {
                     Logger.error("Problem with metadataservice. Retrying in 5 Minutes! ", e);

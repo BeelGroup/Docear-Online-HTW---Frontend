@@ -35,6 +35,7 @@ public class MongoPlugin extends Plugin {
             final Integer port = port();
             Logger.info(String.format("Starting MongoClient for %s:%d", host, port));
             mongoClient = new MongoClient(host, port);
+            mongoClient.setWriteConcern(WriteConcern.FSYNC_SAFE);
             ensureIndexes();
         } catch (UnknownHostException e) {
             Logger.error("can't connect ");
