@@ -6,6 +6,7 @@ import services.backend.project.persistance.Project;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,7 +20,7 @@ public interface ProjectService {
     Project createProject(String username, String name) throws IOException;
 	void addUserToProject(String projectId, String usernameToAdd) throws IOException;
 	void removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
-	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
+    List<Project> getProjectsFromUser(String username) throws IOException;
 	
 	/**
 	 *

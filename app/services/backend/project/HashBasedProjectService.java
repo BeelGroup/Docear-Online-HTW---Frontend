@@ -98,10 +98,9 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> getProjectsFromUser(String username) throws IOException {
+    public List<Project> getProjectsFromUser(String username) throws IOException {
         final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
-        final List<Project> projectList = convertEntityCursorToList(projects);
-        return Promise.pure(new ObjectMapper().valueToTree(projectList));
+        return convertEntityCursorToList(projects);
     }
 
     @Override
