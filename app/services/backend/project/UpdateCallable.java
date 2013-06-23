@@ -81,6 +81,7 @@ public class UpdateCallable implements Callable<JsonNode> {
             if (projectRevisionMapCopy.containsKey(projectId)) {
                 final boolean newRevision = projectRevisionMapCopy.get(projectId) != projectRevision;
                 final boolean changeInUsers = !areListsEqual(projectUserMap.get(projectId), users);
+                Logger.debug("rev: "+newRevision+"; user: "+changeInUsers);
                 if (newRevision || changeInUsers)
                     updatedProjects.put(projectId, projectRevision);
                 projectRevisionMapCopy.remove(projectId);
