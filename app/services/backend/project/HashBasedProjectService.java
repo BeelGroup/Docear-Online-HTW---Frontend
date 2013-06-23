@@ -78,11 +78,10 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException {
+    public void addUserToProject(String projectId, String usernameToAdd) throws IOException {
         fileIndexStore.addUserToProject(projectId, usernameToAdd);
         callListenerForChangeForUser(usernameToAdd);
         callListenersForChangeInProject(projectId);
-        return Promise.pure(true);
     }
 
     @Override

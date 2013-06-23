@@ -71,16 +71,8 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final AddUserToProjectData data = filledForm.get();
-            return async(projectService.addUserToProject(projectId, data.getUsername()).map(new Function<Boolean, Result>() {
-                @Override
-                public Result apply(Boolean success) throws Throwable {
-                    if (success)
-                        return ok();
-                    else {
-                        return internalServerError("Unknown Error occured");
-                    }
-                }
-            }));
+            projectService.addUserToProject(projectId, data.getUsername());
+            return ok();
         }
     }
 
