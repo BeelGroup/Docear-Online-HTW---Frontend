@@ -475,7 +475,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             else {
                 final String mapId = mapIdentifier.getMapId();
 
-                in = new ZipInputStream(projectService.getFile(mapIdentifier.getProjectId(), mapIdentifier.getMapId()).get());
+                in = new ZipInputStream(projectService.getFile(mapIdentifier.getProjectId(), mapIdentifier.getMapId()));
                 ((ZipInputStream) in).getNextEntry();
             }
 

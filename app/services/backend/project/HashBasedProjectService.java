@@ -103,7 +103,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<InputStream> getFile(String projectId, String path) throws IOException {
+    public InputStream getFile(String projectId, String path) throws IOException {
         Logger.debug("HashBasedProjectService.getFile => projectId: " + projectId + "; path: " + path);
         path = normalizePath(path);
 
@@ -118,7 +118,7 @@ public class HashBasedProjectService implements ProjectService {
             final String fileHash = metadata.getHash();
             Logger.debug("HashBasedProjectService.getFile => fileHash: " + fileHash);
 
-            return Promise.pure((InputStream) fileStore.open(path().hash(fileHash).zipped()));
+            return fileStore.open(path().hash(fileHash).zipped());
 
         } catch (FileNotFoundException e) {
             throw new NotFoundException("File not found!", e);

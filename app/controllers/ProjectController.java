@@ -87,13 +87,7 @@ public class ProjectController extends Controller {
 
     public Result getFile(String projectId, String path) throws IOException {
         assureUserBelongsToProject(projectId);
-        return async(projectService.getFile(projectId, path).map(new Function<InputStream, Result>() {
-
-            @Override
-            public Result apply(InputStream fileStream) throws Throwable {
-                return ok(fileStream);
-            }
-        }));
+        return ok(projectService.getFile(projectId, path));
     }
 
     /**

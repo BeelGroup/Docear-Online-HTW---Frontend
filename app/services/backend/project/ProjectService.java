@@ -26,7 +26,7 @@ public interface ProjectService {
 	
 	
 	//File level
-	Promise<InputStream> getFile(String projectId, String path) throws IOException;
+	InputStream getFile(String projectId, String path) throws IOException;
 
 	Promise<JsonNode> metadata(String projectId, String path) throws IOException;
 
