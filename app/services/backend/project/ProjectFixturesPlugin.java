@@ -46,12 +46,12 @@ public final class ProjectFixturesPlugin extends Plugin {
 
     private void addProject(String path) throws IOException {
         final ProjectService service = SpringConfiguration.getBean(ProjectService.class);
-        final Project project = service.createProject("Michael", "Freeplane Share");
+        final File projectFolder = new File(path);
+        final Project project = service.createProject("Michael", projectFolder.getName());
         final List<String> allowedUsers = Arrays.asList("Julius", "Alex", "Florian", "Paul", "alschwank", "online-demo");
         for (final String user: allowedUsers) {
             service.addUserToProject(project.getId(), user);
         }
-        final File projectFolder = new File(path);
         final Iterator<File> fileIterator = iterateFiles(projectFolder, null, true);
         while (fileIterator.hasNext()) {
             final File file = fileIterator.next();
