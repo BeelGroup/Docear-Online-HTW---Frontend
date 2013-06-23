@@ -33,7 +33,7 @@ public interface ProjectService {
     FileMetaData metadata(String projectId, String path) throws IOException;
     EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException;
 
-	Promise<JsonNode> createFolder(String projectId, String path) throws IOException;
+    FileMetaData createFolder(String projectId, String path) throws IOException;
 
 	Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException;
 

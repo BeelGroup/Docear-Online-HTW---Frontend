@@ -142,19 +142,14 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
+    public FileMetaData createFolder(String projectId, String path) throws IOException {
         path = normalizePath(path);
         upsertFoldersInPath(projectId, path);
-
         final FileMetaData metadata = FileMetaData.folder(path, false);
         fileIndexStore.upsertFile(projectId, metadata);
-
         final FileMetaData newMetaData = fileIndexStore.getMetaData(projectId, path);
-
-
         callListenersForChangeInProject(projectId);
-
-        return Promise.pure(new ObjectMapper().valueToTree(newMetaData));
+        return newMetaData;
     }
 
     private void upsertFoldersInPath(String projectId, String path) throws IOException {

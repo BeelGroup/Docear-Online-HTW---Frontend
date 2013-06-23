@@ -186,12 +186,9 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final CreateFolderData data = filledForm.get();
-            return async(projectService.createFolder(projectId, data.getPath()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            final FileMetaData newMetaData = projectService.createFolder(projectId, data.getPath());
+            final JsonNode jsonNode = new ObjectMapper().valueToTree(newMetaData);
+            return ok(jsonNode);
         }
     }
 
