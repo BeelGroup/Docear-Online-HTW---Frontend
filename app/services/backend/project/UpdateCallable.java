@@ -71,22 +71,26 @@ public class UpdateCallable implements Callable<JsonNode> {
         final List<String> deletedProjects = new ArrayList<String>();
 
         final Iterator<Project> currentProjectsIterator = projects.iterator();
-        // get updated projects
-        while (currentProjectsIterator.hasNext()) {
-            final Project project = currentProjectsIterator.next();
-            final List<String> users = project.getAuthorizedUsers();
-            final String projectId = project.getId();
-            final Long projectRevision = project.getRevision();
+        try {
+            // get updated projects
+            while (currentProjectsIterator.hasNext()) {
+                final Project project = currentProjectsIterator.next();
+                final List<String> users = project.getAuthorizedUsers();
+                final String projectId = project.getId();
+                final Long projectRevision = project.getRevision();
 
-            if (projectRevisionMapCopy.containsKey(projectId)) {
-                final boolean newRevision = projectRevisionMapCopy.get(projectId) != projectRevision;
-                final boolean changeInUsers = !areListsEqual(projectUserMap.get(projectId), users);
-                if (newRevision || changeInUsers)
-                    updatedProjects.put(projectId, projectRevision);
-                projectRevisionMapCopy.remove(projectId);
-            } else {
-                newProjects.put(projectId, projectRevision);
+                if (projectRevisionMapCopy.containsKey(projectId)) {
+                    final boolean newRevision = projectRevisionMapCopy.get(projectId) != projectRevision;
+                    final boolean changeInUsers = !areListsEqual(projectUserMap.get(projectId), users);
+                    if (newRevision || changeInUsers)
+                        updatedProjects.put(projectId, projectRevision);
+                    projectRevisionMapCopy.remove(projectId);
+                } else {
+                    newProjects.put(projectId, projectRevision);
+                }
             }
+        } finally {
+            projects.close();
         }
         // Left over ids must have been removed from the user
         deletedProjects.addAll(projectRevisionMapCopy.keySet());

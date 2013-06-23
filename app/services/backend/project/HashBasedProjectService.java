@@ -146,12 +146,17 @@ public class HashBasedProjectService implements ProjectService {
         if (metadata.isDir()) {
             final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
             final EntityCursor<FileMetaData> childrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
-            for (FileMetaData childMetadata : childrenMetadatas) {
-                if (!childMetadata.isDeleted())
-                    childrenData.add(childMetadata);
+            try {
+                for (FileMetaData childMetadata : childrenMetadatas) {
+                    if (!childMetadata.isDeleted())
+                        childrenData.add(childMetadata);
+                }
+                final JsonNode contentsJson = mapper.valueToTree(childrenData);
+                metadataJson.put("contents", contentsJson);
+            } finally {
+                childrenMetadatas.close();
             }
-            final JsonNode contentsJson = mapper.valueToTree(childrenData);
-            metadataJson.put("contents", contentsJson);
+
         }
         return Promise.pure((JsonNode) metadataJson);
     }
@@ -284,27 +289,31 @@ public class HashBasedProjectService implements ProjectService {
         final EntityCursor<FileMetaData> oldChildrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, folderMetadata.getPath(), Integer.MAX_VALUE);
         Logger.debug("HashBasedProjectService.moveFileRecursion => folderMeta: " + folderMetadata + "; newFolderMeta: " + newFolderMetadata);
 
-        final String oldBasePath = folderMetadata.getPath();
-        final String newBasePath = newFolderMetadata.getPath();
-        for (final FileMetaData oldMetadata : oldChildrenMetadatas) {
-            // ignore deleted files
-            if (oldMetadata.isDeleted())
-                continue;
+        try {
+            final String oldBasePath = folderMetadata.getPath();
+            final String newBasePath = newFolderMetadata.getPath();
+            for (final FileMetaData oldMetadata : oldChildrenMetadatas) {
+                // ignore deleted files
+                if (oldMetadata.isDeleted())
+                    continue;
 
-            final String newPath = oldMetadata.getPath().replace(oldBasePath, newBasePath);
-            // create and upsert on new position
-            final FileMetaData newMetadata = oldMetadata.isDir() ? FileMetaData.folder(newPath, false) : FileMetaData.file(newPath, oldMetadata.getHash(), oldMetadata.getBytes(), false);
-            fileIndexStore.upsertFile(projectId, newMetadata);
+                final String newPath = oldMetadata.getPath().replace(oldBasePath, newBasePath);
+                // create and upsert on new position
+                final FileMetaData newMetadata = oldMetadata.isDir() ? FileMetaData.folder(newPath, false) : FileMetaData.file(newPath, oldMetadata.getHash(), oldMetadata.getBytes(), false);
+                fileIndexStore.upsertFile(projectId, newMetadata);
 
-            // trigger recursion for folders
-            if (newMetadata.isDir()) {
-                // delete on old position
-                fileIndexStore.upsertFile(projectId, FileMetaData.folder(oldMetadata.getPath(), true));
-                moveFileRecursion(projectId, oldMetadata, newMetadata);
-            } else {
-                // delete on old position
-                fileIndexStore.upsertFile(projectId, FileMetaData.file(oldMetadata.getPath(), "", 0, true));
+                // trigger recursion for folders
+                if (newMetadata.isDir()) {
+                    // delete on old position
+                    fileIndexStore.upsertFile(projectId, FileMetaData.folder(oldMetadata.getPath(), true));
+                    moveFileRecursion(projectId, oldMetadata, newMetadata);
+                } else {
+                    // delete on old position
+                    fileIndexStore.upsertFile(projectId, FileMetaData.file(oldMetadata.getPath(), "", 0, true));
+                }
             }
+        } finally {
+            oldChildrenMetadatas.close();
         }
     }
 
@@ -510,14 +519,17 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) throws IOException {
-        final List<A> list = new ArrayList<A>();
-        final Iterator<A> it = cursor.iterator();
+        try {
+            final List<A> list = new ArrayList<A>();
+            final Iterator<A> it = cursor.iterator();
 
-        while (it.hasNext()) {
-            list.add(it.next());
+            while (it.hasNext()) {
+                list.add(it.next());
+            }
+            return list;
+        } finally {
+            cursor.close();
         }
-        cursor.close();
-        return list;
     }
 
     /**
