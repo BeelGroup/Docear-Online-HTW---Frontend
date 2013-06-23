@@ -6,14 +6,18 @@ import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.*;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import play.data.Form;
+import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileMetaData;
 import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
 
@@ -21,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,13 +197,27 @@ public class ProjectController extends Controller {
 
     public Result metadata(String projectId, String path) throws IOException {
         assureUserBelongsToProject(projectId);
-        return async(projectService.metadata(projectId, path).map(new Function<JsonNode, Result>() {
+        final FileMetaData metadata = projectService.metadata(projectId, path);
+        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectNode metadataJson = mapper.valueToTree(metadata);
 
-            @Override
-            public Result apply(JsonNode entry) throws Throwable {
-                return ok(entry);
+        // get children for dir
+        if (metadata.isDir()) {
+            final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
+            final EntityCursor<FileMetaData> childrenMetadatas = projectService.getMetaDataOfDirectChildren(projectId, path, 5000);
+            try {
+                for (FileMetaData childMetadata : childrenMetadatas) {
+                    if (!childMetadata.isDeleted())
+                        childrenData.add(childMetadata);
+                }
+                final JsonNode contentsJson = mapper.valueToTree(childrenData);
+                metadataJson.put("contents", contentsJson);
+            } finally {
+                childrenMetadatas.close();
             }
-        }));
+
+        }
+        return ok(metadataJson);
     }
 
     public Result listenForUpdates() throws IOException {

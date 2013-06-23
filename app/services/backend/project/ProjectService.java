@@ -2,6 +2,8 @@ package services.backend.project;
 
 import org.codehaus.jackson.JsonNode;
 import play.libs.F.Promise;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileMetaData;
 import services.backend.project.persistance.Project;
 
 import java.io.IOException;
@@ -28,7 +30,8 @@ public interface ProjectService {
 	//File level
 	InputStream getFile(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> metadata(String projectId, String path) throws IOException;
+    FileMetaData metadata(String projectId, String path) throws IOException;
+    EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException;
 
 	Promise<JsonNode> createFolder(String projectId, String path) throws IOException;
 

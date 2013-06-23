@@ -126,35 +126,19 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> metadata(String projectId, String path) throws IOException {
+    public FileMetaData metadata(String projectId, String path) throws IOException {
         path = normalizePath(path);
         Logger.debug("HashBasedProjectService => projectId: " + projectId + "; path: " + path);
-
         final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
         if (metadata == null) {
             throw new NotFoundException("File not found!");
         }
+        return metadata;
+    }
 
-        final ObjectMapper mapper = new ObjectMapper();
-        final ObjectNode metadataJson = (ObjectNode) mapper.valueToTree(metadata);
-
-        // get children for dir
-        if (metadata.isDir()) {
-            final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
-            final EntityCursor<FileMetaData> childrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
-            try {
-                for (FileMetaData childMetadata : childrenMetadatas) {
-                    if (!childMetadata.isDeleted())
-                        childrenData.add(childMetadata);
-                }
-                final JsonNode contentsJson = mapper.valueToTree(childrenData);
-                metadataJson.put("contents", contentsJson);
-            } finally {
-                childrenMetadatas.close();
-            }
-
-        }
-        return Promise.pure((JsonNode) metadataJson);
+    @Override
+    public EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException {
+        return fileIndexStore.getMetaDataOfDirectChildren(id, path, max);
     }
 
     @Override
