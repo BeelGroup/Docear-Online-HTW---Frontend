@@ -48,6 +48,7 @@ public class MindMap extends Controller {
     @Autowired
     private ProjectService projectService;
 
+    @Security.Authenticated(Secured.class)
     public Result createNewMap(final String projectId) throws IOException {
         Form<CreateMapData> filledForm = createMapForm.bindFromRequest();
 
@@ -350,6 +351,7 @@ public class MindMap extends Controller {
         }
     }
 
+    @Security.Authenticated(Secured.class)
     public Result listenForUpdates(final String projectId, final String mapId) {
         Logger.debug("MindMap.listenForUpdates => projectId= " + projectId + "; mapId=" + mapId);
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
@@ -365,10 +367,18 @@ public class MindMap extends Controller {
         }));
     }
 
+    /**
+     *
+     * @return
+     */
     private UserIdentifier userIdentifier() {
         final models.backend.User user = userService.getCurrentUser(source());
-        final UserIdentifier userIdentifier = new UserIdentifier(user.getSource(), user.getUsername());
-        return userIdentifier;
+        if(user != null) {
+            final UserIdentifier userIdentifier = new UserIdentifier(user.getSource(), user.getUsername());
+            return userIdentifier;
+        } else {
+            return null;
+        }
     }
 
     private String source() {
