@@ -92,9 +92,8 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> getProjectById(String projectId) throws IOException {
-        final Project project = fileIndexStore.findProjectById(projectId);
-        return Promise.pure(new ObjectMapper().valueToTree(project));
+    public Project getProjectById(String projectId) throws IOException {
+        return fileIndexStore.findProjectById(projectId);
     }
 
     @Override

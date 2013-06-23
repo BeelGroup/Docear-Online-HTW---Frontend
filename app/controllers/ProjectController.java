@@ -44,12 +44,8 @@ public class ProjectController extends Controller {
 
     public Result getProject(String projectId) throws IOException {
         assureUserBelongsToProject(projectId);
-        return async(projectService.getProjectById(projectId).map(new Function<JsonNode, Result>() {
-            @Override
-            public Result apply(JsonNode folderMetadata) throws Throwable {
-                return ok(folderMetadata);
-            }
-        }));
+        final Project project = projectService.getProjectById(projectId);
+        return ok(new ObjectMapper().valueToTree(project));
     }
 
     public Result createProject() throws IOException {

@@ -21,14 +21,7 @@ public interface ProjectService {
 	void addUserToProject(String projectId, String usernameToAdd) throws IOException;
 	void removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
     List<Project> getProjectsFromUser(String username) throws IOException;
-	
-	/**
-	 *
-	 * @param projectId id of the project
-	 * @return
-	 * @throws IOException
-	 */
-	Promise<JsonNode> getProjectById(String projectId) throws IOException;
+	Project getProjectById(String projectId) throws IOException;
 	
 	
 	
