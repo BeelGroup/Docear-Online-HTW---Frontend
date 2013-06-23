@@ -5,6 +5,7 @@ import controllers.featuretoggle.ImplementedFeature;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.*;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import play.data.Form;
@@ -13,6 +14,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
 
 import java.io.IOException;
@@ -52,17 +54,12 @@ public class ProjectController extends Controller {
 
     public Result createProject() throws IOException {
         Form<CreateProjectData> filledForm = createProjectForm.bindFromRequest();
-
         if (filledForm.hasErrors()) {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final CreateProjectData data = filledForm.get();
-            return async(projectService.createProject(username(), data.getName()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            final Project project = projectService.createProject(username(), data.getName());
+            return ok(new ObjectMapper().valueToTree(project));
         }
     }
 

@@ -71,10 +71,10 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> createProject(String username, String name) throws IOException {
+    public Project createProject(String username, String name) throws IOException {
         final Project project = fileIndexStore.createProject(name, username);
         callListenerForChangeForUser(username);
-        return Promise.pure(new ObjectMapper().valueToTree(project));
+        return project;
     }
 
     @Override

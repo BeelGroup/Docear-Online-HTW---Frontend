@@ -2,6 +2,7 @@ package services.backend.project;
 
 import org.codehaus.jackson.JsonNode;
 import play.libs.F.Promise;
+import services.backend.project.persistance.Project;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +16,7 @@ import java.util.Map;
 public interface ProjectService {
 	
 	//Project level
-	Promise<JsonNode> createProject(String username, String name) throws IOException;
+    Project createProject(String username, String name) throws IOException;
 	Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException;
 	Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
 	Promise<JsonNode> getProjectsFromUser(String username) throws IOException;
