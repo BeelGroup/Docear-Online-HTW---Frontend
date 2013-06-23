@@ -31,7 +31,7 @@
 * don't use JavaScript directly, use [CoffeeScript](http://coffeescript.org/) in the folder app/assets/javascripts
 * [Debugging](https://github.com/Docear/HTW-Frontend/blob/master/dev-doc/debug.md)
 * recover from hard build errors: `sbt clean`
-* [CoffeeScript API DOC](https://github.com/Docear/HTW-Frontend/blob/master/dev-doc/coffeescript-api-doc.md)
+* using initial data for the projects: see ProjectFixturesPlugin.java
 
 ## Backend mock
 * default: it delivers static files to easy frontend development
