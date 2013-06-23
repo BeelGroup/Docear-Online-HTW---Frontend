@@ -37,7 +37,7 @@ import services.backend.user.UserService;
 import com.google.common.collect.Maps;
 
 @Component
-public class Application extends Controller {
+public class Application extends DocearController {
     public static final String LOGGED_ERROR_CACHE_PREFIX = "logged.error.";
     public static final Form<FeedbackFormData> feedbackForm = form(FeedbackFormData.class);
     

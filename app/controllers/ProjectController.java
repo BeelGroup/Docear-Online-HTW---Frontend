@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
 @Security.Authenticated(Secured.class)
-public class ProjectController extends Controller {
+public class ProjectController extends DocearController {
     final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
     final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);
     final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
@@ -134,14 +134,7 @@ public class ProjectController extends Controller {
         if (isZip && !isZipValidation) {
             return badRequest("File was send as zip but isn't.");
         }
-
-        return async(projectService.putFile(projectId, path, content, isZip, parentRev, false).map(new Function<JsonNode, Result>() {
-
-            @Override
-            public Result apply(JsonNode fileMeta) throws Throwable {
-                return ok(fileMeta);
-            }
-        }));
+        return ok(projectService.putFile(projectId, path, content, isZip, parentRev, false));
     }
 
     public Result moveFile(String projectId) throws IOException {

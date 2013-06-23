@@ -32,7 +32,7 @@ import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
 
 @Component
-public class User extends Controller {
+public class User extends DocearController {
 
 	public static final Form<Credentials> credentialsForm = form(Credentials.class);
 

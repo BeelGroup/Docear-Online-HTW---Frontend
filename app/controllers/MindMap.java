@@ -7,6 +7,7 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages;
 import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.models.MapIdentifier;
@@ -22,6 +23,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
 import services.backend.project.ProjectService;
+import services.backend.project.persistance.FileMetaData;
 import services.backend.user.UserService;
 
 import java.io.ByteArrayInputStream;
@@ -31,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class MindMap extends Controller {
+public class MindMap extends DocearController {
     public final static String COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID = "-1";
     private final static Form<CreateNodeData> createNodeForm = Form.form(CreateNodeData.class);
     private final static Form<CreateMapData> createMapForm = Form.form(CreateMapData.class);
@@ -60,13 +62,7 @@ public class MindMap extends Controller {
             final MapIdentifier mapIdentifier = new MapIdentifier(projectId, path);
             if (mindMapCrudService.createMindmap(userIdentifier(), mapIdentifier).get()) {
                 final MindmapAsXmlResponse mindMapAsXmlResponse = mindMapCrudService.mindMapAsXmlString(userIdentifier, mapIdentifier).get();
-
-                return async(projectService.putFile(projectId, path, mindMapAsXmlResponse.getFileBytes(), false, 0L, true).map(new Function<JsonNode, Result>() {
-                    @Override
-                    public Result apply(JsonNode jsonNode) throws Throwable {
-                        return ok(jsonNode);
-                    }
-                }));
+                return ok(projectService.putFile(projectId, path, mindMapAsXmlResponse.getFileBytes(), false, 0L, true));
             } else {
                 return internalServerError("problem creating new map");
             }

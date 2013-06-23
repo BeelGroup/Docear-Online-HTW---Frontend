@@ -172,7 +172,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
+    public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
@@ -220,8 +220,7 @@ public class HashBasedProjectService implements ProjectService {
         fileIndexStore.upsertFile(projectId, metadata);
         final FileMetaData newMetaData = fileIndexStore.getMetaData(projectId, actualPath);
         callListenersForChangeInProject(projectId);
-
-        return Promise.pure(new ObjectMapper().valueToTree(newMetaData));
+        return newMetaData;
     }
 
     @Override

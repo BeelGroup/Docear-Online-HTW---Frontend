@@ -35,7 +35,7 @@ public interface ProjectService {
 
     FileMetaData createFolder(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException;
+    FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException;
 
 	Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException;
 	
