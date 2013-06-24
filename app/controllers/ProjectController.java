@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
 import play.libs.F.Function;
-import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -107,13 +106,12 @@ public class ProjectController extends DocearController {
      * @return
      * @throws IOException
      */
-    @BodyParser.Of(BodyParser.Raw.class)
     public Result putFile(String projectId, String path, boolean isZip, Long parentRev) throws IOException {
         assureUserBelongsToProject(projectId);
         path = normalizePath(path);
         byte[] content = request().body().asRaw().asBytes();
 
-        Logger.debug("putFile => isMaxBodySizeExceeded: " + request().body().isMaxSizeExceeded());
+
         //can't use null in router, so -1 is given and will be mapped to null
         if (parentRev == -1)
             parentRev = null;
@@ -132,6 +130,7 @@ public class ProjectController extends DocearController {
                 final ByteBuffer byteBuffer = ByteBuffer.wrap(content);
                 final int zipSignature = byteBuffer.getInt();
                 isZipValidation = (zipSignature == 0x504b0304);
+                Logger.debug("putFile => send as zip: "+isZip+"; validated: "+isZipValidation);
             } catch (BufferUnderflowException e) {
                 isZipValidation = false;
                 // do nothing
