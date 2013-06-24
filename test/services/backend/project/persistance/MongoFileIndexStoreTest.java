@@ -70,7 +70,7 @@ public class MongoFileIndexStoreTest extends MongoTest {
             alexProjects.close();
         }
         assertThat(projectNames).hasSize(2);
-        assertThat(projectNames).isEqualTo(newArrayList(PROJECT_NAME, "Docear Sync"));
+        assertThat(projectNames).isEqualTo(newArrayList("Docear Sync", PROJECT_NAME));
     }
 
     @Test
