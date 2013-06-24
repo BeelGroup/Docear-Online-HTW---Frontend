@@ -111,6 +111,7 @@ public class ProjectController extends DocearController {
         path = normalizePath(path);
         byte[] content = request().body().asRaw().asBytes();
 
+        Logger.debug("byte couint: "+content.length);
         //can't use null in router, so -1 is given and will be mapped to null
         if (parentRev == -1)
             parentRev = null;

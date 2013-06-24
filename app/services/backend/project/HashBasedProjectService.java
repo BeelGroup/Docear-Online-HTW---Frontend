@@ -1,47 +1,31 @@
 package services.backend.project;
 
-import static services.backend.project.filestore.PathFactory.path;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
 import play.Logger;
 import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
-import services.backend.project.persistance.Changes;
-import services.backend.project.persistance.EntityCursor;
-import services.backend.project.persistance.FileIndexStore;
-import services.backend.project.persistance.FileMetaData;
-import services.backend.project.persistance.Project;
+import services.backend.project.persistance.*;
+
+import java.io.*;
+import java.net.URLDecoder;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import static services.backend.project.filestore.PathFactory.path;
 
 @Profile("projectHashImpl")
 @Component
@@ -167,7 +151,7 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
-        Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride);
+        Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride+"; bytes: "+fileBytes.length);
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
