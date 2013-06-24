@@ -51,7 +51,7 @@ public class MongoFileIndexStore implements FileIndexStore {
     public EntityCursor<Project> findProjectsFromUser(String username) throws IOException {
         try {
             final BasicDBObject query = doc("authUsers", username);
-            final DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+            final DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT).sort(doc("name", 1));
             return new EntityCursorBase<Project>(cursor) {
                 @Override
                 protected Project convert(DBObject dbObject) {

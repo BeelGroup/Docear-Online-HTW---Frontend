@@ -155,10 +155,10 @@ public class HashBasedProjectService implements ProjectService {
         String currentPath = "";
         for (int i = 1; i < folders.length - 1; i++) {
             currentPath += "/" + folders[i];
-            Logger.debug("upsertFoldersInPath => currentPath: "+currentPath);
+            Logger.debug("upsertFoldersInPath => currentPath: " + currentPath);
             final FileMetaData metadata = fileIndexStore.getMetaData(projectId, currentPath);
             if (metadata == null || !metadata.isDir() || metadata.isDeleted()) {
-                Logger.debug("upsertFoldersInPath => Inserting Folder: "+currentPath);
+                Logger.debug("upsertFoldersInPath => Inserting Folder: " + currentPath);
                 fileIndexStore.upsertFile(projectId, FileMetaData.folder(currentPath, false));
             }
         }
@@ -167,13 +167,13 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
-        Logger.debug("putFile => projectId: "+ projectId+"; path: "+path+"; forceOverride: " +forceOverride);
+        Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride);
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
         //check that path is not rootpath
-        if(actualPath.equals("/"))
-            throw new SendResultException("Cannot override root!",400);
+        if (actualPath.equals("/"))
+            throw new SendResultException("Cannot override root!", 400);
 
         // check if file is present, not deleted and not forced to be overriden
         final FileMetaData currentServerMetaData = fileIndexStore.getMetaData(projectId, actualPath);
@@ -368,7 +368,7 @@ public class HashBasedProjectService implements ProjectService {
             IOUtils.closeQuietly(byteArryIn);
             IOUtils.closeQuietly(out);
         }
-        return new PutFileResult(fileHash,fileByteCount);
+        return new PutFileResult(fileHash, fileByteCount);
     }
 
     private static MessageDigest createMessageDigest() {
@@ -384,7 +384,12 @@ public class HashBasedProjectService implements ProjectService {
     public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException {
         final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
         for (String projectId : projectRevisionMap.keySet()) {
-            projectUserMap.put(projectId, fileIndexStore.findProjectById(projectId).getAuthorizedUsers());
+            final Project project = fileIndexStore.findProjectById(projectId);
+            if (project != null) {
+                projectUserMap.put(projectId, fileIndexStore.findProjectById(projectId).getAuthorizedUsers());
+            } else {
+                throw new NotFoundException("Project with id: "+projectId+" not found.");
+            }
         }
 
         final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, projectUserMap, username);

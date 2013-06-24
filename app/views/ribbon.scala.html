@@ -37,19 +37,9 @@
                         <li class="ribbon-logo">
                           <a href="@controllers.routes.Application.index()"><img src="@routes.Assets.at("images/docear-beta-online.png")" /></a>
                         </li>
-                        @if(RIBBON_HOME.isEnabled()) {
+                        @if(RIBBON_GENERAL.isEnabled()) {
                         <li class="tab">
-                          <a href="#ribbon-home">Home</a>
-                        </li>
-                        }
-                        @if(RIBBON_EDIT.isEnabled()) {
-                        <li class="tab">
-                          <a href="#ribbon-edit" class="ribbon-edit">Edit</a>
-                        </li>
-                        }
-                        @if(RIBBON_WORKSPACE.isEnabled()) {
-                        <li class="tab">
-                          <a href="#ribbon-workspace">Workspace</a>
+                          <a href="#ribbon-general">General</a>
                         </li>
                         }
                     </ul>
@@ -81,18 +71,10 @@
             </div>
 	    </div>
             
-            @if(controllers.featuretoggle.Feature.RIBBON_HOME.isEnabled()) {
-            <div id="ribbon-home" class="ribbon">
-                <div class="dropdown">
-		            <a data-toggle="dropdown" class="btn dropdown-toggle toggle-mindmap-select" href="#">Select MindMap <b class="caret"></b></a>
-		            <ul class="dropdown-menu select-mindmap" data-no-collapse="true">
-	               </ul>
-	            </div>
-            </div>
-            }
-            @if(controllers.featuretoggle.Feature.RIBBON_EDIT.isEnabled()) {
-            <div id="ribbon-edit" data-target="#editor" data-role="editor-toolbar" class="ribbon editor-toolbar">
+            @if(controllers.featuretoggle.Feature.RIBBON_GENERAL.isEnabled()) {
+            <div id="ribbon-general" data-target="#editor" data-role="editor-toolbar" class="ribbon editor-toolbar">
                 <div class="ribbon-group">
+                  <a title="" data-edit="undo" class="btn toggle-workspace-sidebar">Show/Hide Workspace <i class="icon-list-alt"></i></a>
                   <div class="btn-group">
                       <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font"><i class="icon-font"></i><b class="caret"></b></a>
                          <ul class="dropdown-menu">
@@ -145,11 +127,6 @@
                     <a title="" data-edit="redo" class="btn disabled" data-original-title="Redo (Ctrl/Cmd+Y)"><i class="icon-repeat"></i></a>
                   </div>
                 </div>
-            </div>
-            }
-            @if(controllers.featuretoggle.Feature.RIBBON_WORKSPACE.isEnabled()) {
-            <div id="ribbon-workspace" class="ribbon">
-                <a title="" data-edit="undo" class="btn toggle-workspace-sidebar">Show/Hide Workspace <i class="icon-list-alt"></i></a>
             </div>
             }
         </div>
