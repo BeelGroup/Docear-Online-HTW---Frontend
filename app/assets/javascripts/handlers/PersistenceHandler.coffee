@@ -3,25 +3,24 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
   
   class PersistenceHandler extends Backbone.Model
 
-    constructor: (mapId)->
+    constructor: (@mapId, @projectId)->
       super()
-      @mapId = mapId
       
       @persistenceApi = {
         'change': {
-          'Node': jsRoutes.controllers.MindMap.changeNode(-1, mapId).url
+          'Node': jsRoutes.controllers.MindMap.changeNode(@projectId, @mapId).url
         },
         'create': {
-          'Node': jsRoutes.controllers.MindMap.createNode(-1, mapId).url
+          'Node': jsRoutes.controllers.MindMap.createNode(@projectId, @mapId).url
         },
         'delete': {
-          'Node': jsRoutes.controllers.MindMap.deleteNode(-1, mapId).url
+          'Node': jsRoutes.controllers.MindMap.deleteNode(@projectId, @mapId).url
         },
         'lock': {
-          'Node': jsRoutes.controllers.MindMap.requestLock(-1, mapId).url
+          'Node': jsRoutes.controllers.MindMap.requestLock(@projectId, @mapId).url
         },
         'unlock': {
-          'Node': jsRoutes.controllers.MindMap.releaseLock(-1, mapId).url
+          'Node': jsRoutes.controllers.MindMap.releaseLock(@projectId, @mapId).url
         }
       }
       
