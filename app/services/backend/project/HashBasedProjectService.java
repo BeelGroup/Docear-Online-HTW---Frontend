@@ -1,5 +1,27 @@
 package services.backend.project;
 
+import static services.backend.project.filestore.PathFactory.path;
+
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
 
@@ -9,21 +31,17 @@ import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
 import play.Logger;
 import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
-import services.backend.project.persistance.*;
-
-import java.io.*;
-import java.net.URLDecoder;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import static services.backend.project.filestore.PathFactory.path;
+import services.backend.project.persistance.Changes;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileIndexStore;
+import services.backend.project.persistance.FileMetaData;
+import services.backend.project.persistance.Project;
 
 @Profile("projectHashImpl")
 @Component
@@ -275,6 +293,7 @@ public class HashBasedProjectService implements ProjectService {
     private PutFileResult putFileInStoreWithZippedFileBytes(byte[] zippedFileBytes) throws IOException {
         OutputStream out = null;
         ZipInputStream zipStream = null;
+        DigestInputStream digestIn = null;
         String fileHash = null;
         long fileByteCount = -1;
 
@@ -295,7 +314,8 @@ public class HashBasedProjectService implements ProjectService {
             fileByteCount = IOUtils.copy(zipStream, out);
             IOUtils.closeQuietly(out);
             // get hash
-            fileHash = sha512(zipStream);
+            digestIn = new DigestInputStream(zipStream, createMessageDigest());
+            fileHash = sha512(digestIn);
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
 
@@ -313,6 +333,7 @@ public class HashBasedProjectService implements ProjectService {
         OutputStream out = null;
         ZipOutputStream zipStream = null;
         ByteArrayInputStream byteArryIn = null;
+        DigestInputStream digestIn = null;
         String fileHash = null;
         long fileByteCount = -1;
 
@@ -326,7 +347,8 @@ public class HashBasedProjectService implements ProjectService {
             IOUtils.closeQuietly(out);
 
             // get hash
-            fileHash = sha512(byteArryIn);
+            digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
+            fileHash = sha512(digestIn);
 
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
@@ -349,6 +371,13 @@ public class HashBasedProjectService implements ProjectService {
         return new PutFileResult(fileHash,fileByteCount);
     }
 
+    private static MessageDigest createMessageDigest() {
+        try {
+            return MessageDigest.getInstance("SHA-512");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Invalid Crypto algorithm! ", e);
+        }
+    }
   
 
     @Override
