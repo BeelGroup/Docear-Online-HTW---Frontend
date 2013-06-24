@@ -162,7 +162,10 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
 
     changeNodeText: ->
       $node = @$el
-      $childrenContainer = $node.children('.children:first')
+      if $node.hasClass('root')
+        $childrenContainer = $node.children('.rightChildren')
+      else
+        $childrenContainer = $node.children('.children:first')
       
       preWidth = $node.outerWidth()
       preHeight = $node.outerHeight()
@@ -182,7 +185,7 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
       
       postHeight = $node.outerHeight()
       diffWidth = 0
-      if $($node).hasClass('right')
+      if $($node).hasClass('right') or $($node).hasClass('root')
         diffWidth = ($node.outerWidth() - preWidth)
       
       diff = 0
@@ -197,8 +200,14 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
       if diff != 0
         @resizeTree $node, @model, -diff
       
+      if $($node).hasClass('right') or $($node).hasClass('root')
+        $childrenContainer.animate {
+          left: '+='+diffWidth
+        },  document.fadeDuration
+      
+      if $($node).hasClass('root')
+        $childrenContainer = $node.children('.children')
       $childrenContainer.animate {
-        left: '+='+diffWidth
         top: '+='+(postHeight-preHeight)/2
       },  document.fadeDuration
 
