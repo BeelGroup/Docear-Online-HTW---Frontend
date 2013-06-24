@@ -8,7 +8,7 @@ define ['logger'], (logger) ->
     id: 'upload-dialog'
     template : Handlebars.templates['Upload']
 
-    constructor:(@projectId, @path)->
+    constructor:(@projectId, @path, @workspace)->
       super()
 
     element:-> @$el
@@ -32,12 +32,14 @@ define ['logger'], (logger) ->
         fileInfos = []
         
         $fileList = $form.find('.selected-filenames');
+        projectModel = @workspace.get @projectId
         
         for f in files
           #tempFunc is necessary to make sure file reader nows "filename"
           tempFunc = (f)=>
             filename = escape(f.name)
             filepath = @path+filename
+            
             fileInfos.push({
               "name": escape(f.name)
               "type": f.type
@@ -48,10 +50,15 @@ define ['logger'], (logger) ->
             $fileList.append($fileListItem)
             
             me = @
+            resource = projectModel.getResourceByPath(filepath)
+            
+            revision = -1
+            if !!resource
+              revision = resource.get('revision')
             reader = new FileReader()
             reader.onload = (event)=>
               $.ajax({
-                url: jsRoutes.controllers.ProjectController.putFile(@projectId, @path+filename, false, -1).url
+                url: jsRoutes.controllers.ProjectController.putFile(@projectId, @path+filename, false, revision).url
                 type: 'PUT'
                 processData: false
                 enctype: 'application/text'
