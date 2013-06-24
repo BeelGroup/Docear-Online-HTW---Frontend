@@ -61,7 +61,7 @@ object ApplicationBuild extends Build {
         , "org.reflections" % "reflections" % "0.9.8"//fix for error: NoSuchMethodError: com.google.common.cache.CacheBuilder.maximumSize(I)Lcom/google/common/cache/CacheBuilder;
         , "joda-time" % "joda-time" % "2.1"
         , javaCore
-        , "info.schleichardt" %% "play-2-mailplugin" % "0.9-SNAPSHOT"
+        , "info.schleichardt" %% "play-2-mailplugin" % "0.9"
       )
     }
 
