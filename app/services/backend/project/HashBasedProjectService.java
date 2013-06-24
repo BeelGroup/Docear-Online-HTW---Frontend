@@ -2,6 +2,8 @@ package services.backend.project;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,6 @@ import services.backend.project.persistance.*;
 
 import java.io.*;
 import java.net.URLDecoder;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -39,33 +38,9 @@ public class HashBasedProjectService implements ProjectService {
     private FileStore fileStore;
     @Autowired
     private FileIndexStore fileIndexStore;
-
-    /**
-     * taken from http://www.mkyong.com/java/java-sha-hashing-example/
-     *
-     * @return
-     */
-    private static String getFileCheckSum(DigestInputStream inputStream) {
-        final MessageDigest md = inputStream.getMessageDigest();
-        final byte[] mdbytes = md.digest();
-        Logger.debug("length: " + mdbytes.length + ";\n" + mdbytes.toString());
-
-        // convert the byte to hex format
-        final StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < mdbytes.length; i++) {
-            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
-        }
-
-        IOUtils.closeQuietly(inputStream);
-        return sb.toString();
-    }
-
-    private static MessageDigest createMessageDigest() {
-        try {
-            return MessageDigest.getInstance("SHA-512");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Invalid Crypto algorithm! ", e);
-        }
+    
+    public String sha512(InputStream inputStream) throws IOException{
+    	return DigestUtils.sha512Hex(inputStream);
     }
 
     @Override
@@ -300,7 +275,6 @@ public class HashBasedProjectService implements ProjectService {
     private PutFileResult putFileInStoreWithZippedFileBytes(byte[] zippedFileBytes) throws IOException {
         OutputStream out = null;
         ZipInputStream zipStream = null;
-        DigestInputStream digestIn = null;
         String fileHash = null;
         long fileByteCount = -1;
 
@@ -316,13 +290,12 @@ public class HashBasedProjectService implements ProjectService {
             // get unzipped file
             zipStream = new ZipInputStream(new ByteArrayInputStream(zippedFileBytes));
             zipStream.getNextEntry();
-            digestIn = new DigestInputStream(zipStream, createMessageDigest());
             out = fileStore.create(tmpPath);
             // write to temp location
-            fileByteCount = IOUtils.copy(digestIn, out);
+            fileByteCount = IOUtils.copy(zipStream, out);
             IOUtils.closeQuietly(out);
             // get hash
-            fileHash = getFileCheckSum(digestIn);
+            fileHash = sha512(zipStream);
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
 
@@ -332,7 +305,6 @@ public class HashBasedProjectService implements ProjectService {
         } finally {
             IOUtils.closeQuietly(out);
             IOUtils.closeQuietly(zipStream);
-            IOUtils.closeQuietly(digestIn);
         }
         return new PutFileResult(fileHash, fileByteCount);
     }
@@ -340,7 +312,7 @@ public class HashBasedProjectService implements ProjectService {
     private PutFileResult putFileInStoreWithFileBytes(byte[] fileBytes) throws IOException {
         OutputStream out = null;
         ZipOutputStream zipStream = null;
-        DigestInputStream digestIn = null;
+        ByteArrayInputStream byteArryIn = null;
         String fileHash = null;
         long fileByteCount = -1;
 
@@ -348,13 +320,13 @@ public class HashBasedProjectService implements ProjectService {
             final String tmpPath = path().tmp();
 
             // copy file to tmp dir
-            digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
+            byteArryIn = new ByteArrayInputStream(fileBytes);
             out = fileStore.create(tmpPath);
-            fileByteCount = IOUtils.copy(digestIn, out);
+            fileByteCount = IOUtils.copy(byteArryIn, out);
             IOUtils.closeQuietly(out);
 
             // get hash
-            fileHash = getFileCheckSum(digestIn);
+            fileHash = sha512(byteArryIn);
 
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
@@ -371,13 +343,13 @@ public class HashBasedProjectService implements ProjectService {
             fileStore.move(tmpPath, unzippedPath);
         } finally {
             IOUtils.closeQuietly(zipStream);
-            IOUtils.closeQuietly(digestIn);
+            IOUtils.closeQuietly(byteArryIn);
             IOUtils.closeQuietly(out);
         }
         return new PutFileResult(fileHash,fileByteCount);
     }
 
-    ;
+  
 
     @Override
     public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException {

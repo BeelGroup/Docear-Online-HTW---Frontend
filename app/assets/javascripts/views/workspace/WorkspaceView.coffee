@@ -140,11 +140,11 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       projectId = $project.attr('id')
       
       path = "/"
-      if(parentPath != projectId)
+      if parentPath isnt projectId and parentPath isnt path
         path = parentPath+'/'
       
       if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-        uploadView = new UploadView(projectId, path);
+        uploadView = new UploadView(projectId, path, @model);
         uploadView.appendAndRender @$el
       false
       document.log 'add file'
