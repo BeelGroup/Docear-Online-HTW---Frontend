@@ -44,9 +44,7 @@ public enum Feature {
     LISTEN_FOR_UPDATES("listen for updates via long polling"),
     LOCK_NODE("lock and unlock nodes when in use"),
     RIBBONS("display ribbons on top of page"),
-    RIBBON_HOME("display home ribbon"),
-    RIBBON_EDIT("display edit ribbon"),
-    RIBBON_WORKSPACE("display workspace ribbon"),
+    RIBBON_GENERAL("display general ribbon"),
     ANIMATE_TREE_RESIZE("enable animation when tree is resized (e.g. new node added)");
 
     String description;
