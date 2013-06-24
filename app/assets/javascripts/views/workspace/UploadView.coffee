@@ -27,31 +27,18 @@ define ['logger'], (logger) ->
           
       $form = $(@$el).children('form.file-upload')
       
-      $form.find('.file-to-upload').change (evt)=>
-        files = evt.target.files; 
-        fileInfos = []
-        
-        $fileList = $form.find('.selected-filenames');
+      $form.find('.file-upload-button').click (evt)=>
         projectModel = @workspace.get @projectId
         
-        for f in files
+        $fileList = $form.find('.selected-filenames')
+        for f in @files
           #tempFunc is necessary to make sure file reader nows "filename"
           tempFunc = (f)=>
             filename = escape(f.name)
             filepath = @path+filename
             
-            fileInfos.push({
-              "name": escape(f.name)
-              "type": f.type
-              "size": f.size
-              "modified": f.lastModifiedDate.toLocaleDateString()
-            })
-            $fileListItem = $("<li class=\"uploaded-file #{filepath}\"> #{escape(f.name)} (#{Math.round(f.size/1000)} kB) <span class=\"status\">...loading</span></li>")
-            $fileList.append($fileListItem)
-            
             me = @
             resource = projectModel.getResourceByPath(filepath)
-            
             revision = -1
             if !!resource
               revision = resource.get('revision')
@@ -65,11 +52,46 @@ define ['logger'], (logger) ->
                 contentType: 'application/text'
                 data: event.target.result
                 dataType: 'json'
-                complete: (data)->
-                  $fileListItem.find(".status").text("Done").addClass('alert-success')
+                success: (data)->
+                  $("li.uploaded-file input[value*='#{data.path}']").parent().find(".status").text("Done").addClass('alert-success')
               })
             reader.readAsText(f);
           tempFunc(f)
+      
+      $form.find('.file-to-upload').change (evt)=>
+        if evt.target.files.length > 0
+          @files = evt.target.files
+          fileInfos = []
+          
+          $fileList = $form.find('.selected-filenames')
+          $fileList.empty()
+          
+          projectModel = @workspace.get @projectId
+          for f in @files
+            filename = escape(f.name)
+            filepath = @path+filename
+            
+            fileInfos.push({
+              "name": escape(f.name)
+              "type": f.type
+              "size": f.size
+              "modified": f.lastModifiedDate.toLocaleDateString()
+            })
+            
+            resource = projectModel.getResourceByPath(filepath)
+            status = "new"
+            if !!resource
+              status = "exists (overwrite)"
+              
+            values = {
+              'filepath': filepath
+              'name': f.name
+              'size': Math.round(f.size/1000)
+              'status': status
+            }
+  
+            $fileListItem = Handlebars.templates['UploadItem'] values
+            $fileList.append($fileListItem)
 
       
       $form.submit =>
