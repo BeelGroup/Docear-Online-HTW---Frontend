@@ -4,8 +4,6 @@ import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -164,15 +162,19 @@ public class HashBasedProjectService implements ProjectService {
         String currentPath = "";
         for (int i = 1; i < folders.length - 1; i++) {
             currentPath += "/" + folders[i];
+            Logger.debug("upsertFoldersInPath => currentPath: "+currentPath);
             final FileMetaData metadata = fileIndexStore.getMetaData(projectId, currentPath);
-            if (metadata == null || !metadata.isDir() || metadata.isDeleted())
+            if (metadata == null || !metadata.isDir() || metadata.isDeleted()) {
+                Logger.debug("upsertFoldersInPath => Inserting Folder: "+currentPath);
                 fileIndexStore.upsertFile(projectId, FileMetaData.folder(currentPath, false));
+            }
         }
 
     }
 
     @Override
     public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
+        Logger.debug("putFile => projectId: "+ projectId+"; path: "+path+"; forceOverride: " +forceOverride);
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 

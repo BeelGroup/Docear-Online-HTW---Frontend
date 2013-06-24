@@ -9,8 +9,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import play.Logger;
 import play.data.Form;
-import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -23,7 +23,8 @@ import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -93,6 +94,7 @@ public class ProjectController extends DocearController {
 
     public Result getFile(String projectId, String path) throws IOException {
         assureUserBelongsToProject(projectId);
+        path = normalizePath(path);
         return ok(projectService.getFile(projectId, path));
     }
 
@@ -106,6 +108,7 @@ public class ProjectController extends DocearController {
      */
     public Result putFile(String projectId, String path, boolean isZip, Long parentRev) throws IOException {
         assureUserBelongsToProject(projectId);
+        path = normalizePath(path);
         byte[] content = request().body().asRaw().asBytes();
 
         //can't use null in router, so -1 is given and will be mapped to null
@@ -178,16 +181,20 @@ public class ProjectController extends DocearController {
 
     public Result metadata(String projectId, String path) throws IOException {
         assureUserBelongsToProject(projectId);
+        path = normalizePath(path);
         final FileMetaData metadata = projectService.metadata(projectId, path);
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode metadataJson = mapper.valueToTree(metadata);
 
         // get children for dir
         if (metadata.isDir()) {
+            Logger.debug("is Folder");
             final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
             final EntityCursor<FileMetaData> childrenMetadatas = projectService.getMetaDataOfDirectChildren(projectId, path, 5000);
+
             try {
                 for (FileMetaData childMetadata : childrenMetadatas) {
+                    Logger.debug(childMetadata.toString());
                     if (!childMetadata.isDeleted())
                         childrenData.add(childMetadata);
                 }
@@ -261,6 +268,27 @@ public class ProjectController extends DocearController {
             return user.getUsername();
         else
             return null;
+    }
+
+    /**
+     * applies url decode and adds leading slash
+     *
+     * @param path
+     * @return
+     */
+    private String normalizePath(String path) {
+        String normalizedPath = "";
+
+        try {
+            normalizedPath = URLDecoder.decode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError("Problem with UTF-8");
+        }
+
+        if (!normalizedPath.startsWith("/"))
+            return "/" + normalizedPath;
+
+        return normalizedPath;
     }
 
     private void assureUserBelongsToProject(String projectId) throws IOException {
