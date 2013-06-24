@@ -42,7 +42,7 @@ define ['logger', 'NodeFactory', 'models/mindmap/RootNode', 'models/mindmap/Node
     # load root data with some childs
     firstLoad:->
       document.log "Load Map #{@mapId} from project #{@projectId} (MapLoader.firstLoad())" 
-      @rootNode = @nodeFactory.createRootNodeByData(@data, null, @mapId)
+      @rootNode = @nodeFactory.createRootNodeByData(@data, null, @mapId, @projectId)
       @rootNodeWasPassed = true
       @continue = true
       @rootNode

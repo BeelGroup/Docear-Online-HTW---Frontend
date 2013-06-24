@@ -3,14 +3,14 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
   
   class MindMapUpdateHandler extends Backbone.Model
 
-    constructor: (mapId, rootNode)->
+    constructor: (mapId, rootNode, @projectId)->
       super()
       @mapId = mapId
       @rootNode = rootNode
       
       @updateApi = {
         'listenForUpdate': {
-          'Node': jsRoutes.controllers.MindMap.listenForUpdates(-1, mapId).url
+          'Node': jsRoutes.controllers.MindMap.listenForUpdates(@projectId, mapId).url
         }
       }
       @listen()
@@ -64,7 +64,7 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
       me = @
       rootNode = @rootNode
       params = {
-        url: jsRoutes.controllers.MindMap.fetchUpdatesSinceRevision(-1, @mapId, @rootNode.get('revision')).url
+        url: jsRoutes.controllers.MindMap.fetchUpdatesSinceRevision(@projectId, @mapId, @rootNode.get('revision')).url
         type: 'GET'
         cache: false
         success: (data)->

@@ -7,7 +7,7 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
     mindMapUpdateHandlers = []
   
 
-    createRootNodeByData:(data, containerID, @mapId)->
+    createRootNodeByData:(data, containerID, @mapId, @projectId)->
       rootNode = new RootNode()
       rootNode.set 'containerID', containerID
       rootNode.set 'leftChildren', []
@@ -20,10 +20,10 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
       rootNode.set 'revision', data.revision
 
       if persistenceHandlers[@mapId] == undefined
-        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId)
+        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId, @projectId)
 
       if mindMapUpdateHandlers[@mapId] == undefined
-        mindMapUpdateHandlers[@mapId] = new MindMapUpdateHandler(@mapId, rootNode)
+        mindMapUpdateHandlers[@mapId] = new MindMapUpdateHandler(@mapId, rootNode, @projectId)
       rootNode.set 'mindMapUpdateHandler', mindMapUpdateHandlers[@mapId]
       
       @setDefaults(rootNode, rootNode, data.root)

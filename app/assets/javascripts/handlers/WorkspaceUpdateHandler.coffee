@@ -1,7 +1,7 @@
 define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/workspace/Resource', 'models/workspace/Project'],  (DocearRouter, Workspace, Resource, Project) ->  
   module = () ->
   
-  class MindMapUpdateHandler extends Backbone.Model
+  class WorkspaceUpdateHandler extends Backbone.Model
 
     constructor: (@workspace)->
       super()
@@ -91,4 +91,4 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
       }
       $.ajax(params)
     
-  module.exports = MindMapUpdateHandler
+  module.exports = WorkspaceUpdateHandler
