@@ -1,1 +1,1 @@
-play210 -Dconfig.file=conf/julius.conf run
+sbt -Dconfig.file=conf/julius.conf run
