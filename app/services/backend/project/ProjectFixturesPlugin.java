@@ -55,7 +55,7 @@ public final class ProjectFixturesPlugin extends Plugin {
         final Iterator<File> fileIterator = iterateFiles(projectFolder, null, true);
         while (fileIterator.hasNext()) {
             final File file = fileIterator.next();
-            final String pathForDb = file.getAbsolutePath().replace(projectFolder.getAbsolutePath(), "");
+            final String pathForDb = file.getAbsolutePath().replace(projectFolder.getAbsolutePath(), "").replace('\\','/');
             service.putFile(project.getId(), pathForDb, readFileToByteArray(file), false, -1L, true);
         }
     }
