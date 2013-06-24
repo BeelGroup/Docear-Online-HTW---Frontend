@@ -45,6 +45,12 @@ public class Global extends GlobalSettings {
         logGit(application);
     }
 
+    @Override
+    public void onStop(Application application) {
+        super.onStop(application);
+        Logger.info("shutting play application down");
+    }
+
     private void logGit(Application application) {
         try {
             Properties propertiesFromClasspath = getPropertiesFromClasspath("buildInfo.properties", application);

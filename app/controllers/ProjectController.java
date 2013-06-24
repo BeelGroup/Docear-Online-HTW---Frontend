@@ -5,20 +5,28 @@ import controllers.featuretoggle.ImplementedFeature;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.*;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import play.data.Form;
+import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.project.VersionDeltaResponse;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileMetaData;
+import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +35,7 @@ import java.util.concurrent.TimeoutException;
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
 @Security.Authenticated(Secured.class)
-public class ProjectController extends Controller {
+public class ProjectController extends DocearController {
     final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
     final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);
     final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
@@ -42,27 +50,18 @@ public class ProjectController extends Controller {
 
     public Result getProject(String projectId) throws IOException {
         assureUserBelongsToProject(projectId);
-        return async(projectService.getProjectById(projectId).map(new Function<JsonNode, Result>() {
-            @Override
-            public Result apply(JsonNode folderMetadata) throws Throwable {
-                return ok(folderMetadata);
-            }
-        }));
+        final Project project = projectService.getProjectById(projectId);
+        return ok(new ObjectMapper().valueToTree(project));
     }
 
     public Result createProject() throws IOException {
         Form<CreateProjectData> filledForm = createProjectForm.bindFromRequest();
-
         if (filledForm.hasErrors()) {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final CreateProjectData data = filledForm.get();
-            return async(projectService.createProject(username(), data.getName()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            final Project project = projectService.createProject(username(), data.getName());
+            return ok(new ObjectMapper().valueToTree(project));
         }
     }
 
@@ -74,16 +73,8 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final AddUserToProjectData data = filledForm.get();
-            return async(projectService.addUserToProject(projectId, data.getUsername()).map(new Function<Boolean, Result>() {
-                @Override
-                public Result apply(Boolean success) throws Throwable {
-                    if (success)
-                        return ok();
-                    else {
-                        return internalServerError("Unknown Error occured");
-                    }
-                }
-            }));
+            projectService.addUserToProject(projectId, data.getUsername());
+            return ok();
         }
     }
 
@@ -95,28 +86,14 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final RemoveUserFromProjectData data = filledForm.get();
-            return async(projectService.removeUserFromProject(projectId, data.getUsername()).map(new Function<Boolean, Result>() {
-                @Override
-                public Result apply(Boolean success) throws Throwable {
-                    if (success)
-                        return ok();
-                    else {
-                        return internalServerError("Unknown Error occured");
-                    }
-                }
-            }));
+            projectService.removeUserFromProject(projectId, data.getUsername());
+            return ok();
         }
     }
 
     public Result getFile(String projectId, String path) throws IOException {
         assureUserBelongsToProject(projectId);
-        return async(projectService.getFile(projectId, path).map(new Function<InputStream, Result>() {
-
-            @Override
-            public Result apply(InputStream fileStream) throws Throwable {
-                return ok(fileStream);
-            }
-        }));
+        return ok(projectService.getFile(projectId, path));
     }
 
     /**
@@ -158,30 +135,18 @@ public class ProjectController extends Controller {
         if (isZip && !isZipValidation) {
             return badRequest("File was send as zip but isn't.");
         }
-
-        return async(projectService.putFile(projectId, path, content, isZip, parentRev, false).map(new Function<JsonNode, Result>() {
-
-            @Override
-            public Result apply(JsonNode fileMeta) throws Throwable {
-                return ok(fileMeta);
-            }
-        }));
+        return ok(projectService.putFile(projectId, path, content, isZip, parentRev, false));
     }
 
     public Result moveFile(String projectId) throws IOException {
         assureUserBelongsToProject(projectId);
         Form<MoveData> filledForm = moveForm.bindFromRequest();
-
         if (filledForm.hasErrors()) {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final MoveData data = filledForm.get();
-            return async(projectService.moveFile(projectId, data.getCurrentPath(), data.getMoveToPath()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            projectService.moveFile(projectId, data.getCurrentPath(), data.getMoveToPath());
+            return ok(new ObjectMapper().readTree("[\"success\"]"));
         }
     }
 
@@ -193,12 +158,7 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final DeleteFileData data = filledForm.get();
-            return async(projectService.delete(projectId, data.getPath()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            return ok(projectService.delete(projectId, data.getPath()));
         }
     }
 
@@ -210,24 +170,35 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final CreateFolderData data = filledForm.get();
-            return async(projectService.createFolder(projectId, data.getPath()).map(new Function<JsonNode, Result>() {
-                @Override
-                public Result apply(JsonNode folderMetadata) throws Throwable {
-                    return ok(folderMetadata);
-                }
-            }));
+            final FileMetaData newMetaData = projectService.createFolder(projectId, data.getPath());
+            final JsonNode jsonNode = new ObjectMapper().valueToTree(newMetaData);
+            return ok(jsonNode);
         }
     }
 
     public Result metadata(String projectId, String path) throws IOException {
         assureUserBelongsToProject(projectId);
-        return async(projectService.metadata(projectId, path).map(new Function<JsonNode, Result>() {
+        final FileMetaData metadata = projectService.metadata(projectId, path);
+        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectNode metadataJson = mapper.valueToTree(metadata);
 
-            @Override
-            public Result apply(JsonNode entry) throws Throwable {
-                return ok(entry);
+        // get children for dir
+        if (metadata.isDir()) {
+            final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
+            final EntityCursor<FileMetaData> childrenMetadatas = projectService.getMetaDataOfDirectChildren(projectId, path, 5000);
+            try {
+                for (FileMetaData childMetadata : childrenMetadatas) {
+                    if (!childMetadata.isDeleted())
+                        childrenData.add(childMetadata);
+                }
+                final JsonNode contentsJson = mapper.valueToTree(childrenData);
+                metadataJson.put("contents", contentsJson);
+            } finally {
+                childrenMetadatas.close();
             }
-        }));
+
+        }
+        return ok(metadataJson);
     }
 
     public Result listenForUpdates() throws IOException {
@@ -275,13 +246,8 @@ public class ProjectController extends Controller {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final ProjectDeltaData data = filledForm.get();
-            return async(projectService.versionDelta(projectId, data.getProjectRevision()).map(new Function<JsonNode, Result>() {
-
-                @Override
-                public Result apply(JsonNode updates) throws Throwable {
-                    return ok(updates);
-                }
-            }));
+            final VersionDeltaResponse response = projectService.versionDelta(projectId, data.getProjectRevision());
+            return ok(new ObjectMapper().valueToTree(response));
         }
 
     }

@@ -1,0 +1,5 @@
+Freeplane_logo.png
+Date    19:12, 5 January 2010 (UTC)
+Source  English: Freeplane source tree
+Author  Predrag Cuklin
+http://en.wikipedia.org/wiki/File:Freeplane_logo.png

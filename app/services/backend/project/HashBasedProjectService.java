@@ -71,43 +71,39 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> createProject(String username, String name) throws IOException {
+    public Project createProject(String username, String name) throws IOException {
         final Project project = fileIndexStore.createProject(name, username);
         callListenerForChangeForUser(username);
-        return Promise.pure(new ObjectMapper().valueToTree(project));
+        return project;
     }
 
     @Override
-    public Promise<Boolean> addUserToProject(String projectId, String usernameToAdd) throws IOException {
+    public void addUserToProject(String projectId, String usernameToAdd) throws IOException {
         fileIndexStore.addUserToProject(projectId, usernameToAdd);
         callListenerForChangeForUser(usernameToAdd);
         callListenersForChangeInProject(projectId);
-        return Promise.pure(true);
     }
 
     @Override
-    public Promise<Boolean> removeUserFromProject(String projectId, String usernameToRemove) throws IOException {
+    public void removeUserFromProject(String projectId, String usernameToRemove) throws IOException {
         fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
         callListenerForChangeForUser(usernameToRemove);
         callListenersForChangeInProject(projectId);
-        return Promise.pure(true);
     }
 
     @Override
-    public Promise<JsonNode> getProjectById(String projectId) throws IOException {
-        final Project project = fileIndexStore.findProjectById(projectId);
-        return Promise.pure(new ObjectMapper().valueToTree(project));
+    public Project getProjectById(String projectId) throws IOException {
+        return fileIndexStore.findProjectById(projectId);
     }
 
     @Override
-    public Promise<JsonNode> getProjectsFromUser(String username) throws IOException {
+    public List<Project> getProjectsFromUser(String username) throws IOException {
         final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
-        final List<Project> projectList = convertEntityCursorToList(projects);
-        return Promise.pure(new ObjectMapper().valueToTree(projectList));
+        return convertEntityCursorToList(projects);
     }
 
     @Override
-    public F.Promise<InputStream> getFile(String projectId, String path) throws IOException {
+    public InputStream getFile(String projectId, String path) throws IOException {
         Logger.debug("HashBasedProjectService.getFile => projectId: " + projectId + "; path: " + path);
         path = normalizePath(path);
 
@@ -122,7 +118,7 @@ public class HashBasedProjectService implements ProjectService {
             final String fileHash = metadata.getHash();
             Logger.debug("HashBasedProjectService.getFile => fileHash: " + fileHash);
 
-            return Promise.pure((InputStream) fileStore.open(path().hash(fileHash).zipped()));
+            return fileStore.open(path().hash(fileHash).zipped());
 
         } catch (FileNotFoundException e) {
             throw new NotFoundException("File not found!", e);
@@ -130,46 +126,30 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> metadata(String projectId, String path) throws IOException {
+    public FileMetaData metadata(String projectId, String path) throws IOException {
         path = normalizePath(path);
         Logger.debug("HashBasedProjectService => projectId: " + projectId + "; path: " + path);
-
         final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
         if (metadata == null) {
             throw new NotFoundException("File not found!");
         }
-
-        final ObjectMapper mapper = new ObjectMapper();
-        final ObjectNode metadataJson = (ObjectNode) mapper.valueToTree(metadata);
-
-        // get children for dir
-        if (metadata.isDir()) {
-            final List<FileMetaData> childrenData = new ArrayList<FileMetaData>();
-            final EntityCursor<FileMetaData> childrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, path, 5000);
-            for (FileMetaData childMetadata : childrenMetadatas) {
-                if (!childMetadata.isDeleted())
-                    childrenData.add(childMetadata);
-            }
-            final JsonNode contentsJson = mapper.valueToTree(childrenData);
-            metadataJson.put("contents", contentsJson);
-        }
-        return Promise.pure((JsonNode) metadataJson);
+        return metadata;
     }
 
     @Override
-    public F.Promise<JsonNode> createFolder(String projectId, String path) throws IOException {
+    public EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException {
+        return fileIndexStore.getMetaDataOfDirectChildren(id, path, max);
+    }
+
+    @Override
+    public FileMetaData createFolder(String projectId, String path) throws IOException {
         path = normalizePath(path);
         upsertFoldersInPath(projectId, path);
-
         final FileMetaData metadata = FileMetaData.folder(path, false);
         fileIndexStore.upsertFile(projectId, metadata);
-
         final FileMetaData newMetaData = fileIndexStore.getMetaData(projectId, path);
-
-
         callListenersForChangeInProject(projectId);
-
-        return Promise.pure(new ObjectMapper().valueToTree(newMetaData));
+        return newMetaData;
     }
 
     private void upsertFoldersInPath(String projectId, String path) throws IOException {
@@ -192,7 +172,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
+    public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
@@ -240,12 +220,11 @@ public class HashBasedProjectService implements ProjectService {
         fileIndexStore.upsertFile(projectId, metadata);
         final FileMetaData newMetaData = fileIndexStore.getMetaData(projectId, actualPath);
         callListenersForChangeInProject(projectId);
-
-        return Promise.pure(new ObjectMapper().valueToTree(newMetaData));
+        return newMetaData;
     }
 
     @Override
-    public Promise<JsonNode> moveFile(String projectId, String oldPath, String newPath) throws IOException {
+    public void moveFile(String projectId, String oldPath, String newPath) throws IOException {
         oldPath = normalizePath(oldPath);
         newPath = normalizePath(newPath);
 
@@ -277,34 +256,37 @@ public class HashBasedProjectService implements ProjectService {
         }
 
         callListenersForChangeInProject(projectId);
-        return Promise.pure(new ObjectMapper().readTree("[\"success\"]"));
     }
 
     private void moveFileRecursion(String projectId, FileMetaData folderMetadata, FileMetaData newFolderMetadata) throws IOException {
         final EntityCursor<FileMetaData> oldChildrenMetadatas = fileIndexStore.getMetaDataOfDirectChildren(projectId, folderMetadata.getPath(), Integer.MAX_VALUE);
         Logger.debug("HashBasedProjectService.moveFileRecursion => folderMeta: " + folderMetadata + "; newFolderMeta: " + newFolderMetadata);
 
-        final String oldBasePath = folderMetadata.getPath();
-        final String newBasePath = newFolderMetadata.getPath();
-        for (final FileMetaData oldMetadata : oldChildrenMetadatas) {
-            // ignore deleted files
-            if (oldMetadata.isDeleted())
-                continue;
+        try {
+            final String oldBasePath = folderMetadata.getPath();
+            final String newBasePath = newFolderMetadata.getPath();
+            for (final FileMetaData oldMetadata : oldChildrenMetadatas) {
+                // ignore deleted files
+                if (oldMetadata.isDeleted())
+                    continue;
 
-            final String newPath = oldMetadata.getPath().replace(oldBasePath, newBasePath);
-            // create and upsert on new position
-            final FileMetaData newMetadata = oldMetadata.isDir() ? FileMetaData.folder(newPath, false) : FileMetaData.file(newPath, oldMetadata.getHash(), oldMetadata.getBytes(), false);
-            fileIndexStore.upsertFile(projectId, newMetadata);
+                final String newPath = oldMetadata.getPath().replace(oldBasePath, newBasePath);
+                // create and upsert on new position
+                final FileMetaData newMetadata = oldMetadata.isDir() ? FileMetaData.folder(newPath, false) : FileMetaData.file(newPath, oldMetadata.getHash(), oldMetadata.getBytes(), false);
+                fileIndexStore.upsertFile(projectId, newMetadata);
 
-            // trigger recursion for folders
-            if (newMetadata.isDir()) {
-                // delete on old position
-                fileIndexStore.upsertFile(projectId, FileMetaData.folder(oldMetadata.getPath(), true));
-                moveFileRecursion(projectId, oldMetadata, newMetadata);
-            } else {
-                // delete on old position
-                fileIndexStore.upsertFile(projectId, FileMetaData.file(oldMetadata.getPath(), "", 0, true));
+                // trigger recursion for folders
+                if (newMetadata.isDir()) {
+                    // delete on old position
+                    fileIndexStore.upsertFile(projectId, FileMetaData.folder(oldMetadata.getPath(), true));
+                    moveFileRecursion(projectId, oldMetadata, newMetadata);
+                } else {
+                    // delete on old position
+                    fileIndexStore.upsertFile(projectId, FileMetaData.file(oldMetadata.getPath(), "", 0, true));
+                }
             }
+        } finally {
+            oldChildrenMetadatas.close();
         }
     }
 
@@ -451,7 +433,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> versionDelta(String projectId, Long cursor) throws IOException {
+    public VersionDeltaResponse versionDelta(String projectId, Long cursor) throws IOException {
         final Project project = fileIndexStore.findProjectById(projectId);
         final Long currentRevision = project.getRevision();
         final Map<String, FileMetaData> resources = new HashMap<String, FileMetaData>();
@@ -467,8 +449,7 @@ public class HashBasedProjectService implements ProjectService {
             resources.put(resource, metadata);
         }
 
-        final VersionDeltaResponse response = new VersionDeltaResponse(currentRevision, resources);
-        return Promise.pure(new ObjectMapper().valueToTree(response));
+        return new VersionDeltaResponse(currentRevision, resources);
     }
 
     @Override
@@ -477,7 +458,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public Promise<JsonNode> delete(String projectId, String path) throws IOException {
+    public FileMetaData delete(String projectId, String path) throws IOException {
         path = normalizePath(path);
         Logger.debug("HashBasedProjectService => projectId: " + projectId + "; path: " + path);
 
@@ -489,7 +470,7 @@ public class HashBasedProjectService implements ProjectService {
 
         // check if already deleted
         if (oldMetadata.isDeleted())
-            return Promise.pure(new ObjectMapper().valueToTree(oldMetadata));
+            return oldMetadata;
 
         FileMetaData metadata = null;
         if (oldMetadata.isDir())
@@ -501,7 +482,7 @@ public class HashBasedProjectService implements ProjectService {
 
         callListenersForChangeInProject(projectId);
 
-        return Promise.pure(new ObjectMapper().valueToTree(metadata));
+        return metadata;
     }
 
     @Override
@@ -510,14 +491,17 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     private <A> List<A> convertEntityCursorToList(EntityCursor<A> cursor) throws IOException {
-        final List<A> list = new ArrayList<A>();
-        final Iterator<A> it = cursor.iterator();
+        try {
+            final List<A> list = new ArrayList<A>();
+            final Iterator<A> it = cursor.iterator();
 
-        while (it.hasNext()) {
-            list.add(it.next());
+            while (it.hasNext()) {
+                list.add(it.next());
+            }
+            return list;
+        } finally {
+            cursor.close();
         }
-        cursor.close();
-        return list;
     }
 
     /**
@@ -557,25 +541,5 @@ public class HashBasedProjectService implements ProjectService {
         private long getBytes() {
             return bytes;
         }
-    }
-
-    public static class VersionDeltaResponse {
-        private final Long currentRevision;
-        private final Map<String, FileMetaData> resources;
-
-        public VersionDeltaResponse(Long currentRevision, Map<String, FileMetaData> resources) {
-
-            this.currentRevision = currentRevision;
-            this.resources = resources;
-        }
-
-        public Long getCurrentRevision() {
-            return currentRevision;
-        }
-
-        public Map<String, FileMetaData> getResources() {
-            return resources;
-        }
-
     }
 }

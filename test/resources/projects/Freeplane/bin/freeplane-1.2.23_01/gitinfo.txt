@@ -1,0 +1,8 @@
+git-revision=fd49504_dpolivaev_2013-03-24 09:28:51 +0100* 1.2.x
+  docear/trunk
+  headless
+  julius_headless
+  latex_in_core
+  master
+  openmaps_integration
+  scripting

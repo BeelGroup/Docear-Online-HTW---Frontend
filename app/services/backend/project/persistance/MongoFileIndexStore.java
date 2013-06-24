@@ -26,9 +26,13 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public Project findProjectById(String id) throws IOException {
-        final BasicDBObject query = queryById(id);
-        final BasicDBObject projectBson = (BasicDBObject) projects().findOne(query, DEFAULT_PRESENT_FIELDS_PROJECT);
-        return convertToProject(projectBson);
+        try {
+            final BasicDBObject query = queryById(id);
+            final BasicDBObject projectBson = (BasicDBObject) projects().findOne(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+            return convertToProject(projectBson);
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     private Project convertToProject(BasicDBObject bson) {
@@ -45,53 +49,73 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public EntityCursor<Project> findProjectsFromUser(String username) throws IOException {
-        final BasicDBObject query = doc("authUsers", username);
-        final DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
-        return new EntityCursorBase<Project>(cursor) {
-            @Override
-            protected Project convert(DBObject dbObject) {
-                Project result = null;
-                if (dbObject instanceof BasicDBObject) {
-                    result = convertToProject((BasicDBObject) dbObject);
+        try {
+            final BasicDBObject query = doc("authUsers", username);
+            final DBCursor cursor = projects().find(query, DEFAULT_PRESENT_FIELDS_PROJECT);
+            return new EntityCursorBase<Project>(cursor) {
+                @Override
+                protected Project convert(DBObject dbObject) {
+                    Project result = null;
+                    if (dbObject instanceof BasicDBObject) {
+                        result = convertToProject((BasicDBObject) dbObject);
+                    }
+                    return result;
                 }
-                return result;
-            }
-        };
+            };
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public void addUserToProject(String id, String username) throws IOException {
-        final BasicDBObject query = queryById(id);
-        projects().update(query, doc("$addToSet", doc("authUsers", username)));
+        try {
+            final BasicDBObject query = queryById(id);
+            projects().update(query, doc("$addToSet", doc("authUsers", username)));
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public void removeUserFromProject(String id, String username) throws IOException {
-        final BasicDBObject query = queryById(id);
-        projects().update(query, doc("$pull", doc("authUsers", username)));
+        try {
+            final BasicDBObject query = queryById(id);
+            projects().update(query, doc("$pull", doc("authUsers", username)));
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public Project createProject(String name, String username) throws IOException {
-        final int revision = -1;
-        final ArrayList<String> authorizedUsers = newArrayList(username);
-        final BasicDBObject document = doc("name", name).
-                append("revision", revision).
-                append("changes", new ArrayList<String>()).
-                append("authUsers", authorizedUsers);
-        projects().insert(document);
-        final String id = document.get("_id").toString();
-        upsertFile(id, FileMetaData.folder("/", false));// add root "/" as base entry
-        return findProjectById(id);
+        try {
+            final int revision = -1;
+            final ArrayList<String> authorizedUsers = newArrayList(username);
+            final BasicDBObject document = doc("name", name).
+                    append("revision", revision).
+                    append("changes", new ArrayList<String>()).
+                    append("authUsers", authorizedUsers);
+            projects().insert(document);
+            final String id = document.get("_id").toString();
+            upsertFile(id, FileMetaData.folder("/", false));// add root "/" as base entry
+            return findProjectById(id);
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public void upsertFile(String id, FileMetaData file) throws IOException {
-        if (getMetaData(id, file.getPath()) == null) {
-            insertFileWithoutRevisions(id, file.getPath());
+        try {
+            if (getMetaData(id, file.getPath()) == null) {
+                insertFileWithoutRevisions(id, file.getPath());
+            }
+            final BasicDBObject updatedFileBson = addNewFileRevisionToFileDocument(id, file);
+            updateProjectForNewFileRevision(id, file, updatedFileBson);
+        } catch (MongoException e) {
+            throw new IOException(e);
         }
-        final BasicDBObject updatedFileBson = addNewFileRevisionToFileDocument(id, file);
-        updateProjectForNewFileRevision(id, file, updatedFileBson);
     }
 
     private void updateProjectForNewFileRevision(String id, FileMetaData file, BasicDBObject updatedFileBson) {
@@ -123,9 +147,13 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public FileMetaData getMetaData(String id, String path) throws IOException {
-        final BasicDBObject query = doc("project", new ObjectId(id)).append("path", path);
-        final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
-        return convertToFileMetaData(fileBson);
+        try {
+            final BasicDBObject query = doc("project", new ObjectId(id)).append("path", path);
+            final BasicDBObject fileBson = (BasicDBObject) files().findOne(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
+            return convertToFileMetaData(fileBson);
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     private FileMetaData convertToFileMetaData(BasicDBObject fileBson) {
@@ -151,41 +179,50 @@ public class MongoFileIndexStore implements FileIndexStore {
 
     @Override
     public EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException {
-        final String folderPath = path.endsWith("/") ? path : path + "/";
-        Pattern childrenOfFolderPattern = Pattern.compile("^" + (folderPath) + "[^/]+$");
-        final BasicDBObject query = doc("path", childrenOfFolderPattern).append("project", new ObjectId(id));
-        final DBCursor cursor = files().find(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
-        return new EntityCursorBase<FileMetaData>(cursor) {
-            @Override
-            protected FileMetaData convert(DBObject dbObject) {
-                FileMetaData result = null;
-                if (dbObject instanceof BasicDBObject) {
-                    result = convertToFileMetaData((BasicDBObject) dbObject);
+        try {
+            final String folderPath = path.endsWith("/") ? path : path + "/";
+            Pattern childrenOfFolderPattern = Pattern.compile("^" + (folderPath) + "[^/]+$");
+            final BasicDBObject query = doc("path", childrenOfFolderPattern).append("project", new ObjectId(id));
+            final DBCursor cursor = files().find(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
+            return new EntityCursorBase<FileMetaData>(cursor) {
+                @Override
+                protected FileMetaData convert(DBObject dbObject) {
+                    FileMetaData result = null;
+                    if (dbObject instanceof BasicDBObject) {
+                        result = convertToFileMetaData((BasicDBObject) dbObject);
+                    }
+                    return result;
                 }
-                return result;
-            }
-        };
+            };
+        } catch (MongoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public Changes getProjectChangesSinceRevision(String id, long revision) throws IOException {
-        final BasicDBObject query = doc("$match", queryById(id));
-        final BasicDBObject selectOnlyChangesArray = doc("$project", presentFields("changes").append("_id", 0));
-        final BasicDBObject unwindChangesArray = doc("$unwind", "$changes");
-        final BasicDBObject skipCurrentAndPreviousRevisions = doc("$skip", revision + 1);
-        final BasicDBObject groupPaths = doc("$group", doc("_id", 0).append("paths", doc("$addToSet", "$changes.path")));
-        final AggregationOutput output = projects().aggregate(query, selectOnlyChangesArray, unwindChangesArray, skipCurrentAndPreviousRevisions, selectOnlyChangesArray, groupPaths);
-        final Iterable<DBObject> aggregationResult = output.results();
-        final BasicDBObject result = (BasicDBObject) Iterables.getFirst(aggregationResult, null);
-        List<String> changedPaths = emptyList();
-        if (result != null) {
-            changedPaths = getStringList(result, "paths");
+        try {
+            final BasicDBObject query = doc("$match", queryById(id));
+            final BasicDBObject selectOnlyChangesArray = doc("$project", presentFields("changes").append("_id", 0));
+            final BasicDBObject unwindChangesArray = doc("$unwind", "$changes");
+            final BasicDBObject skipCurrentAndPreviousRevisions = doc("$skip", revision + 1);
+            final BasicDBObject groupPaths = doc("$group", doc("_id", 0).append("paths", doc("$addToSet", "$changes.path")));
+            final AggregationOutput output = projects().aggregate(query, selectOnlyChangesArray, unwindChangesArray, skipCurrentAndPreviousRevisions, selectOnlyChangesArray, groupPaths);
+            final Iterable<DBObject> aggregationResult = output.results();
+            final BasicDBObject result = (BasicDBObject) Iterables.getFirst(aggregationResult, null);
+            List<String> changedPaths = emptyList();
+            if (result != null) {
+                changedPaths = getStringList(result, "paths");
+            }
+            return new Changes(changedPaths);
+        } catch (MongoException e) {
+            throw new IOException(e);
         }
-        return new Changes(changedPaths);
     }
 
     @Override
     public boolean userBelongsToProject(String username, String id) {
+        //TODO should an occurring MongoException converted to an IOException?
         boolean belongs = false;
         if (username != null && id != null) {
             final BasicDBObject query = queryById(id).append("authUsers", username);

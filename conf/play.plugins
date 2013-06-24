@@ -2,3 +2,4 @@
 400:models.mongo.MongoPlugin
 420:models.mongo.MongoFixturesPlugin
 15000:info.schleichardt.play2.mailplugin.MailPlugin
+50000:services.backend.project.ProjectFixturesPlugin

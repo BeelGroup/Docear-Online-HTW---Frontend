@@ -15,6 +15,7 @@ import models.backend.exceptions.DocearServiceException;
 import models.frontend.Credentials;
 
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,10 +28,11 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.project.ProjectService;
+import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
 
 @Component
-public class User extends Controller {
+public class User extends DocearController {
 
 	public static final Form<Credentials> credentialsForm = form(Credentials.class);
 
@@ -109,13 +111,9 @@ public class User extends Controller {
 
 	@Security.Authenticated(Secured.class)
 	public Result projectListFromDB() throws IOException {
-		final Promise<JsonNode> projectListPromise = projectService.getProjectsFromUser(user().getUsername());
-		return async(projectListPromise.map(new F.Function<JsonNode, Result>() {
-			@Override
-			public Result apply(JsonNode projects) throws Throwable {
-				return ok(Json.toJson(projects));
-			}
-		}));
+        final List<Project> projectList = projectService.getProjectsFromUser(user().getUsername());
+        final JsonNode projects = new ObjectMapper().valueToTree(projectList);
+        return ok(Json.toJson(projects));
 	}
 
 	public List<UserMindmapInfo> getMindmapInfosOfLoggedInUser() throws IOException {
