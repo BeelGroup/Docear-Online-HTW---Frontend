@@ -177,10 +177,11 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
           node = rootModel.findById(nodeId)
           
           newParentId = $( this ).closest('.node').attr('id')
-          newParent = rootModel.findById(newParentId)
           
-          $(ui.draggable).remove()
-          node.move(newParent)
+          if node.get('parent').get('id') isnt newParentId
+            newParent = rootModel.findById(newParentId)
+            $(ui.draggable).remove()
+            node.move(newParent)
       })
 
       
