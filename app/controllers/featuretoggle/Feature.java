@@ -45,7 +45,8 @@ public enum Feature {
     LOCK_NODE("lock and unlock nodes when in use"),
     RIBBONS("display ribbons on top of page"),
     RIBBON_GENERAL("display general ribbon"),
-    ANIMATE_TREE_RESIZE("enable animation when tree is resized (e.g. new node added)");
+    ANIMATE_TREE_RESIZE("enable animation when tree is resized (e.g. new node added)"),
+    ENABLE_READONLY_MAP("if set, read only maps can not be changed");
 
     String description;
     boolean isEnabled = false;
