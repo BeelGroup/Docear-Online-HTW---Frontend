@@ -6,7 +6,7 @@ define ['logger'],(logger) ->
     ## splat parameter (*) (regex)
     ## reg ex example: '/^(.*?)$/' : 'doIt'
     routes:
-      'project/:projectId/map/:mapId': 'loadMap'
+      'project/:projectId/map/*path': 'loadMap'
       '*path': 'notFound'
 
     constructor:(@mapView)->
