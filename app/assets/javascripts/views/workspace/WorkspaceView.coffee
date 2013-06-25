@@ -130,7 +130,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         path: obj.attr('id')
 
       document.log "Trying to open mindmap \'"+itemData.name+"\' from project \'"+itemData.projectId+"\' (WorkspaceView.openMindmap()"
-      location.href = "http://127.0.0.1:9000/#project/#{itemData.projectId}/map/#{itemData.name}"
+      location.href = "/#project/#{itemData.projectId}/map/#{itemData.path}"
 
 
     requestAddFile:(liNode, a,b)=>
