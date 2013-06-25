@@ -72,9 +72,11 @@
 	    </div>
             
             @if(controllers.featuretoggle.Feature.RIBBON_GENERAL.isEnabled()) {
-            <div id="ribbon-general" data-target="#editor" data-role="editor-toolbar" class="ribbon editor-toolbar">
-                <div class="ribbon-group">
-                  <a title="" data-edit="undo" class="btn toggle-workspace-sidebar">Show/Hide Workspace <i class="icon-list-alt"></i></a>
+            <div id="ribbon-general" class="ribbon">
+                <div class="ribbon-group pull-left">
+                    <a title="" class="btn toggle-workspace-sidebar">Show/Hide Workspace <i class="icon-list-alt"></i></a>
+                </div>
+                <div class="ribbon-group pull-left editor-toolbar" data-target="#editor" data-role="editor-toolbar">
                   <div class="btn-group">
                       <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font"><i class="icon-font"></i><b class="caret"></b></a>
                          <ul class="dropdown-menu">
