@@ -2,6 +2,7 @@ package controllers;
 
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.ImplementedFeature;
+import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.*;
 import org.codehaus.jackson.JsonNode;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
 import play.libs.F.Function;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -106,7 +108,8 @@ public class ProjectController extends DocearController {
      * @return
      * @throws IOException
      */
-    public Result putFile(String projectId, String path, boolean isZip, Long parentRev) throws IOException {
+    @BodyParser.Of(BodyParser.Raw.class)
+    public Result putFile(String projectId, String path, boolean isZip, Long parentRev, Long contentLength) throws IOException {
         assureUserBelongsToProject(projectId);
         path = normalizePath(path);
         byte[] content = request().body().asRaw().asBytes();
@@ -115,6 +118,11 @@ public class ProjectController extends DocearController {
         //can't use null in router, so -1 is given and will be mapped to null
         if (parentRev == -1)
             parentRev = null;
+
+        //check that content has correct length
+        if(contentLength > 0 && contentLength.intValue() != content.length) {
+            throw new SendResultException("File was not fully uploaded!",400);
+        }
 
         boolean isZipValidation = false;
         //check that content is present

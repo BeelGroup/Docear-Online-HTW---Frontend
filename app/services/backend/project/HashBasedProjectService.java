@@ -83,7 +83,6 @@ public class HashBasedProjectService implements ProjectService {
         path = normalizePath(path);
 
         try {
-            Logger.debug("HashBasedProjectService.getFile => test");
             // look for file in fileIndexStore
             final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
             if (metadata == null) {
