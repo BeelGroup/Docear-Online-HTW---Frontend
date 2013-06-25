@@ -42,7 +42,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         if $child.size() > 0
           $child.remove()
         nodeView = new NodeView(newChild, @rootView)
-        $nodeHtml = $($(nodeView.render().el))
+        $nodeHtml = $($(nodeView.render(@rootView).el))
         
         $($childrenContainer).append($nodeHtml)
         $nodeHtml.show()
