@@ -18,11 +18,12 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
       rootNode.set 'mapName', data.id
       rootNode.set 'folded', false
       rootNode.set 'revision', data.revision
+      rootNode.set 'isReadonly', data.isReadonly
 
       if persistenceHandlers[@mapId] == undefined
-        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId, @projectId)
+        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId, @projectId, data.isReadonly)
 
-      if mindMapUpdateHandlers[@mapId] == undefined
+      if !data.isReadonly and mindMapUpdateHandlers[@mapId] == undefined
         mindMapUpdateHandlers[@mapId] = new MindMapUpdateHandler(@mapId, rootNode, @projectId)
       rootNode.set 'mindMapUpdateHandler', mindMapUpdateHandlers[@mapId]
       

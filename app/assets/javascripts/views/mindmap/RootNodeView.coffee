@@ -211,8 +211,9 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
       @$el.html @template @getRenderData()
       @$el.addClass('root')
 
-      @controls = new NodeControlsView(@model)
-      @controls.renderAndAppendToNode(@)
+      if !@model.get('isReadonly')
+        @controls = new NodeControlsView(@model)
+        @controls.renderAndAppendToNode(@)
       
       @
 

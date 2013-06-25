@@ -83,21 +83,23 @@ define ['logger'], (logger) ->
             selectedNode.set 'folded', not selectedNode.get 'folded'
             
       Mousetrap.bind document.navigation.key.addSibling, (event)=>
-        selectedNode = @rootView.model.getSelectedNode()
-        if selectedNode != null and @rootView.model.get('id') isnt selectedNode.get('id')
-          parent = selectedNode.get('parent')
-          if parent.get('id') == @rootView.model.get('id')
-            side = 'Left'
-            if $("##{selectedNode.get('id')}").hasClass('right')  
-              side = 'Right'
-            selectedNode.get('parent').createAndAddChild(side)
-          else
-            selectedNode.get('parent').createAndAddChild()
+        if !@rootView.model.get('isReadonly')
+          selectedNode = @rootView.model.getSelectedNode()
+          if selectedNode != null and @rootView.model.get('id') isnt selectedNode.get('id')
+            parent = selectedNode.get('parent')
+            if parent.get('id') == @rootView.model.get('id')
+              side = 'Left'
+              if $("##{selectedNode.get('id')}").hasClass('right')  
+                side = 'Right'
+              selectedNode.get('parent').createAndAddChild(side)
+            else
+              selectedNode.get('parent').createAndAddChild()
       
       Mousetrap.bind document.navigation.key.addChild, (event)=>
-        selectedNode = @rootView.model.getSelectedNode()
-        if selectedNode != null
-          selectedNode.createAndAddChild()
+        if !@rootView.model.get('isReadonly')
+          selectedNode = @rootView.model.getSelectedNode()
+          if selectedNode != null
+            selectedNode.createAndAddChild()
 
 
     getKeycode:(event)->

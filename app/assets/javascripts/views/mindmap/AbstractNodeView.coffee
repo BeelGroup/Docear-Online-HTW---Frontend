@@ -48,7 +48,7 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
         @model.set 'folded', not @model.get 'folded' 
 
     selectNode:(event)->
-      if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') )
+      if $.inArray('EDIT_NODE_TEXT', document.features) > -1 and ( @model.get 'selected' || $(@$el).hasClass('selected') ) and !@model.get('rootNodeModel').get('isReadonly')
         #$("##{(@model.get 'rootNodeModel').get 'id'}").trigger 'newSelectedNode', @
         @controls.actionEdit(event)
       @model.set 'selected', true

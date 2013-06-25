@@ -150,8 +150,11 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         @connection = new ConnectionView(@model.get('parent'), @model)
         @connection.renderAndAppendToNode(@$el)
 
-      @controls = new NodeControlsView(@model)
-      @controls.renderAndAppendToNode(@)
+      
+      rootModel = @model.get('rootNodeModel')
+      if !rootModel.get('isReadonly')
+        @controls = new NodeControlsView(@model)
+        @controls.renderAndAppendToNode(@)
       
       @makeDraggable()
       
