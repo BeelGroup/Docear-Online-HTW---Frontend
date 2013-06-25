@@ -15,13 +15,17 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
 
     repaintConnection: ()->      
       @$childNode = $('#'+@childModel.get('id'))
+      if @parentModel.get('id') isnt @childModel.get('parent').get('id')
+        @parentModel = @childModel.get('parent')
+        @$parentNode = $('#'+@parentModel.get('id'))
       # paint connections, when child is visible
       if @$childNode.is ':visible'
-        @isRight = $(@$childNode).hasClass('right')
-        #document.log 'repaint connection for'+@parentModel.get('id')       
-        @calculateEndpoints()
-        @positionContainer()
-        @drawConnection()
+        if @$parentNode.size() > 0
+          @isRight = $(@$childNode).hasClass('right')
+          #document.log 'repaint connection for'+@childModel.get('id')       
+          @calculateEndpoints()
+          @positionContainer()
+          @drawConnection()
 
       
     getCurrentZoomAmount: ()->

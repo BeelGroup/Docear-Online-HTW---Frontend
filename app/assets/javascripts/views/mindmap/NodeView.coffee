@@ -20,12 +20,12 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
           nodeView.renderAndAppendTo(parent, @rootView)
         
 
-    changeChildren: ->
-      newChild = @model.get 'lastAddedChild'
-          
-      $node = $(@$el)
+    changeChildren: (lastAddedChild = null)->
+      newChild = lastAddedChild
+      if lastAddedChild is null
+        newChild = @model.get 'lastAddedChild'
       
-      document.log "AAAAA "+@model.typeName+" "+@model.get('lastAddedChildSide')
+      $node = $(@$el)
       if @model.typeName is 'rootModel'
         if @model.get('lastAddedChildSide') is 'Left'
           $childrenContainer = $node.children('.leftChildren:first')
@@ -33,14 +33,19 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
           $childrenContainer = $node.children('.rightChildren:first')
       else
         $childrenContainer = $node.children('.children:first')
-      
+
       previousHeight = $childrenContainer.outerHeight()
       
-      nodeView = new NodeView(newChild, @rootView)
-      $nodeHtml = $($(nodeView.render().el))
-      
-      $childrenContainer.append($nodeHtml)
-      $nodeHtml.show()
+      nodeView = @
+      $child = $("##{newChild.get('id')}")
+      if newChild.get('id') isnt @model.get('id')
+        if $child.size() > 0
+          $child.remove()
+        nodeView = new NodeView(newChild, @rootView)
+        $nodeHtml = $($(nodeView.render().el))
+        
+        $($childrenContainer).append($nodeHtml)
+        $nodeHtml.show()
       
       if $.inArray('ANIMATE_TREE_RESIZE', document.features) > -1
         side = 'right'
@@ -51,7 +56,12 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         @resizeTree $node, @model, diff
       else
         @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
-      
+        
+      children = newChild.get 'children'
+      if children.length > 0
+        for child in children
+          nodeView.changeChildren child
+          
       $.each(@model.get('children'), (index, child)->
         child.updateConnection()
       )
@@ -142,7 +152,9 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
 
       @controls = new NodeControlsView(@model)
       @controls.renderAndAppendToNode(@)
-    
+      
+      @makeDraggable()
+      
       @
 
       
@@ -164,6 +176,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
           newParentId = $( this ).closest('.node').attr('id')
           newParent = rootModel.findById(newParentId)
           
+          $(ui.draggable).remove()
           node.move(newParent)
       })
 
@@ -172,9 +185,6 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
     renderAndAppendTo:($element, @rootView)->
       @render(@rootView)
       @renderOnExpand = false 
-
-      
-      @makeDraggable()
         
       $element.append(@$el)
       @alignButtons()
@@ -215,10 +225,11 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       # destroy all subviews
       for viewId, view of @subViews
         view.destroy()
-
+      
       $('#'+@get('id')).fadeOut(document.fadeDuration, ()=>
         $('#'+@.get('id')).remove()
-        @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        if !!@model
+          @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
       )
   
 

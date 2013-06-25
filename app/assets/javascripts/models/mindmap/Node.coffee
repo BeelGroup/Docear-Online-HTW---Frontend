@@ -32,16 +32,8 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
       
     move: (newParent, position = -1)->
       document.log 'moving '+@get('id')+' to parent '+newParent.get('id')
-      
       @get('parent').removeChild(@)
       newParent.addChild(@)
-      
-      $.each(newParent.get('children'), (index, child)->
-        child.updateConnection()
-      )
-      @get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
-      @updateConnection()
-
       
     removeChild: (child)->
       currentChildren = @get('children')
@@ -52,6 +44,7 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
           children.push(node)
         else
           document.log 'removing '+child.get('id')+' from '+@get('id')
+      child.trigger 'deleteNode'
       @set 'children', children
       
   module.exports = Node
