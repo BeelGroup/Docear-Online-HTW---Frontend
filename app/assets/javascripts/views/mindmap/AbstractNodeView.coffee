@@ -213,7 +213,9 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
 
       $node.animate {
         top: '-='+(postHeight-preHeight)/2
-      }, document.fadeDuration
+      }, document.fadeDuration, =>
+        if !!@connection
+          @connection.repaintConnection()
 
       
      
