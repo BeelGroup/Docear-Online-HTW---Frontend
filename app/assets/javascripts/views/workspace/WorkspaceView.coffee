@@ -107,6 +107,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         items.deleteItem.action = @requestRemoveFolderOrFile
         items.deleteItem.label = "Delete file"
 
+        items.downloadItem = 
+          label: "Download file"
+          action: @requestDownloadItem
+
       if($(node).hasClass("user"))
         items.deleteItem.action = @requestRemoveUser
         items.deleteItem.label = "Delete user"
@@ -246,6 +250,9 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         $.ajax(params)
       )
 
+    requestDownloadItem: ()=>
+      itemData = @getSelectedItemData()
+      window.open(jsRoutes.controllers.ProjectController.getFile(itemData.projectId, itemData.path).url);
 
     requestRemoveFolderOrFile:()=>
       itemData = @getSelectedItemData()
