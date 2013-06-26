@@ -181,7 +181,7 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
         document.log "Changing text as PLAIN"
         $contentContainer.removeClass('isHtml')
         $contentContainer.text(@model.get 'nodeText')
-      
+      @alignButtons()
       
       postHeight = $node.outerHeight()
       diffWidth = 0
