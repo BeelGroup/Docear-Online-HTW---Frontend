@@ -96,46 +96,47 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
         node.setAttributeWithoutPersist 'nodeText', update.value
     
     addNode: (update)->
-      parentNode = @rootNode.findById update.parentNodeId
-
-      node = new Node()
-      node.set 'children', []
-      node.set 'parent', parentNode
-      
-      node.set 'id', update.nodeAsJson.id
-      node.set 'nodeText', update.nodeAsJson.nodeText
-      node.set 'isHtml', update.nodeAsJson.isHtml
-      node.set 'folded', update.nodeAsJson.folded
-
-      node.set 'xPos', 0
-      node.set 'yPos', 0
-      node.set 'hGap', update.nodeAsJson.hGap
-      node.set 'shiftY', update.nodeAsJson.shiftY
-
-      node.set 'rootNodeModel', @rootNode
-      node.set 'selected', false
-      node.set 'previouslySelected', false
-      node.set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
-      node.set 'lastAddedChild', 'undefined'
-      node.set 'connectionUpdated', 0
-
-      node.set 'persistenceHandler', parentNode.get('persistenceHandler')
-      node.set 'attributesToPersist', ['folded', 'nodeText', 'isHtml']
-      node.set 'autoPersist', false
-
-      node.set 'foldedShow', false
-      node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
-      node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
-      node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
-      node.set 'edgeStyle', parentNode.get('edgeStyle')
-
-      if parentNode.get('id') is @rootNode.get('id')
-        if update.side isnt null
-          @rootNode.addChild(node, update.side)
-      else
-        parentNode.addChild(node)
-      
-      node
+      if !!update.nodeAsJson.id
+        parentNode = @rootNode.findById update.parentNodeId
+  
+        node = new Node()
+        node.set 'children', []
+        node.set 'parent', parentNode
+        
+        node.set 'id', update.nodeAsJson.id
+        node.set 'nodeText', update.nodeAsJson.nodeText
+        node.set 'isHtml', update.nodeAsJson.isHtml
+        node.set 'folded', update.nodeAsJson.folded
+  
+        node.set 'xPos', 0
+        node.set 'yPos', 0
+        node.set 'hGap', update.nodeAsJson.hGap
+        node.set 'shiftY', update.nodeAsJson.shiftY
+  
+        node.set 'rootNodeModel', @rootNode
+        node.set 'selected', false
+        node.set 'previouslySelected', false
+        node.set 'foldable', ($.inArray('FOLD_NODE', document.features) > -1)
+        node.set 'lastAddedChild', 'undefined'
+        node.set 'connectionUpdated', 0
+  
+        node.set 'persistenceHandler', parentNode.get('persistenceHandler')
+        node.set 'attributesToPersist', ['folded', 'nodeText', 'isHtml']
+        node.set 'autoPersist', false
+  
+        node.set 'foldedShow', false
+        node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
+        node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
+        node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
+        node.set 'edgeStyle', parentNode.get('edgeStyle')
+  
+        if parentNode.get('id') is @rootNode.get('id')
+          if update.side isnt null
+            @rootNode.addChild(node, update.side)
+        else
+          parentNode.addChild(node)
+        
+        node
       
     deleteNode: (update)->
       node = @rootNode.findById update.nodeId
