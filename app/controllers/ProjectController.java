@@ -2,6 +2,7 @@ package controllers;
 
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.ImplementedFeature;
+import controllers.secured.SecuredRest;
 import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.formdatas.*;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
-@Security.Authenticated(Secured.class)
+@Security.Authenticated(SecuredRest.class)
 public class ProjectController extends DocearController {
     final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
     final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);

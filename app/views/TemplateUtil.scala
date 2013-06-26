@@ -1,7 +1,8 @@
 package views
 
 import play.api.i18n.{Lang, Messages}
-import controllers.Secured.SESSION_KEY_USERNAME
+import controllers.secured.SecuredBase
+import SecuredBase.SESSION_KEY_USERNAME
 
 object TemplateUtil {
   def i(key: String, args:String*)(implicit lang: Lang): String = Messages(key, args.toArray:_*)

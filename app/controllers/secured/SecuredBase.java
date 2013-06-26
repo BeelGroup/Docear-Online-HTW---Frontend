@@ -1,20 +1,18 @@
-package controllers;
-
-import static org.apache.commons.lang.StringUtils.defaultString;
-import static org.joda.time.DateTime.now;
+package controllers.secured;
 
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.joda.time.MutableDateTime;
-
 import play.Logger;
 import play.Play;
 import play.mvc.Http;
 import play.mvc.Http.Context;
-import play.mvc.Result;
 import play.mvc.Security;
 
-public class Secured extends Security.Authenticator {
+import static org.apache.commons.lang.StringUtils.defaultString;
+import static org.joda.time.DateTime.now;
+
+public abstract class SecuredBase extends Security.Authenticator {
 	public static final String SESSION_KEY_USERNAME = "username";
 	public static final String SESSION_KEY_TIMEOUT = "session-timeout";
 	public static final String SESSION_KEY_ACCESS_TOKEN = "at";
@@ -55,12 +53,6 @@ public class Secured extends Security.Authenticator {
 			return username;
 		else
 			return null;
-	}
-
-	@Override
-	public Result onUnauthorized(Context ctx) {
-		ctx.flash().put("error", "You need to authenticate.");
-		return redirect(routes.Application.index());
 	}
 
 	public static Instant createTimeoutTimestamp() {
