@@ -50,7 +50,7 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
       , delay)
         
     listenIfMapIsOpen: (delay = 0)->
-      if $(".node.root .map-id[value=#{@mapId}]").size() > 0
+      if $(".node.root .map-id[value*='#{@mapId}']").size() > 0
         @listen(delay)
       else
         document.log "map: #{@mapId} seems to be closed, stop listening"
@@ -129,7 +129,8 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
         node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
         node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
         node.set 'edgeStyle', parentNode.get('edgeStyle')
-  
+        node.activateListeners()
+        
         if parentNode.get('id') is @rootNode.get('id')
           if update.side isnt null
             @rootNode.addChild(node, update.side)
