@@ -8,19 +8,19 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
       
       @persistenceApi = {
         'change': {
-          'Node': jsRoutes.controllers.MindMap.changeNode(@projectId, @mapId).url
+          'Node': jsRoutes.controllers.MindMap.changeNode(@projectId, encodeURIComponent(@mapId)).url
         },
         'create': {
-          'Node': jsRoutes.controllers.MindMap.createNode(@projectId, @mapId).url
+          'Node': jsRoutes.controllers.MindMap.createNode(@projectId, encodeURIComponent(@mapId)).url
         },
         'delete': {
-          'Node': jsRoutes.controllers.MindMap.deleteNode(@projectId, @mapId).url
+          'Node': jsRoutes.controllers.MindMap.deleteNode(@projectId, encodeURIComponent(@mapId)).url
         },
         'lock': {
-          'Node': jsRoutes.controllers.MindMap.requestLock(@projectId, @mapId).url
+          'Node': jsRoutes.controllers.MindMap.requestLock(@projectId, encodeURIComponent(@mapId)).url
         },
         'unlock': {
-          'Node': jsRoutes.controllers.MindMap.releaseLock(@projectId, @mapId).url
+          'Node': jsRoutes.controllers.MindMap.releaseLock(@projectId, encodeURIComponent(@mapId)).url
         }
       }
       
