@@ -1,18 +1,15 @@
 package services.backend.user;
 
-import static controllers.Secured.QUERY_ACCESS_TOKEN;
-import static controllers.Secured.QUERY_USERNAME;
-import static controllers.Secured.SESSION_KEY_ACCESS_TOKEN;
-import static controllers.Secured.SESSION_KEY_USERNAME;
-
-import java.io.IOException;
-import java.util.List;
-
 import models.backend.User;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.UserNotFoundException;
 import play.libs.F.Promise;
 import play.mvc.Controller;
+
+import java.io.IOException;
+import java.util.List;
+
+import static controllers.secured.SecuredBase.*;
 
 public abstract class UserService {
 

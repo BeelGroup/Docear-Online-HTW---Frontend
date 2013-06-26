@@ -1,13 +1,12 @@
 package controllers;
 
+import controllers.secured.SecuredRest;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.frontend.formdata.*;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages;
 import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.models.MapIdentifier;
@@ -18,12 +17,10 @@ import play.Logger;
 import play.data.Form;
 import play.libs.F;
 import play.libs.F.Function;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
 import services.backend.project.ProjectService;
-import services.backend.project.persistance.FileMetaData;
 import services.backend.user.UserService;
 
 import java.io.ByteArrayInputStream;
@@ -50,7 +47,7 @@ public class MindMap extends DocearController {
     @Autowired
     private ProjectService projectService;
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result createNewMap(final String projectId) throws IOException {
         Form<CreateMapData> filledForm = createMapForm.bindFromRequest();
 
@@ -76,6 +73,8 @@ public class MindMap extends DocearController {
         // for welcome map allways take cached json
         if (projectId.equals(COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID) && mapId.equals("welcome")) {
             return ok(util.Input.resourceToString("rest/v1/map/welcome.json"));
+        } else if(!userService.isAuthenticated()) {
+            return unauthorized("No user logged in");
         }
 
         // short version, throws NotLoggedInException
@@ -91,7 +90,7 @@ public class MindMap extends DocearController {
         }));
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result mapAsXml(final String projectId, final String mapId) throws DocearServiceException, IOException {
         Logger.debug("MindMap.mapAsXml <- projectId= " + projectId + "; mapId=" + mapId);
 
@@ -113,7 +112,7 @@ public class MindMap extends DocearController {
         return ok(xmlString);
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result requestLock(final String projectId, final String mapId) {
         final Form<RequestLockData> filledForm = requestLockForm.bindFromRequest();
         Logger.debug("MindMap.requestLock => projectId= " + projectId + "; mapId=" + mapId + ", form=" + filledForm.toString());
@@ -140,7 +139,7 @@ public class MindMap extends DocearController {
         }
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result releaseLock(final String projectId, final String mapId) {
         final Form<ReleaseLockData> filledForm = releaseLockForm.bindFromRequest();
         Logger.debug("MindMap.requestLock => projectId= " + projectId + "; mapId=" + mapId + ", form=" + filledForm.toString());
@@ -167,7 +166,7 @@ public class MindMap extends DocearController {
         }
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result fetchUpdatesSinceRevision(final String projectId, String mapId, Integer revision) {
         Logger.debug("MindMap.fetchUpdatesSinceRevision <- projectId= " + projectId + "; mapId=" + mapId + "; revision: " + revision);
 
@@ -181,7 +180,7 @@ public class MindMap extends DocearController {
         }));
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result createNode(final String projectId, final String mapId) {
         final Form<CreateNodeData> filledForm = createNodeForm.bindFromRequest();
         Logger.debug("MindMap.createNode <- projectId= " + projectId + "; mapId=" + mapId + ", form=" + filledForm.toString());
@@ -219,7 +218,7 @@ public class MindMap extends DocearController {
         }));
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result changeNode(final String projectId, final String mapId) {
         final Form<ChangeNodeData> filledForm = changeNodeForm.bindFromRequest();
 
@@ -254,7 +253,7 @@ public class MindMap extends DocearController {
         }
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result moveNode(final String projectId, final String mapId) throws JsonParseException, JsonMappingException, IOException {
         final Form<MoveNodeData> filledForm = moveNodeForm.bindFromRequest();
         Logger.debug("MindMap.moveNode => projectId= " + projectId + "; mapId=" + mapId + ", form=" + filledForm.toString());
@@ -282,7 +281,7 @@ public class MindMap extends DocearController {
         }
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result deleteNode(final String projectId, final String mapId) {
         final Form<RemoveNodeData> filledForm = removeNodeForm.bindFromRequest();
         Logger.debug("MindMap.deleteNode => projectId= " + projectId + "; mapId=" + mapId + ", form=" + filledForm.toString());
@@ -308,7 +307,7 @@ public class MindMap extends DocearController {
         }
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result changeEdge(final String projectId, final String mapId) throws JsonParseException, JsonMappingException, IOException {
         final Form<ChangeEdgeData> filledForm = changeEdgeForm.bindFromRequest();
         Logger.debug("MindMap.changeEdge => projectId= " + projectId + "; mapId=" + mapId + ", form=" + filledForm.toString());
@@ -347,7 +346,7 @@ public class MindMap extends DocearController {
         }
     }
 
-    @Security.Authenticated(Secured.class)
+    @Security.Authenticated(SecuredRest.class)
     public Result listenForUpdates(final String projectId, final String mapId) {
         Logger.debug("MindMap.listenForUpdates => projectId= " + projectId + "; mapId=" + mapId);
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);

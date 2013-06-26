@@ -3,7 +3,7 @@ package services.backend.mindmap;
 import akka.actor.*;
 import com.typesafe.config.ConfigFactory;
 import controllers.MindMap;
-import controllers.Secured;
+import controllers.secured.SecuredBase;
 import models.backend.User;
 import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
@@ -591,7 +591,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                 }
 
                 if (!canAccess) {
-                    Logger.warn("UserIdentifier '" + Controller.session(Secured.SESSION_KEY_USERNAME) + "' tried to access a map he/she does not own!");
+                    Logger.warn("UserIdentifier '" + Controller.session(SecuredBase.SESSION_KEY_USERNAME) + "' tried to access a map he/she does not own!");
                     throw new UnauthorizedException("You are not allowed to access that map!");
                 }
                 return canAccess;
