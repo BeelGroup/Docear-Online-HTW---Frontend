@@ -369,9 +369,7 @@ public class HashBasedProjectService implements ProjectService {
         for (String projectId : projectRevisionMap.keySet()) {
             final Project project = fileIndexStore.findProjectById(projectId);
             if (project != null) {
-                projectUserMap.put(projectId, fileIndexStore.findProjectById(projectId).getAuthorizedUsers());
-            } else {
-                throw new NotFoundException("Project with id: "+projectId+" not found.");
+                projectUserMap.put(projectId, project.getAuthorizedUsers());
             }
         }
 
