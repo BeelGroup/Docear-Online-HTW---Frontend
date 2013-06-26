@@ -83,7 +83,7 @@ define ['logger'], (logger) ->
             selectedNode.set 'folded', not selectedNode.get 'folded'
             
       Mousetrap.bind document.navigation.key.addSibling, (event)=>
-        if !@rootView.model.get('isReadonly')
+        if !@rootView.model.get('isReadonly') and $('.node-edit-container').size() <= 0
           selectedNode = @rootView.model.getSelectedNode()
           if selectedNode != null and @rootView.model.get('id') isnt selectedNode.get('id')
             parent = selectedNode.get('parent')
@@ -94,6 +94,7 @@ define ['logger'], (logger) ->
               selectedNode.get('parent').createAndAddChild(side)
             else
               selectedNode.get('parent').createAndAddChild()
+            
       
       Mousetrap.bind document.navigation.key.addChild, (event)=>
         if !@rootView.model.get('isReadonly')
