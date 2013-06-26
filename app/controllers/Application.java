@@ -137,6 +137,7 @@ public class Application extends DocearController {
                     routes.javascript.MindMap.releaseLock(),
                     routes.javascript.MindMap.listenForUpdates(),
                     routes.javascript.MindMap.fetchUpdatesSinceRevision(),
+                    routes.javascript.MindMap.createNewMap(),
                     routes.javascript.ProjectController.createProject(),
                     routes.javascript.ProjectController.addUserToProject(),
                     routes.javascript.ProjectController.createFolder(),

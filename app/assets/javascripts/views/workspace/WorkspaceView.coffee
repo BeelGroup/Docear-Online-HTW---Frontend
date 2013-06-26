@@ -78,6 +78,9 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
           action: -> document.log 'Please implement a remove function for this type of node'
 
       if ($(node).hasClass("folder")) 
+        items.createMapItem = 
+          label: "Create new Map"
+          action: @requestCreateMapItem
         items.addFile =  # upload
           label: "Add file",
           action: @requestAddFile
@@ -132,7 +135,57 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       document.log "Trying to open mindmap \'"+itemData.name+"\' from project \'"+itemData.projectId+"\' (WorkspaceView.openMindmap()"
       location.href = "/#project/#{itemData.projectId}/map/#{itemData.path}"
 
+    requestCreateMapItem: (liNode, a, b)->
+      $parent = $('#workspace-tree').jstree('get_selected')
+      $('#workspace-tree').jstree('open_node', $parent)
+      newNode = { attr: {class: 'resource file mindmap-file delete-me-on-update'}, state: "leaf", data: "new_mindmap.mm" }
+      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
 
+      # instant renaming
+      # own implementation of @.rename(obj)
+      obj = @._get_node(obj)
+      @.__rollback()
+      f = @.__callback
+      @._show_input(obj, (obj, new_name, old_name)-> 
+        f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
+
+        $parent  = $('#workspace-tree').jstree('get_selected')
+        $project = $($parent).closest('li.project')
+        currentPath = $parent.attr('id')
+        if currentPath isnt "/"
+          $path = $parent.attr("id")+"/"+new_name 
+        else
+          $path = $parent.attr("id")+new_name 
+        # set path as id -> so it will be found and can be removed on update from server
+        $(obj).attr("id", $path)
+        # build path
+        if currentPath[currentPath.length-1] isnt '/'
+          currentPath += "/"
+        currentPath += new_name
+
+        projectId   = $project.attr('id')
+        # set id in dom
+        obj[0].id = currentPath
+
+        params = {
+          url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
+          type: 'POST'
+          cache: false
+          data: {"path": currentPath}
+          success:(data)=>
+            # create new model and add to parent
+            document.log "mind map created: "+currentPath+" to project "+projectId
+
+          error:()=>
+            document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
+            # remove mm file from view
+            $('#workspace-tree').jstree("delete_node", obj)
+
+          dataType: 'json' 
+        }
+        $.ajax(params)
+      )
+        
     requestAddFile:(liNode, a,b)=>
       $parent = $('#workspace-tree').jstree('get_selected')
       parentPath = $parent.attr('id')
