@@ -24,7 +24,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       projectView = new ProjectView(project, @)
       @projectViews.push(projectView)
       
-      if @_rendered
+      if @_rendered        
+        $objToDelete = $(".temp-project.delete-me-on-update")
+        if $objToDelete.size() > 0
+          $('#workspace-tree').jstree("delete_node", $objToDelete)
         $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
 
         @$workspaceTree.jstree({
@@ -57,7 +60,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
           else
             document.log "Action for event type \'"+type+"\' not implemented jet"
           if(type is 'rename_node')
-            @moveResource()
+            if $(data.args[0]).hasClass 'temp-project'
+              @requestCreateProject(data.args[0], data.args[1])
+            else
+              @moveResource()
         )
 
 
@@ -419,21 +425,34 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       if @_rendered
         $(viewToRemove.el).remove()
         
-    events:
-      "click .add-project-toggle" : ->
-        numProjects = @$el.find('.projects li').size()
-        params = {
+    
+    requestCreateProject: (obj, projectName)=>
+      params = {
           url: jsRoutes.controllers.ProjectController.createProject().url
           type: 'POST'
           cache: false
-          data: {"name": "Project_#{numProjects}"}
-          success: (data)=>
-            project = new Project(data)
-            @model.add(project)
-            document.log "project added"
+          data: {"name": projectName}
+          success:(data)=>
+            # create new model and add to parent
+            document.log "new project created : "+projectName
+          error:()=>
+            document.log "error while creating project : "+projectName
+            # remove folder from view
+            $('#workspace-tree').jstree("delete_node", obj)
           dataType: 'json' 
         }
-        $.ajax(params)  
+        $.ajax(params)
+      
+        
+    newProject: ()->
+      new_name = "project"
+      obj = $("#workspace-tree").jstree("create","#workspace-tree","last","new_name", false, true)
+      $(obj).addClass('project temp-project delete-me-on-update')
+      $("#workspace-tree").jstree("rename",obj)
+      
+     
+    events:
+      "click .add-project-toggle" : "newProject"
       "click .upload-file" : "actionUpload"
 
     element:-> @$el
