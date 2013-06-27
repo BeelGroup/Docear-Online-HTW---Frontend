@@ -103,7 +103,10 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
     
 
     changeSelectStatus: ->
-      @$el.toggleClass('selected')
+      if @model.get 'selected'
+        @$el.addClass('selected')
+      else
+        @$el.removeClass('selected')
       
 
     initialFoldStatus:()-> 
