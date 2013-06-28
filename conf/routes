@@ -42,7 +42,7 @@ POST	/api/v1/project/create					@controllers.ProjectController.createProject()
 POST	/api/v1/project/:projectId/addUser		@controllers.ProjectController.addUserToProject(projectId: String)
 POST	/api/v1/project/:projectId/removeUser	@controllers.ProjectController.removeUserFromProject(projectId: String)
 GET		/api/v1/project/:projectId				@controllers.ProjectController.getProject(projectId: String)
-POST	/api/v1/project/listen					@controllers.ProjectController.listenForUpdates()
+POST	/api/v1/project/listen					@controllers.ProjectController.listenForUpdates(longPolling : Boolean ?= true)
 
 
 ## files

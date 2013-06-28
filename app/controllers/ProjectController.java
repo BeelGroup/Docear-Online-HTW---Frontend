@@ -221,7 +221,7 @@ public class ProjectController extends DocearController {
         return ok(metadataJson);
     }
 
-    public Result listenForUpdates() throws IOException {
+    public Result listenForUpdates(boolean longPolling) throws IOException {
         final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
 
@@ -234,12 +234,7 @@ public class ProjectController extends DocearController {
             }
         }
 
-        // check that project has been send
-        if (projectRevisonMap.size() == 0) {
-            return badRequest("specify at least one project!");
-        }
-
-        return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap).map(new Function<JsonNode, Result>() {
+        return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap,longPolling).map(new Function<JsonNode, Result>() {
             @Override
             public Result apply(JsonNode result) throws Throwable {
                 return ok(result);

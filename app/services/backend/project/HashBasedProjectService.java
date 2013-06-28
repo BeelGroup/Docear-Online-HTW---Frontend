@@ -40,9 +40,17 @@ public class HashBasedProjectService implements ProjectService {
     private FileStore fileStore;
     @Autowired
     private FileIndexStore fileIndexStore;
-    
-    public String sha512(InputStream inputStream) throws IOException{
-    	return DigestUtils.sha512Hex(inputStream);
+
+    private static MessageDigest createMessageDigest() {
+        try {
+            return MessageDigest.getInstance("SHA-512");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Invalid Crypto algorithm! ", e);
+        }
+    }
+
+    public String sha512(InputStream inputStream) throws IOException {
+        return DigestUtils.sha512Hex(inputStream);
     }
 
     @Override
@@ -150,7 +158,7 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
-        Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride+"; bytes: "+fileBytes.length);
+        Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride + "; bytes: " + fileBytes.length);
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
@@ -354,17 +362,8 @@ public class HashBasedProjectService implements ProjectService {
         return new PutFileResult(fileHash, fileByteCount);
     }
 
-    private static MessageDigest createMessageDigest() {
-        try {
-            return MessageDigest.getInstance("SHA-512");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Invalid Crypto algorithm! ", e);
-        }
-    }
-  
-
     @Override
-    public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap) throws IOException {
+    public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
         final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
         for (String projectId : projectRevisionMap.keySet()) {
             final Project project = fileIndexStore.findProjectById(projectId);
@@ -374,23 +373,28 @@ public class HashBasedProjectService implements ProjectService {
         }
 
         final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, projectUserMap, username);
+
         final Promise<JsonNode> promise = Akka.future(callable);
 
-        // put in listener maps and check if update already happened
-        for (Map.Entry<String, Long> entry : projectRevisionMap.entrySet()) {
-            final String projectId = entry.getKey();
+        if (longPolling) {
+            // put in listener maps
+            for (Map.Entry<String, Long> entry : projectRevisionMap.entrySet()) {
+                final String projectId = entry.getKey();
 
-            // check if projectId has entry in listener map
-            if (!projectListenersMap.containsKey(projectId)) {
-                projectListenersMap.put(projectId, Collections.synchronizedList(new ArrayList<UpdateCallable>()));
+                // check if projectId has entry in listener map
+                if (!projectListenersMap.containsKey(projectId)) {
+                    projectListenersMap.put(projectId, Collections.synchronizedList(new ArrayList<UpdateCallable>()));
+                }
+                projectListenersMap.get(projectId).add(callable);
             }
-            projectListenersMap.get(projectId).add(callable);
-        }
 
-        // put in User listener map
-        if (!userListenerMap.containsKey(username))
-            userListenerMap.put(username, new ArrayList<UpdateCallable>());
-        userListenerMap.get(username).add(callable);
+            // put in User listener map
+            if (!userListenerMap.containsKey(username))
+                userListenerMap.put(username, new ArrayList<UpdateCallable>());
+            userListenerMap.get(username).add(callable);
+        } else {
+            callable.send();
+        }
 
         return promise;
     }
