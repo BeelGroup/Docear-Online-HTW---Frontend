@@ -33,14 +33,17 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
             resource = new Resource(@project, resourceData.path, false, @)
             resource.fillFromData resourceData
             
-            @resources.add(resource)
             if @isRoot
-              resource.update()
+              resource.update(@resources)
+            else
+              @resources.add(resource)
+
 
     addResouce:(newChild)->
       @resources.add(newChild)
 
-    update: ()=>
+
+    update: (resources)=>
       if not @updated
         me = @
         params = {
@@ -50,8 +53,10 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
           success: (data)->
             me.updated = true
             me.fillFromData(data)
+            if resources != undefined
+              resources.add(me)
             document.log "files data for "+(me.get 'filename')+ " received"
           dataType: 'json' 
         }
-        $.ajax(params)
+        $.ajax(params)     
   module.exports = Resource
