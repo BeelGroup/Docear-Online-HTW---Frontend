@@ -89,7 +89,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public InputStream getFile(String projectId, String path) throws IOException {
+    public InputStream getFile(String projectId, String path, boolean zipped) throws IOException {
         Logger.debug("HashBasedProjectService.getFile => projectId: " + projectId + "; path: " + path);
         path = normalizePath(path);
 
@@ -103,7 +103,10 @@ public class HashBasedProjectService implements ProjectService {
             final String fileHash = metadata.getHash();
             Logger.debug("HashBasedProjectService.getFile => fileHash: " + fileHash);
 
-            return fileStore.open(path().hash(fileHash).zipped());
+            if(zipped)
+                return fileStore.open(path().hash(fileHash).zipped());
+            else
+                return fileStore.open(path().hash(fileHash).raw());
 
         } catch (FileNotFoundException e) {
             throw new NotFoundException("File not found!", e);
