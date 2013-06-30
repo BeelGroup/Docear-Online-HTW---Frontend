@@ -234,13 +234,13 @@ define ->
 
     updatePosition:(pos, animated = false)->
       $minimapViewport = @$el.find('.minimap-viewport')
-      console.log pos
+
       stats =  new Object()
       if pos.x isnt false
         stats.left = "#{pos.x}px"
       if pos.y isnt false
         stats.top = "#{pos.y}px"   
-      console.log stats
+
       if animated then $minimapViewport.stop().animate stats else $minimapViewport.css stats
 
   module.exports = Minimap

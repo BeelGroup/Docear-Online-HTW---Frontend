@@ -89,48 +89,49 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       totalChildrenHeight = 0
       totalChildrenWidth = 0
 
-      if $children.length > 0
-        for child in $children
-          childSize = @alignChildrenofElement($(child).children('.children'), sideOfTree, i+1)
-          heightOfChildren[$(child).attr('id')] = childSize[0]
-          widthOfChildren[$(child).attr('id')] = childSize[1]
-          totalChildrenWidth = Math.max(totalChildrenWidth, $(child).outerWidth() + childSize[1])
-        
-        lastChild = null
-        for child in $children
-          id = $(child).attr('id')
-          totalChildrenHeight += heightOfChildren[id] + @verticalSpacer
+      if $(element).attr('folded') isnt "true"
+        if $children.length > 0
+          for child in $children
+            childSize = @alignChildrenofElement($(child).children('.children'), sideOfTree, i+1)
+            heightOfChildren[$(child).attr('id')] = childSize[0]
+            widthOfChildren[$(child).attr('id')] = childSize[1]
+            totalChildrenWidth = Math.max(totalChildrenWidth, $(child).outerWidth() + childSize[1])
           
-          if lastChild == null
-            currentTop = -$(child).outerHeight()/2
-          currentTop += heightOfChildren[id]/2
-          $(child).css('top', currentTop)
+          lastChild = null
+          for child in $children
+            id = $(child).attr('id')
+            totalChildrenHeight += heightOfChildren[id] + @verticalSpacer
+            
+            if lastChild == null
+              currentTop = -$(child).outerHeight()/2
+            currentTop += heightOfChildren[id]/2
+            $(child).css('top', currentTop)
 
-          
+            
+            if sideOfTree == 'left'
+              $(child).addClass('left')
+              $(child).css('right', @horizontalSpacer)
+            else
+              $(child).addClass('right')	
+              $(child).css('left', @horizontalSpacer) 
+            lastChild = child
+            currentTop += heightOfChildren[id]/2 + @verticalSpacer
+
+          # to correct the addition on the last run we subtract the last added height
+          currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
+          totalChildrenWidth += @horizontalSpacer
+
+          left = elementWidth
           if sideOfTree == 'left'
-            $(child).addClass('left')
-            $(child).css('right', @horizontalSpacer)
-          else
-            $(child).addClass('right')	
-            $(child).css('left', @horizontalSpacer) 
-          lastChild = child
-          currentTop += heightOfChildren[id]/2 + @verticalSpacer
+            left = -totalChildrenWidth
+          top = -(totalChildrenHeight/2 - elementHeight/2)
+          height = Math.max(totalChildrenHeight, elementHeight)
+          width = totalChildrenWidth
 
-        # to correct the addition on the last run we subtract the last added height
-        currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
-        totalChildrenWidth += @horizontalSpacer
-
-        left = elementWidth
-        if sideOfTree == 'left'
-          left = -totalChildrenWidth
-        top = -(totalChildrenHeight/2 - elementHeight/2)
-        height = Math.max(totalChildrenHeight, elementHeight)
-        width = totalChildrenWidth
-
-        $(childrenContainer).css('left', left+'px')
-        $(childrenContainer).css('top', top)
-        $(childrenContainer).css('height', height)
-        $(childrenContainer).css('width', width)
+          $(childrenContainer).css('left', left+'px')
+          $(childrenContainer).css('top', top)
+          $(childrenContainer).css('height', height)
+          $(childrenContainer).css('width', width)
 
 
       if $(element).attr('folded') is 'true'      
