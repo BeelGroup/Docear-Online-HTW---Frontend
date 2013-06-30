@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import play.Logger;
-import play.libs.Akka;
-import scala.concurrent.ExecutionContext;
 import services.backend.project.filestore.FileStore;
 import services.backend.project.persistance.*;
 
@@ -29,7 +27,6 @@ import static services.backend.project.filestore.PathFactory.path;
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
-    private final static ExecutionContext listenerContext = Akka.system().dispatchers().lookup("update-listener");
     /**
      * TODO UpdateCallables could cause performance issue. Implementing an Actor
      * for the action might be better.

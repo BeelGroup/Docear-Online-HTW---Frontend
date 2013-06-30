@@ -1,6 +1,5 @@
 package controllers;
 
-import akka.dispatch.Futures;
 import controllers.secured.SecuredRest;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
@@ -21,8 +20,6 @@ import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Result;
 import play.mvc.Security;
-import scala.concurrent.ExecutionContext;
-import scala.concurrent.Future;
 import services.backend.mindmap.MindMapCrudService;
 import services.backend.project.ProjectService;
 import services.backend.user.UserService;
@@ -36,7 +33,6 @@ import java.util.concurrent.Callable;
 
 @Component
 public class MindMap extends DocearController {
-    private final static ExecutionContext listenerContext = Akka.system().dispatchers().lookup("update-listener");
 
     public final static String COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID = "-1";
     private final static Form<CreateNodeData> createNodeForm = Form.form(CreateNodeData.class);
@@ -360,16 +356,14 @@ public class MindMap extends DocearController {
         final UserIdentifier userIdentifier = userIdentifier();
 
 
-        Future<Boolean> future = Futures.future(new Callable<Boolean>() {
+        F.Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mindMapCrudService.listenForUpdates(userIdentifier, mapIdentifier);
             }
-        },listenerContext);
+        });
 
-        final F.Promise<Boolean> promise = Akka.asPromise(future);
         return async(promise.map(new Function<Boolean, Result>() {
-
             @Override
             public Result apply(Boolean hasChanged) throws Throwable {
                 if (hasChanged)
