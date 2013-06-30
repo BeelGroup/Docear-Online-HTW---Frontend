@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
+import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Result;
@@ -28,9 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 @Component
 public class MindMap extends DocearController {
+
     public final static String COMPATIBILITY_DOCEAR_SERVER_PROJECT_ID = "-1";
     private final static Form<CreateNodeData> createNodeForm = Form.form(CreateNodeData.class);
     private final static Form<CreateMapData> createMapForm = Form.form(CreateMapData.class);
@@ -350,8 +353,17 @@ public class MindMap extends DocearController {
     public Result listenForUpdates(final String projectId, final String mapId) {
         Logger.debug("MindMap.listenForUpdates => projectId= " + projectId + "; mapId=" + mapId);
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
-        return async(mindMapCrudService.listenForUpdates(userIdentifier(), mapIdentifier).map(new Function<Boolean, Result>() {
+        final UserIdentifier userIdentifier = userIdentifier();
 
+
+        F.Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return mindMapCrudService.listenForUpdates(userIdentifier, mapIdentifier);
+            }
+        });
+
+        return async(promise.map(new Function<Boolean, Result>() {
             @Override
             public Result apply(Boolean hasChanged) throws Throwable {
                 if (hasChanged)

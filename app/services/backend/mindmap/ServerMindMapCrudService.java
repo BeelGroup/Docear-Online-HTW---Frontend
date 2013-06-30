@@ -12,6 +12,7 @@ import models.backend.exceptions.sendResult.PreconditionFailedException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.docear.messages.Messages;
 import org.docear.messages.Messages.*;
 import org.docear.messages.exceptions.MapNotFoundException;
 import org.docear.messages.exceptions.NodeAlreadyLockedException;
@@ -26,11 +27,13 @@ import play.Logger;
 import play.Play;
 import play.libs.Akka;
 import play.libs.F;
-import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.mvc.Controller;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
+import scala.concurrent.impl.Promise$;
 import services.backend.project.ProjectService;
 import services.backend.project.persistance.EntityCursor;
 import services.backend.user.UserService;
@@ -41,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipInputStream;
 
 import static akka.pattern.Patterns.ask;
@@ -54,6 +58,7 @@ import static akka.pattern.Patterns.ask;
  *
  */
 public class ServerMindMapCrudService implements MindMapCrudService {
+
     private final ActorSystem system;
     private final ActorRef remoteActor;
     private final ActorRef forceSavingAndClosingActor;
@@ -71,10 +76,10 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
         system = ActorSystem.create("freeplaneSystem", ConfigFactory.load().getConfig("local"));
         remoteActor = system.actorFor(freeplaneActorUrl);
-        forceSavingAndClosingActor = system.actorOf(new Props(new UntypedActorFactory(){
+        forceSavingAndClosingActor = system.actorOf(new Props(new UntypedActorFactory() {
             @Override
             public Actor create() throws Exception {
-                return new ForceSavingAndClosingActor(metaDataCrudService,ServerMindMapCrudService.this);
+                return new ForceSavingAndClosingActor(metaDataCrudService, ServerMindMapCrudService.this);
             }
         }));
 
@@ -156,42 +161,22 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     }
 
     @Override
-    public Promise<Boolean> listenForUpdates(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
+    public Boolean listenForUpdates(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
         final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(userIdentifier, mapIdentifier);
 
         // two minutes for longpolling
-        final long twoMinutesInMillis = 120000;
-        return performActionOnMindMap(request, twoMinutesInMillis, new ActionOnMindMap<Boolean>() {
-
-            @Override
-            public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
-                return promise.map(new Function<Object, Boolean>() {
-
-                    @Override
-                    public Boolean apply(Object listenResponse) throws Throwable {
-                        final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) listenResponse;
-                        return response.getResult();
-                    }
-                }).recover(new Function<Throwable, Boolean>() {
-
-                    @Override
-                    public Boolean apply(Throwable t) throws Throwable {
-                        /*
-                         * When map was not found, something must have happened
-						 * since the last interaction Probably the laptop was in
-						 * standby and tries now to reconnect, which should
-						 * result in a reload. When the frontend tries to load
-						 * updates, the map will be send to a server
-						 */
-                        if (t instanceof MapNotFoundException) {
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-
-            }
-        });
+        final long twoMinutesInMillis = 130000;
+        Future<Object> future = ask(remoteActor,request,twoMinutesInMillis);
+        try {
+            Await.ready(future, Duration.apply(twoMinutesInMillis, TimeUnit.MILLISECONDS));
+            final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) Akka.asPromise(future).get();
+            return response.getResult();
+            //return response.getResult();
+        } catch (InterruptedException e) {
+            return false;
+        } catch(TimeoutException e) {
+            return false;
+        }
     }
 
     @Override
@@ -359,7 +344,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
         });
     }
 
-
     /**
      * Central point to perform an action on a mindmap. Helps to centralise
      * error handling
@@ -446,7 +430,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     }
 
     private Promise<Object> sendMessageToServer(Object message, long timeoutInMillis) {
-            return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
+        return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
     }
 
     private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) throws NoUserLoggedInException {
@@ -489,7 +473,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
             final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, fileContentAsString, "");
 
-            remoteActor.tell(request,forceSavingAndClosingActor);
+            remoteActor.tell(request, forceSavingAndClosingActor);
             return true;
 //            //sending map to freeplane
 //            return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
@@ -627,8 +611,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                 final ForceSaveAndCloseRequest request = (ForceSaveAndCloseRequest) message;
                 final MapIdentifier mapIdentifier = request.getMapIdentifier();
                 serverMindMapCrudService.saveMindMapInProjectService(mapIdentifier);
-                sender.tell(new CloseMapRequest(new UserIdentifier("Server","Server"),mapIdentifier),getSelf());
-                metaDataCrudService.delete(mapIdentifier.getProjectId(),mapIdentifier.getMapId());
+                sender.tell(new CloseMapRequest(new UserIdentifier("Server", "Server"), mapIdentifier), getSelf());
+                metaDataCrudService.delete(mapIdentifier.getProjectId(), mapIdentifier.getMapId());
             }
         }
     }

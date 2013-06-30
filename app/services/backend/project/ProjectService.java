@@ -41,7 +41,7 @@ public interface ProjectService {
 
     FileMetaData delete(String projectId, String path) throws IOException;
 
-	Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException;
+	JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException;
 
     VersionDeltaResponse versionDelta(String projectId, Long revision) throws IOException;
 

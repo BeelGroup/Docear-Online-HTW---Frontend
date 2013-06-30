@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
+import play.libs.Akka;
+import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 @Component
@@ -222,9 +225,10 @@ public class ProjectController extends DocearController {
         return ok(metadataJson);
     }
 
-    public Result listenForUpdates(boolean longPolling) throws IOException {
+    public Result listenForUpdates(final boolean longPolling) throws IOException {
         final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
+        final String username = username();
 
         for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
             final String projectId = entry.getKey();
@@ -235,7 +239,13 @@ public class ProjectController extends DocearController {
             }
         }
 
-        return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap,longPolling).map(new Function<JsonNode, Result>() {
+        F.Promise<JsonNode> promise = Akka.future(new Callable<JsonNode>() {
+            @Override
+            public JsonNode call() throws Exception {
+                return projectService.listenIfUpdateOccurs(username, projectRevisonMap, longPolling);
+            }
+        });
+        return async(promise.map(new Function<JsonNode, Result>() {
             @Override
             public Result apply(JsonNode result) throws Throwable {
                 return ok(result);

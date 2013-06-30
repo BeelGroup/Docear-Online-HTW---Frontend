@@ -47,7 +47,7 @@ public interface MindMapCrudService {
 	Promise<String> getNode(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId, Integer nodeCount);
 
 
-	Promise<Boolean> listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier);
+	Boolean listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier);
 
 	/**
 	 * 
