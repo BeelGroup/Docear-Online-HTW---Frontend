@@ -78,10 +78,11 @@ public class MongoFileIndexStore implements FileIndexStore {
     }
 
     @Override
-    public void removeUserFromProject(String id, String username) throws IOException {
+    public boolean removeUserFromProject(String id, String username, final boolean keepLastUser) throws IOException {
         try {
-            final BasicDBObject query = queryById(id);
-            projects().update(query, doc("$pull", doc("authUsers", username)));
+            final BasicDBObject query = keepLastUser ? queryById(id).append("authUsers.1", doc("$exists", 1)) : queryById(id);//index 1 is the second element
+            final WriteResult writeResult = projects().update(query, doc("$pull", doc("authUsers", username)));
+            return writeResult.getN() > 0;
         } catch (MongoException e) {
             throw new IOException(e);
         }

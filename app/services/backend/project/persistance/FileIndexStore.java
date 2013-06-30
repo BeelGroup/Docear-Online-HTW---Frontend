@@ -38,9 +38,11 @@ public interface FileIndexStore {
      * Removes a user from a project.
      * @param id the id of the project where the user should be removed
      * @param username the name of the use that should be removed from the project
+     * @param keepLastUser true if the last user of a project should not deleted, else false
+     * @return true if the user was removed of the project, false if the user was the last user and keepLastUser was true
      * @throws IOException
      */
-    void removeUserFromProject(String id, String username) throws IOException;
+    boolean removeUserFromProject(String id, String username, boolean keepLastUser) throws IOException;
 
     /**
      * Creates a new project for a user.

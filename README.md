@@ -1,5 +1,5 @@
 # Demo
-* https://staging.my.docear.org/ with credentials docear freeplane537
+* https://staging.my.docear.org/ with credentials docear fki-H-12072013
 
 
 # Continuous Integration

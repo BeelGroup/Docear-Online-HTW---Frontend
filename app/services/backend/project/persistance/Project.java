@@ -30,4 +30,14 @@ public class Project {
     public long getRevision() {
         return revision;
     }
+
+    @Override
+    public String toString() {
+        return "Project{" +
+                "authorizedUsers=" + authorizedUsers +
+                ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", revision=" + revision +
+                '}';
+    }
 }
