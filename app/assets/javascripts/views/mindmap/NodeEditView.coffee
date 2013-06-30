@@ -13,10 +13,46 @@ define ->
       "click .edit-overlay"  : "hideAndSave"
       "click .save"     : "saveChanges"
       "click .cancel"     : "hide"
+      "keydown" : "checkBoundariesOfInputContainer"
  
     constructor:(@nodeModel, @nodeView)->
       @$node = $('#'+@nodeModel.get('id'))
       super()    
+
+    checkBoundariesOfInputContainer:->
+      $editorWindow = @$el.find(".node-editor:first")
+      $toolbar = @$el.find(".editor-toolbar:first")
+
+
+      parentSize = 
+        width: @$el.width()
+        height: @$el.height()
+
+
+      $editorWindow.position()
+
+      currentWidth = if $toolbar.outerWidth() > $editorWindow.outerWidth() then $toolbar.outerWidth() else $editorWindow.outerWidth()
+      maxRightOuterBound = $editorWindow.position().left + currentWidth
+      maxLowerOuterBound = $editorWindow.position().top + $editorWindow.height()
+
+      if $editorWindow.position().left < 0   
+        diffX = $editorWindow.position().left
+      else  
+        checkDiffX = maxRightOuterBound - @$el.width()
+        diffX = if checkDiffX > 0 then checkDiffX else 0
+
+      if $editorWindow.position().top  < 0   
+        diffY = $editorWindow.position().top
+      else  
+        checkDiffY = maxLowerOuterBound - @$el.outerHeight() + $toolbar.outerHeight() + 20
+        diffY = if checkDiffY > 0 then checkDiffY else 0
+
+      @$el.children().stop().animate({
+        'left' : "-="+ diffX
+        'top' : "-="+ diffY
+      }, 500)
+
+
 
     destroy:->
       # http://stackoverflow.com/questions/6569704/destroy-or-remove-a-view-in-backbone-js
@@ -95,7 +131,7 @@ define ->
       $toolbar = $('.editor-toolbar')
       $toolbar.find('a.btn').removeClass('disabled')
       $toolbar.attr('data-target', '#'+editorId)
-      
+
       $toolbarIndoc = $(obj).find('.editor-toolbar-indoc')
       
       offset = @$node.offset()
@@ -119,6 +155,9 @@ define ->
       @$node.children('.inner-node').animate({
         opacity: 0.0
       }, 0)
+
+      @checkBoundariesOfInputContainer()
+
       @
 
     render:->

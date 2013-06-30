@@ -12,6 +12,8 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       @id = @model.get 'id'
       super()
 
+    getRootView:->
+      @rootView
 
     recursiveRender: (parent, nodes, @rootView)->
       if not document.cancel_loading

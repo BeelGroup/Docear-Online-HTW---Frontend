@@ -81,7 +81,7 @@ define ['logger'], (logger) ->
             @rootView.changeFoldedStatus 'both'
           else
             selectedNode.set 'folded', not selectedNode.get 'folded'
-            
+
       Mousetrap.bind document.navigation.key.addSibling, (event)=>
         if !@rootView.model.get('isReadonly') and $('.node-edit-container').size() <= 0
           selectedNode = @rootView.model.getSelectedNode()
@@ -94,17 +94,13 @@ define ['logger'], (logger) ->
               selectedNode.get('parent').createAndAddChild(side)
             else
               selectedNode.get('parent').createAndAddChild()
-            
-      
+
+
       Mousetrap.bind document.navigation.key.addChild, (event)=>
         if !@rootView.model.get('isReadonly')
           selectedNode = @rootView.model.getSelectedNode()
           if selectedNode != null
             selectedNode.createAndAddChild()
-
-
-    getKeycode:(event)->
-      code = if event.keyCode == 0 then event.charCode  else event.keyCode
 
 
     checkBoundaries:->
@@ -349,6 +345,7 @@ define ['logger'], (logger) ->
 
     setRootView:(@rootView)->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false, false)
+      @rootView.on 'updatePositionOfSelectedNode', @centerViewTo
       
       @zoomAmount = 100   
       @currentMapSize = @rootView.getTotalSize()
@@ -356,7 +353,7 @@ define ['logger'], (logger) ->
       @checkBoundaries()
 
 
-    centerViewTo:(selectedNode, shiftInAnyCase = true, center = true)->
+    centerViewTo:(selectedNode, shiftInAnyCase = true, center = true)=>
       $element = $("##{selectedNode.id}")
 
       canvasWidth = $element.width()  * @zoomAmount
@@ -418,7 +415,7 @@ define ['logger'], (logger) ->
 
 
       if shiftInAnyCase or not iCanSeeU
-        @move delta
+        @move delta, false
 
 
     renderAndAppendTo:($element)->

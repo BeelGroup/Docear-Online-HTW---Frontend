@@ -184,7 +184,6 @@ define ->
       if animate then @relatedCanvas.stop().animate stats else @relatedCanvas.css stats
 
     updatePositionFromCanvas:(event, stats)=>
-      document.log 'update'
       resizedPos= 
         x: -stats.position.x /@ratio
         y: -stats.position.y /@ratio
