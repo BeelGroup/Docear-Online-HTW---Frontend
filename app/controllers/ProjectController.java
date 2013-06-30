@@ -90,8 +90,9 @@ public class ProjectController extends DocearController {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final RemoveUserFromProjectData data = filledForm.get();
-            projectService.removeUserFromProject(projectId, data.getUsername());
-            return ok();
+            final boolean keepLastUser = true;
+            final boolean removed = projectService.removeUserFromProject(projectId, data.getUsername(), keepLastUser);
+            return removed ? ok() : status(PRECONDITION_FAILED);
         }
     }
 

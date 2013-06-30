@@ -21,7 +21,7 @@ public interface ProjectService {
 	//Project level
     Project createProject(String username, String name) throws IOException;
 	void addUserToProject(String projectId, String usernameToAdd) throws IOException;
-	void removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
+	boolean removeUserFromProject(String projectId, String usernameToRemove, boolean keepLastUser) throws IOException;
     List<Project> getProjectsFromUser(String username) throws IOException;
 	Project getProjectById(String projectId) throws IOException;
 	

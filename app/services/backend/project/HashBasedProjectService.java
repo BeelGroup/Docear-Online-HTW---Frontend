@@ -68,10 +68,13 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public void removeUserFromProject(String projectId, String usernameToRemove) throws IOException {
-        fileIndexStore.removeUserFromProject(projectId, usernameToRemove);
-        callListenerForChangeForUser(usernameToRemove);
-        callListenersForChangeInProject(projectId);
+    public boolean removeUserFromProject(String projectId, String usernameToRemove, final boolean keepLastUser) throws IOException {
+        final boolean removed = fileIndexStore.removeUserFromProject(projectId, usernameToRemove, keepLastUser);
+        if (removed) {
+            callListenerForChangeForUser(usernameToRemove);
+            callListenersForChangeInProject(projectId);
+        }
+        return removed;
     }
 
     @Override
