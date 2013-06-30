@@ -345,7 +345,6 @@ define ['logger'], (logger) ->
 
     setRootView:(@rootView)->
       @rootView.getElement().on 'newSelectedNode', (event, selectedNode)=> @centerViewTo(selectedNode, false, false)
-      @rootView.on 'updatePositionOfSelectedNode', @centerViewTo
       
       @zoomAmount = 100   
       @currentMapSize = @rootView.getTotalSize()
@@ -415,7 +414,7 @@ define ['logger'], (logger) ->
 
 
       if shiftInAnyCase or not iCanSeeU
-        @move delta, false
+        @move delta
 
 
     renderAndAppendTo:($element)->

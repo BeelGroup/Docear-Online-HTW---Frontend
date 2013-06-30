@@ -47,7 +47,7 @@ define ->
         checkDiffY = maxLowerOuterBound - @$el.outerHeight() + $toolbar.outerHeight() + 20
         diffY = if checkDiffY > 0 then checkDiffY else 0
 
-      @$el.children().stop().animate({
+      @$el.children().animate({
         'left' : "-="+ diffX
         'top' : "-="+ diffY
       }, 500)
