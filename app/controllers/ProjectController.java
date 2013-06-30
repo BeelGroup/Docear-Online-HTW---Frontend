@@ -1,5 +1,6 @@
 package controllers;
 
+import akka.dispatch.Futures;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.ImplementedFeature;
 import controllers.secured.SecuredRest;
@@ -13,11 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
+import play.libs.Akka;
+import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import scala.concurrent.ExecutionContext;
+import scala.concurrent.Future;
 import services.backend.project.ProjectService;
 import services.backend.project.VersionDeltaResponse;
 import services.backend.project.persistance.EntityCursor;
@@ -34,12 +39,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
 @Security.Authenticated(SecuredRest.class)
 public class ProjectController extends DocearController {
+    private final static ExecutionContext listenerContext = Akka.system().dispatchers().lookup("update-listener");
+
     final Form<CreateProjectData> createProjectForm = Form.form(CreateProjectData.class);
     final Form<AddUserToProjectData> addUserToProjectForm = Form.form(AddUserToProjectData.class);
     final Form<RemoveUserFromProjectData> removeUserFromProjectForm = Form.form(RemoveUserFromProjectData.class);
@@ -222,9 +230,10 @@ public class ProjectController extends DocearController {
         return ok(metadataJson);
     }
 
-    public Result listenForUpdates(boolean longPolling) throws IOException {
+    public Result listenForUpdates(final boolean longPolling) throws IOException {
         final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
+        final String username = username();
 
         for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
             final String projectId = entry.getKey();
@@ -235,7 +244,15 @@ public class ProjectController extends DocearController {
             }
         }
 
-        return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap,longPolling).map(new Function<JsonNode, Result>() {
+        Future<JsonNode> future = Futures.future(new Callable<JsonNode>() {
+            @Override
+            public JsonNode call() throws Exception {
+                return projectService.listenIfUpdateOccurs(username, projectRevisonMap, longPolling);
+            }
+        },listenerContext);
+
+        F.Promise<JsonNode> promise = Akka.asPromise(future);
+        return async(promise.map(new Function<JsonNode, Result>() {
             @Override
             public Result apply(JsonNode result) throws Throwable {
                 return ok(result);
