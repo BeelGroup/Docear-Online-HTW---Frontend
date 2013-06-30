@@ -108,9 +108,6 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
       node.set 'autoPersist', false
 
       node.set 'foldedShow', false
-      node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
-      node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
-      node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
 
       node.setEdgestyle(data.edgeStyle)
 
