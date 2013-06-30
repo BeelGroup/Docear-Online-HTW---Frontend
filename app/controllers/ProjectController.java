@@ -90,15 +90,16 @@ public class ProjectController extends DocearController {
             return badRequest(filledForm.errorsAsJson());
         } else {
             final RemoveUserFromProjectData data = filledForm.get();
-            projectService.removeUserFromProject(projectId, data.getUsername());
-            return ok();
+            final boolean keepLastUser = true;
+            final boolean removed = projectService.removeUserFromProject(projectId, data.getUsername(), keepLastUser);
+            return removed ? ok() : status(PRECONDITION_FAILED);
         }
     }
 
-    public Result getFile(String projectId, String path) throws IOException {
+    public Result getFile(String projectId, String path, boolean zipped) throws IOException {
         assureUserBelongsToProject(projectId);
         path = normalizePath(path);
-        return ok(projectService.getFile(projectId, path));
+        return ok(projectService.getFile(projectId, path, zipped));
     }
 
     /**

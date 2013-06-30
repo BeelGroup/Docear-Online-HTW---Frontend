@@ -32,7 +32,7 @@ document.currentZoom = 1
 
 document.initialLoad = false
 document.loadChunkSize = 50
-document.initialLoadChunkSize = 200
+document.initialLoadChunkSize = 2000
 document.sleepTimeOnPartialLoading = 40
 
 document.lockRefresh = 10000

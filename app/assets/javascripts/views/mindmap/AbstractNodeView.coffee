@@ -117,14 +117,15 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
     updateFoldStatus:()->
       @$el.attr('folded', @model.get 'folded')
       if @renderOnExpand
+
         # visible for layouting
         @$el.find('.children:first').toggle()
         (@model.get 'rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+
         # childs will layouted (not rendered) the first and only time here.
         @renderOnExpand = false
-        #@$el.find('.children:first').toggle()
         @switchFoldButtons()
-        #@privateUpdateFoldStatus(true, false, true)
+
       else
         shouldBeVisible = !@model.get('folded')
         domVisible = @$el.children('.children').is ':visible'
@@ -140,7 +141,6 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
 
         @switchFoldButtons()
 
-        #@alignChildrenofElement 
         childrenHeight = $children.outerHeight()
         nodeHeight = $myself.outerHeight()
         

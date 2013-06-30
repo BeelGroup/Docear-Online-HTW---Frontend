@@ -46,7 +46,7 @@ POST	/api/v1/project/listen					@controllers.ProjectController.listenForUpdates(
 
 
 ## files
-GET		/api/v1/project/:projectId/file/*path		@controllers.ProjectController.getFile(projectId: String, path: String)
+GET		/api/v1/project/:projectId/file/*path		@controllers.ProjectController.getFile(projectId: String, path: String, zip : Boolean ?= false)
 PUT		/api/v1/project/:projectId/file/*path		@controllers.ProjectController.putFile(projectId: String, path: String, zip : Boolean ?= false, parentRev : Long ?= -1, contentLength : Long ?= -1)
 POST	/api/v1/project/:projectId/file/*path		@controllers.ProjectController.putFile(projectId: String, path: String, zip : Boolean ?= false, parentRev : Long ?= -1, contentLength : Long ?= -1)
 POST	/api/v1/project/:projectId/create_folder	@controllers.ProjectController.createFolder(projectId: String)

@@ -21,14 +21,14 @@ public interface ProjectService {
 	//Project level
     Project createProject(String username, String name) throws IOException;
 	void addUserToProject(String projectId, String usernameToAdd) throws IOException;
-	void removeUserFromProject(String projectId, String usernameToRemove) throws IOException;
+	boolean removeUserFromProject(String projectId, String usernameToRemove, boolean keepLastUser) throws IOException;
     List<Project> getProjectsFromUser(String username) throws IOException;
 	Project getProjectById(String projectId) throws IOException;
 	
 	
 	
 	//File level
-	InputStream getFile(String projectId, String path) throws IOException;
+	InputStream getFile(String projectId, String path, boolean zipped) throws IOException;
 
     FileMetaData metadata(String projectId, String path) throws IOException;
     EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException;

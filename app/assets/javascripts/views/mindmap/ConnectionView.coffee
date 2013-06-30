@@ -13,30 +13,6 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
       # as long as we dont move the nodes, this can be computet one time here 
       @$parentNode = $('#'+@parentModel.get('id'))
 
-
-    repaintConnection: ()-> 
-      if !@isPainting
-        @isPainting = true
-        @$childNode = $('#'+@childModel.get('id'))
-        if @parentModel.get('id') isnt @childModel.get('parent').get('id')
-          @parentModel = @childModel.get('parent')
-          @$parentNode = $('#'+@parentModel.get('id'))
-        # paint connections, when child is visible
-        if @$childNode.is ':visible'
-          if @$parentNode.size() > 0
-            @isRight = $(@$childNode).hasClass('right')
-            @calculateEndpoints()
-            if !!@oldConnection && @hasChanged()
-              document.log "#{@connection.startX}!=#{@oldConnection.startX} | #{@connection.startY}!=#{@oldConnection.startY} | #{@connection.endX}!=#{@oldConnection.endX} | #{@connection.endY}!=#{@oldConnection.endY}"
-              @oldConnection = @connection
-            ###
-            if @hasChanged()
-              document.log 'repaint connection for'+@childModel.get('id')
-            ### 
-            @positionContainer()
-            @drawConnection()
-        @isPainting = false
-          
     hasChanged: ()->
       result = false
       if !!@oldConnection
@@ -47,6 +23,29 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
       else
         result = true
       result
+
+    repaintConnection: ()->      
+      if !@isPainting
+        @isPainting = true
+        @$childNode = $('#'+@childModel.get('id'))
+        if @parentModel.get('id') isnt @childModel.get('parent').get('id')
+          @parentModel = @childModel.get('parent')
+          @$parentNode = $('#'+@parentModel.get('id'))
+        # paint connections, when child is visible
+        if @$childNode.is ':visible'
+          if @$parentNode.size() > 0
+            @isRight = $(@$childNode).hasClass('right')
+            document.log 'repaint connection for'+@childModel.get('id')    
+            
+            if !!@oldConnection && @hasChanged()
+              document.log "#{@connection.startX}!=#{@oldConnection.startX} | #{@connection.startY}!=#{@oldConnection.startY} | #{@connection.endX}!=#{@oldConnection.endX} | #{@connection.endY}!=#{@oldConnection.endY}"
+              @oldConnection = @connection
+              
+            @calculateEndpoints()
+            @positionContainer()
+            @drawConnection()
+        @isPainting = false
+
       
     getCurrentZoomAmount: ()->
       zoom = document.currentZoom

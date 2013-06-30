@@ -11,6 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -85,8 +86,27 @@ public class MongoFileIndexStoreTest extends MongoTest {
     public void testRemoveUserFromProject() throws Exception {
         final String userToBeRemoved = "Micha";
         assertThat(store.findProjectById(PROJECT_ID).getAuthorizedUsers()).contains(userToBeRemoved);
-        store.removeUserFromProject(PROJECT_ID, userToBeRemoved);
+        store.removeUserFromProject(PROJECT_ID, userToBeRemoved, false);
         assertThat(store.findProjectById(PROJECT_ID).getAuthorizedUsers()).excludes(userToBeRemoved);
+    }
+
+    @Test
+    public void testRemoveUserFromProjectLastSurvives() throws Exception {
+        testCaseForRemoveLastUserOfProject(true);
+    }
+
+    @Test
+    public void testRemoveUserFromProjectLastDeleted() throws Exception {
+        testCaseForRemoveLastUserOfProject(false);
+    }
+
+    private void testCaseForRemoveLastUserOfProject(boolean keepLastUser) throws IOException {
+        final String username = "Micha";
+        final Project project = store.createProject("test", username);
+        assertThat(project.getAuthorizedUsers()).hasSize(1);
+        final boolean removed = store.removeUserFromProject(project.getId(), username, keepLastUser);
+        assertThat(removed).isEqualTo(!keepLastUser);
+        assertThat(store.userBelongsToProject(username, project.getId())).isEqualTo(keepLastUser);
     }
 
     @Test
