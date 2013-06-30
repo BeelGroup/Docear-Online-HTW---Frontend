@@ -22,7 +22,7 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
       if @$childNode.is ':visible'
         if @$parentNode.size() > 0
           @isRight = $(@$childNode).hasClass('right')
-          #document.log 'repaint connection for'+@childModel.get('id')       
+          document.log 'repaint connection for'+@childModel.get('id')       
           @calculateEndpoints()
           @positionContainer()
           @drawConnection()
