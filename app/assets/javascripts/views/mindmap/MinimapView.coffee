@@ -185,8 +185,8 @@ define ->
 
     updatePositionFromCanvas:(event, stats)=>
       resizedPos= 
-        x: -stats.position.x /@ratio
-        y: -stats.position.y /@ratio
+        x: if stats.position.x is false then false else -stats.position.x /@ratio
+        y: if stats.position.y is false then false else -stats.position.y /@ratio
       @updatePosition(resizedPos, stats.animated)
 
     updatePositionClick:(event)->
@@ -234,11 +234,13 @@ define ->
 
     updatePosition:(pos, animated = false)->
       $minimapViewport = @$el.find('.minimap-viewport')
-
-      stats=
-        'left' : "#{pos.x}px"
-        'top'  : "#{pos.y}px"   
-
+      console.log pos
+      stats =  new Object()
+      if pos.x isnt false
+        stats.left = "#{pos.x}px"
+      if pos.y isnt false
+        stats.top = "#{pos.y}px"   
+      console.log stats
       if animated then $minimapViewport.stop().animate stats else $minimapViewport.css stats
 
   module.exports = Minimap

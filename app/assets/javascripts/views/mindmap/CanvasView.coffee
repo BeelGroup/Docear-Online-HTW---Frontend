@@ -21,7 +21,7 @@ define ['logger'], (logger) ->
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
         if document.strgPressed is off
           if deltaY > 0 then dir = 1 else dir = -1 
-          @move({x: 0, y: document.scrollStep*dir}, false, document.scrollDuration)
+          @move({x: false, y: document.scrollStep*dir}, false, document.scrollDuration)
           event.preventDefault() 
 
       Mousetrap.bind document.navigation.key.strg, (event)=>
@@ -207,27 +207,30 @@ define ['logger'], (logger) ->
 
     move:(delta, animated = true, time = 200)->
       pos=
-        x: parseFloat(@$el.css 'left') + delta.x
-        y: parseFloat(@$el.css 'top')  + delta.y
+        x: if delta.x is false then false else parseFloat(@$el.css 'left') + delta.x
+        y: if delta.y is false then false else parseFloat(@$el.css 'top')  + delta.y
 
       @moveTo pos, animated, time
 
 
     moveTo:(position, animated, time = 200)->
+      newPos = new Object()
+      if position.x isnt false
+        newPos.left = "#{position.x}px"
+      if position.y isnt false
+        newPos.top =  "#{position.y}px"
+
       if $.browser.chrome
         @calculateBrowserZoom()
         if(@browserZoom > 1.05 && @browserZoom < 0.95) then animated = false
-        position=
-          x: position.x * 1/@browserZoom
-          y: position.y * 1/@browserZoom
+        position.x = if position.x is false then false else position.x * 1/@browserZoom
+        position.y = if position.y is false then false else position.y * 1/@browserZoom
 
       if animated
-        @$el.animate {'left':"#{position.x}px",'top':"#{position.y}px"}, {duration: time, queue: true}
+        @$el.animate newPos, {duration: time, queue: true}
       else
         @$el.stop()
-        @$el.css
-          'left'  : "#{position.x}px"
-          'top'   : "#{position.y}px" 
+        @$el.css newPos
 
       @$el.trigger 'canvasWasMovedTo', stats= position: position, animated: true
 
