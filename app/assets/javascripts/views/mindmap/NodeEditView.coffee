@@ -13,10 +13,49 @@ define ->
       "click .edit-overlay"  : "hideAndSave"
       "click .save"     : "saveChanges"
       "click .cancel"     : "hide"
+      "keydown" : "checkBoundariesOfInputContainer"
  
     constructor:(@nodeModel, @nodeView)->
       @$node = $('#'+@nodeModel.get('id'))
       super()    
+
+    checkBoundariesOfInputContainer:(cancelAnimations = true)->
+      $editorWindow = @$el.find(".node-editor:first")
+      $toolbar = @$el.find(".editor-toolbar:first")
+
+
+      parentSize = 
+        width: @$el.width()
+        height: @$el.height()
+
+
+      $editorWindow.position()
+
+      currentWidth = if $toolbar.outerWidth() > $editorWindow.outerWidth() then $toolbar.outerWidth() else $editorWindow.outerWidth()
+      maxRightOuterBound = $editorWindow.position().left + currentWidth
+      maxLowerOuterBound = $editorWindow.position().top + $editorWindow.height()
+
+      if ($editorWindow.position().left - 20) < 0   
+        diffX = $editorWindow.position().left - 20
+      else  
+        checkDiffX = maxRightOuterBound - @$el.width() + 20
+        diffX = if checkDiffX > 0 then checkDiffX else 0
+
+      if ($editorWindow.position().top - 20)  < 0   
+        diffY = $editorWindow.position().top - 20
+      else  
+        checkDiffY = maxLowerOuterBound - @$el.outerHeight() + $toolbar.outerHeight() + 20
+        diffY = if checkDiffY > 0 then checkDiffY else 0
+
+      if cancelAnimations
+        @$el.children().stop()
+
+      @$el.children().animate({
+          'left' : "-="+ diffX
+          'top' : "-="+ diffY
+        }, 200)
+
+
 
     destroy:->
       # http://stackoverflow.com/questions/6569704/destroy-or-remove-a-view-in-backbone-js
@@ -95,7 +134,7 @@ define ->
       $toolbar = $('.editor-toolbar')
       $toolbar.find('a.btn').removeClass('disabled')
       $toolbar.attr('data-target', '#'+editorId)
-      
+
       $toolbarIndoc = $(obj).find('.editor-toolbar-indoc')
       
       offset = @$node.offset()
@@ -119,6 +158,7 @@ define ->
       @$node.children('.inner-node').animate({
         opacity: 0.0
       }, 0)
+
       @
 
     render:->
@@ -166,15 +206,15 @@ define ->
         else if($.inArray('WebkitTransform', possibilities) or 
         $.inArray('MozTransform', inpossibilities) or 
         $.inArray('OTransform', possibilities)) 
-          $($elem).animate {
+          me = @
+          $($elem).animate(
             'scale' : scaleAmount
             'top' : "-="+deltaTop
             'left' : "-="+deltaLeft
-          }, 0, ->
-            if scaleAmount < 1
-              $($elem).animate {
+          , 0).animate 
                 'scale' : 1
-              }, 500
+              , 500, "swing", =>
+                @checkBoundariesOfInputContainer()
         else
           fallback = true
   
@@ -184,5 +224,8 @@ define ->
           if lastScaleAmount != scaleAmount
             if scaleAmount > lastScaleAmount then scaleDiff = 25 else scaleDiff = -25
             $($elem).effect 'scale', {percent: 100 + scaleDiff, origin: ['middle','center']}, 1, => @refreshDom()
+
+      else
+        @checkBoundariesOfInputContainer()
 
   module.exports = NodeEdit

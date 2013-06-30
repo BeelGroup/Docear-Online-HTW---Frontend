@@ -104,7 +104,7 @@ define ['logger', 'NodeFactory', 'models/mindmap/RootNode', 'models/mindmap/Node
         invokedata:
           maploader: @
           parentToLoadNode: parentToLoadNode
-        url: correctURL
+        url: href
         type: 'GET',
         async: true,
         dataType: "json"

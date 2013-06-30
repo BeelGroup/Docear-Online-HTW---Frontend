@@ -13,6 +13,9 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
       @currentScale = 100
       @scaleAmount = 1.0
 
+    getModel:->
+      @model
+
     addEvents:()->
       @$el.click (event)=> 
         @handleClick(event)
