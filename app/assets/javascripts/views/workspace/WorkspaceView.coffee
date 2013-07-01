@@ -155,6 +155,11 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       @._show_input(obj, (obj, new_name, old_name)-> 
         f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
 
+        nameEnding = new_name.substring(new_name.lastIndexOf('.')+1)
+        if nameEnding isnt 'mm'
+          new_name += '.mm'
+        $("#workspace-tree").jstree('rename_node', obj[0] , new_name)
+        
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
         currentPath = $parent.attr('id')
