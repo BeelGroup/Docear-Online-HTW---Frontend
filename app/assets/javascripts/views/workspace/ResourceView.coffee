@@ -55,6 +55,7 @@ define ['logger'], (logger) ->
     
     render:()->
       @path = @model.get 'path'
+      iconClass = ''
       # root folde was already rendered with projekt template
       if @path isnt "/"
         # extract parentpath in order to find parent dom node via id
@@ -70,12 +71,14 @@ define ['logger'], (logger) ->
 
         classes = 'resource '
         if @model.get 'dir'
-          classes += 'folder '
+          classes += 'folder '        
         else
           classes += 'file '
+          iconClass = 'icon-file'
 
         if @path.indexOf(".mm") isnt -1
           classes += 'mindmap-file '
+          iconClass = 'icon-pencil'
 
         thisState = 'leaf'
         if @model.get 'dir'
@@ -84,6 +87,11 @@ define ['logger'], (logger) ->
         newNode = { attr: {class: classes, id: @path}, state: thisState, data: @model.get('filename') }
         obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
         @addBindingsTo(obj, @path.replace new RegExp("/", "g"))
+
+        # add icon class to resource
+        obj.find('a .jstree-icon').addClass(iconClass)
+        # $('#workspace-tree').find('li.file > a .jstree-icon').addClass('icon-star')
+        #console.log obj.find('.jstree-icon:last').addClass('icon-user icon-white')
 
       @_rendered = true
  
