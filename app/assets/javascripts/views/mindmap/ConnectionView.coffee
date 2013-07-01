@@ -8,24 +8,43 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
 
     constructor: (@parentModel, @childModel) ->
       super()
+      @isPainting = false
       @childModel.bind "updateConnection",@repaintConnection , @
       # as long as we dont move the nodes, this can be computet one time here 
       @$parentNode = $('#'+@parentModel.get('id'))
 
+    hasChanged: ()->
+      result = false
+      if !!@oldConnection
+        result = result or @connection.startX isnt @oldConnection.startX 
+        result = result or @connection.startY isnt @oldConnection.startY 
+        result = result or @connection.endX isnt @oldConnection.endX
+        result = result or @connection.endY isnt @oldConnection.endY
+      else
+        result = true
+      result
 
     repaintConnection: ()->      
-      @$childNode = $('#'+@childModel.get('id'))
-      if @parentModel.get('id') isnt @childModel.get('parent').get('id')
-        @parentModel = @childModel.get('parent')
-        @$parentNode = $('#'+@parentModel.get('id'))
-      # paint connections, when child is visible
-      if @$childNode.is ':visible'
-        if @$parentNode.size() > 0
-          @isRight = $(@$childNode).hasClass('right')
-          document.log 'repaint connection for'+@childModel.get('id')       
-          @calculateEndpoints()
-          @positionContainer()
-          @drawConnection()
+      if !@isPainting
+        @isPainting = true
+        @$childNode = $('#'+@childModel.get('id'))
+        if @parentModel.get('id') isnt @childModel.get('parent').get('id')
+          @parentModel = @childModel.get('parent')
+          @$parentNode = $('#'+@parentModel.get('id'))
+        # paint connections, when child is visible
+        if @$childNode.is ':visible'
+          if @$parentNode.size() > 0
+            @isRight = $(@$childNode).hasClass('right')
+            document.log 'repaint connection for'+@childModel.get('id')    
+            
+            if !!@oldConnection && @hasChanged()
+              document.log "#{@connection.startX}!=#{@oldConnection.startX} | #{@connection.startY}!=#{@oldConnection.startY} | #{@connection.endX}!=#{@oldConnection.endX} | #{@connection.endY}!=#{@oldConnection.endY}"
+              @oldConnection = @connection
+              
+            @calculateEndpoints()
+            @positionContainer()
+            @drawConnection()
+        @isPainting = false
 
       
     getCurrentZoomAmount: ()->
@@ -42,6 +61,8 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
         height : $($node).outerHeight()
 
     calculateEndpoints: ()->
+      @oldConnection = @connection
+      
       strokeWidth = document.graph.defaultWidth
       zoom = @getCurrentZoomAmount()
       

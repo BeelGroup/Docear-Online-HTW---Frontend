@@ -21,7 +21,6 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     loadMap: (@projectId, @mapId) ->
       if @mapLoader isnt undefined
         @mapLoader.stop()
-
       document.log "Load map #{@mapId} from project #{@projectId} (Mapview.loadMap())" 
       @href = jsRoutes.controllers.MindMap.mapAsJson(@projectId, encodeURIComponent(@mapId), document.initialLoadChunkSize).url
 
@@ -57,7 +56,8 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
 
 
     parseAndRenderMapByJsonData: (data)=>
-      $('.current-mindmap-name').text(data.name)
+      mapId = @mapId.substring(@mapId.lastIndexOf('/')+1);
+      $('.current-mindmap-name').text(mapId)
      
       @mapLoader = new MapLoader data, @projectId, @mapId
 
