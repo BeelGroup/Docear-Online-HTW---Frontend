@@ -199,8 +199,6 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       children = @model.get 'children'
       childsToLoad = @model.get 'childsToLoad'
 
-      console.log children.length
-      console.log @model.get 'folded'
       
       # if there are already informations about cholds in the model: render them
       if children isnt undefined and children.length > 0

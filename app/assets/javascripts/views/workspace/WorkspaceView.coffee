@@ -36,7 +36,10 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
             aIsFolder = $(a).hasClass('folder')
             bIsFolder = $(b).hasClass('folder')
 
-            aIsBigger = @.get_text(a).toLowerCase() > @.get_text(b).toLowerCase()
+            valTextA = @.get_text(a).toLowerCase()
+            valTextB = @.get_text(b).toLowerCase()
+
+            aIsBigger = valTextA > valTextB
 
             if aIsBigger
               if bIsFolder
@@ -99,12 +102,12 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       @$workspaceTree.jstree "select_node", node, true
 
       #add default items
-      items = 
-        deleteItem:
-          label: "Remove",
-          separator_before  : false,
-          separator_after : true,
-          action: -> document.log 'Please implement a remove function for this type of node'
+      items = new Object()
+
+      if ($(node).hasClass("mindmap-file"))
+        items.addFile =  # upload
+          label: "Open mindmap",
+          action: @openMindmap
 
       if ($(node).hasClass("folder")) 
         items.createMapItem = 
@@ -116,36 +119,30 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         items.addFolder =  
           label: "Add folder",
           action: @requestAddFolder
-        items.deleteItem.label = "Delete folder"
-        items.deleteItem.action = @requestRemoveFolderOrFile
-
-      if ($(node).hasClass("mindmap-file"))
-        items.addFile =  # upload
-          label: "Open mindmap",
-          action: @openMindmap
-        items.deleteItem.label = "Delete mindmap"
+        items.deleteItem =
+          separator_before: true
+          label: "Delete folder"
+          action: @requestRemoveFolderOrFile
 
       if($(node).hasClass("users"))
         items.addUserItem =
           label: "Add user",
           action: @requestAddUser
-        # Users directory should not be deleted!
-        delete items.deleteItem
-
-      if($(node).hasClass("resources"))
-        delete items.deleteItem
 
       if($(node).hasClass("file"))
-        items.deleteItem.action = @requestRemoveFolderOrFile
-        items.deleteItem.label = "Delete file"
-
         items.downloadItem = 
           label: "Download file"
           action: @requestDownloadItem
+        items.deleteItem = 
+          separator_before: true
+          label: "Delete file"
+          action: @requestRemoveFolderOrFile
 
       if($(node).hasClass("user"))
-        items.deleteItem.action = @requestRemoveUser
-        items.deleteItem.label = "Delete user"
+        items.deleteItem =
+          separator_before: true
+          label: "Delete user"
+          action:  @requestRemoveUser
 
       items
 
