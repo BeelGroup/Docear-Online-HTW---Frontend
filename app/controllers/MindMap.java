@@ -5,6 +5,7 @@ import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.frontend.formdata.*;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.docear.messages.Messages;
@@ -174,11 +175,12 @@ public class MindMap extends DocearController {
         Logger.debug("MindMap.fetchUpdatesSinceRevision <- projectId= " + projectId + "; mapId=" + mapId + "; revision: " + revision);
 
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
-        final F.Promise<String> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(userIdentifier(), mapIdentifier, revision);
-        return async(updatePromise.map(new F.Function<String, Result>() {
+        final F.Promise<JsonNode> updatePromise = mindMapCrudService.fetchUpdatesSinceRevision(userIdentifier(), mapIdentifier, revision);
+        return async(updatePromise.map(new F.Function<JsonNode, Result>() {
             @Override
-            public Result apply(String updates) throws Throwable {
-                return ok(updates.replaceAll("\"\\{", "\\{").replaceAll("\\}\"", "\\}").replace("\\\"", "\""));
+            public Result apply(JsonNode updates) throws Throwable {
+                //return ok(updates.replaceAll("\"\\{", "\\{").replaceAll("\\}\"", "\\}").replace("\\\"", "\""));
+                return ok(updates);
             }
         }));
     }
