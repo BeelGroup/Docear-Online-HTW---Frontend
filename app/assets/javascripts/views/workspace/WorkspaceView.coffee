@@ -32,6 +32,29 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
 
         @$workspaceTree.jstree({
           plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd", "sort"],
+          sort: (a,b)-> 
+            aIsFolder = $(a).hasClass('folder')
+            bIsFolder = $(b).hasClass('folder')
+
+            aIsBigger = @.get_text(a).toLowerCase() > @.get_text(b).toLowerCase()
+
+            if aIsBigger
+              if bIsFolder
+                if aIsFolder
+                  1
+                else
+                  -1
+              else
+                -1
+            else
+              if aIsFolder
+                if bIsFolder
+                  -1
+                else
+                  1
+              else
+                1
+
           contextmenu: {items: @customMenu},
           ui: 
             select_limit: 1
