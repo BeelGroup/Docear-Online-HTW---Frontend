@@ -31,7 +31,7 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
 
         @$workspaceTree.jstree({
-          plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd"],
+          plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd", "sort"],
           contextmenu: {items: @customMenu},
           ui: 
             select_limit: 1
@@ -449,8 +449,8 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       obj = $("#workspace-tree").jstree("create","#workspace-tree","last","new_name", false, true)
       $(obj).addClass('project temp-project delete-me-on-update')
       $("#workspace-tree").jstree("rename",obj)
-      
-     
+
+
     events:
       "click .add-project-toggle" : "newProject"
       "click .upload-file" : "actionUpload"
