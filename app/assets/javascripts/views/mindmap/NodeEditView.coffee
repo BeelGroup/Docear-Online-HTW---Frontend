@@ -212,7 +212,7 @@ define ->
             'top' : "-="+deltaTop
             'left' : "-="+deltaLeft
           , 0).animate 
-                'scale' : 1
+                'scale' : if document.currentZoom < 1 then 1 else document.currentZoom
               , 500, "swing", =>
                 @checkBoundariesOfInputContainer()
         else
