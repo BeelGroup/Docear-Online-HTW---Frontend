@@ -9,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import play.Logger;
-import play.libs.Akka;
-import play.libs.F;
-import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
 import services.backend.project.persistance.*;
 
@@ -369,7 +366,7 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public F.Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
+    public JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
         final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
         for (String projectId : projectRevisionMap.keySet()) {
             final Project project = fileIndexStore.findProjectById(projectId);
@@ -379,8 +376,6 @@ public class HashBasedProjectService implements ProjectService {
         }
 
         final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, projectUserMap, username);
-
-        final Promise<JsonNode> promise = Akka.future(callable);
 
         if (longPolling) {
             // put in listener maps
@@ -402,7 +397,12 @@ public class HashBasedProjectService implements ProjectService {
             callable.send();
         }
 
-        return promise;
+        try {
+            return callable.call();
+        } catch (Exception e) {
+            Logger.error("error in listen route! ",e);
+            return null;
+        }
     }
 
     private void callListenersForChangeInProject(String projectId) {
