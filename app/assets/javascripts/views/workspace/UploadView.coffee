@@ -48,14 +48,13 @@ define ['logger'], (logger) ->
                 url: jsRoutes.controllers.ProjectController.putFile(@projectId, @path+filename, false, revision).url
                 type: 'PUT'
                 processData: false
-                enctype: 'application/text'
-                contentType: 'application/text'
+                contentType: 'application/octet-stream'
                 data: event.target.result
                 dataType: 'json'
                 success: (data)->
                   $("li.uploaded-file input[value*='#{data.path}']").parent().find(".status").text("Done").addClass('alert-success')
               })
-            reader.readAsText(f);
+            reader.readAsArrayBuffer(f);
           tempFunc(f)
       
       $form.find('.file-to-upload').change (evt)=>

@@ -9,6 +9,7 @@ import models.backend.UserMindmapInfo;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.NoUserLoggedInException;
 import models.backend.exceptions.sendResult.PreconditionFailedException;
+import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -420,6 +421,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
                     throw new PreconditionFailedException("No lock on node", e);
                 } else if (e instanceof NodeAlreadyLockedException) {
                     throw new PreconditionFailedException("Node already locked by another user", e);
+                } else if (e instanceof  NodeNotFoundException) {
+                    throw new SendResultException("Node does not exist",400);
                 } else {
                     throw new RuntimeException(e);
                 }
