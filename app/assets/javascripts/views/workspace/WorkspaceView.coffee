@@ -16,7 +16,7 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
     resize:(widthAndHeight)->
       @$el.css
         height: widthAndHeight.height
-        
+
     initialize : ()->
       @projectViews = []
       @model.each (project)=>
@@ -122,10 +122,11 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
         items.addFolder =  
           label: "Add folder",
           action: @requestAddFolder
-        items.deleteItem =
-          separator_before: true
-          label: "Delete folder"
-          action: @requestRemoveFolderOrFile
+        if not ($(node).hasClass("resources"))
+          items.deleteItem =
+            separator_before: true
+            label: "Delete folder"
+            action: @requestRemoveFolderOrFile
 
       if($(node).hasClass("users"))
         items.addUserItem =
