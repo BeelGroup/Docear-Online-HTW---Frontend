@@ -2,6 +2,7 @@ package services.backend.mindmap;
 
 import models.backend.exceptions.DocearServiceException;
 import org.apache.commons.lang.NotImplementedException;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.models.MapIdentifier;
@@ -107,12 +108,12 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Promise<String> fetchUpdatesSinceRevision(UserIdentifier user, MapIdentifier mapIdentifier, Integer revision) {
+	public Promise<JsonNode> fetchUpdatesSinceRevision(UserIdentifier user, MapIdentifier mapIdentifier, Integer revision) {
 		final String updates = "{\"currentRevision\":"
 				+ revision
 				+ 4
 				+ ",\"orderedUpdates\":[{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":\"online-demo\"},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"folded\",\"value\":true},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"nodeText\",\"value\":\"New Text\"},{\"type\":\"ChangeNodeAttribute\",\"nodeId\":\"ID_1\",\"attribute\":\"locked\",\"value\":null}]}";
-		return Promise.pure(updates);
+		return Promise.pure((JsonNode)new ObjectMapper().createObjectNode());
 	}
 
 	@Override

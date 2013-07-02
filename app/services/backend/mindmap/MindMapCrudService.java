@@ -5,6 +5,7 @@ import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
 
+import org.codehaus.jackson.JsonNode;
 import org.docear.messages.Messages;
 import org.docear.messages.models.MapIdentifier;
 import org.docear.messages.models.UserIdentifier;
@@ -27,7 +28,7 @@ public interface MindMapCrudService {
 
 	Promise<Boolean> requestLock(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId);
 	Promise<Boolean> releaseLock(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId);
-	Promise<String> fetchUpdatesSinceRevision(UserIdentifier user, MapIdentifier mapIdentifier, Integer revision);
+	Promise<JsonNode> fetchUpdatesSinceRevision(UserIdentifier user, MapIdentifier mapIdentifier, Integer revision);
 
 	/**
 	 * Creates and adds a node to a map on the given parent 

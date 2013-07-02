@@ -12,8 +12,10 @@ import models.backend.exceptions.sendResult.PreconditionFailedException;
 import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.docear.messages.Messages;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 import org.docear.messages.Messages.*;
 import org.docear.messages.exceptions.MapNotFoundException;
 import org.docear.messages.exceptions.NodeAlreadyLockedException;
@@ -34,7 +36,6 @@ import play.mvc.Controller;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
-import scala.concurrent.impl.Promise$;
 import services.backend.project.ProjectService;
 import services.backend.project.persistance.EntityCursor;
 import services.backend.user.UserService;
@@ -45,7 +46,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipInputStream;
 
 import static akka.pattern.Patterns.ask;
@@ -175,7 +175,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
             //return response.getResult();
         } catch (InterruptedException e) {
             return false;
-        } catch(TimeoutException e) {
+        } catch(Exception e) {
             return false;
         }
     }
@@ -266,17 +266,26 @@ public class ServerMindMapCrudService implements MindMapCrudService {
     }
 
     @Override
-    public Promise<String> fetchUpdatesSinceRevision(UserIdentifier userIdentifier, MapIdentifier mapIdentifier, Integer revision) {
+    public Promise<JsonNode> fetchUpdatesSinceRevision(UserIdentifier userIdentifier, MapIdentifier mapIdentifier, Integer revision) {
         Logger.debug("ServerMindMapCrudService.fetchUpdatesSinceRevision => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier + "; revision: " + revision
                 + "; user.getUsername(): " + userIdentifier.getUsername());
         final FetchMindmapUpdatesRequest request = new FetchMindmapUpdatesRequest(userIdentifier, mapIdentifier, revision);
 
-        return performActionOnMindMap(request, new ActionOnMindMap<String>() {
+        return performActionOnMindMap(request, new ActionOnMindMap<JsonNode>() {
             @Override
-            public Promise<String> perform(Promise<Object> promise) throws Exception {
+            public Promise<JsonNode> perform(Promise<Object> promise) throws Exception {
                 final FetchMindmapUpdatesResponse response = (FetchMindmapUpdatesResponse) promise.get();
-                final String json = new ObjectMapper().writeValueAsString(response);
-                return Promise.pure(json);
+                final ObjectMapper objectMapper = new ObjectMapper();
+                final ObjectNode jsonNode = objectMapper.createObjectNode();
+                final ArrayNode updates = objectMapper.createArrayNode();
+                for(String json : response.getOrderedUpdates()) {
+                    updates.add(objectMapper.readTree(json));
+                }
+
+                jsonNode.put("currentRevision",response.getCurrentRevision());
+                jsonNode.put("orderedUpdates",updates);
+
+                return Promise.pure((JsonNode)jsonNode);
             }
         });
     }
