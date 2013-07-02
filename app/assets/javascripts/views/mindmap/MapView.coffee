@@ -9,13 +9,19 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
 
     constructor:(@id)->
       super()
-      $(window).on('resize', @resizeViewport)
+      $(window).on('resize', => 
+        @resizeWorkspace(@resizeViewport())
+        )
 
 
     resizeViewport:=>
-      @updateWidthAndHeight()
+      computetStats = @updateWidthAndHeight()
       if typeof @minimap != 'undefined'
         @minimap.setViewportSize()
+      computetStats
+
+    resizeWorkspace:(widthAndHeight)=>
+      @workspaceView.resize(widthAndHeight)
 
 
     loadMap: (@projectId, @mapId) ->
@@ -165,26 +171,22 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         width = container.width()
         height = container.height()
 
-      container.css
+      stats=
         width:  width+'px'
         height: height+'px'
 
-      mindmapContainer.css
-        width:  width+'px'
-        height: height+'px'
-
-      @$el.css
-        width:  width+'px'
-        height: height+'px'
+      container.css stats
+      mindmapContainer.css stats
+      @$el.css stats
 
       if typeof @canvas isnt 'undefined'
         @canvas.updateDragBoundaries()
 
+      stats
 
     render:(@forceFullscreen)->
       @$el.parent().fadeIn()
       @updateWidthAndHeight()
-
 
     renderSubviews:()->
       $viewport = @$el
@@ -207,7 +209,8 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         @workspaceUpdateHandler = new WorkspaceUpdateHandler(@workspace)
         @workspaceUpdateHandler.listen(5000)
         
-
+        @resizeWorkspace(@resizeViewport())
+        
       @addLoadingOverlay()
 
 

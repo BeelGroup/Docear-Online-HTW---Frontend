@@ -13,7 +13,10 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
       @model.bind "add", @add , @   
       @_rendered = false
 
-
+    resize:(widthAndHeight)->
+      @$el.css
+        height: widthAndHeight.height
+        
     initialize : ()->
       @projectViews = []
       @model.each (project)=>
