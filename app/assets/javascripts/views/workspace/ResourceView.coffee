@@ -14,7 +14,7 @@ define ['logger'], (logger) ->
       # not very efficient, but currently the best solution
       $('#workspace-tree').bind("open_node.jstree", (event, data)=>
           # if opened node id equals my id
-          if @path == $(data.args[0][0]).attr('id')
+          if @prefixedId == $(data.args[0][0]).attr('id')
             @updateChilds()
       )
 
@@ -30,6 +30,7 @@ define ['logger'], (logger) ->
     getCleanedPath:(dirtyPath)->
       cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
       cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
+      cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
 
     add:(model)->
       resourceView = new ResourceView(model, @projectView, @$el)
@@ -49,10 +50,11 @@ define ['logger'], (logger) ->
     remove:(resourceToDelete)->
       document.log "Trying to remove node "+resourceToDelete.id
 
-      cleanPath = @getCleanedPath resourceToDelete.id
+      cleanPath = @getCleanedPath resourceToDelete.get 'prefixedId'
       $objToDelete = $("#"+cleanPath)
       $('#workspace-tree').jstree("delete_node", $objToDelete)
-    
+        
+
     render:()->
       @path = @model.get 'path'
       iconClass = ''
@@ -66,8 +68,9 @@ define ['logger'], (logger) ->
         else
           parentPath = "/"
 
-        cleanParentPath = parentPath.replace new RegExp("/", "g"), "\\/"
-        $parent = $("#"+@projectView.getId()).find "#" + cleanParentPath
+
+        @cleanPath = @getCleanedPath parentPath
+        $parent = $("#"+@projectView.getId()).find "#" + @projectView.getIdPrefix() + @cleanPath
 
         classes = 'resource '
         if @model.get 'dir'
@@ -84,14 +87,15 @@ define ['logger'], (logger) ->
         if @model.get 'dir'
           thisState = 'closed'
 
-        newNode = { attr: {class: classes, id: @path}, state: thisState, data: @model.get('filename') }
+        @prefixedId = @projectView.getId() + "_PATH_" + @path
+        @model.set 'prefixedId', @prefixedId
+        newNode = { attr: {class: classes, id: @prefixedId}, state: thisState, data: @model.get('filename') }
         obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
         @addBindingsTo(obj, @path.replace new RegExp("/", "g"))
 
         # add icon class to resource
         obj.find('a .jstree-icon').addClass(iconClass)
-        # $('#workspace-tree').find('li.file > a .jstree-icon').addClass('icon-star')
-        #console.log obj.find('.jstree-icon:last').addClass('icon-user icon-white')
+
 
       @_rendered = true
  

@@ -25,6 +25,9 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
         
     element:-> @$el
 
+    getIdPrefix:->
+      @model.get 'idPrefix'
+
     getId:->
       @id
     

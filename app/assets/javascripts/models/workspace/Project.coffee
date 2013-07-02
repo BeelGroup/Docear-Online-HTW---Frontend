@@ -13,6 +13,8 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Resources'
       @set 'name', data.name
       @set 'revision', data.revision
       
+      @set 'idPrefix', data.id+"_PATH_"
+
       @setUsers data.authorizedUsers
     
     update: ()->

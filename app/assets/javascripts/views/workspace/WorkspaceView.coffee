@@ -1,4 +1,4 @@
-define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'views/workspace/UploadView'], (logger, Project, ProjectView, UploadView) ->
+define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], (logger, ProjectView, UploadView) ->
   module = () ->
 
   class Workspace extends Backbone.View
@@ -33,8 +33,8 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         @$workspaceTree.jstree({
           plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd", "sort"],
           sort: (a,b)-> 
-            aIsFolder = $(a).hasClass('folder')
-            bIsFolder = $(b).hasClass('folder')
+            aIsNotFolder = not $(a).hasClass('folder')
+            bIsNotFolder = not $(b).hasClass('folder')
 
             valTextA = @.get_text(a).toLowerCase()
             valTextB = @.get_text(b).toLowerCase()
@@ -42,21 +42,21 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
             aIsBigger = valTextA > valTextB
 
             if aIsBigger
-              if bIsFolder
-                if aIsFolder
+              if bIsNotFolder
+                if aIsNotFolder
                   1
                 else
                   -1
-              else
-                -1
-            else
-              if aIsFolder
-                if bIsFolder
-                  -1
-                else
-                  1
               else
                 1
+            else
+              if aIsNotFolder
+                if bIsNotFolder
+                  -1
+                else
+                  1
+              else
+                -1
 
           contextmenu: {items: @customMenu},
           ui: 
@@ -151,12 +151,13 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       #projectId
       #mapId
       $project = $(obj).closest('li.project')
+      path = obj.attr('id').substr(obj.attr('id').indexOf("_PATH_")+6)
 
       itemData = 
         projectId : $project.attr('id')
         # get text from node and remove whitespaces
         name : obj.text().replace /\s/g, ''
-        path: obj.attr('id')
+        path: path
 
       document.log "Trying to open mindmap \'"+itemData.name+"\' from project \'"+itemData.projectId+"\' (WorkspaceView.openMindmap()"
       location.href = "/#project/#{itemData.projectId}/map/#{itemData.path}"
@@ -182,11 +183,15 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
+
         currentPath = $parent.attr('id')
+        currentPath = currentPath.substr(currentPath.indexOf("_PATH_")+6)
+
         if currentPath isnt "/"
-          $path = $parent.attr("id")+"/"+new_name 
+          $path = currentPath+"/"+new_name 
         else
-          $path = $parent.attr("id")+new_name 
+          $path = currentPath+new_name 
+
         # set path as id -> so it will be found and can be removed on update from server
         $(obj).attr("id", $path)
         # build path
@@ -231,6 +236,8 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       if parentPath isnt projectId and parentPath isnt path
         path = parentPath+'/'
       
+      path = path.substr(path.indexOf("_PATH_")+6)
+
       if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
         uploadView = new UploadView(projectId, path, @model);
         uploadView.appendAndRender @$el
@@ -252,15 +259,16 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       @.__rollback()
       f = @.__callback
       @._show_input(obj, (obj, new_name, old_name)-> 
-        $('#workspace-tree').jstree('deselect_all')
-        $('#workspace-tree').jstree("select_node", "#fuadadeimuada")
 
         f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
-
+        #$('#workspace-tree').jstree('deselect_all')
+        #$('#workspace-tree').jstree("select_node", "#fuadadeimuada")
         $parent  = $(obj).parent().parent()
 
         $project = $($parent).closest('li.project')
         currentPath = $parent.attr('id')
+        currentPath = currentPath.substr(currentPath.indexOf("_PATH_")+6)
+
 
         if currentPath isnt "/"
           $path = $parent.attr("id")+"/"+new_name 
@@ -341,16 +349,18 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
 
     requestDownloadItem: ()=>
       itemData = @getSelectedItemData()
-      window.open(jsRoutes.controllers.ProjectController.getFile(itemData.projectId, itemData.path).url);
+      currentPath = itemData.path.substr(itemData.path.indexOf("_PATH_")+6)
+      window.open(jsRoutes.controllers.ProjectController.getFile(itemData.projectId, currentPath).url);
 
     requestRemoveFolderOrFile:()=>
       itemData = @getSelectedItemData()
+      currentPath = itemData.path.substr(itemData.path.indexOf("_PATH_")+6)
 
       params = 
         url: jsRoutes.controllers.ProjectController.deleteFile(itemData.projectId).url
         type: 'DELETE'
         cache: false
-        data: "path": itemData.path
+        data: "path": currentPath
         success:(data)=>
           document.log "SUCCESS: The file \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
         error:()=>
@@ -370,11 +380,21 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
     requestMoveResource:(event, data)=>
       # get node informations
       oldPath = $(data.args[0].o).attr('id')
+      oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
+
       name = data.args[0].o.text().replace /\s/g, ''
+
       newParent = $(data.args[0].np).attr('id')
-      if newParent is "/"
-        newParent =  ""
-      newPath = newParent+"/"+name
+      newParent = newParent.substr(newParent.indexOf("_PATH_")+6)
+
+      #if oldPath is "/"+name
+        #oldPath =  ""
+      oldPath = oldPath.substr(0, oldPath.indexOf(name))
+      newPath = newParent.substr(0, newParent.indexOf(name))
+
+  #    if newParent is "/"
+ #       newParent =  ""
+#      newPath = newParent+"/"+name
 
       projectId = $(data.args[0].o).closest('li.project').attr('id')
 
@@ -382,10 +402,9 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
         url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
         type: 'POST'
         cache: false
-        data: "currentPath": oldPath, "moveToPath": newPath, "name": name
+        data: "currentPath": oldPath, "moveToPath": newParent, "name": name
 
-        success:(data)=>
-
+        success:()=>
           document.log "SUCCESS: Resource \'"+name+"\' was be moved from "+oldPath+" to "+newPath
         error:()=>
           document.log "ERROR: resource \'"+name+"\' could not be moved from "+oldPath+" to "+newPath
