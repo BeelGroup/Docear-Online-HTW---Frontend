@@ -242,8 +242,9 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'folder delete-me-on-update'}, state: "closed", data: "New folder" }
+      newNode = { attr: {class: 'folder delete-me-on-update', id:'fuadadeimuada'}, state: "closed", data: "New folder" }
       obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
+
 
       # instant renaming
       # own implementation of @.rename(obj)
@@ -251,9 +252,13 @@ define ['logger', 'models/workspace/Project', 'views/workspace/ProjectView', 'vi
       @.__rollback()
       f = @.__callback
       @._show_input(obj, (obj, new_name, old_name)-> 
+        $('#workspace-tree').jstree('deselect_all')
+        $('#workspace-tree').jstree("select_node", "#fuadadeimuada")
+
         f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
 
-        $parent  = $('#workspace-tree').jstree('get_selected')
+        $parent  = $(obj).parent().parent()
+
         $project = $($parent).closest('li.project')
         currentPath = $parent.attr('id')
 
