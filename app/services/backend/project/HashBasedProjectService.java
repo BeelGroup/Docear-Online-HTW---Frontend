@@ -59,6 +59,12 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public void addUserToProject(String projectId, String usernameToAdd) throws IOException {
+    	List<Project> projects = getProjectsFromUser(usernameToAdd);
+    	for (Project project: projects){
+    		if (project.getId().equals(projectId)){
+    			throw new SendResultException("User is already in project.", 403);
+    		}
+    	}
         fileIndexStore.addUserToProject(projectId, usernameToAdd);
         callListenerForChangeForUser(usernameToAdd);
         callListenersForChangeInProject(projectId);
@@ -81,7 +87,7 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public List<Project> getProjectsFromUser(String username) throws IOException {
-        final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
+    	final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
         return convertEntityCursorToList(projects);
     }
 
