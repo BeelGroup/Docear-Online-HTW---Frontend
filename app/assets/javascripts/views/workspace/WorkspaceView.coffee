@@ -227,26 +227,9 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
       )
         
     requestAddFile:(liNode, a,b)=>
-      $parent = $('#workspace-tree').jstree('get_selected')
-      parentPath = $parent.attr('id')
-      if $parent.hasClass 'file'
-        $parent.closest('.folder')
-        
-      
-      $project = $($parent).closest('li.project')
-      projectId = $project.attr('id')
-      
-      path = "/"
-      if parentPath isnt projectId and parentPath isnt path
-        path = parentPath+'/'
-      
-      path = path.substr(path.indexOf("_PATH_")+6)
-
       if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-        uploadView = new UploadView(projectId, path, @model);
-        uploadView.appendAndRender @$el
+        $('.file-to-upload:first').click()
       false
-      document.log 'add file'
 
 
     requestAddFolder:(liNode, a, b)->
@@ -506,7 +489,6 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
 
     events:
       "click .add-project-toggle" : "newProject"
-      "click .upload-file" : "actionUpload"
 
     element:-> @$el
 
@@ -521,13 +503,66 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
+      @bindEvents()
       @
-
       
-    actionUpload: (event)->
-      if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-        uploadView = new UploadView("507f191e810c19729de860ea", "/");
-        uploadView.appendAndRender @$el
-      false
+    bindEvents: ()=>
+      @$el.find('.file-to-upload').change (evt)=>
+        if evt.target.files.length > 0
+          $parent = $('#workspace-tree').jstree('get_selected')
+          parentPath = $parent.attr('id')
+          if $parent.hasClass 'file'
+            $parent.closest('.folder')
+          
+          $project = $($parent).closest('li.project')
+          projectId = $project.attr('id')
+          projectModel = @model.get projectId
+
+          parentPath = parentPath.substr(parentPath.indexOf("_PATH_")+6)
+          
+          path = "/"
+          if (parentPath isnt projectId) and (parentPath isnt path)
+            path = parentPath+'/'
+          
+  
+          files = evt.target.files
+          fileInfos = []
+          for f in files
+            #tempFunc is necessary to make sure file reader nows "filename"
+            tempFunc = (f)=>
+              filename = escape(f.name)
+              filepath = path+filename
+  
+              fileInfos.push({
+                "name": escape(f.name)
+                'filepath': filepath
+                "type": f.type
+                "size": f.size
+                "modified": f.lastModifiedDate.toLocaleDateString()
+              })
+              
+              $('#workspace-tree').jstree('open_node', $parent)
+              newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
+              obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+              obj.attr('id', filepath)
+              
+              resource = projectModel.getResourceByPath(filepath)
+              revision = -1
+              if !!resource
+                revision = resource.get('revision')
+              reader = new FileReader()
+              reader.onload = (event)=>
+                $.ajax({
+                  url: jsRoutes.controllers.ProjectController.putFile(projectId, filepath, false, revision).url
+                  type: 'PUT'
+                  processData: false
+                  contentType: 'application/octet-stream'
+                  data: event.target.result
+                  dataType: 'json'
+                  error: ()->
+                    document.log 'error while uploading file.'
+                })
+              reader.readAsArrayBuffer(f);
+            tempFunc(f)
       
   module.exports = Workspace
