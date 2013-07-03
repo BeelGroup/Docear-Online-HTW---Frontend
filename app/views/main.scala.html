@@ -124,8 +124,10 @@
         @content
         
         
-        <div id="feedback-button"><a href="#feedbackDialog" class="feedback-button" data-toggle="modal"><img src="@routes.Assets.at("images/feedback.png")" alt="feedback"/></a></div>
-        @dialogs.feedback()
+        @if(controllers.featuretoggle.Feature.FEEDBACK.isEnabled()) {
+	        <div id="feedback-button"><a href="#feedbackDialog" class="feedback-button" data-toggle="modal"><img src="@routes.Assets.at("images/feedback.png")" alt="feedback"/></a></div>
+	        @dialogs.feedback()
+        }
         <!--
         <footer>
             <p>
