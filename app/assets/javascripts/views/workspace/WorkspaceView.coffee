@@ -228,7 +228,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         
     requestAddFile:(liNode, a,b)=>
       if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-        $('.file-to-upload:first').click()
+        $('#file-to-upload').click()
       false
 
 
@@ -507,7 +507,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       @
       
     bindEvents: ()=>
-      @$el.find('.file-to-upload').change (evt)=>
+      @$el.find('#file-to-upload').change (evt)=>
         if evt.target.files.length > 0
           $parent = $('#workspace-tree').jstree('get_selected')
           parentPath = $parent.attr('id')
@@ -542,14 +542,18 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
               })
               
               $('#workspace-tree').jstree('open_node', $parent)
-              newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
-              obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
-              obj.attr('id', filepath)
               
               resource = projectModel.getResourceByPath(filepath)
               revision = -1
               if !!resource
                 revision = resource.get('revision')
+                $treeItem = $("li.file[id*='#{filepath}']")
+                $treeItem.addClass('loading')
+              else
+                newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
+                obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+                obj.attr('id', filepath)
+                
               reader = new FileReader()
               reader.onload = (event)=>
                 $.ajax({
@@ -560,9 +564,29 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
                   data: event.target.result
                   dataType: 'json'
                   error: ()->
+                    $objToDelete = $(".loading.delete-me-on-update")
+                    if $objToDelete.size() > 0
+                      $('#workspace-tree').jstree("delete_node", $objToDelete)
+                    $('.loading').removeClass('loading')
                     document.log 'error while uploading file.'
+                  statusCode:
+                    401: ()->
+                      $objToDelete = $(".loading.delete-me-on-update")
+                      if $objToDelete.size() > 0
+                        $('#workspace-tree').jstree("delete_node", $objToDelete)
+                        
+                      $('li.loading').removeClass('loading')
+                      document.log 'Error while uploading file. Unauthorized.'
+                  success: ()->
+                    $('li.loading').removeClass('loading')
+                    
+                    
                 })
               reader.readAsArrayBuffer(f);
             tempFunc(f)
+          # in case user wants to upload the same file again after changing it
+          # http://stackoverflow.com/questions/1043957/clearing-input-type-file-using-jquery
+          $('#file-to-upload').wrap('<form>').closest('form').get(0).reset();
+          $('#file-to-upload').unwrap();
       
   module.exports = Workspace
