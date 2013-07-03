@@ -10,7 +10,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     constructor:(@model)->
       super()
-      @model.bind "add", @add , @   
+      @model.bind "add", @add , @
+      @model.bind "remove", @remove , @   
       @_rendered = false
 
     resize:(widthAndHeight)->
@@ -18,14 +19,19 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         height: widthAndHeight.height
 
     initialize : ()->
-      @projectViews = []
+      @projectViews = {}
       @model.each (project)=>
-        @projectViews.push(new ProjectView(project, @))
+        @projectViews[project.get('id')] = new ProjectView(project, @)
 
-
+    remove: (project)->
+      $objToDelete = $("li##{project.get('id')}")
+      delete @projectViews[project.get('id')]
+      if $objToDelete.size() > 0
+        $('#workspace-tree').jstree("delete_node", $objToDelete)
+              
     add: (project)->
       projectView = new ProjectView(project, @)
-      @projectViews.push(projectView)
+      @projectViews[project.get('id')] = projectView
       
       if @_rendered        
         $objToDelete = $(".temp-project.delete-me-on-update")
@@ -451,16 +457,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         path: $selectedItem.attr('id')
 
       itemData
-
-
-    #http://liquidmedia.org/blog/2011/02/backbone-js-part-3/
-    remove: (model)->
-      viewToRemove = @projectViews.select((cv)-> return cv.model is model )[0]
-      @projectViews = @projectViews.without(viewToRemove)
-      
-      if @_rendered
-        $(viewToRemove.el).remove()
-        
     
     requestCreateProject: (obj, projectName)=>
       params = {
@@ -501,7 +497,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       @$workspaceTree = $(@el).children('#workspace-tree')
       
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
-      for projectView in @projectViews
+      for projectId, projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       @bindEvents()
       @
