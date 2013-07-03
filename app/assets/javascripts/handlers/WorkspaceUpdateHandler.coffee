@@ -63,8 +63,9 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
             
             if meta.deleted
               resource = project.getResourceByPath path, false
-              resource.get('parent').deleteResourceByPath(path)
-              document.log "Resource #{path} deleted"
+              if resource != undefined
+                resource.get('parent').deleteResourceByPath(path)
+                document.log "Resource #{path} deleted"
             else
               resource = project.getResourceByPath path, true
               if resource != undefined
