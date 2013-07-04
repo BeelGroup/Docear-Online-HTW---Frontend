@@ -56,7 +56,8 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
       height
       
     connectChildren: ->
-      @model.updateAllConnections()
+      document.log "DEPRECATED: use @rootView.getModel().updateAllConnections() instead of RootNodeView.connectChildren()"
+      #@model.updateAllConnections()
 
     getTotalSize:()->
       sizeOfLeftChilds=

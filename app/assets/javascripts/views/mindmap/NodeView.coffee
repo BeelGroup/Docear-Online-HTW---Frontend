@@ -242,8 +242,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       
       $('#'+@model.get('id')).fadeOut(document.fadeDuration, ()=>
         $('#'+@model.get('id')).remove()
-        if !!@model
-          @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
       )
   
 

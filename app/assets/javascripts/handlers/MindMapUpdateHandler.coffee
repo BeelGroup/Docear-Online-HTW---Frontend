@@ -136,11 +136,13 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
         else
           parentNode.addChild(node)
         
+        @rootNode.addNodeToList(node)
         node.activateListeners()
         node
       
     deleteNode: (update)=>
       node = @rootNode.findById update.nodeId
+      @rootNode.removeNodeFromAllNodes(node)
       if node isnt null
         node.deleteNode()
    

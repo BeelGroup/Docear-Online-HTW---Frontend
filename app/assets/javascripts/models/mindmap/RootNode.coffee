@@ -97,6 +97,17 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
       values['side'] = treeSide
       @get('persistenceHandler').persistNew(@, values)
       
+    removeNodeFromAllNodes:(nodeModelId)->
+      nodeModelId = JSON.stringify(nodeModelId.get 'id')
+      document.log "delete #{nodeModelId} from list of all nodes"
+      all = Array()
+      for node in @allNodes
+        currentId = JSON.stringify(node.get 'id')
+        if currentId isnt nodeModelId
+          all.push(node)
+
+      @allNodes = all
+
     updateAllConnections: ->
       for node in @allNodes
         node.updateConnection()

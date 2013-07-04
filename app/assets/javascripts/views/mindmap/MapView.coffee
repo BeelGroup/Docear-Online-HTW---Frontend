@@ -74,7 +74,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
 
       @rootView.centerInContainer()
       @rootView.refreshDom()
-      @rootView.connectChildren()
+      @rootView.getModel().updateAllConnections()
       @canvas.setRootView(@rootView)
       @canvas.center()
 
@@ -103,9 +103,9 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     refreshDomConnectionsAndBoundaries:=>
       document.log 'refresh'
       @rootView.refreshDom()
-      @rootView.connectChildren()
       @canvas.checkBoundaries()
       @minimap.drawMiniNodes @rootView.setChildPositions()
+      @rootView.getModel().updateAllConnections()
 
     addLoadingOverlay:->
       div = document.createElement("div")
