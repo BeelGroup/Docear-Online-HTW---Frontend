@@ -24,9 +24,9 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
 
     changeChildren: (lastAddedChild = null)->
       newChild = lastAddedChild
-      if lastAddedChild is null
+      if lastAddedChild is null or lastAddedChild.get('id') is @model.get('id')
         newChild = @model.get 'lastAddedChild'
-      
+
       $node = $(@$el)
       if @model.typeName is 'rootModel'
         if @model.get('lastAddedChildSide') is 'Left'
@@ -58,7 +58,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         @resizeTree $node, @model, diff
       else
         @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
-        
+
       children = newChild.get 'children'
       if children.length > 0
         for child in children

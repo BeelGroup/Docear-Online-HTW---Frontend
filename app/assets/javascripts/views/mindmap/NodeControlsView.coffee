@@ -43,8 +43,17 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
 
       
     actionNewNode: (event)->
-      document.log "newNode @ "+@nodeView.model.get 'id'
-      @nodeView.model.createAndAddChild()
+      model = @nodeView.model
+      if model.isRoot()
+        if $(event.currentTarget).hasClass('left')
+          model.createAndAddChild('Left')
+          document.log "newNode added to root - Left"
+        else
+          model.createAndAddChild('Right')
+          document.log "newNode added to root - Right"
+      else
+        document.log "newNode added to @ "+@nodeView.model.get 'id'
+        model.createAndAddChild()
     
     actionShare: (event)->
       document.log "share @ "+@nodeView.model.get 'id'
