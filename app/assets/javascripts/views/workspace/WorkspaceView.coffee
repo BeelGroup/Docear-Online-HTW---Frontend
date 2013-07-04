@@ -375,27 +375,22 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       oldPath = $(data.args[0].o).attr('id')
       oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
 
-      name = data.args[0].o.text().replace /\s/g, ''
+      name = oldPath.substring(oldPath.lastIndexOf('/')+1)
 
       newParent = $(data.args[0].np).attr('id')
       newParent = newParent.substr(newParent.indexOf("_PATH_")+6)
 
-      #if oldPath is "/"+name
-        #oldPath =  ""
-      oldPath = oldPath.substr(0, oldPath.indexOf(name))
-      newPath = newParent.substr(0, newParent.indexOf(name))
-
-  #    if newParent is "/"
- #       newParent =  ""
-#      newPath = newParent+"/"+name
+      # from http://stackoverflow.com/questions/280634/endswith-in-javascript
+      if newParent.indexOf('/', newParent.length - 1) is -1
+        newParent += '/'
+      newPath = newParent + name
 
       projectId = $(data.args[0].o).closest('li.project').attr('id')
-
       params = 
         url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
         type: 'POST'
         cache: false
-        data: "currentPath": oldPath, "moveToPath": newParent, "name": name
+        data: "currentPath": oldPath, "moveToPath": newPath
 
         success:()=>
           document.log "SUCCESS: Resource \'"+name+"\' was be moved from "+oldPath+" to "+newPath
