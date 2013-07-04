@@ -29,6 +29,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         newChild = @model.get 'lastAddedChild'
         refreshConnections = true
 
+      @$el.find('.action-fold').show()
       $node = $(@$el)
       if @model.typeName is 'rootModel'
         if @model.get('lastAddedChildSide') is 'Left'
