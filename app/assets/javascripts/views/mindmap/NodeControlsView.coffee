@@ -19,22 +19,12 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
 
     actionEdit: (event)->
       node = @nodeView.model
+      $node = @nodeView.$el
+      $node.css('')
       # give signal that node is already locked by a user
       if node.get 'locked'
-        $innerNode = @nodeView.$el.children('.inner-node')
-        
-        # quick red blink
-        prevColor = $innerNode.css 'color'
-        # attr border-color didn't work in IE
-        borderColor = $innerNode.css 'border-top-color'
-        $innerNode.animate({
-          'border-color': '#FF0000'
-          color: '#FF0000'
-        }, document.fadeDuration, ->
-          $innerNode.animate({
-            'border-color': borderColor
-            color: prevColor
-          }, document.fadeDuration)
+        $node.switchClass('', 'locked-warning', document.fadeDuration, ->
+          $node.switchClass('locked-warning', '', document.fadeDuration)
         )
       else
         node.set 'selected', true
