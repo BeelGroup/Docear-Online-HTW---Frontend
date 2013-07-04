@@ -100,7 +100,7 @@ define ['logger'], (logger) ->
         if !@rootView.model.get('isReadonly')
           selectedNode = @rootView.model.getSelectedNode()
           if selectedNode.get('folded')
-            model.set 'folded', false
+            selectedNode.set 'folded', false
           if selectedNode != null
             selectedNode.createAndAddChild()
 
