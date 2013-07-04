@@ -44,6 +44,8 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
       
     actionNewNode: (event)->
       model = @nodeView.model
+      if model.get('folded')
+        model.set 'folded', false
       if model.isRoot()
         if $(event.currentTarget).hasClass('left')
           model.createAndAddChild('Left')
