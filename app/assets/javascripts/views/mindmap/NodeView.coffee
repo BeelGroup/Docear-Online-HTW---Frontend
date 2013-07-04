@@ -23,9 +23,11 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         
 
     changeChildren: (lastAddedChild = null)->
+      refreshConnections = false
       newChild = lastAddedChild
-      if lastAddedChild is null or lastAddedChild.get('id') is @model.get('id')
+      if !lastAddedChild or lastAddedChild.get('id') is @model.get('id')
         newChild = @model.get 'lastAddedChild'
+        refreshConnections = true
 
       $node = $(@$el)
       if @model.typeName is 'rootModel'
@@ -63,10 +65,13 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       if children.length > 0
         for child in children
           nodeView.changeChildren child
-          
-      $.each(@model.get('children'), (index, child)->
-        child.updateConnection()
-      )
+
+      if refreshConnections
+        document.log "refreshing connections"
+        @model.updateConnectionsToRoot()
+        $.each(@model.get('children'), (index, child)->
+          child.updateConnection()
+        )
       
     
     getCenterCoordinates: ($element) ->

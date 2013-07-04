@@ -35,15 +35,16 @@ define ['logger', 'models/mindmap/Node', 'models/mindmap/RootNode'],  (logger, N
         if @$childNode.is ':visible'
           if @$parentNode.size() > 0
             @isRight = $(@$childNode).hasClass('right')
-            document.log 'repaint connection for'+@childModel.get('id')    
             
-            if !!@oldConnection && @hasChanged()
-              document.log "#{@connection.startX}!=#{@oldConnection.startX} | #{@connection.startY}!=#{@oldConnection.startY} | #{@connection.endX}!=#{@oldConnection.endX} | #{@connection.endY}!=#{@oldConnection.endY}"
-              @oldConnection = @connection
-              
             @calculateEndpoints()
-            @positionContainer()
-            @drawConnection()
+            if @hasChanged()
+              if !!@oldConnection
+                document.log 'repaint connection for'+@childModel.get('id')
+              else
+                document.log "-> initial drawing"
+              @positionContainer()
+              @drawConnection()
+            
         @isPainting = false
 
       
