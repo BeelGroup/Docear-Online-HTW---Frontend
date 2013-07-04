@@ -204,8 +204,9 @@ li.loading > a .jstree-icon {background:url("../images/ajax-loader.gif") 0px 0px
     display: inline-block;
     cursor: default;
     white-space: nowrap;
+
     min-width: 70px;
-    min-height: 10px;
+    min-height: 15px;
 }
 
 
@@ -258,6 +259,11 @@ li.loading > a .jstree-icon {background:url("../images/ajax-loader.gif") 0px 0px
 .mindmap-canvas .node.selected > .inner-node 
 {
     border: 2px solid @docear-blue;
+}
+.mindmap-canvas .node.locked-warning > .inner-node 
+{
+    border: 2px solid #FF0000;
+    color: #FF0000;
 }
 
 .mindmap-canvas .node .inner-node .controls 
@@ -588,6 +594,21 @@ ul.nav .no-link {
   font-size: 23px;
   direction: ltr;
   cursor: pointer;
+}
+.file-to-upload {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  transform: translate(-300px, 0) scale(4);
+}
+#file-to-upload {
+    width: 0px;
+    height: 0px;
+    left: -9999px;
+    top: -9999px;
 }
 .fileupload-buttonbar .btn,
 .fileupload-buttonbar .toggle {

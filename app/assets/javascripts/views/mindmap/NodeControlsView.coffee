@@ -19,22 +19,12 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
 
     actionEdit: (event)->
       node = @nodeView.model
+      $node = @nodeView.$el
+      $node.css('')
       # give signal that node is already locked by a user
       if node.get 'locked'
-        $innerNode = @nodeView.$el.children('.inner-node')
-        
-        # quick red blink
-        prevColor = $innerNode.css 'color'
-        # attr border-color didn't work in IE
-        borderColor = $innerNode.css 'border-top-color'
-        $innerNode.animate({
-          'border-color': '#FF0000'
-          color: '#FF0000'
-        }, document.fadeDuration, ->
-          $innerNode.animate({
-            'border-color': borderColor
-            color: prevColor
-          }, document.fadeDuration)
+        $node.switchClass('', 'locked-warning', document.fadeDuration, ->
+          $node.switchClass('locked-warning', '', document.fadeDuration)
         )
       else
         node.set 'selected', true
@@ -53,8 +43,19 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
 
       
     actionNewNode: (event)->
-      document.log "newNode @ "+@nodeView.model.get 'id'
-      @nodeView.model.createAndAddChild()
+      model = @nodeView.model
+      if model.get('folded')
+        model.set 'folded', false
+      if model.isRoot()
+        if $(event.currentTarget).hasClass('left')
+          model.createAndAddChild('Left')
+          document.log "newNode added to root - Left"
+        else
+          model.createAndAddChild('Right')
+          document.log "newNode added to root - Right"
+      else
+        document.log "newNode added to @ "+@nodeView.model.get 'id'
+        model.createAndAddChild()
     
     actionShare: (event)->
       document.log "share @ "+@nodeView.model.get 'id'

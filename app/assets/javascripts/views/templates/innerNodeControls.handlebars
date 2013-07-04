@@ -2,8 +2,19 @@
   {{#if editableText}}
   <a class='icon-edit action-edit'></a>
   {{/if}}
-  {{#if addable}}
-  <a class='icon-file action-new-node'></a>
+  {{#if addable}} 
+    {{#if isRoot}}
+    <a class='action-new-node left'>
+      <span class='icon-angle-left'></span>
+      <span class='icon-file'></span>
+    </a>
+    <a class='action-new-node right'>
+      <span class='icon-file'></span>
+      <span class='icon-angle-right'></span>
+    </a>
+    {{else}}
+    <a class='icon-file action-new-node'></a>
+    {{/if}}
   {{/if}}
   {{#if movable}}
       {{#unless isRoot}}

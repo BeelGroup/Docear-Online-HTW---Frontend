@@ -240,13 +240,11 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
 
     getRenderData: ->
     # if the model is already set, parse it to json
+      data = {}
       if @model?
         data = @model.toJSON()
         data['lockable'] = ($.inArray('LOCK_NODE', document.features) > -1)
-        data
-    # otherwise pass an empty JSON
-      else
-        {}
+      data
 
 
     alignButtons:->

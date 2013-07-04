@@ -136,11 +136,24 @@ define ['logger'], (logger)->
     updateConnection: ()->
       @.trigger 'updateConnection'
 
+    updateConnectionsToRoot: (treeSide = null)->
+      if !@get('folded')
+        children = @get('children')
+        
+        if !!children
+          for child in children
+            child.updateConnection()
+        
+      if !@isRoot()
+        @get('parent').updateConnectionsToRoot()
+      
+      
     setAttributeWithoutPersist: (attribute, value)->
       autoPersistEnabled = @get 'autoPersist'
       @set 'autoPersist', false
       @set attribute, value
       @set 'autoPersist', autoPersistEnabled
 
-  
+    isRoot: ()->
+      @typeName is 'rootModel'
   module.exports = AbstractNode

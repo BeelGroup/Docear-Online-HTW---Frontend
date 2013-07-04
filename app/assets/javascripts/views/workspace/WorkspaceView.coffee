@@ -1,4 +1,4 @@
-define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], (logger, ProjectView, UploadView) ->
+define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
   module = () ->
 
   class Workspace extends Backbone.View
@@ -10,7 +10,8 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
 
     constructor:(@model)->
       super()
-      @model.bind "add", @add , @   
+      @model.bind "add", @add , @
+      @model.bind "remove", @remove , @   
       @_rendered = false
 
     resize:(widthAndHeight)->
@@ -18,14 +19,19 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
         height: widthAndHeight.height
 
     initialize : ()->
-      @projectViews = []
+      @projectViews = {}
       @model.each (project)=>
-        @projectViews.push(new ProjectView(project, @))
+        @projectViews[project.get('id')] = new ProjectView(project, @)
 
-
+    remove: (project)->
+      $objToDelete = $("li##{project.get('id')}")
+      delete @projectViews[project.get('id')]
+      if $objToDelete.size() > 0
+        $('#workspace-tree').jstree("delete_node", $objToDelete)
+              
     add: (project)->
       projectView = new ProjectView(project, @)
-      @projectViews.push(projectView)
+      @projectViews[project.get('id')] = projectView
       
       if @_rendered        
         $objToDelete = $(".temp-project.delete-me-on-update")
@@ -109,15 +115,15 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
 
       if ($(node).hasClass("mindmap-file"))
         items.addFile =  # upload
-          label: "Open mindmap",
+          label: "Open new mind map",
           action: @openMindmap
 
       if ($(node).hasClass("folder")) 
         items.createMapItem = 
-          label: "Create new Map"
+          label: "Create new mind map"
           action: @requestCreateMapItem
         items.addFile =  # upload
-          label: "Add file",
+          label: "Upload &amp; add file",
           action: @requestAddFile
         items.addFolder =  
           label: "Add folder",
@@ -227,26 +233,9 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
       )
         
     requestAddFile:(liNode, a,b)=>
-      $parent = $('#workspace-tree').jstree('get_selected')
-      parentPath = $parent.attr('id')
-      if $parent.hasClass 'file'
-        $parent.closest('.folder')
-        
-      
-      $project = $($parent).closest('li.project')
-      projectId = $project.attr('id')
-      
-      path = "/"
-      if parentPath isnt projectId and parentPath isnt path
-        path = parentPath+'/'
-      
-      path = path.substr(path.indexOf("_PATH_")+6)
-
       if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-        uploadView = new UploadView(projectId, path, @model);
-        uploadView.appendAndRender @$el
+        $('#file-to-upload').click()
       false
-      document.log 'add file'
 
 
     requestAddFolder:(liNode, a, b)->
@@ -386,27 +375,22 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
       oldPath = $(data.args[0].o).attr('id')
       oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
 
-      name = data.args[0].o.text().replace /\s/g, ''
+      name = oldPath.substring(oldPath.lastIndexOf('/')+1)
 
       newParent = $(data.args[0].np).attr('id')
       newParent = newParent.substr(newParent.indexOf("_PATH_")+6)
 
-      #if oldPath is "/"+name
-        #oldPath =  ""
-      oldPath = oldPath.substr(0, oldPath.indexOf(name))
-      newPath = newParent.substr(0, newParent.indexOf(name))
-
-  #    if newParent is "/"
- #       newParent =  ""
-#      newPath = newParent+"/"+name
+      # from http://stackoverflow.com/questions/280634/endswith-in-javascript
+      if newParent.indexOf('/', newParent.length - 1) is -1
+        newParent += '/'
+      newPath = newParent + name
 
       projectId = $(data.args[0].o).closest('li.project').attr('id')
-
       params = 
         url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
         type: 'POST'
         cache: false
-        data: "currentPath": oldPath, "moveToPath": newParent, "name": name
+        data: "currentPath": oldPath, "moveToPath": newPath
 
         success:()=>
           document.log "SUCCESS: Resource \'"+name+"\' was be moved from "+oldPath+" to "+newPath
@@ -468,16 +452,6 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
         path: $selectedItem.attr('id')
 
       itemData
-
-
-    #http://liquidmedia.org/blog/2011/02/backbone-js-part-3/
-    remove: (model)->
-      viewToRemove = @projectViews.select((cv)-> return cv.model is model )[0]
-      @projectViews = @projectViews.without(viewToRemove)
-      
-      if @_rendered
-        $(viewToRemove.el).remove()
-        
     
     requestCreateProject: (obj, projectName)=>
       params = {
@@ -506,7 +480,6 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
 
     events:
       "click .add-project-toggle" : "newProject"
-      "click .upload-file" : "actionUpload"
 
     element:-> @$el
 
@@ -519,15 +492,92 @@ define ['logger', 'views/workspace/ProjectView', 'views/workspace/UploadView'], 
       @$workspaceTree = $(@el).children('#workspace-tree')
       
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
-      for projectView in @projectViews
+      for projectId, projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
+      @bindEvents()
       @
-
       
-    actionUpload: (event)->
-      if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
-        uploadView = new UploadView("507f191e810c19729de860ea", "/");
-        uploadView.appendAndRender @$el
-      false
+    bindEvents: ()=>
+      @$el.find('#file-to-upload').change (evt)=>
+        if evt.target.files.length > 0
+          $parent = $('#workspace-tree').jstree('get_selected')
+          parentPath = $parent.attr('id')
+          if $parent.hasClass 'file'
+            $parent.closest('.folder')
+          
+          $project = $($parent).closest('li.project')
+          projectId = $project.attr('id')
+          projectModel = @model.get projectId
+
+          parentPath = parentPath.substr(parentPath.indexOf("_PATH_")+6)
+          
+          path = "/"
+          if (parentPath isnt projectId) and (parentPath isnt path)
+            path = parentPath+'/'
+          
+  
+          files = evt.target.files
+          fileInfos = []
+          for f in files
+            #tempFunc is necessary to make sure file reader nows "filename"
+            tempFunc = (f)=>
+              filename = escape(f.name)
+              filepath = path+filename
+  
+              fileInfos.push({
+                "name": escape(f.name)
+                'filepath': filepath
+                "type": f.type
+                "size": f.size
+                "modified": f.lastModifiedDate.toLocaleDateString()
+              })
+              
+              $('#workspace-tree').jstree('open_node', $parent)
+              
+              resource = projectModel.getResourceByPath(filepath)
+              revision = -1
+              if !!resource
+                revision = resource.get('revision')
+                $treeItem = $("li.file[id*='#{filepath}']")
+                $treeItem.addClass('loading')
+              else
+                newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
+                obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+                obj.attr('id', filepath)
+                
+              reader = new FileReader()
+              reader.onload = (event)=>
+                $.ajax({
+                  url: jsRoutes.controllers.ProjectController.putFile(projectId, filepath, false, revision).url
+                  type: 'PUT'
+                  processData: false
+                  contentType: 'application/octet-stream'
+                  data: event.target.result
+                  dataType: 'json'
+                  error: ()->
+                    $objToDelete = $(".loading.delete-me-on-update")
+                    if $objToDelete.size() > 0
+                      $('#workspace-tree').jstree("delete_node", $objToDelete)
+                    $('.loading').removeClass('loading')
+                    document.log 'error while uploading file.'
+                  statusCode:
+                    401: ()->
+                      $objToDelete = $(".loading.delete-me-on-update")
+                      if $objToDelete.size() > 0
+                        $('#workspace-tree').jstree("delete_node", $objToDelete)
+                        
+                      $('li.loading').removeClass('loading')
+                      document.log 'Error while uploading file. Unauthorized.'
+                  success: ()->
+                    $('li.loading').removeClass('loading')
+                    
+                    
+                })
+              reader.readAsArrayBuffer(f);
+            tempFunc(f)
+          # in case user wants to upload the same file again after changing it
+          # http://stackoverflow.com/questions/1043957/clearing-input-type-file-using-jquery
+          $('#file-to-upload').wrap('<form>').closest('form').get(0).reset();
+          $('#file-to-upload').unwrap();
       
   module.exports = Workspace
