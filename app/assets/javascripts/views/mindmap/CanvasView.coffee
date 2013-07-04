@@ -99,6 +99,8 @@ define ['logger'], (logger) ->
       Mousetrap.bind document.navigation.key.addChild, (event)=>
         if !@rootView.model.get('isReadonly')
           selectedNode = @rootView.model.getSelectedNode()
+          if selectedNode.get('folded')
+            model.set 'folded', false
           if selectedNode != null
             selectedNode.createAndAddChild()
 
