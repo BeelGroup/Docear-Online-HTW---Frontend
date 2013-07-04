@@ -234,8 +234,8 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       for viewId, view of @subViews
         view.destroy()
       
-      $('#'+@get('id')).fadeOut(document.fadeDuration, ()=>
-        $('#'+@.get('id')).remove()
+      $('#'+@model.get('id')).fadeOut(document.fadeDuration, ()=>
+        $('#'+@model.get('id')).remove()
         if !!@model
           @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
       )

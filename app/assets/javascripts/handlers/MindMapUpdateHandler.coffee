@@ -139,12 +139,10 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
         node.activateListeners()
         node
       
-    deleteNode: (update)->
+    deleteNode: (update)=>
       node = @rootNode.findById update.nodeId
       if node isnt null
         node.deleteNode()
-      
-      
-      
+   
     
   module.exports = MindMapUpdateHandler

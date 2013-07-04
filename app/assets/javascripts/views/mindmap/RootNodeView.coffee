@@ -220,6 +220,9 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
       
       @
 
+    getElement:->
+      $("##{@model.get 'id'}")
+
     # USE THIS FUNCTION instead of render
     renderAndAppendTo:($element)->
       $element.append @render().el 

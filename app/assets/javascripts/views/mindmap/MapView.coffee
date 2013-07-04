@@ -210,7 +210,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         @workspaceUpdateHandler.listen(5000)
         
         @resizeWorkspace(@resizeViewport())
-        
+
       @addLoadingOverlay()
 
 

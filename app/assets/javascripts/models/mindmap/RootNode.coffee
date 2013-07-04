@@ -98,13 +98,6 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
       @get('persistenceHandler').persistNew(@, values)
       
     updateAllConnections: ->
-      #nodes = []
-      #nodes = $.merge(nodes, @get('children').slice()  )
-      # used to be recursive via child.getSelectedNode() but could create mem problems
-      #while node = @allNodes.shift()
-        #node.updateConnection()
-        #nodes = $.merge(nodes, node.get('children').slice()  )
-
       for node in @allNodes
         node.updateConnection()
     
@@ -114,7 +107,7 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
         if node.get('id') != child.get('id')
           children.push(node)
         else
-          document.log 'removing #{child.get("id")} from root #{sideIdentifier} (#{@get("id")})'
+          document.log "removing #{child.get("id")} from root #{sideIdentifier} (#{@get("id")})"
       @set sideIdentifier, children
     
     removeChild: (child)->

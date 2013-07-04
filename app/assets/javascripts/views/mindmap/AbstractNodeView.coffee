@@ -25,9 +25,13 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
       @model.bind "change:nodeText",@changeNodeText , @
       @model.bind "change:isHtml",@changeNodeText , @
       @model.bind "change:lastAddedChild",@changeChildren , @
-      @model.on 'deleteNode', @destroy
+      @model.on 'deleteNode', @destroyMe
 
       @addEvents()
+
+    destroyMe:=>
+      @destroy()
+      @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
 
 
     addEvents:()->
