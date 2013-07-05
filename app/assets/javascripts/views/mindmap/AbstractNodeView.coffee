@@ -214,11 +214,12 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
         top: '+='+(postHeight-preHeight)/2
       },  document.fadeDuration
 
-      $node.animate {
-        top: '-='+(postHeight-preHeight)/2
-      }, document.fadeDuration, =>
-        if !!@connection
-          @connection.repaintConnection()
+      if $node.parent().children('.node').size() > 0
+        $node.animate {
+          top: '-='+(postHeight-preHeight)/2
+        }, document.fadeDuration, =>
+          if !!@connection
+            @connection.repaintConnection()
 
       
      
@@ -256,15 +257,17 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
       
     
     resizeTree: ($node, nodeModel, height)->
+      parent = nodeModel.get 'parent'
       $parent = $node.parent().closest('.node')
       $parentsChildren = $node.closest('.children')
+    
       if($($parentsChildren).children('.node').size() > 1)
         $parentsChildren.animate({
           top: '+='+(height/2)
         },
         duration: document.fadeDuration)
         $parentsChildren.css('height', $parentsChildren.outerHeight()-height)
-      
+        
         $node.animate({
           top: '-='+(height/2)
         }, 
@@ -278,13 +281,13 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
           $nextBrother = $($nextBrother).next('.node')
           
         # to make it visible inside the timeout
-        parent = nodeModel.get 'parent'
         setTimeout(->
           parent.updateConnection()
           for child in parent.get('children')
             child.updateConnection()
         , document.fadeDuration)
-        
+      
+      if !parent.isRoot()
         @resizeTree $parent, parent, height
 
     

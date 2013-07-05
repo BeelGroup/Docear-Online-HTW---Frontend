@@ -109,13 +109,17 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
           lastChild = null
           for child in $children
             id = $(child).attr('id')
-            totalChildrenHeight += heightOfChildren[id] + @verticalSpacer
+            childWidth = $(child).outerWidth()
+            childHeight = $(child).outerHeight()
             
-            if lastChild == null
-              currentTop = -$(child).outerHeight()/2
-            currentTop += heightOfChildren[id]/2
+            diffHeight = 0
+            if heightOfChildren[id] > childHeight
+              diffHeight = (heightOfChildren[id] - childHeight) / 2
+              currentTop += diffHeight
             $(child).css('top', currentTop)
-
+            currentTop += (heightOfChildren[id] - diffHeight) + @verticalSpacer
+            
+            totalChildrenHeight += heightOfChildren[id] + @verticalSpacer
             
             if sideOfTree == 'left'
               $(child).addClass('left')
@@ -124,10 +128,9 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
               $(child).addClass('right')	
               $(child).css('left', @horizontalSpacer) 
             lastChild = child
-            currentTop += heightOfChildren[id]/2 + @verticalSpacer
 
           # to correct the addition on the last run we subtract the last added height
-          currentTop = currentTop - heightOfChildren[$(lastChild).attr('id')] - @verticalSpacer
+          currentTop -= @verticalSpacer
           totalChildrenWidth += @horizontalSpacer
 
           left = elementWidth
@@ -144,9 +147,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
 
 
       if $(element).attr('folded') is 'true'      
-        #diff = Math.max(totalChildrenHeight, elementHeight) - Math.min(totalChildrenHeight, elementHeight)
         [elementHeight + 0, totalChildrenWidth]
-        #[elementHeight + @verticalSpacer, totalChildrenWidth]
       else
         [Math.max(totalChildrenHeight, elementHeight), totalChildrenWidth]
 
