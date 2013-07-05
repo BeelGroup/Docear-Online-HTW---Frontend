@@ -115,7 +115,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
       if ($(node).hasClass("mindmap-file"))
         items.addFile =  # upload
-          label: "Open new mind map",
+          label: "Open mind map",
           action: @openMindmap
 
       if ($(node).hasClass("folder")) 
