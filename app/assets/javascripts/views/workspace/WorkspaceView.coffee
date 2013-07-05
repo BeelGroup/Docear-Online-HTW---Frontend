@@ -430,9 +430,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         data: {"username": itemData.name, "itemData" : itemData}
         success:(data)=>
           document.log "SUCCESS: The user \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
-
-          $objToDelete = $("ul.users a##{itemData.name}").parent()
-          $('#workspace-tree').jstree("delete_node", $objToDelete)
         error:()=>
           document.log "ERROR: The user \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
         dataType: 'json' 

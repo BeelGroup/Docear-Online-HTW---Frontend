@@ -3,9 +3,10 @@ define ['logger'], (logger)->
 
   class User extends Backbone.Model 
 
-    constructor: (name)->
+    constructor: (name, projectId)->
       super()
       @set 'id', name
       @set 'name', name
+      @set 'projectId', projectId
       
   module.exports = User

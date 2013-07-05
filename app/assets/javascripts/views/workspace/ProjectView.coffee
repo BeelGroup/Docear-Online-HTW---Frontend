@@ -21,7 +21,7 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
       @resourceViews.push(new ResourceView(@model.resource, @, @$el))
         
       @model.users.each (user)=>
-        @userViews.push(new UserView(user))
+        @userViews.push(new UserView(user, @model.get('id')))
         
     element:-> @$el
 
@@ -39,12 +39,13 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
       document.log "adding user #{user.get('name')} to view"
       
       if @_rendered
-        userView = new UserView(user)
+        userView = new UserView(user, @model.get('id'))
         @userViews.push(userView)
       
     removeUser: (user)=>
+      console.log user
       document.log "removing user #{user.get('name')} from view"
-      $objToDelete = $("ul.users a##{user.get('name')}").parent()
+      $objToDelete = $("##{user.get('projectId')} ##{user.get('name')}").parent()
       $('#workspace-tree').jstree("delete_node", $objToDelete)
       
     render:()->

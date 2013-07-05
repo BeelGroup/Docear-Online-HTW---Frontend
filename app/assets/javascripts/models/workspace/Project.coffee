@@ -34,7 +34,7 @@ define ['logger', 'models/workspace/Resource', 'collections/workspace/Resources'
     setUsers: (authorizedUsers)->
       for userName in authorizedUsers
         if !@users.get(userName)
-          @users.add(new User(userName))
+          @users.add(new User(userName, @get 'id'))
           document.log "added user: #{userName} to project: #{@get('name')}"
       
       @users.each (user)=>
