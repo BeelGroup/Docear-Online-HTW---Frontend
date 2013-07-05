@@ -230,12 +230,14 @@ public class ProjectController extends DocearController {
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
         final String username = username();
 
-        for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
-            final String projectId = entry.getKey();
-            try {
-                projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
-            } catch (NumberFormatException e) {
-                return badRequest("Revisions must be long value!");
+        if (urlEncodedBody != null) {
+            for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+                final String projectId = entry.getKey();
+                try {
+                    projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
+                } catch (NumberFormatException e) {
+                    return badRequest("Revisions must be long value!");
+                }
             }
         }
 
