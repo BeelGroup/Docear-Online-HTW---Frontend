@@ -148,7 +148,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           label: "Delete file"
           action: @requestRemoveFolderOrFile
 
-      if($(node).hasClass("user"))
+      if($(node).hasClass("user") and not $(node).hasClass("users") )
         items.deleteItem =
           separator_before: true
           label: "Delete user"
