@@ -43,7 +43,6 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
         @userViews.push(userView)
       
     removeUser: (user)=>
-      console.log user
       document.log "removing user #{user.get('name')} from view"
       $objToDelete = $("##{user.get('projectId')} ##{user.get('name')}").parent()
       $('#workspace-tree').jstree("delete_node", $objToDelete)
