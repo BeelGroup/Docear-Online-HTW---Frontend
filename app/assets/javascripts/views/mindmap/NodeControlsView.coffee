@@ -70,9 +70,12 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
     renderAndAppendToNode:(@nodeView)->
       $element = @nodeView.$el.children('.inner-node')
       $element.append(@render().el)
-      width = (@nodeView.getElement().outerWidth()/2 - @$el.outerWidth())#@$el.outerWidth()/2)
-      @$el.css('left', width+"px")
+      @alignToNode()
       @
+    
+    alignToNode: ->
+      width = (@nodeView.getElement().outerWidth() - @$el.outerWidth())/2
+      @$el.css('left', width+"px")
       
 
     render:->

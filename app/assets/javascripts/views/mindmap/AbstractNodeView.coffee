@@ -250,6 +250,9 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
 
       height = (@$el.outerHeight()/2 - $fold.outerHeight()/2)
       $fold.css('top', height+"px")
+      
+      if !!@controls
+        @controls.alignToNode()
         
 
     scale:(amount)->
