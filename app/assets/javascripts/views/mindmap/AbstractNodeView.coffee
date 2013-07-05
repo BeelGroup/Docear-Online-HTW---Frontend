@@ -239,6 +239,7 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
       data = {}
       if @model?
         data = @model.toJSON()
+        data['simpleTooltip'] = ($.inArray('SIMPLE_TOOLTIP', document.features) > -1)
         data['lockable'] = ($.inArray('LOCK_NODE', document.features) > -1)
       data
 

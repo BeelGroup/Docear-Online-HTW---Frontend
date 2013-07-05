@@ -1,4 +1,5 @@
-<div class="circle-button" id="zoom-in"><img style="width:25px;" src="/assets/images/plus.png"></div>
-<div id="zoom-factor"></div>
-<div class="circle-button" id="zoom-center"><img style="width:25px;" src="/assets/images/centroid.png"></div>
-<div class="circle-button" id="zoom-out"><img style="width:25px;" src="/assets/images/minus.png"></div>
+<div class="circle-button" id="zoom-in"><img style="width:25px;" src="{{plusImg}}" alt="Zoom in" {{#if simpleTooltip}}title="Zoom in" {{/if}}></div>
+
+<div class="circle-button" id="zoom-center"><img style="width:25px;" src="{{centerImg}}" alt="Center view" {{#if simpleTooltip}}title="Center view"{{/if}}></div>
+
+<div class="circle-button" id="zoom-out"><img style="width:25px;" src="{{minusImg}}" alt="Zoom out" {{#if simpleTooltip}}title="Zoom out"{{/if}}></div>

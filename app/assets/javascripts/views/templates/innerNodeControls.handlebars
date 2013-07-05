@@ -1,27 +1,27 @@
 {{#if editable}}
   {{#if editableText}}
-  <a class='icon-edit action-edit'></a>
+  <a class='icon-edit action-edit' {{#if simpleTooltip}}title="Edit node"{{/if}}></a>
   {{/if}}
   {{#if addable}} 
     {{#if isRoot}}
-    <a class='action-new-node left'>
+    <a class='action-new-node left' {{#if simpleTooltip}}title="Append node on left side"{{/if}}>
       <span class='icon-angle-left'></span>
       <span class='icon-file'></span>
     </a>
-    <a class='action-new-node right'>
+    <a class='action-new-node right' {{#if simpleTooltip}}title="Append node on right side"{{/if}}>
       <span class='icon-file'></span>
       <span class='icon-angle-right'></span>
     </a>
     {{else}}
-    <a class='icon-file action-new-node'></a>
+    <a class='icon-file action-new-node' {{#if simpleTooltip}}title="Append node"{{/if}}></a>
     {{/if}}
   {{/if}}
   {{#if movable}}
       {{#unless isRoot}}
-      <a class='icon-move action-move'></a>
+      <a class='icon-move action-move' {{#if simpleTooltip}}title="Move node"{{/if}}></a>
       {{/unless}}
   {{/if}}
   {{#if deletable}}
-  <a class='icon-trash action-trash'></a>
+  <a class='icon-trash action-trash' {{#if simpleTooltip}}title="Delete node"{{/if}}></a>
   {{/if}}  
 {{/if}} 

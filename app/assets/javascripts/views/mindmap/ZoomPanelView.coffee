@@ -20,7 +20,13 @@ define ->
 
 
     render:->
-      @$el.html @template {zoomFactor: 0}
+      attributes=
+        plusImg: jsRoutes.controllers.Assets.at('images/plus.png').url
+        minusImg: jsRoutes.controllers.Assets.at('images/minus.png').url
+        centerImg: jsRoutes.controllers.Assets.at('images/centroid.png').url
+        simpleTooltip: ($.inArray('SIMPLE_TOOLTIP', document.features) > -1)
+
+      @$el.html @template attributes
       @
 
   module.exports = ZoomPanel
