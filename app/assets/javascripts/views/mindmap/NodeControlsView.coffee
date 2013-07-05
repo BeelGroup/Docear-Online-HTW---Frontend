@@ -48,9 +48,15 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
         model.set 'folded', false
       if model.isRoot()
         if $(event.currentTarget).hasClass('left')
+          if @nodeView.$el.children('.leftChildren:visible').length is 0
+            @nodeView.changeFoldedStatus('left')
+          
           model.createAndAddChild('Left')
           document.log "newNode added to root - Left"
         else
+          if @nodeView.$el.children('.rightChildren:visible').length is 0
+            @nodeView.changeFoldedStatus('right')
+          
           model.createAndAddChild('Right')
           document.log "newNode added to root - Right"
       else
