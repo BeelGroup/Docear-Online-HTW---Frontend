@@ -59,12 +59,12 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public void addUserToProject(String projectId, String usernameToAdd) throws IOException {
-    	List<Project> projects = getProjectsFromUser(usernameToAdd);
-    	for (Project project: projects){
-    		if (project.getId().equals(projectId)){
-    			throw new SendResultException("User is already in project.", 403);
-    		}
-    	}
+        List<Project> projects = getProjectsFromUser(usernameToAdd);
+        for (Project project : projects) {
+            if (project.getId().equals(projectId)) {
+                throw new SendResultException("User is already in project.", 403);
+            }
+        }
         fileIndexStore.addUserToProject(projectId, usernameToAdd);
         callListenerForChangeForUser(usernameToAdd);
         callListenersForChangeInProject(projectId);
@@ -87,7 +87,7 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public List<Project> getProjectsFromUser(String username) throws IOException {
-    	final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
+        final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
         return convertEntityCursorToList(projects);
     }
 
@@ -106,7 +106,7 @@ public class HashBasedProjectService implements ProjectService {
             final String fileHash = metadata.getHash();
             Logger.debug("HashBasedProjectService.getFile => fileHash: " + fileHash);
 
-            if(zipped)
+            if (zipped)
                 return fileStore.open(path().hash(fileHash).zipped());
             else
                 return fileStore.open(path().hash(fileHash).raw());
@@ -375,9 +375,13 @@ public class HashBasedProjectService implements ProjectService {
     public JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
         final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
         for (String projectId : projectRevisionMap.keySet()) {
-            final Project project = fileIndexStore.findProjectById(projectId);
-            if (project != null) {
-                projectUserMap.put(projectId, project.getAuthorizedUsers());
+            try {
+                final Project project = fileIndexStore.findProjectById(projectId);
+                if (project != null) {
+                    projectUserMap.put(projectId, project.getAuthorizedUsers());
+                }
+            } catch (IllegalArgumentException e) {
+                throw new SendResultException(projectId + " is not a valid project id!", 400);
             }
         }
 
@@ -406,7 +410,7 @@ public class HashBasedProjectService implements ProjectService {
         try {
             return callable.call();
         } catch (Exception e) {
-            Logger.error("error in listen route! ",e);
+            Logger.error("error in listen route! ", e);
             return null;
         }
     }
