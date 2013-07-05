@@ -161,7 +161,7 @@ define ->
 
     render:->
       @updateLock()
-      @$el.html @template {}
+      @$el.html @template {simpleTooltip: ($.inArray('SIMPLE_TOOLTIP', document.features) > -1)}
       @
       
     updateLock:->

@@ -4,12 +4,12 @@
     <div class="handle"></div>
     <div class="controls">
       <div class="btn-group">
-        <a title="" data-toggle="dropdown" class="btn dropdown-toggle" data-original-title="Font"><i class="icon-font"></i><b class="caret"></b></a>
+        <a {{#if simpleTooltip}}title="Font type"{{/if}} data-toggle="dropdown" class="btn dropdown-toggle" data-original-title="Font" ><i class="icon-font"></i><b class="caret"></b></a>
           <ul class="dropdown-menu">
           <li><a style="font-family:'Serif'" data-edit="fontName Serif">Serif</a></li><li><a style="font-family:'Sans'" data-edit="fontName Sans">Sans</a></li><li><a style="font-family:'Arial'" data-edit="fontName Arial">Arial</a></li><li><a style="font-family:'Arial Black'" data-edit="fontName Arial Black">Arial Black</a></li><li><a style="font-family:'Courier'" data-edit="fontName Courier">Courier</a></li><li><a style="font-family:'Courier New'" data-edit="fontName Courier New">Courier New</a></li><li><a style="font-family:'Comic Sans MS'" data-edit="fontName Comic Sans MS">Comic Sans MS</a></li><li><a style="font-family:'Helvetica'" data-edit="fontName Helvetica">Helvetica</a></li><li><a style="font-family:'Impact'" data-edit="fontName Impact">Impact</a></li><li><a style="font-family:'Lucida Grande'" data-edit="fontName Lucida Grande">Lucida Grande</a></li><li><a style="font-family:'Lucida Sans'" data-edit="fontName Lucida Sans">Lucida Sans</a></li><li><a style="font-family:'Tahoma'" data-edit="fontName Tahoma">Tahoma</a></li><li><a style="font-family:'Times'" data-edit="fontName Times">Times</a></li><li><a style="font-family:'Times New Roman'" data-edit="fontName Times New Roman">Times New Roman</a></li><li><a style="font-family:'Verdana'" data-edit="fontName Verdana">Verdana</a></li></ul>
         </div>
       <div class="btn-group">
-        <a title="" data-toggle="dropdown" class="btn dropdown-toggle" data-original-title="Font Size"><i class="icon-text-height"></i>&nbsp;<b class="caret"></b></a>
+        <a {{#if simpleTooltip}}title="Font size"{{/if}} data-toggle="dropdown" class="btn dropdown-toggle" data-original-title="Font Size"><i class="icon-text-height"></i>&nbsp;<b class="caret"></b></a>
           <ul class="dropdown-menu">
           <li><a data-edit="fontSize 5"><font size="5">Huge</font></a></li>
           <li><a data-edit="fontSize 3"><font size="3">Normal</font></a></li>
@@ -17,10 +17,10 @@
           </ul>
       </div>
       <div class="btn-group">
-        <a title="" data-edit="bold" class="btn" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
-        <a title="" data-edit="italic" class="btn" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
-        <a title="" data-edit="strikethrough" class="btn" data-original-title="Strikethrough"><i class="icon-strikethrough"></i></a>
-        <a title="" data-edit="underline" class="btn" data-original-title="Underline (Ctrl/Cmd+U)"><i class="icon-underline"></i></a>
+        <a {{#if simpleTooltip}}title="Bold"{{/if}} data-edit="bold" class="btn" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+        <a {{#if simpleTooltip}}title="Italic"{{/if}} data-edit="italic" class="btn" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+        <a {{#if simpleTooltip}}title="Crossed out"{{/if}} data-edit="strikethrough" class="btn" data-original-title="Strikethrough"><i class="icon-strikethrough"></i></a>
+        <a {{#if simpleTooltip}}title="Underlined"{{/if}} data-edit="underline" class="btn" data-original-title="Underline (Ctrl/Cmd+U)"><i class="icon-underline"></i></a>
       </div>
       <input type="text" x-webkit-speech="" id="voiceBtn" data-edit="inserttext" style="display: none;">
     </div>
