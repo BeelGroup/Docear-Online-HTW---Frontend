@@ -47,9 +47,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         if $child.size() > 0
           $child.remove()
         nodeView = new NodeView(newChild, @rootView)
-        $nodeHtml = $($(nodeView.render(@rootView).el))
-        
-        $($childrenContainer).append($nodeHtml)
+        $nodeHtml = $(nodeView.renderAndAppendTo($childrenContainer, @rootView).el)
         $nodeHtml.show()
       
       side = null
@@ -233,7 +231,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       # no childs now nor later: hide fold buttons
       else
         @$el.find('.action-fold').hide()
-
+      @
         
       
 
