@@ -28,7 +28,71 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       delete @projectViews[project.get('id')]
       if $objToDelete.size() > 0
         $('#workspace-tree').jstree("delete_node", $objToDelete)
-              
+       
+    initJsTree: ->
+      @$workspaceTree.jstree({
+        plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd", "sort"],
+        sort: (a,b)-> 
+          aIsNotFolder = not $(a).hasClass('folder')
+          bIsNotFolder = not $(b).hasClass('folder')
+
+          valTextA = @.get_text(a).toLowerCase()
+          valTextB = @.get_text(b).toLowerCase()
+
+          aIsBigger = valTextA > valTextB
+
+          if aIsBigger
+            if bIsNotFolder
+              if aIsNotFolder
+                1
+              else
+                -1
+            else
+              1
+          else
+            if aIsNotFolder
+              if bIsNotFolder
+                -1
+              else
+                1
+            else
+              -1
+
+        contextmenu: {items: @customMenu},
+        ui: 
+          select_limit: 1
+        ,  
+        crrm:
+          move:
+            check_move: (m)-> # http://www.jstree.com/documentation/core (for m)
+              checkresult = false
+              # .o - the node being moved
+              # .np - the new parent
+              sourceProjectId = $(m.o).closest('li.project').attr('id')
+              targetProjectId = $(m.np).closest('li.project').attr('id')
+              if sourceProjectId is targetProjectId
+                if $(m.np).hasClass('folder') and not $(m.np).hasClass('users')
+                  checkresult = true
+
+              checkresult          
+                  
+      }).bind("move_node.jstree rename_node.jstree create_node.jstree", (event, data)=>
+        type = event.type
+        if(type is 'move_node')
+          # rollback movement
+          $.jstree.rollback data.rlbk
+          # send move request to the server
+          @requestMoveResource event, data
+        else
+          document.log "Action for event type \'"+type+"\' not implemented jet"
+        if(type is 'rename_node')
+          if $(data.args[0]).hasClass 'temp-project'
+            @requestCreateProject(data.args[0], data.args[1])
+          else
+            @moveResource()
+      )
+      
+     
     add: (project)->
       projectView = new ProjectView(project, @)
       @projectViews[project.get('id')] = projectView
@@ -38,69 +102,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         if $objToDelete.size() > 0
           $('#workspace-tree').jstree("delete_node", $objToDelete)
         $(@el).find('#workspace-tree ul:first').append $(projectView.render().el)
-
-        @$workspaceTree.jstree({
-          plugins: ["themes", "html_data", "ui", "crrm", "contextmenu","dnd", "sort"],
-          sort: (a,b)-> 
-            aIsNotFolder = not $(a).hasClass('folder')
-            bIsNotFolder = not $(b).hasClass('folder')
-
-            valTextA = @.get_text(a).toLowerCase()
-            valTextB = @.get_text(b).toLowerCase()
-
-            aIsBigger = valTextA > valTextB
-
-            if aIsBigger
-              if bIsNotFolder
-                if aIsNotFolder
-                  1
-                else
-                  -1
-              else
-                1
-            else
-              if aIsNotFolder
-                if bIsNotFolder
-                  -1
-                else
-                  1
-              else
-                -1
-
-          contextmenu: {items: @customMenu},
-          ui: 
-            select_limit: 1
-          ,  
-          crrm:
-            move:
-              check_move: (m)-> # http://www.jstree.com/documentation/core (for m)
-                checkresult = false
-                # .o - the node being moved
-                # .np - the new parent
-                sourceProjectId = $(m.o).closest('li.project').attr('id')
-                targetProjectId = $(m.np).closest('li.project').attr('id')
-                if sourceProjectId is targetProjectId
-                  if $(m.np).hasClass('folder') and not $(m.np).hasClass('users')
-                    checkresult = true
-
-                checkresult          
-                    
-        }).bind("move_node.jstree rename_node.jstree create_node.jstree", (event, data)=>
-          type = event.type
-          if(type is 'move_node')
-            # rollback movement
-            $.jstree.rollback data.rlbk
-            # send move request to the server
-            @requestMoveResource event, data
-          else
-            document.log "Action for event type \'"+type+"\' not implemented jet"
-          if(type is 'rename_node')
-            if $(data.args[0]).hasClass 'temp-project'
-              @requestCreateProject(data.args[0], data.args[1])
-            else
-              @moveResource()
-        )
-
+        @initJsTree()
 
     refreshNode: ($node) =>
       @$workspaceTree.jstree 'refresh', $node
@@ -492,6 +494,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       for projectId, projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       @bindEvents()
+      @initJsTree()
       @
       
     bindEvents: ()=>

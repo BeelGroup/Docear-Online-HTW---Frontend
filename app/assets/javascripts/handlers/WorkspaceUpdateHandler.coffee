@@ -5,49 +5,43 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
 
     constructor: (@workspace)->
       super()
-      @workspace = workspace
       
     listen: ()->
       if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1 and $.inArray('WORKSPACE', document.features) > -1
         document.log "listen for updates on workspace"
         me = @
         
+        projects = {}
         if @workspace.length > 0
-          projects = {}
           @workspace.each (project)=>
             if project.get('revision') > -1
               projects[project.id] = project.get('revision');
             else
               projects[project.id] = 0;
-              
-          
-          params = {
-              url: jsRoutes.controllers.ProjectController.listenForUpdates().url
-              type: 'POST'
-              cache: false
-              data: projects
-              success: (projectData)=>
-                #project = new Project(projectData)
-                #me.add(project)
-                for projectId, revision of projectData.updatedProjects
-                  project = me.workspace.get(projectId)
-                  me.getChangesByProject(project)
-                
-                for projectId, revision of projectData.newProjects
-                  me.getProject(projectId)
-                
-                for projectId in projectData.deletedProjects
-                  me.workspace.remove(projectId)
-                me.listen()
-              error: ()->
-                me.listen()
-              dataType: 'json' 
-            }
-            $.ajax(params)
-        else
-          setTimeout(=>
-            @listen()
-          , 2000)
+         
+        params = {
+          url: jsRoutes.controllers.ProjectController.listenForUpdates().url
+          type: 'POST'
+          cache: false
+          data: projects
+          success: (projectData)=>
+            #project = new Project(projectData)
+            #me.add(project)
+            for projectId, revision of projectData.updatedProjects
+              project = me.workspace.get(projectId)
+              me.getChangesByProject(project)
+            
+            for projectId, revision of projectData.newProjects
+              me.getProject(projectId)
+            
+            for projectId in projectData.deletedProjects
+              me.workspace.remove(projectId)
+            me.listen()
+          error: ()->
+            me.listen()
+          dataType: 'json' 
+        }
+        $.ajax(params)
       
     getChangesByProject: (project)->
       project.update()

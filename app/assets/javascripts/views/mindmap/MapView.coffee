@@ -207,7 +207,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         $('#mindmap-container').before(@workspaceView.render().element())
         @workspace.loadAllUserProjects()
         @workspaceUpdateHandler = new WorkspaceUpdateHandler(@workspace)
-        @workspaceUpdateHandler.listen(5000)
+        @workspaceUpdateHandler.listen()
         
         @resizeWorkspace(@resizeViewport())
 
