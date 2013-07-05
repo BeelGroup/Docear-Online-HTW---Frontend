@@ -125,8 +125,8 @@ public class ProjectController extends DocearController {
             parentRev = null;
 
         //check that content has correct length
-        if(contentLength > 0 && contentLength.intValue() != content.length) {
-            throw new SendResultException("File was not fully uploaded!",400);
+        if (contentLength > 0 && contentLength.intValue() != content.length) {
+            throw new SendResultException("File was not fully uploaded!", 400);
         }
 
         boolean isZipValidation = false;
@@ -143,7 +143,7 @@ public class ProjectController extends DocearController {
                 final ByteBuffer byteBuffer = ByteBuffer.wrap(content);
                 final int zipSignature = byteBuffer.getInt();
                 isZipValidation = (zipSignature == 0x504b0304);
-                Logger.debug("putFile => send as zip: "+isZip+"; validated: "+isZipValidation);
+                Logger.debug("putFile => send as zip: " + isZip + "; validated: " + isZipValidation);
             } catch (BufferUnderflowException e) {
                 isZipValidation = false;
                 // do nothing
@@ -230,12 +230,14 @@ public class ProjectController extends DocearController {
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
         final String username = username();
 
-        for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
-            final String projectId = entry.getKey();
-            try {
-                projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
-            } catch (NumberFormatException e) {
-                return badRequest("Revisions must be long value!");
+        if (urlEncodedBody != null) {
+            for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+                final String projectId = entry.getKey();
+                try {
+                    projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
+                } catch (NumberFormatException e) {
+                    return badRequest("Revisions must be long value!");
+                }
             }
         }
 
