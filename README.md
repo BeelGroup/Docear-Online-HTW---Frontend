@@ -26,18 +26,13 @@
       * `sbt eclipse` #Eclipse
       * `sbt idea` #IntelliJ IDEA
       * Netbeans: http://www.playframework.org/documentation/2.1.0/IDE
-* run unit tests in batch mode: `sbt "test-only base.TestSuite"`
+* run unit tests in batch mode: `sbt test`
 * don't use CSS directly, use [less](http://lesscss.org/) in the folder app/assets/stylesheets
 * don't use JavaScript directly, use [CoffeeScript](http://coffeescript.org/) in the folder app/assets/javascripts
 * [Debugging](https://github.com/Docear/HTW-Frontend/blob/master/dev-doc/debug.md)
 * recover from hard build errors: `sbt clean`
 * using initial data for the projects: see ProjectFixturesPlugin.java
+* using a specific configuration: `sbt -Dconfig.file=conf/backenddevdocear2.conf compile ~run`
 
-## Backend mock
-* default: it delivers static files to easy frontend development
-* using docear2 in development `sbt -Dconfig.file=conf/backenddevdocear2.conf ~run`
-* static files are currently in conf/rest/v1
-
-# Links
-## CoffeeScript
-* http://autotelicum.github.com/Smooth-CoffeeScript/interactive/interactive-coffeescript.html
+# Packaging
+`sbt dist`
