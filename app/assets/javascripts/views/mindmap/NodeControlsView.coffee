@@ -85,6 +85,7 @@ define ['views/mindmap/NodeEditView'], (NodeEditView) ->
           movable: ($.inArray('MOVE_NODE', document.features) > -1)
           deletable: ($.inArray('DELETE_NODE', document.features) > -1)
           isRoot: (@nodeModel.typeName == 'rootModel')
+          simpleTooltip: ($.inArray('SIMPLE_TOOLTIP', document.features) > -1)
       }
       @$el.html @template attrs
       @

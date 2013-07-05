@@ -46,7 +46,8 @@ public enum Feature {
     RIBBONS("display ribbons on top of page"),
     RIBBON_GENERAL("display general ribbon"),
     ANIMATE_TREE_RESIZE("enable animation when tree is resized (e.g. new node added)"),
-    ENABLE_READONLY_MAP("if set, read only maps can not be changed");
+    ENABLE_READONLY_MAP("if set, read only maps can not be changed"),
+    SIMPLE_TOOLTIP("if set, you can see native tooltips (set by title attribute)");
 
     String description;
     boolean isEnabled = false;

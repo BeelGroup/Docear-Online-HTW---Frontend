@@ -2,10 +2,10 @@
 <div class='inner-node'>
   <div class='content {{#if isHtml}}isHtml{{/if}}'>{{#if isHtml}}{{{nodeText}}}{{else}}{{nodeText}}{{/if}}</div>
   {{#if foldable}}
-    <div class='action-fold collapse-icon node-control'>
+    <div class='action-fold collapse-icon node-control' {{#if simpleTooltip}}title="Collapse"{{/if}}>
       <div class='action-fold-all minusIcon' style="width: 18px; height: 18px;"> </div>
     </div>
-    <div class='action-fold expand-icon invisible node-control'>
+    <div class='action-fold expand-icon invisible node-control' {{#if simpleTooltip}}title="Expand"{{/if}}>
       <div class='action-fold-all plusIconBG' style="width: 18px; height: 18px;"> </div>
     </div>
     <div class='action-fold loading-icon invisible'>

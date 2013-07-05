@@ -23,11 +23,9 @@ define ->
       $editorWindow = @$el.find(".node-editor:first")
       $toolbar = @$el.find(".editor-toolbar:first")
 
-
       parentSize = 
         width: @$el.width()
         height: @$el.height()
-
 
       $editorWindow.position()
 

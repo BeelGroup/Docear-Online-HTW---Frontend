@@ -37,3 +37,5 @@ document.sleepTimeOnPartialLoading = 40
 
 document.lockRefresh = 10000
 document.unlockDelay = 400
+
+document.simpleTooltip = true
