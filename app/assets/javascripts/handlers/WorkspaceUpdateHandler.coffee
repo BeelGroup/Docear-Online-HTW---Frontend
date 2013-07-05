@@ -59,6 +59,8 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
               resource = project.getResourceByPath path, false
               if resource != undefined
                 resource.get('parent').deleteResourceByPath(path)
+                if $(".node.root .map-id[value*='#{path}']").size() > 0
+                  location.href = "/#closeMap/#{path}"
                 document.log "Resource #{path} deleted"
             else
               resource = project.getResourceByPath path, true

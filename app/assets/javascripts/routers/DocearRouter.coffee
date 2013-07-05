@@ -7,6 +7,7 @@ define ['logger'],(logger) ->
     ## reg ex example: '/^(.*?)$/' : 'doIt'
     routes:
       'project/:projectId/map/*path': 'loadMap'
+      'closeMap/*path': 'closeMap'
       '*path': 'notFound'
 
     constructor:(@mapView)->
@@ -17,6 +18,9 @@ define ['logger'],(logger) ->
     loadMap: (projectId, mapId)->
       document.log "Load map #{mapId} from project #{projectId} (DocearRouter.loadMap())" 
       @mapView.loadMap projectId, mapId
+    
+    closeMap: (mapId)->
+      @mapView.closeMap mapId
 
     notFound:(params)->
       document.log 'Route not found: #{params}', 'warn'

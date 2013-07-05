@@ -36,7 +36,19 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         error: @showMapLoadingError
         dataType: "json"
       )
-      
+    
+    closeMap: (mapId = @mapId)->
+      document.log "Close map #{@mapId}"
+      if @mapLoader isnt undefined
+        @mapLoader.stop()
+      if @rootView isnt undefined
+        @canvas.zoomCenter(false)
+        @rootView.getElement().remove()
+        @rootView.destroy()
+        
+        # close edit view if opend (defined in main.coffee)
+        $editNodeContainer = $('.node-edit-container')
+        $editNodeContainer.addClass('close-and-destroy').hide() 
 
     showMapLoadingError:(a,b,c)=>
       # if answere doesn't contain redirect, show error message

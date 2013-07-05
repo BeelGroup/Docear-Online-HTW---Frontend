@@ -334,7 +334,7 @@ define ['logger'], (logger) ->
         y: (@size / 2) * -1
 
     center:(selectRoot = false)->
-      if typeof(@rootView) != 'undefined'
+      if typeof(@rootView) != 'undefined' and $("##{@rootView.model.get('id')}").size() > 0
         if (not @rootView.model.get 'selected') and selectRoot
           @rootView.model.set 'selected', true
 
