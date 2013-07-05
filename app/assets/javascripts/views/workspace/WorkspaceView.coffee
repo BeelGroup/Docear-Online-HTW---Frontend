@@ -85,20 +85,36 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
                 checkresult          
                     
-        }).bind("move_node.jstree rename_node.jstree create_node.jstree", (event, data)=>
+        }).bind("move_node.jstree rename_node.jstree create_node.jstree dblclick.jstree", (event, data)=>
           type = event.type
-          if(type is 'move_node')
+          if type is 'move_node'
             # rollback movement
             $.jstree.rollback data.rlbk
             # send move request to the server
             @requestMoveResource event, data
-          else
-            document.log "Action for event type \'"+type+"\' not implemented jet"
-          if(type is 'rename_node')
+          else if type is 'rename_node'
             if $(data.args[0]).hasClass 'temp-project'
               @requestCreateProject(data.args[0], data.args[1])
             else
               @moveResource()
+          else if type is 'dblclick'
+            console.log $(event.target)
+            $target = $(event.target)
+            if $target.hasClass 'jstree-icon'
+              $obj = $(event.target).parent().parent()
+            else
+              $obj = $(event.target).parent()
+
+            if ($obj.hasClass('users') or $obj.hasClass('project') or $obj.hasClass('folder'))
+              if $obj.hasClass 'jstree-open'
+                $('#workspace-tree').jstree('close_node', $obj)
+              else
+                $('#workspace-tree').jstree('open_node', $obj)
+            else if $obj.hasClass 'mindmap-file'
+              @openMindmap $obj
+            
+          else
+            document.log "Action for event type \'"+type+"\' not implemented jet"
         )
 
 
