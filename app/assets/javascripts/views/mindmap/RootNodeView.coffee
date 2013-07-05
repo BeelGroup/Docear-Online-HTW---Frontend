@@ -48,9 +48,16 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
 
 
     # Refresh the mind map and reposition the dom elements
-    refreshDom: () ->
-      height1 = @alignChildrenofElement(@$el.children('.leftChildren:first'), 'left')
-      height2 = @alignChildrenofElement(@$el.children('.rightChildren:first'), 'right')
+    refreshDom: (side = null) ->
+      if side == null or side == 'left'
+        height1 = @alignChildrenofElement(@$el.children('.leftChildren:first'), 'left')
+      else
+        height1 = @$el.children('.leftChildren:first').outerHeight()
+        
+      if side == null or side == 'right'
+        height2 = @alignChildrenofElement(@$el.children('.rightChildren:first'), 'right')
+      else
+        height2 = @$el.children('.rightChildren:first').outerHeight()
       height = (height1 > height2) ? height1 : height2
       
       height

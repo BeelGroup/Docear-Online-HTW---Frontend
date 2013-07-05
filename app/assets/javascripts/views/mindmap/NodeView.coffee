@@ -29,7 +29,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         newChild = @model.get 'lastAddedChild'
         refreshConnections = true
 
-      @$el.find('.action-fold').show()
+      @$el.children('.inner-node').find('.action-fold').show()
       $node = $(@$el)
       if @model.typeName is 'rootModel'
         if @model.get('lastAddedChildSide') is 'Left'
@@ -52,15 +52,18 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         $($childrenContainer).append($nodeHtml)
         $nodeHtml.show()
       
-      if $.inArray('ANIMATE_TREE_RESIZE', document.features) > -1
+      side = null
+      if $node.hasClass('left') or @model.get('lastAddedChildSide') is 'Left'
+        side = 'left'
+      else if $node.hasClass('right') or @model.get('lastAddedChildSide') is 'Right'
         side = 'right'
-        if $node.hasClass('left')
-          side = 'left'
+
+      if $.inArray('ANIMATE_TREE_RESIZE', document.features) > -1
         @alignChildrenofElement($node.children('.children'), side)
         diff = previousHeight - $childrenContainer.outerHeight()
         @resizeTree $node, @model, diff
       else
-        @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        @model.get('rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries', side
 
       children = newChild.get 'children'
       if children.length > 0

@@ -100,9 +100,9 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       @rootView.model.on 'refreshDomConnectionsAndBoundaries', @refreshDomConnectionsAndBoundaries
 
 
-    refreshDomConnectionsAndBoundaries:=>
+    refreshDomConnectionsAndBoundaries: (side = null)=>
       document.log 'refresh'
-      @rootView.refreshDom()
+      @rootView.refreshDom(side)
       @canvas.checkBoundaries()
       @minimap.drawMiniNodes @rootView.setChildPositions()
       @rootView.getModel().updateAllConnections()
