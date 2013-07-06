@@ -156,7 +156,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           label: "Add user",
           action: @requestAddUser
 
-      if($(node).hasClass("file"))
+      if($(node).hasClass("file") && !$(node).hasClass("delete-me-on-update"))
         items.downloadItem = 
           label: "Download file"
           action: @requestDownloadItem
@@ -192,7 +192,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
     requestCreateMapItem: (liNode, a, b)->
       $parent = $('#workspace-tree').jstree('get_selected')
       $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'resource file mindmap-file delete-me-on-update'}, state: "leaf", data: "new_mindmap.mm" }
+      newNode = { attr: {class: 'resource loading file delete-me-on-update'}, state: "leaf", data: "new_mindmap.mm" }
       obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
 
       # instant renaming
