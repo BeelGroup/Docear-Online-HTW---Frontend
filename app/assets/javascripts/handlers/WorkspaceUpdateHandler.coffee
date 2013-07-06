@@ -25,8 +25,6 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           cache: false
           data: projects
           success: (projectData)=>
-            #project = new Project(projectData)
-            #me.add(project)
             for projectId, revision of projectData.updatedProjects
               project = me.workspace.get(projectId)
               me.getChangesByProject(project)
@@ -36,9 +34,19 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
             
             for projectId in projectData.deletedProjects
               me.workspace.remove(projectId)
-            me.listen()
-          error: ()->
-            me.listen()
+          statusCode: {
+            200: ()->
+              me.listen()
+            304: ()->
+              me.listen()
+            401: ()->
+              document.log "user is not logged in -> stop listening on workspace"
+            503: ()->
+              document.log "Service Temporarily Unavailable"
+              setTimeout(->
+                me.listen()
+              , 5000)
+          }
           dataType: 'json' 
         }
         $.ajax(params)
