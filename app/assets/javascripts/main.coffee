@@ -38,3 +38,6 @@ require ['logger', 'views/templates.pre.min', 'NodeFactory','feedbackForm', 'vie
     workspaceVisible = !workspaceVisible
     false
   )
+  $('.alert .close').live("click", (e)-> 
+    $($(@).parent()).hide()
+  )
