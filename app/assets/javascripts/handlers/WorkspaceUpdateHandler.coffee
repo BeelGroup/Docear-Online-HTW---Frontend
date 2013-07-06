@@ -18,9 +18,15 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
               projects[project.id] = project.get('revision');
             else
               projects[project.id] = 0;
-         
+
+        apiUrl = jsRoutes.controllers.ProjectController.listenForUpdates().url
+        if apiUrl.indexOf('?') < 0
+          apiUrl +=  "?"
+        else
+          apiUrl +=  "&"
+        apiUrl += "_=#{Math.floor(Math.random()*100000)}"
         params = {
-          url: jsRoutes.controllers.ProjectController.listenForUpdates().url
+          url: apiUrl
           type: 'POST'
           cache: false
           data: projects
