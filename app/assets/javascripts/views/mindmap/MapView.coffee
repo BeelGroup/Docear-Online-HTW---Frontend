@@ -45,6 +45,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
         @rootView.destroy()
+        $('.current-mindmap-name').text('')
         
         # close edit view if opend (defined in main.coffee)
         $editNodeContainer = $('.node-edit-container')
