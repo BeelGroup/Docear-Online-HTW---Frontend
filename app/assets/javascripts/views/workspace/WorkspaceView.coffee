@@ -230,23 +230,39 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         # set id in dom
         obj[0].id = currentPath
 
-        params = {
-          url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
-          type: 'POST'
-          cache: false
-          data: {"path": currentPath}
-          success:(data)=>
-            # create new model and add to parent
-            document.log "mind map created: "+currentPath+" to project "+projectId
+        dirtyPath = projectId+'_PATH_'+currentPath
+        cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
+        cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
+        cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
+        competingObjects = $('#'+cleanPath)
 
-          error:()=>
-            document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
-            # remove mm file from view
-            $('#workspace-tree').jstree("delete_node", obj)
+        if competingObjects.size() < 1
+          params = {
+            url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
+            type: 'POST'
+            cache: false
+            data: {"path": currentPath}
+            success:(data)=>
+              # create new model and add to parent
+              document.log "mind map created: "+currentPath+" to project "+projectId
 
-          dataType: 'json' 
-        }
-        $.ajax(params)
+            error:()=>
+              document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
+              # remove mm file from view
+              $('#workspace-tree').jstree("delete_node", obj)
+
+            dataType: 'json' 
+          }
+          $.ajax(params)
+        else
+          firstObj = $(competingObjects[0])
+          pos = $(firstObj).position()
+          pos.top = pos.top
+          $("#multiplename-error").css 'top', pos.top
+          $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
+          $("#multiplename-error").show()
+          $('#workspace-tree').jstree("delete_node", obj)
+
       )
         
     requestAddFile:(liNode, a,b)=>
@@ -298,23 +314,38 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         # set id in dom
         obj[0].id = currentPath
 
-        params = {
-          url: jsRoutes.controllers.ProjectController.createFolder(projectId).url
-          type: 'POST'
-          cache: false
-          data: {"path": currentPath}
-          success:(data)=>
-            # create new model and add to parent
-            document.log "folder with path : "+currentPath+" to project "+projectId
+        dirtyPath = projectId+'_PATH_'+currentPath
+        cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
+        cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
+        cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
+        competingObjects = $('#'+cleanPath)        
 
-          error:()=>
-            document.log "error on folder adding with path : "+currentPath+" to project "+projectId
-            # remove folder from view
-            $('#workspace-tree').jstree("delete_node", obj)
+        if competingObjects.size() < 1
+          params = {
+            url: jsRoutes.controllers.ProjectController.createFolder(projectId).url
+            type: 'POST'
+            cache: false
+            data: {"path": currentPath}
+            success:(data)=>
+              # create new model and add to parent
+              document.log "folder with path : "+currentPath+" to project "+projectId
 
-          dataType: 'json' 
-        }
-        $.ajax(params)
+            error:()=>
+              document.log "error on folder adding with path : "+currentPath+" to project "+projectId
+              # remove folder from view
+              $('#workspace-tree').jstree("delete_node", obj)
+
+            dataType: 'json' 
+          }
+          $.ajax(params)
+        else
+          firstObj = $(competingObjects[0])
+          pos = $(firstObj).position()
+          pos.top = pos.top
+          $("#multiplename-error").css 'top', pos.top
+          $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
+          $("#multiplename-error").show()
+          $('#workspace-tree').jstree("delete_node", obj)
       )
 
     # jstree functions are required, so dont use a fatarrow here
@@ -333,28 +364,42 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       @._show_input(obj, (obj, new_name, old_name)-> 
         f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
 
-        $(obj).children('a').attr('id', new_name)
         
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
 
         projectId   = $project.attr('id')
-        params = {
-          url: jsRoutes.controllers.ProjectController.addUserToProject(projectId).url
-          type: 'POST'
-          cache: false
-          data: {"username": new_name}
-          success:(data)=>
-            # create new model and add to parent
-            document.log "user \'"+new_name+"\' was added to project "+projectId
-          error:()=>
-            document.log "error on folder adding with path : "+new_name+" to project "+projectId
-            # remove folder from view
-            $('#workspace-tree').jstree("delete_node", obj)
-          dataType: 'json' 
-        }
 
-        $.ajax(params)
+        competingObjects = $('#'+projectId).find('#'+new_name)
+        console.log competingObjects.size()
+
+
+        if competingObjects.size() < 1
+          $(obj).children('a').attr('id', new_name)
+          params = {
+            url: jsRoutes.controllers.ProjectController.addUserToProject(projectId).url
+            type: 'POST'
+            cache: false
+            data: {"username": new_name}
+            success:(data)=>
+              # create new model and add to parent
+              document.log "user \'"+new_name+"\' was added to project "+projectId
+            error:()=>
+              document.log "error on folder adding with path : "+new_name+" to project "+projectId
+              # remove folder from view
+              #$('#workspace-tree').jstree("delete_node", obj)
+            dataType: 'json' 
+          }
+          $.ajax(params)
+        else
+          firstObj = $(competingObjects[0])
+          pos = $(firstObj).position() 
+          pos.top = pos.top + $(firstObj).outerHeight()
+          $("#multiplename-error").css 'top', pos.top
+          $("#multiplename-error").find('.message').html('This user already exists.')
+          $("#multiplename-error").show()
+          $('#workspace-tree').jstree("delete_node", obj)
+
       )
 
     requestDownloadItem: ()=>
@@ -497,6 +542,10 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     element:-> @$el
 
+    getCleanedPath:(dirtyPath)->
+      cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
+      cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
+      cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
 
     render:()->
       @_rendered = true
