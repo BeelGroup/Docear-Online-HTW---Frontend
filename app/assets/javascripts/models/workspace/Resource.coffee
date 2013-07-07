@@ -34,7 +34,8 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
             resource.fillFromData resourceData
             
             if @isRoot
-              resource.update(@resources)
+              if resource.get('dir')
+                resource.update(@resources)
             else
               @resources.add(resource)
 
