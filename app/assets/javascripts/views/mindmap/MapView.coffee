@@ -227,7 +227,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
 
-      if $.inArray('WORKSPACE', document.features)
+      if $.inArray('WORKSPACE', document.features) and $('body').hasClass('is-authenticated')
         @workspace = new Workspace()
         @workspaceView = new WorkspaceView(@workspace);
         $('#mindmap-container').before(@workspaceView.render().element())
