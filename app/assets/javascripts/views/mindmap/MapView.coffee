@@ -191,6 +191,10 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       stats=
         width:  width+'px'
         height: height+'px'
+      plainStats=
+        width:  width
+        height: height
+        
 
       container.css stats
       workspaceWidth = $('#workspace-container').outerWidth()
@@ -204,7 +208,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       if typeof @canvas isnt 'undefined'
         @canvas.updateDragBoundaries()
 
-      stats
+      plainStats
 
     render:(@forceFullscreen)->
       @$el.parent().fadeIn()

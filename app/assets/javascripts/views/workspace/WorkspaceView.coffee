@@ -16,7 +16,10 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     resize:(widthAndHeight)->
       @$el.css
-        height: widthAndHeight.height
+        height: widthAndHeight.height+"px"
+      tollbarHeight = @$el.children('.toolbar').outerHeight()+10
+      @$el.children('.scroll-container').css
+        height: (widthAndHeight.height-tollbarHeight)+'px'
 
     initialize : ()->
       @projectViews = {}
@@ -552,7 +555,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       options = {}
       options.upload_enabled = $.inArray('WORKSPACE_UPLOAD', document.features) > -1
       @$el.html @template options
-      @$workspaceTree = $(@el).children('#workspace-tree')
+      @$workspaceTree = $(@el).find('#workspace-tree')
           
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectId, projectView in @projectViews
