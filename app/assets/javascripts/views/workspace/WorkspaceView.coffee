@@ -562,7 +562,28 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       
       $(@$el).resizable({
         handles: 'e'
+        start: (event, ui)->
+          $(this).addClass 'resizing'
       });
+      @$el.find('.ui-resizable-handle').click ->
+        if $('#workspace-container').hasClass 'resizing'
+          $('#workspace-container').removeClass 'resizing'
+        else
+          workspaceWidth = $('#workspace-container').width()
+          newWidth = workspaceWidth;
+          if workspaceWidth <= 0
+            newWidth = -$('#workspace-container').attr('data-prev-width')
+          
+          $('#workspace-container').attr('data-prev-width', workspaceWidth)
+          
+          $('#workspace-container').animate
+            'width': '-='+newWidth+'px'
+          , duration: document.fadeDuration
+  
+          $('#mindmap-container').animate
+            'width': '+='+newWidth+'px'
+          , duration: document.fadeDuration
+            
       
       @
       
