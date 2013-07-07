@@ -45,6 +45,7 @@ public class MongoPlugin extends Plugin {
     private void ensureIndexes() {
         files().ensureIndex(doc("project", 1).append("path", 1), doc("unique", true));
         projects().ensureIndex(doc("_id", 1).append("authUsers", 1));
+        projects().ensureIndex(doc("authUsers", 1));
         mindMapMetaData().ensureIndex(doc("projectId", 1).append("mindMapResource", 1), doc("unique", true));
     }
 
