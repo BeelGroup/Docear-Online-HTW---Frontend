@@ -40,7 +40,6 @@ import org.docear.messages.Messages.GetNodeRequest;
 import org.docear.messages.Messages.GetNodeResponse;
 import org.docear.messages.Messages.ListenToUpdateOccurrenceRequest;
 import org.docear.messages.Messages.ListenToUpdateOccurrenceResponse;
-import org.docear.messages.Messages.MapClosedMessage;
 import org.docear.messages.Messages.MindMapChangeResponse;
 import org.docear.messages.Messages.MindMapRequest;
 import org.docear.messages.Messages.MindmapAsJsonReponse;
@@ -50,7 +49,6 @@ import org.docear.messages.Messages.MindmapAsXmlResponse;
 import org.docear.messages.Messages.MoveNodeToRequest;
 import org.docear.messages.Messages.MoveNodeToResponse;
 import org.docear.messages.Messages.OpenMindMapRequest;
-import org.docear.messages.Messages.OpenMindMapResponse;
 import org.docear.messages.Messages.ReleaseLockRequest;
 import org.docear.messages.Messages.ReleaseLockResponse;
 import org.docear.messages.Messages.RemoveNodeRequest;
@@ -86,7 +84,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Cancellable;
 import akka.actor.Props;
-import akka.actor.UntypedActor;
 import akka.actor.UntypedActorFactory;
 
 import com.typesafe.config.ConfigFactory;
@@ -106,7 +103,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 	private final ActorSystem system;
 	private final ActorRef remoteActor;
-	private final ActorRef processClosedMindMapActor;
+	private ActorRef processClosedMindMapActor;
 	@SuppressWarnings("unused")
 	private final Cancellable saveMindmapsJob;
 	private final UserIdentifier serverUserIdentifier = new UserIdentifier("SERVER", "SERVER");
@@ -118,17 +115,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	@Autowired
 	private MetaDataCrudService metaDataCrudService;
 
-	@SuppressWarnings("serial")
 	public ServerMindMapCrudService() {
 		final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
 		system = ActorSystem.create("freeplaneSystem", ConfigFactory.load().getConfig("local"));
 		remoteActor = system.actorFor(freeplaneActorUrl);
-		processClosedMindMapActor = system.actorOf(new Props(new UntypedActorFactory() {
-			@Override
-			public Actor create() throws Exception {
-				return new ProcessClosedMindMapsActor(metaDataCrudService, projectService);
-			}
-		}));
+
 
 		// job to auto save maps that haven't been saved for 5 minutes but are
 		// open
@@ -155,12 +146,25 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			}
 		}, system.dispatcher());
 	}
+	
+	@SuppressWarnings("serial")
+	private ActorRef getProcessClosedMindMapsActor() {
+		if(processClosedMindMapActor == null) {
+			processClosedMindMapActor = system.actorOf(new Props(new UntypedActorFactory() {
+				@Override
+				public Actor create() throws Exception {
+					return new ProcessClosedMindMapsActor(metaDataCrudService, projectService);
+				}
+			}));
+		}
+		return processClosedMindMapActor;
+	}
 
 	@Override
 	public Promise<Boolean> createMindmap(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
 		Logger.debug("ServerMindMapCrudService.createMindmap => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier);
 
-		final CreateMindmapRequest request = new CreateMindmapRequest(userIdentifier, mapIdentifier,processClosedMindMapActor);
+		final CreateMindmapRequest request = new CreateMindmapRequest(userIdentifier, mapIdentifier,getProcessClosedMindMapsActor());
 
 		return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
 			@Override
@@ -550,8 +554,8 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 			// send file to server and put in database
 			metaDataCrudService.upsert(new MetaData(mapIdentifier.getProjectId(), mapIdentifier.getMapId(), 0L, System.currentTimeMillis()));
 
-			final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, bytes, processClosedMindMapActor);
-			remoteActor.tell(request,processClosedMindMapActor);
+			final OpenMindMapRequest request = new OpenMindMapRequest(userIdentifier, mapIdentifier, bytes, getProcessClosedMindMapsActor());
+			remoteActor.tell(request,null);
 			return true;
 			// sending map to freeplane
 //			return performActionOnMindMap(request, new ActionOnMindMap<Boolean>() {
@@ -667,33 +671,6 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 	private User user() {
 		return userService.getCurrentUser();
-	}
-
-	private static final class ProcessClosedMindMapsActor extends UntypedActor {
-		private final MetaDataCrudService metaDataCrudService;
-		private final ProjectService projectService;
-
-		public ProcessClosedMindMapsActor(MetaDataCrudService metaDataCrudService, ProjectService projectService) {
-			super();
-			this.metaDataCrudService = metaDataCrudService;
-			this.projectService = projectService;
-		}
-
-		@Override
-		public void onReceive(Object message) throws Exception {
-			Logger.debug("ProcessClosedMindMapsActor.onReceive => " + message.getClass().getSimpleName() + " received.");
-			if (message instanceof MapClosedMessage) {
-
-				final MapClosedMessage request = (MapClosedMessage) message;
-				final MapIdentifier mapIdentifier = request.getMapIdentifier();
-				final byte[] bytes = request.getFileBytes();
-				final String projectId = mapIdentifier.getProjectId();
-				final String path = mapIdentifier.getMapId();
-
-				projectService.putFile(projectId, path, bytes, false, 0L, true);
-				metaDataCrudService.delete(projectId, path);
-			}
-		}
 	}
 
 }
