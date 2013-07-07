@@ -15,10 +15,6 @@
 
 }
 
-mindmap-container{
-    background-color: @docear-light-blue
-}
-
 /* http://openiconlibrary.sourceforge.net/gallery2/?./Icons/places/crystal-style */
 li.jstree-leaf > a .jstree-icon {background:none !important;}
 
@@ -101,7 +97,6 @@ li.loading > a .jstree-icon {background:url("../images/ajax-loader.gif") 0px 0px
 #mindmap-container 
 {
     height: 600px;
-    position: absolute;
     overflow: hidden;
     cursor: move;
     border: 0px solid #333333;
@@ -154,6 +149,11 @@ li.loading > a .jstree-icon {background:url("../images/ajax-loader.gif") 0px 0px
 {
     position: relative;
     background-color: @light-grey;
+}
+
+#mindmap-viewport
+{
+    position: relative;
 }
 
 .mini-node
@@ -570,14 +570,10 @@ ul.nav .no-link {
 
 .workspace-container 
 {
-    display: none;
-    position: absolute;
-    width: 219px;
-    height: 75%;
-    overflow: scroll;     
-
     background-color: @light-grey;
     border-right: 2px solid @dark-grey;
+    width: 280px;
+    float: left;
 }
 .workspace-container .toolbar
 {
@@ -588,6 +584,10 @@ ul.nav .no-link {
 .workspace-container .toolbar .btn
 {
     padding: 0px 6px;
+}
+.workspace-container #workspace-tree 
+{
+    overflow: auto;
 }
 
 

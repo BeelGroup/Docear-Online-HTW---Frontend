@@ -553,12 +553,17 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       options.upload_enabled = $.inArray('WORKSPACE_UPLOAD', document.features) > -1
       @$el.html @template options
       @$workspaceTree = $(@el).children('#workspace-tree')
-      
+          
       $projectsContainer = $(@$workspaceTree).children('ul.projects')
       for projectId, projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       @bindEvents()
       @initJsTree()
+      
+      $(@$el).resizable({
+        handles: 'e'
+      });
+      
       @
       
     bindEvents: ()=>

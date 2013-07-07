@@ -165,6 +165,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       container = @$el.parent().parent()
       verticalMargin = parseFloat(container.css('margin-top'))+parseFloat(container.css('margin-bottom'))
       height = Math.round(window.innerHeight)-@$el.parent().position().top-verticalMargin
+      height
 
     computeWidth:->
       container = @$el.parent().parent()
@@ -184,13 +185,21 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         width = container.width()
         height = container.height()
 
+      if height <= 0
+        height = $(mindmapContainer).outerHeight()
+      
       stats=
         width:  width+'px'
         height: height+'px'
 
       container.css stats
-      mindmapContainer.css stats
-      @$el.css stats
+      workspaceWidth = $('#workspace-container').outerWidth()
+      mindMapStats=
+        width:  (width-workspaceWidth)+'px'
+        height: height+'px'
+
+      mindmapContainer.css mindMapStats
+      @$el.css mindMapStats
 
       if typeof @canvas isnt 'undefined'
         @canvas.updateDragBoundaries()
