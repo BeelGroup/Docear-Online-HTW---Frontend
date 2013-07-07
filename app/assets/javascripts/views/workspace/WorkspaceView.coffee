@@ -131,7 +131,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       items = new Object()
 
       if ($(node).hasClass("mindmap-file"))
-        items.addFile =  # upload
+        items.openMindmap = 
           label: "Open mind map",
           action: @openMindmap
 
@@ -588,6 +588,35 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       
       @
       
+    uploadFile: (file, projectId, filepath, revision)=>
+      reader = new FileReader()
+      reader.onload = (event)=>
+        $.ajax({
+          url: jsRoutes.controllers.ProjectController.putFile(projectId, filepath, false, revision).url
+          type: 'PUT'
+          processData: false
+          contentType: 'application/octet-stream'
+          data: event.target.result
+          dataType: 'json'
+          error: ()->
+            $objToDelete = $(".loading.delete-me-on-update")
+            if $objToDelete.size() > 0
+              $('#workspace-tree').jstree("delete_node", $objToDelete)
+            $('.loading').removeClass('loading')
+            document.log 'error while uploading file.'
+          statusCode:
+            401: ()->
+              $objToDelete = $(".loading.delete-me-on-update")
+              if $objToDelete.size() > 0
+                $('#workspace-tree').jstree("delete_node", $objToDelete)
+                
+              $('li.loading').removeClass('loading')
+              document.log 'Error while uploading file. Unauthorized.'
+          success: ()->
+            $('li.loading').removeClass('loading')
+        })
+      reader.readAsArrayBuffer(file);
+      
     bindEvents: ()=>
       @$el.find('#file-to-upload').change (evt)=>
         if evt.target.files.length > 0
@@ -610,62 +639,34 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           files = evt.target.files
           fileInfos = []
           for f in files
-            #tempFunc is necessary to make sure file reader nows "filename"
-            tempFunc = (f)=>
-              filename = escape(f.name)
-              filepath = path+filename
-  
-              fileInfos.push({
-                "name": escape(f.name)
-                'filepath': filepath
-                "type": f.type
-                "size": f.size
-                "modified": f.lastModifiedDate.toLocaleDateString()
-              })
+            filename = escape(f.name)
+            filepath = path+filename
+
+            fileInfos.push({
+              "name": escape(f.name)
+              'filepath': filepath
+              "type": f.type
+              "size": f.size
+              "modified": f.lastModifiedDate.toLocaleDateString()
+            })
+            
+            $('#workspace-tree').jstree('open_node', $parent)
+            
+            resource = projectModel.getResourceByPath(filepath)
+            revision = -1
+            if !!resource
+              revision = resource.get('revision')
+              $treeItem = $("li.file[id*='#{filepath}']")
+              $treeItem.addClass('loading')
               
-              $('#workspace-tree').jstree('open_node', $parent)
-              
-              resource = projectModel.getResourceByPath(filepath)
-              revision = -1
-              if !!resource
-                revision = resource.get('revision')
-                $treeItem = $("li.file[id*='#{filepath}']")
-                $treeItem.addClass('loading')
-              else
-                newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
-                obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
-                obj.attr('id', filepath)
-                
-              reader = new FileReader()
-              reader.onload = (event)=>
-                $.ajax({
-                  url: jsRoutes.controllers.ProjectController.putFile(projectId, filepath, false, revision).url
-                  type: 'PUT'
-                  processData: false
-                  contentType: 'application/octet-stream'
-                  data: event.target.result
-                  dataType: 'json'
-                  error: ()->
-                    $objToDelete = $(".loading.delete-me-on-update")
-                    if $objToDelete.size() > 0
-                      $('#workspace-tree').jstree("delete_node", $objToDelete)
-                    $('.loading').removeClass('loading')
-                    document.log 'error while uploading file.'
-                  statusCode:
-                    401: ()->
-                      $objToDelete = $(".loading.delete-me-on-update")
-                      if $objToDelete.size() > 0
-                        $('#workspace-tree').jstree("delete_node", $objToDelete)
-                        
-                      $('li.loading').removeClass('loading')
-                      document.log 'Error while uploading file. Unauthorized.'
-                  success: ()->
-                    $('li.loading').removeClass('loading')
-                    
-                    
-                })
-              reader.readAsArrayBuffer(f);
-            tempFunc(f)
+              resource.update null, =>
+                @uploadFile(f, projectId, filepath, revision)
+            else
+              newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
+              obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+              obj.attr('id', filepath)
+              @uploadFile(f, projectId, filepath, revision)
+          
           # in case user wants to upload the same file again after changing it
           # http://stackoverflow.com/questions/1043957/clearing-input-type-file-using-jquery
           $('#file-to-upload').wrap('<form>').closest('form').get(0).reset();

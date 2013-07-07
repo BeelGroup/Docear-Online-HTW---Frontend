@@ -5,7 +5,6 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
 
     constructor: (@project, path, @isRoot = false, parent = null)->
       super()
-      @updated = false
       @set 'path', path
       @set 'id', path
       @set 'filename', path.substring(path.lastIndexOf('/')+1);
@@ -44,20 +43,20 @@ define ['logger', 'collections/workspace/Resources'], (logger, Resources)->
       @resources.add(newChild)
 
 
-    update: (resources)=>
-      if not @updated
-        me = @
-        params = {
-          url: jsRoutes.controllers.ProjectController.metadata(@project.id, encodeURI(@get('path'))).url
-          type: 'GET'
-          cache: false
-          success: (data)->
-            me.updated = true
-            me.fillFromData(data)
-            if resources != undefined
-              resources.add(me)
-            document.log "files data for "+(me.get 'filename')+ " received"
-          dataType: 'json' 
-        }
-        $.ajax(params)     
+    update: (resources = null, callback = null)=>
+      me = @
+      params = {
+        url: jsRoutes.controllers.ProjectController.metadata(@project.id, encodeURI(@get('path'))).url
+        type: 'GET'
+        cache: false
+        success: (data)->
+          me.fillFromData(data)
+          if !!resources
+            resources.add(me)
+          document.log "files data for "+(me.get 'filename')+ " received"
+          if !!callback
+            callback()
+        dataType: 'json' 
+      }
+      $.ajax(params)     
   module.exports = Resource
