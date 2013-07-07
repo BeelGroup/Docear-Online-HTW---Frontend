@@ -580,6 +580,7 @@ ul.nav .no-link {
     padding: 3px;
     text-align: center;
     margin-bottom: 10px;
+    overflow: hidden;
 }
 .workspace-container .toolbar .btn
 {
@@ -588,6 +589,19 @@ ul.nav .no-link {
 .workspace-container #workspace-tree 
 {
     overflow: auto;
+}
+
+.toggle-workspace-sidebar.link
+{
+    position: absolute;
+    height: 30px;
+    left: 0px;
+    top: 150px;
+    z-index: 3;
+    border-radius: 0px 5px 5px 0px;
+    background-color: @dark-grey;
+    color: @light-grey;
+    cursor: pointer;
 }
 
 

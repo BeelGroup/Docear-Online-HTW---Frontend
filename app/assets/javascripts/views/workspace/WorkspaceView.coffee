@@ -563,26 +563,27 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       $(@$el).resizable({
         handles: 'e'
         start: (event, ui)->
-          $(this).addClass 'resizing'
+          $('#workspace-container').find('.toggle-workspace-sidebar.link').hide()
       });
-      @$el.find('.ui-resizable-handle').click ->
-        if $('#workspace-container').hasClass 'resizing'
-          $('#workspace-container').removeClass 'resizing'
-        else
-          workspaceWidth = $('#workspace-container').width()
-          newWidth = workspaceWidth;
-          if workspaceWidth <= 0
-            newWidth = -$('#workspace-container').attr('data-prev-width')
-          
-          $('#workspace-container').attr('data-prev-width', workspaceWidth)
-          
-          $('#workspace-container').animate
-            'width': '-='+newWidth+'px'
-          , duration: document.fadeDuration
-  
-          $('#mindmap-container').animate
-            'width': '+='+newWidth+'px'
-          , duration: document.fadeDuration
+      $(@$el).find('.ui-resizable-handle').addClass('toggle-workspace-sidebar')
+      $('body').on 'click', '.toggle-workspace-sidebar', ->
+        workspaceWidth = $('#workspace-container').width()
+        newWidth = workspaceWidth
+        
+        if workspaceWidth <= 0
+          newWidth = -$('#workspace-container').attr('data-prev-width')
+          $('#workspace-container').find('.toggle-workspace-sidebar.link').hide()
+        
+        $('#workspace-container').attr('data-prev-width', workspaceWidth)
+        
+        $('#workspace-container').animate
+          'width': '-='+newWidth+'px'
+        , document.fadeDuration, =>
+          if workspaceWidth > 0
+            $('#workspace-container').find('.toggle-workspace-sidebar.link').removeClass('invisible').show()
+        $('#mindmap-container').animate
+          'width': '+='+newWidth+'px'
+        , duration: document.fadeDuration
             
       
       @
