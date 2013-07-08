@@ -89,6 +89,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         else if type is 'rename_node'
           if $(data.args[0]).hasClass 'temp-project'
             @requestCreateProject(data.args[0], data.args[1])
+          else if $(data.args[0]).hasClass 'temp-mindmap-file'
+            @requestCreateMindMap(data.args[0], data.args[1])
           else
             @moveResource()
         else if type is 'dblclick'
@@ -141,7 +143,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       if ($(node).hasClass("folder")) 
         items.createMapItem = 
           label: "Create new mind map"
-          action: @requestCreateMapItem
+          action: @newMindMap
         items.addFile =  # upload
           label: "Upload &amp; add file",
           action: @requestAddFile
@@ -191,82 +193,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
       document.log "Trying to open mindmap \'"+itemData.name+"\' from project \'"+itemData.projectId+"\' (WorkspaceView.openMindmap()"
       location.href = "/#project/#{itemData.projectId}/map/#{itemData.path}"
-
-    requestCreateMapItem: (liNode, a, b)->
-      $parent = $('#workspace-tree').jstree('get_selected')
-      $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'resource loading file delete-me-on-update'}, state: "leaf", data: "new_mindmap.mm" }
-      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
-
-      # instant renaming
-      # own implementation of @.rename(obj)
-      obj = @._get_node(obj)
-      @.__rollback()
-      f = @.__callback
-      @._show_input(obj, (obj, new_name, old_name)-> 
-        f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
-
-        nameEnding = new_name.substring(new_name.lastIndexOf('.')+1)
-        if nameEnding isnt 'mm'
-          new_name += '.mm'
-        $("#workspace-tree").jstree('rename_node', obj[0] , new_name)
-        
-        $parent  = $('#workspace-tree').jstree('get_selected')
-        $project = $($parent).closest('li.project')
-
-        currentPath = $parent.attr('id')
-        currentPath = currentPath.substr(currentPath.indexOf("_PATH_")+6)
-
-        if currentPath isnt "/"
-          $path = currentPath+"/"+new_name 
-        else
-          $path = currentPath+new_name 
-
-        # set path as id -> so it will be found and can be removed on update from server
-        $(obj).attr("id", $path)
-        # build path
-        if currentPath[currentPath.length-1] isnt '/'
-          currentPath += "/"
-        currentPath += new_name
-
-        projectId   = $project.attr('id')
-        # set id in dom
-        obj[0].id = currentPath
-
-        dirtyPath = projectId+'_PATH_'+currentPath
-        cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
-        cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
-        cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
-        competingObjects = $('#'+cleanPath)
-
-        if competingObjects.size() < 1
-          params = {
-            url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
-            type: 'POST'
-            cache: false
-            data: {"path": currentPath}
-            success:(data)=>
-              # create new model and add to parent
-              document.log "mind map created: "+currentPath+" to project "+projectId
-
-            error:()=>
-              document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
-              # remove mm file from view
-              $('#workspace-tree').jstree("delete_node", obj)
-
-            dataType: 'json' 
-          }
-          $.ajax(params)
-        else
-          firstObj = $(competingObjects[0])
-          pos = $(firstObj).position()
-          pos.top = pos.top
-          $("#multiplename-error").css 'top', pos.top
-          $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
-          $("#multiplename-error").show()
-          $('#workspace-tree').jstree("delete_node", obj)
-
-      )
         
     requestAddFile:(liNode, a,b)=>
       if $.inArray('WORKSPACE_UPLOAD', document.features) > -1
@@ -530,6 +456,68 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           dataType: 'json' 
         }
         $.ajax(params)
+        
+    requestCreateMindMap: (obj, fileName)=>
+      nameEnding = fileName.substring(fileName.lastIndexOf('.')+1)
+      if nameEnding isnt 'mm'
+        fileName += '.mm'
+      
+      $parent  = $('#workspace-tree').jstree('get_selected')
+      $project = $($parent).closest('li.project')
+
+      currentPath = $parent.attr('id')
+      currentPath = currentPath.substr(currentPath.indexOf("_PATH_")+6)
+
+      if currentPath isnt "/"
+        $path = currentPath+"/"+fileName 
+      else
+        $path = currentPath+fileName 
+
+      # set path as id -> so it will be found and can be removed on update from server
+      $(obj).attr("id", $path)
+      $(obj).removeClass('temp-mindmap-file')
+      $("#workspace-tree").jstree('rename_node', obj , fileName)
+      # build path
+      if currentPath[currentPath.length-1] isnt '/'
+        currentPath += "/"
+      currentPath += fileName
+
+      projectId   = $project.attr('id')
+      # set id in dom
+      obj[0].id = currentPath
+
+      dirtyPath = projectId+'_PATH_'+currentPath
+      cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
+      cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
+      cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
+      competingObjects = $('#'+cleanPath)
+
+      if competingObjects.size() < 1
+        params = {
+          url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
+          type: 'POST'
+          cache: false
+          data: {"path": currentPath}
+          success:(data)=>
+            # create new model and add to parent
+            document.log "mind map created: "+currentPath+" to project "+projectId
+
+          error:()=>
+            document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
+            # remove mm file from view
+            $('#workspace-tree').jstree("delete_node", obj)
+
+          dataType: 'json' 
+        }
+        $.ajax(params)
+      else
+        firstObj = $(competingObjects[0])
+        pos = $(firstObj).position()
+        pos.top = pos.top
+        $("#multiplename-error").css 'top', pos.top
+        $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
+        $("#multiplename-error").show()
+        $('#workspace-tree').jstree("delete_node", obj)
       
         
     newProject: ()->
@@ -537,10 +525,18 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       obj = $("#workspace-tree").jstree("create","#workspace-tree","last","new_name", false, true)
       $(obj).addClass('project temp-project delete-me-on-update')
       $("#workspace-tree").jstree("rename",obj)
+    
+    newMindMap: ()->
+      new_name = "new_mindmap.mm"
+      $parent = $('#workspace-tree').jstree('get_selected')
+      obj = $("#workspace-tree").jstree("create",$parent,"last",new_name, false, true)
+      $(obj).addClass('resource loading file delete-me-on-update temp-mindmap-file')
+      $("#workspace-tree").jstree("rename",obj)
 
 
     events:
       "click .add-project-toggle" : "newProject"
+      "click .add-mindmap-toggle" : "newMindMap"
 
     element:-> @$el
 
