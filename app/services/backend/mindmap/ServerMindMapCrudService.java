@@ -123,13 +123,13 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 
 		// job to auto save maps that haven't been saved for 5 minutes but are
 		// open
-		saveMindmapsJob = system.scheduler().schedule(Duration.Zero(), Duration.apply(5, TimeUnit.SECONDS), new Runnable() {
+		saveMindmapsJob = system.scheduler().schedule(Duration.Zero(), Duration.apply(1, TimeUnit.MINUTES), new Runnable() {
 			@Override
 			public void run() {
 				try {
 					// 1000 * 1 ms = 1s * 60 = 1m * 5 = 5m = 1000 * 60 * 5 =
 					// 300000 ms
-					final long notSavedSinceTimeInMillis = System.currentTimeMillis() - 10000;
+					final long notSavedSinceTimeInMillis = System.currentTimeMillis() - 300000;
 					final EntityCursor<MetaData> byNotSavedSince = metaDataCrudService.findByNotSavedSince(notSavedSinceTimeInMillis);
 					try {
 						Iterator<MetaData> metaIt = byNotSavedSince.iterator();
