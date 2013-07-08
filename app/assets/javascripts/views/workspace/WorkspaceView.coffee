@@ -565,7 +565,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       $(@$el).resizable({
         handles: 'e'
         start: (event, ui)->
-          $('#workspace-container').find('.toggle-workspace-sidebar.link').hide()
+          $('#workspace-container').find('.toggle-workspace-sidebar.link i').removeClass('icon-double-angle-right').addClass('icon-double-angle-left')
       });
       $(@$el).find('.ui-resizable-handle').addClass('toggle-workspace-sidebar')
       $('body').on 'click', '.toggle-workspace-sidebar', ->
@@ -574,7 +574,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         
         if workspaceWidth <= 0
           newWidth = -$('#workspace-container').attr('data-prev-width')
-          $('#workspace-container').find('.toggle-workspace-sidebar.link').hide()
+          $('#workspace-container').find('.toggle-workspace-sidebar.link i').removeClass('icon-double-angle-right').addClass('icon-double-angle-left')
         
         $('#workspace-container').attr('data-prev-width', workspaceWidth)
         
@@ -582,7 +582,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           'width': '-='+newWidth+'px'
         , document.fadeDuration, =>
           if workspaceWidth > 0
-            $('#workspace-container').find('.toggle-workspace-sidebar.link').removeClass('invisible').show()
+            $('#workspace-container').find('.toggle-workspace-sidebar.link i').removeClass('icon-double-angle-left').addClass('icon-double-angle-right')
         $('#mindmap-container').animate
           'width': '+='+newWidth+'px'
         , duration: document.fadeDuration
