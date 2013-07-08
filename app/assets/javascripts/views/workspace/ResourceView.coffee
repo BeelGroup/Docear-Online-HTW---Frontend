@@ -37,7 +37,7 @@ define ['logger'], (logger) ->
       resourceView = new ResourceView(model, @projectView, @$el)
       @resourceViews.push(resourceView)
       
-      $objToDelete = $(".resource[id*='#{model.get('path')}']")
+      $objToDelete = $(".loading[id*='#{model.get('path')}']")
 
       if @_rendered
         # if class "delete-me-on-update" is set, the folder was created on this client

@@ -608,18 +608,13 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
             $objToDelete = $(".loading.delete-me-on-update")
             if $objToDelete.size() > 0
               $('#workspace-tree').jstree("delete_node", $objToDelete)
-            $('.loading').removeClass('loading')
             document.log 'error while uploading file.'
           statusCode:
             401: ()->
               $objToDelete = $(".loading.delete-me-on-update")
               if $objToDelete.size() > 0
                 $('#workspace-tree').jstree("delete_node", $objToDelete)
-                
-              $('li.loading').removeClass('loading')
               document.log 'Error while uploading file. Unauthorized.'
-          success: ()->
-            $('li.loading').removeClass('loading')
         })
       reader.readAsArrayBuffer(file);
       
