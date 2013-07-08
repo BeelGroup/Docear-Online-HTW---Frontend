@@ -23,6 +23,13 @@ define ->
       $editorWindow = @$el.find(".node-editor:first")
       $toolbar = @$el.find(".editor-toolbar:first")
 
+      buffer = 20
+
+      pos = $editorWindow.position()
+      pos.top = pos.top - buffer -  $toolbar.outerHeight()
+
+      $toolbar.css pos
+
       parentSize = 
         width: @$el.width()
         height: @$el.height()
@@ -32,17 +39,18 @@ define ->
       currentWidth = if $toolbar.outerWidth() > $editorWindow.outerWidth() then $toolbar.outerWidth() else $editorWindow.outerWidth()
       maxRightOuterBound = $editorWindow.position().left + currentWidth
       maxLowerOuterBound = $editorWindow.position().top + $editorWindow.height()
+      maxUpperOuterBound = $("#mindmap-viewport").position().top
 
-      if ($editorWindow.position().left - 20) < 0   
-        diffX = $editorWindow.position().left - 20
+      if ($editorWindow.position().left - buffer) < 0   
+        diffX = $editorWindow.position().left - buffer
       else  
-        checkDiffX = maxRightOuterBound - @$el.width() + 20
+        checkDiffX = maxRightOuterBound - @$el.width() + buffer
         diffX = if checkDiffX > 0 then checkDiffX else 0
 
-      if ($editorWindow.position().top - 20)  < 0   
-        diffY = $editorWindow.position().top - 20
+      if ($editorWindow.position().top - buffer - $toolbar.outerHeight())  < maxUpperOuterBound   
+        diffY = $editorWindow.position().top + (- maxUpperOuterBound - buffer - $toolbar.outerHeight())
       else  
-        checkDiffY = maxLowerOuterBound - @$el.outerHeight() + $toolbar.outerHeight() + 20
+        checkDiffY = maxLowerOuterBound - @$el.outerHeight()
         diffY = if checkDiffY > 0 then checkDiffY else 0
 
       if cancelAnimations
