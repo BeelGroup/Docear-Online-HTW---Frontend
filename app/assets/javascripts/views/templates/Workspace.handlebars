@@ -1,7 +1,10 @@
 <div class="toolbar">
-    <a title="New project" class="btn add-project-toggle" data-original-title="New project" data-target="add-project"><i class="icon-plus"></i> create project</a>
-    <a title="New mind map" class="btn add-mindmap-toggle" data-original-title="New mind map" data-target="add-mindmap"><i class="icon-plus"></i> create mind map</a>
-
+    <a title="New project" class="btn add-project-toggle workspace-button" data-original-title="New project" data-target="add-project"><i class="icon-plus"></i> create project</a>
+    <a title="New mind map" class="btn add-mindmap-toggle workspace-button" data-original-title="New mind map" data-target="add-mindmap"><i class="icon-plus"></i> create mind map</a>
+</div>
+<div class="alert workspace-warning fade in" id="no-selection-error">
+    <button type="button" class="close">&times;</button>
+    <div class="message">To create a new mind map, please first select a folder in the workspace.</div>
 </div>
 <div class="scroll-container">
     <div id="workspace-tree">
@@ -9,9 +12,9 @@
         </ul>
     </div>
 </div>
-<div class="alert fade in" id="multiplename-error" style=" min-width:150px; display:none; position:absolute;">
-    <button type="button" class="close">×</button>
-    <div style="position:relative;" class="message">Sorry, but this name is already in use.</div>
+<div class="alert workspace-warning fade in" id="multiplename-error">
+    <button type="button" class="close">&times;</button>
+    <div class="message">Sorry, but this name is already in use.</div>
 </div>
 <input class="file-to-upload" id="file-to-upload" type="file" name="files" multiple>
 <div class="toggle-workspace-sidebar link"><i class="icon-double-angle-left"></i></div>

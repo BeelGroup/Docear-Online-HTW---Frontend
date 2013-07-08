@@ -485,12 +485,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       # set id in dom
       obj[0].id = currentPath
 
-      dirtyPath = projectId+'_PATH_'+currentPath
-      cleanPath = dirtyPath.replace new RegExp("/", "g"), "\\/"
-      cleanPath = cleanPath.replace new RegExp("\\.", "g"), "\\."
-      cleanPath = cleanPath.replace new RegExp(" ", "g"), "\\ "
-      competingObjects = $('#'+cleanPath)
-
+      competingObjects = $('#'+projectId).find(".file[id*='"+currentPath+"']").not('.delete-me-on-update')
       if competingObjects.size() < 1
         params = {
           url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
@@ -528,9 +523,21 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
     newMindMap: ()->
       new_name = "new_mindmap.mm"
       $parent = $('#workspace-tree').jstree('get_selected')
-      obj = $("#workspace-tree").jstree("create",$parent,"last",new_name, false, true)
-      $(obj).addClass('resource loading file delete-me-on-update temp-mindmap-file')
-      $("#workspace-tree").jstree("rename",obj)
+      
+      if $parent.size() > 0 and ($parent.hasClass('resource') or $parent.hasClass('resources'))
+        if $parent.hasClass('file')
+          $('#workspace-tree').jstree("deselect_node", $parent)
+          $parent = $parent.closest('.folder')
+          $('#workspace-tree').jstree("select_node", $parent)
+        obj = $("#workspace-tree").jstree("create",$parent,"last",new_name, false, true)
+        $(obj).addClass('resource loading file delete-me-on-update temp-mindmap-file')
+        $("#workspace-tree").jstree("rename",obj)
+      else
+        $firstObj = $("#workspace-container").find('.add-mindmap-toggle:first')
+        pos = $firstObj.position()
+        pos.top = pos.top + $firstObj.outerHeight()
+        $("#no-selection-error").css 'top', pos.top
+        $("#no-selection-error").show()
 
 
     events:
