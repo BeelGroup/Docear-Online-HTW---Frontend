@@ -1,28 +1,46 @@
 package services.backend.project;
 
+import static services.backend.project.filestore.PathFactory.path;
+
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
 import play.Logger;
 import services.backend.project.filestore.FileStore;
-import services.backend.project.persistance.*;
-
-import java.io.*;
-import java.net.URLDecoder;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import static services.backend.project.filestore.PathFactory.path;
+import services.backend.project.filestore.PathFactory;
+import services.backend.project.filestore.PathFactory.PathFactoryHashedFile;
+import services.backend.project.persistance.Changes;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileIndexStore;
+import services.backend.project.persistance.FileMetaData;
+import services.backend.project.persistance.Project;
 
 @Profile("projectHashImpl")
 @Component
@@ -204,6 +222,7 @@ public class HashBasedProjectService implements ProjectService {
             }
         }
 
+        //check if file for hash is already present
         final PutFileResult result = isZip ? putFileInStoreWithZippedFileBytes(fileBytes) : putFileInStoreWithFileBytes(fileBytes);
         final String fileHash = result.getFileHash();
         final long bytes = result.getBytes();
@@ -316,6 +335,15 @@ public class HashBasedProjectService implements ProjectService {
             // get hash
             digestIn = new DigestInputStream(zipStream, createMessageDigest());
             fileHash = sha512(digestIn);
+            
+            if(isFileAlreadyPresent(fileHash)) {
+            	Logger.debug("putFile => file already present, do not save.");
+            	fileStore.delete(zippedTmpPath);
+            	fileStore.delete(tmpPath);
+            	return new PutFileResult(fileHash, fileByteCount);
+            }
+            
+            Logger.debug("putFile => saving file");
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
 
@@ -349,7 +377,14 @@ public class HashBasedProjectService implements ProjectService {
             // get hash
             digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
             fileHash = sha512(digestIn);
+            
+            if(isFileAlreadyPresent(fileHash)) {
+            	Logger.debug("putFile => file already present, do not save.");
+            	fileStore.delete(tmpPath);
+            	return new PutFileResult(fileHash, fileByteCount);
+            }
 
+            Logger.debug("putFile => saving file");
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
 
@@ -369,6 +404,24 @@ public class HashBasedProjectService implements ProjectService {
             IOUtils.closeQuietly(out);
         }
         return new PutFileResult(fileHash, fileByteCount);
+    }
+    
+    private boolean isFileAlreadyPresent(String fileHash) {
+    	final PathFactoryHashedFile path = PathFactory.path().hash(fileHash);
+    	
+    	InputStream in = null;
+    	boolean present = true;
+    	try {
+			fileStore.open(path.raw());
+		} catch (FileNotFoundException e) {
+			present = false;
+		} catch (IOException e) {
+			present = false;
+		} finally {
+			IOUtils.closeQuietly(in);
+		}
+    	
+    	return present;
     }
 
     @Override

@@ -32,4 +32,7 @@ public interface FileStore {
      * @throws FileNotFoundException
      */
     void move(String fromPath, String toPath) throws IOException, FileNotFoundException;
+    
+    
+    void delete(String path) throws IOException, FileNotFoundException;
 }

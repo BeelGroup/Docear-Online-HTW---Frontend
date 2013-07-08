@@ -137,6 +137,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 							final MetaData metaData = metaIt.next();
 							final String projectId = metaData.getProjectId();
 							final String path = metaData.getMindMapResource();
+							Logger.debug("Mindmap '"+path+"' in project '"+projectId+"' will be saved.");
 							// check if mindmap is open
 							try {
 								performActionOnMindMap(new MindmapAsJsonRequest(serverUserIdentifier, new MapIdentifier(projectId, path), 1), defaultTimeoutInMillis, false,

@@ -1,15 +1,15 @@
 package services.backend.project;
 
-import org.codehaus.jackson.JsonNode;
-import play.libs.F.Promise;
-import services.backend.project.persistance.EntityCursor;
-import services.backend.project.persistance.FileMetaData;
-import services.backend.project.persistance.Project;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+
+import org.codehaus.jackson.JsonNode;
+
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileMetaData;
+import services.backend.project.persistance.Project;
 
 /**
  * The defined projectservice-API is inspired by the Dropbox-API
