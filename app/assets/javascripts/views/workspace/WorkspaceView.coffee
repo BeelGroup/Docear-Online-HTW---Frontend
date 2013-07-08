@@ -412,7 +412,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     requestRemoveUser:()=>
       itemData = @getSelectedItemData()
-      console.log itemData.name
       params = {
         url: jsRoutes.controllers.ProjectController.removeUserFromProject(itemData.projectId).url
         type: 'POST'
