@@ -1,17 +1,18 @@
 package services.backend.project.filestore.hadoop;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
 import play.Play;
 import services.backend.project.filestore.FileStore;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 //import org.apache.hadoop.fs.FileSystem;
 
@@ -67,6 +68,12 @@ public class HadoopFileStore implements FileStore {
         fileSystem.moveFromLocalFile(from, to);
     }
 
+    @Override
+    public void delete(String path) throws IOException, FileNotFoundException {
+    	final Path delPath = new Path(path);
+    	fileSystem.delete(delPath, true);
+    }
+    
     @Override
     public String toString() {
         return "HadoopFileStore{" +
