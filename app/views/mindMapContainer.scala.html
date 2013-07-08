@@ -2,7 +2,11 @@
 
 <div id="mindmap-container">
     @content
-    <div id="dialog-minmap-closed" class="invisible" title="Min map was closed">
-	  <p>The min map you are currently working on has been closed. This may happen as you or another user, whom you share your workspace with, deleted or moved the file in the workspace</p>
-	</div>
+    <div class="minmap-closed-warning alert alert-block">
+        <button type="button" class="close">&times;</button>
+        <h4>Min map was closed!</h4>
+        The mid map you are currently working on has been closed. This may happen as you or another user, whom you share your workspace with, deleted or moved the file in the workspace.
+        <br />
+        <button type="button" class="close pull-right">close</button>
+    </div>
 </div>
