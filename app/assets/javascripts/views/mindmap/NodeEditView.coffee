@@ -47,9 +47,6 @@ define ->
         checkDiffX = maxRightOuterBound - @$el.width() + buffer
         diffX = if checkDiffX > 0 then checkDiffX else 0
 
-      console.log $editorWindow.position().top - buffer - $toolbar.outerHeight()
-      console.log maxUpperOuterBound
-
       if ($editorWindow.position().top - buffer - $toolbar.outerHeight())  < maxUpperOuterBound   
         diffY = $editorWindow.position().top + (- maxUpperOuterBound - buffer - $toolbar.outerHeight())
       else  
