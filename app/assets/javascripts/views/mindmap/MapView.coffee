@@ -42,14 +42,22 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       if @mapLoader isnt undefined
         @mapLoader.stop()
       if @rootView isnt undefined
-        @canvas.zoomCenter(false)
-        @rootView.getElement().remove()
-        @rootView.destroy()
-        $('.current-mindmap-name').text('')
-        
-        # close edit view if opend (defined in main.coffee)
-        $editNodeContainer = $('.node-edit-container')
-        $editNodeContainer.addClass('close-and-destroy').hide() 
+        $('#dialog-minmap-closed').dialog({
+          height: 140
+          modal: true
+          buttons: {
+            Ok: ()=>
+              $('#dialog-minmap-closed').dialog( "close" )
+              @canvas.zoomCenter(false)
+              @rootView.getElement().remove()
+              @rootView.destroy()
+              $('.current-mindmap-name').text('')
+              
+              # close edit view if opend (defined in main.coffee)
+              $editNodeContainer = $('.node-edit-container')
+              $editNodeContainer.addClass('close-and-destroy').hide() 
+          }
+        })
 
     showMapLoadingError:(a,b,c)=>
       # if answere doesn't contain redirect, show error message
