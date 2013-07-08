@@ -412,19 +412,21 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     requestRemoveUser:()=>
       itemData = @getSelectedItemData()
-      params = {
-        url: jsRoutes.controllers.ProjectController.removeUserFromProject(itemData.projectId).url
-        type: 'POST'
-        cache: false
-        data: {"username": itemData.name, "itemData" : itemData}
-        success:(data)=>
-          document.log "SUCCESS: The user \'"+itemData.name+"\' was removed from project \'"+itemData.projectId+"\'"
-        error:()=>
-          document.log "ERROR: The user \'"+itemData.name+"\' wasnt removed from project \'"+itemData.projectId+"\'"
-        dataType: 'json' 
-      }
-
-      $.ajax(params)  
+      $selectedItem = $('#workspace-tree').jstree('get_selected') 
+      userName = $selectedItem.children('a').attr('id')
+      if $selectedItem.hasClass('user')
+        params = {
+          url: jsRoutes.controllers.ProjectController.removeUserFromProject(itemData.projectId).url
+          type: 'POST'
+          cache: false
+          data: {"username": userName}
+          success:(data)=>
+            document.log "SUCCESS: The user \'"+userName+"\' was removed from project \'"+itemData.projectId+"\'"
+          error:()=>
+            document.log "ERROR: The user \'"+userName+"\' wasnt removed from project \'"+itemData.projectId+"\'"
+          dataType: 'json' 
+        }
+        $.ajax(params)  
 
 
     getSelectedItemData:->
