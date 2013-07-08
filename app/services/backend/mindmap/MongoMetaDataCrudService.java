@@ -94,7 +94,7 @@ public class MongoMetaDataCrudService implements MetaDataCrudService {
     @Override
     public EntityCursor<MetaData> findByNotSavedSince(long millis) throws IOException {
         try {
-            final BasicDBObject query = doc("lastSaved", doc("$gt", millis));
+            final BasicDBObject query = doc("lastSaved", doc("$lt", millis));
             final DBCursor cursor = mindMapMetaData().find(query);
             return new EntityCursorBase<MetaData>(cursor) {
                 @Override
