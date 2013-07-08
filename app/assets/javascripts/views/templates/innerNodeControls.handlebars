@@ -22,6 +22,8 @@
       {{/unless}}
   {{/if}}
   {{#if deletable}}
-  <a class='icon-trash action-trash' {{#if simpleTooltip}}title="Delete node"{{/if}}></a>
+      {{#unless isRoot}}
+      <a class='icon-trash action-trash' {{#if simpleTooltip}}title="Delete node"{{/if}}></a>
+      {{/unless}}
   {{/if}}  
 {{/if}} 
