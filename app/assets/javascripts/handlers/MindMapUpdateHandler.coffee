@@ -128,7 +128,11 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
         node.set 'minusIcon', jsRoutes.controllers.Assets.at('images/icon_minus.svg').url
         node.set 'plusIcon', jsRoutes.controllers.Assets.at('images/icon_plus.svg').url
         node.set 'loadingIcon', jsRoutes.controllers.Assets.at('images/ajax-loader.gif').url
-        node.set 'edgeStyle', parentNode.get('edgeStyle')
+        
+        if !!update.nodeAsJson.edgeStyle
+          node.setEdgestyle(update.nodeAsJson.edgeStyle)
+        else
+          node.set 'edgeStyle', parentNode.get('edgeStyle')
         
         if parentNode.get('id') is @rootNode.get('id')
           if update.side isnt null
