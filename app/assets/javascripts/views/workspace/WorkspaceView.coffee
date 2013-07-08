@@ -373,8 +373,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
         projectId   = $project.attr('id')
 
-        competingObjects = $('#'+projectId).find('#'+new_name)
-        console.log competingObjects.size()
+        competingObjects = $('#'+projectId).find(".user a[id*='"+new_name+"']")
 
 
         if competingObjects.size() < 1
@@ -487,7 +486,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     requestRemoveUser:()=>
       itemData = @getSelectedItemData()
-
+      console.log itemData.name
       params = {
         url: jsRoutes.controllers.ProjectController.removeUserFromProject(itemData.projectId).url
         type: 'POST'
@@ -510,7 +509,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       itemData = 
         projectId : $project.attr('id')
         # get text from node and remove whitespaces
-        name : $selectedItem.text().replace /\s/g, ''
+        name : $selectedItem.text()
         path: $selectedItem.attr('id')
 
       itemData
