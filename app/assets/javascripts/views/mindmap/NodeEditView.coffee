@@ -25,11 +25,6 @@ define ->
 
       buffer = 20
 
-      pos = $editorWindow.position()
-      pos.top = pos.top - buffer -  $toolbar.outerHeight()
-
-      $toolbar.css pos
-
       parentSize = 
         width: @$el.width()
         height: @$el.height()
@@ -163,13 +158,14 @@ define ->
       
       @selectText(editorId)
       
-      toolbarX = offset.left
-      toolbarY = offset.top+($editContainer.outerHeight())
-      $toolbarIndoc.offset({left: toolbarX, top: toolbarY})
+      #toolbarX = offset.left
+      #toolbarY = offset.top+($editContainer.outerHeight())
+      #$toolbarIndoc.offset({left: toolbarX, top: toolbarY})
       $toolbarIndoc.draggable({ handle: ".handle" });
       if $.browser.msie and $.browser.version < 9
         $toolbarIndoc.remove()
-      
+
+      @positionToolbarOnTop()
       @scaleLikeRoot($editContainer)
       
       $viewPort = @$node.closest('.mindmap-viewport') 
@@ -178,6 +174,17 @@ define ->
       }, 0)
 
       @
+
+    positionToolbarOnTop:->
+      $editorWindow = @$el.find(".node-editor:first")
+      $toolbar = @$el.find(".editor-toolbar:first")
+
+      buffer = 20
+
+      pos = $editorWindow.position()
+      pos.top = pos.top - buffer -  $toolbar.outerHeight()
+
+      $toolbar.css pos
 
     render:->
       @updateLock()
