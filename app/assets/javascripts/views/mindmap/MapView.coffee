@@ -57,10 +57,14 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         $editNodeContainer = $('.node-edit-container')
         $editNodeContainer.addClass('close-and-destroy').hide() 
 
-    showMapLoadingError:(a,b,c)=>
+    showMapLoadingError:(a)=>
       # if answere doesn't contain redirect, show error message
       if a.responseText.indexOf("<head>") is -1
-        alert a.responseText
+        $warning = $("#mindmap-container").find('.server-warning')
+        console.log a.responseText
+        $warning.find(".message.type").html a.status
+        $warning.find(".message.content").html a.statusText
+        $warning.slideDown()
       # otherwise redirect to welcome map
       else
         @loadMap '-1', 'welcome'
