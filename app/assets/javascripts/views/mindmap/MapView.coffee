@@ -39,6 +39,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     
     closeMap: (mapId = @mapId)->
       document.log "Close map #{@mapId}"
+      @minimap.clear()
       if @mapLoader isnt undefined
         @mapLoader.stop()
       if @rootView isnt undefined
