@@ -38,7 +38,7 @@ define ->
 
       currentWidth = if $toolbar.outerWidth() > $editorWindow.outerWidth() then $toolbar.outerWidth() else $editorWindow.outerWidth()
       maxRightOuterBound = $editorWindow.position().left + currentWidth
-      maxLowerOuterBound = $editorWindow.position().top + $editorWindow.height()
+      maxLowerOuterBound = $("#mindmap-viewport").position().top + $("#mindmap-viewport").outerHeight()
       maxUpperOuterBound = $("#mindmap-viewport").position().top
 
       if ($editorWindow.position().left - buffer) < 0   
@@ -50,7 +50,7 @@ define ->
       if ($editorWindow.position().top - buffer - $toolbar.outerHeight())  < maxUpperOuterBound   
         diffY = $editorWindow.position().top + (- maxUpperOuterBound - buffer - $toolbar.outerHeight())
       else  
-        checkDiffY = maxLowerOuterBound - @$el.outerHeight()
+        checkDiffY = ($editorWindow.outerHeight() + $editorWindow.position().top + buffer) - maxLowerOuterBound
         diffY = if checkDiffY > 0 then checkDiffY else 0
 
       if cancelAnimations
@@ -59,7 +59,7 @@ define ->
       @$el.children().animate({
           'left' : "-="+ diffX
           'top' : "-="+ diffY
-        }, 200)
+        }, 400)
 
 
 
