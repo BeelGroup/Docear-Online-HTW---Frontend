@@ -60,10 +60,11 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     showMapLoadingError:(a)=>
       # if answere doesn't contain redirect, show error message
       if a.responseText.indexOf("<head>") is -1
+        result = $.parseJSON( a.responseText );
         $warning = $("#mindmap-container").find('.server-warning')
-        console.log a.responseText
-        $warning.find(".message.type").html a.status
-        $warning.find(".message.content").html a.statusText
+
+        $warning.find(".message.type").html result.type + ': '
+        $warning.find(".message.content").html result.message
         $warning.slideDown()
       # otherwise redirect to welcome map
       else
