@@ -42,23 +42,23 @@ define ->
       maxUpperOuterBound = $("#mindmap-viewport").position().top
 
       if ($editorWindow.position().left - buffer) < 0   
-        diffX = $editorWindow.position().left - buffer
+        @diffX = $editorWindow.position().left - buffer
       else  
         checkDiffX = maxRightOuterBound - @$el.width() + buffer
-        diffX = if checkDiffX > 0 then checkDiffX else 0
+        @diffX = if checkDiffX > 0 then checkDiffX else 0
 
       if ($editorWindow.position().top - buffer - $toolbar.outerHeight())  < maxUpperOuterBound   
-        diffY = $editorWindow.position().top + (- maxUpperOuterBound - buffer - $toolbar.outerHeight())
+        @diffY = $editorWindow.position().top + (- maxUpperOuterBound - buffer - $toolbar.outerHeight())
       else  
         checkDiffY = ($editorWindow.outerHeight() + $editorWindow.position().top + buffer) - maxLowerOuterBound
-        diffY = if checkDiffY > 0 then checkDiffY else 0
+        @diffY = if checkDiffY > 0 then checkDiffY else 0
 
       if cancelAnimations
         @$el.children().stop()
 
       @$el.children().animate({
-          'left' : "-="+ diffX
-          'top' : "-="+ diffY
+          'left' : "-="+ @diffX
+          'top' : "-="+ @diffY
         }, 400)
 
 
@@ -74,14 +74,26 @@ define ->
       
     
     hide: (event)->
-      @$node.children('.inner-node').animate({
-        opacity: 1.0
-      }, 0)
-      $(@$el).fadeOut(document.fadeDuration, ->
-        $(this).remove()
+
+      $('.editor-toolbar').fadeOut document.fadeDuration
+
+      @$el.children().animate({
+        'left' : "+="+ @diffX
+        'top' : "+="+ @diffY
+      }, document.fadeDuration*2, =>
+
+        @$node.children('.inner-node').css
+          opacity: 1.0
+
+        $(@$el).css
+          opacity: 0.0
+
+        $(@).remove()
         $('.editor-toolbar a').unbind().addClass('disabled')
+        
+        @destroy()        
       )
-      @destroy()
+
       
     hideAndSave: (event)->
       @saveChanges event
