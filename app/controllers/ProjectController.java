@@ -3,8 +3,11 @@ package controllers;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.ImplementedFeature;
 import controllers.secured.SecuredRest;
+import models.backend.MessageToFrontend;
+import models.backend.MessageToFrontend.Type;
 import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
+import models.project.exceptions.InvalidFileNameException;
 import models.project.formdatas.*;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -155,7 +158,13 @@ public class ProjectController extends DocearController {
         if (isZip && !isZipValidation) {
             return badRequest("File was send as zip but isn't.");
         }
-        return ok(projectService.putFile(projectId, path, content, isZip, parentRev, false));
+        
+        try {
+			final FileMetaData fileMetaData = projectService.putFile(projectId, path, content, isZip, parentRev, false);
+			return ok(fileMetaData);
+		} catch (InvalidFileNameException e) {
+			return badRequest(new MessageToFrontend(Type.error, e.getMessage()).toJsonNode());
+		} 
     }
 
     public Result moveFile(String projectId) throws IOException {
