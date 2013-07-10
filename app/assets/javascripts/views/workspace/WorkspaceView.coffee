@@ -469,8 +469,9 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         $.ajax(params)
         
     requestCreateMindMap: (obj, fileName)=>
-      nameEnding = fileName.substring(fileName.lastIndexOf('.')+1)
-      if nameEnding isnt 'mm'
+      indexOfDot = fileName.lastIndexOf('.')
+      nameEnding = fileName.substring(indexOfDot+1)
+      if indexOfDot < 0 or nameEnding isnt 'mm'
         fileName += '.mm'
       
       $parent  = $('#workspace-tree').jstree('get_selected')
