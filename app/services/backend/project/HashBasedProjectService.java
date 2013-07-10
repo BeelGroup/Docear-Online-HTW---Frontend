@@ -24,9 +24,11 @@ import java.util.zip.ZipOutputStream;
 
 import models.backend.exceptions.sendResult.NotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
+import models.project.exceptions.InvalidFileNameException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -45,10 +47,9 @@ import services.backend.project.persistance.Project;
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
-    /**
-     * TODO UpdateCallables could cause performance issue. Implementing an Actor
-     * for the action might be better.
-     */
+	
+	private static final char[] ILLEGAL_CHARACTERS = { '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
+
     private final Map<String, List<UpdateCallable>> projectListenersMap = new HashMap<String, List<UpdateCallable>>();
     private final Map<String, List<UpdateCallable>> userListenerMap = new HashMap<String, List<UpdateCallable>>();
     @Autowired
@@ -90,6 +91,7 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public boolean removeUserFromProject(String projectId, String usernameToRemove, final boolean keepLastUser) throws IOException {
+    	Logger.debug("HashBasedProjectService.removeUserFromProject => projectId: "+projectId+"; usernameToRemove: "+usernameToRemove);
         final boolean removed = fileIndexStore.removeUserFromProject(projectId, usernameToRemove, keepLastUser);
         if (removed) {
             callListenerForChangeForUser(usernameToRemove);
@@ -183,12 +185,21 @@ public class HashBasedProjectService implements ProjectService {
 
     }
 
+    
     @Override
-    public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
+    public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException, InvalidFileNameException {
         Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride + "; bytes: " + fileBytes.length);
+        
+        //check that path has no invalid signs
+        
+        if(StringUtils.containsAny(path, ILLEGAL_CHARACTERS)) {
+        	throw new InvalidFileNameException("The filename contains invalid characters.");
+        }
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
+        
+        
         //check that path is not rootpath
         if (actualPath.equals("/"))
             throw new SendResultException("Cannot override root!", 400);

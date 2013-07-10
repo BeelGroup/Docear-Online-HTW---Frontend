@@ -21,6 +21,7 @@ import models.backend.exceptions.NoUserLoggedInException;
 import models.backend.exceptions.sendResult.PreconditionFailedException;
 import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
+import models.project.exceptions.InvalidFileNameException;
 
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
@@ -160,7 +161,11 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 								}
 							}
 
-							saveMindMapInProjectService(new MapIdentifier(metaData.getProjectId(), metaData.getMindMapResource()));
+							try {
+								saveMindMapInProjectService(new MapIdentifier(metaData.getProjectId(), metaData.getMindMapResource()));
+							} catch (InvalidFileNameException e) {
+								Logger.error("Problem saving file!", e);
+							}
 						}
 					} finally {
 						byNotSavedSince.close();
@@ -457,7 +462,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		final UserIdentifier user = message.getUserIdentifier();
 		// check that user has right to access map
 		// throws UnauthorizedException on failure
-		hasUserMapAccessRights(user, mapIdentifier);
+		if(!hasUserMapAccessRights(user, mapIdentifier)) {
+			throw new UnauthorizedException("User has no right on Map!");
+		}
 
 		Promise<A> result = null;
 		try {
@@ -637,7 +644,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-	private void saveMindMapInProjectService(final MapIdentifier mapIdentifier) throws IOException {
+	private void saveMindMapInProjectService(final MapIdentifier mapIdentifier) throws IOException, InvalidFileNameException {
 		final String projectId = mapIdentifier.getProjectId();
 		final String path = mapIdentifier.getMapId();
 

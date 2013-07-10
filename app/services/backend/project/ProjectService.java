@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import models.project.exceptions.InvalidFileNameException;
+
 import org.codehaus.jackson.JsonNode;
 
 import services.backend.project.persistance.EntityCursor;
@@ -35,7 +37,7 @@ public interface ProjectService {
 
     FileMetaData createFolder(String projectId, String path) throws IOException;
 
-    FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException;
+    FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException, InvalidFileNameException;
 
 	void moveFile(String projectId, String oldPath, String newPath) throws IOException;
 
