@@ -5,6 +5,7 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
 
     constructor: (mapId, rootNode, @projectId)->
       super()
+      @runningRequests = {}
       @mapId = mapId
       @rootNode = rootNode
       
@@ -16,6 +17,7 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
       @listen()
       
     listen: (delay = 0)->
+      @stopped = false
       me = @
       params = {
         url: @updateApi.listenForUpdate.Node
@@ -43,17 +45,18 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
         }
         dataType: 'json' 
       }
-      setTimeout(->
+      setTimeout(=>
         if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1
           document.log "listen for updates"
-          $.ajax(params)
+          @execAjax(params)
       , delay)
         
     listenIfMapIsOpen: (delay = 0)->
-      if $(".node.root .map-id[value*='#{@mapId}']").size() > 0
+      if !@stopped and $(".node.root .map-id[value*='#{@mapId}']").size() > 0
         @listen(delay)
       else
         document.log "map: #{@mapId} seems to be closed, stop listening"
+        @stopRunningRequests()
     
     listenWithDelay: (delay)->
       setTimeout(->
@@ -77,7 +80,7 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
           rootNode.set 'revision', data.currentRevision
         dataType: 'json' 
       }
-      $.ajax(params)
+      @execAjax(params)
     
     updateNode: (update)->
       node = @rootNode.findById update.nodeId
@@ -150,5 +153,19 @@ define ['routers/DocearRouter', 'models/mindmap/Node'],  (DocearRouter, Node) ->
       if node isnt null
         node.deleteNode()
    
+    execAjax: (params)->
+      request = $.ajax(params)
+      @runningRequests[params.url] = request
+      request.done =>
+        delete @runningRequests[request]
+      request
+    
+    stopRunningRequests: ()->
+      @stopped = true
+      document.log "stopping running requests on mind map #{@mapId}" 
+      for url, request of @runningRequests
+        document.log " - stopping: #{url}"
+        request.abort()
+      @runningRequests = {}
     
   module.exports = MindMapUpdateHandler

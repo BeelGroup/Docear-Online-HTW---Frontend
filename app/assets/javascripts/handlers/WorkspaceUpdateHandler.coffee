@@ -4,6 +4,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
   class WorkspaceUpdateHandler extends Backbone.Model
 
     constructor: (@workspace)->
+      @runningRequests = {}
       super()
       
     listen: ()->
@@ -55,7 +56,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           }
           dataType: 'json' 
         }
-        $.ajax(params)
+        @execAjax(params)
       
     getChangesByProject: (project)->
       project.update()
@@ -85,7 +86,7 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           
         dataType: 'json' 
       }
-      $.ajax(params)
+      @execAjax(params)
     
     getProject: (projectId)->
       me = @
@@ -97,9 +98,24 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
           project = new Project(projectData)
           me.workspace.add(project)
           document.log "Project #{project.get('id')} added"
-          
+        
         dataType: 'json' 
       }
-      $.ajax(params)
+      @execAjax(params)
+
+    execAjax: (params)->
+      request = $.ajax(params)
+      @runningRequests[params.url] = request
+      request.done =>
+        delete @runningRequests[request]
+      request
     
+    stopRunningRequests: ()->
+      @stopped = true
+      document.log "stopping running requests on mind map #{@mapId}" 
+      for url, request of @runningRequests
+        document.log " - stopping: #{url}"
+        request.abort()
+      @runningRequests = {}
+        
   module.exports = WorkspaceUpdateHandler

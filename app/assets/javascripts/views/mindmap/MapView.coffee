@@ -48,7 +48,9 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
           $warning = $(@$el).parent().find('.mindmap-closed-warning')
           $(@$el).append($warning)
         $warning.slideDown()
-
+        
+        @rootView.getModel().get('mindMapUpdateHandler').stopRunningRequests()
+        
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
         @rootView.destroy()
@@ -75,6 +77,9 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     initMapLoading:(data)=>
       if @rootView isnt undefined
         document.log 'delete old map'
+        if !!@rootView.getModel().get('mindMapUpdateHandler')
+          @rootView.getModel().get('mindMapUpdateHandler').stopRunningRequests()
+        
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
         
