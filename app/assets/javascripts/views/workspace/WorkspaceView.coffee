@@ -597,7 +597,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         , document.fadeDuration, =>
           if workspaceWidth > 0
             $('#workspace-container').find('.toggle-workspace-sidebar.link i').removeClass('icon-double-angle-left').addClass('icon-double-angle-right')
-        $('#mindmap-container').animate
+        $('#mindmap-container, #mindmap-viewport').animate
           'width': '+='+newWidth+'px'
         , duration: document.fadeDuration
             
