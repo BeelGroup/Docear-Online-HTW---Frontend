@@ -43,9 +43,9 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       if @mapLoader isnt undefined
         @mapLoader.stop()
       if @rootView isnt undefined
-        $warning = $(@$el).find('.minmap-closed-warning')
+        $warning = $(@$el).find('.mindmap-closed-warning')
         if $warning.size() == 0
-          $warning = $(@$el).parent().find('.minmap-closed-warning')
+          $warning = $(@$el).parent().find('.mindmap-closed-warning')
           $(@$el).append($warning)
         $warning.slideDown()
 
