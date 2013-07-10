@@ -28,9 +28,10 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
     remove: (project)->
       $objToDelete = $("li##{project.get('id')}")
+      $objToDelete.addClass('deleted').addClass('temp-project delete-me-on-update')
       delete @projectViews[project.get('id')]
       if $objToDelete.size() > 0
-        $('#workspace-tree').jstree("delete_node", $objToDelete)
+        $('#workspace-tree').jstree("remove", $objToDelete)
        
     initJsTree: ->
       @$workspaceTree.jstree({
@@ -111,6 +112,10 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         else
           document.log "Action for event type \'"+type+"\' not implemented jet"
       )
+      $deleted = $('.project.deleted')
+      if $deleted.size() > 0
+        for $del in $deleted
+          $('#workspace-tree').jstree("delete_node", $deleted)
       
     add: (project)->
       projectView = new ProjectView(project, @)
@@ -299,7 +304,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
         projectId   = $project.attr('id')
 
-        competingObjects = $('#'+projectId).find(".user a[id*='"+new_name+"']")
+        competingObjects = $('#'+projectId).find(".user a[id='"+new_name+"']")
 
 
         if competingObjects.size() < 1

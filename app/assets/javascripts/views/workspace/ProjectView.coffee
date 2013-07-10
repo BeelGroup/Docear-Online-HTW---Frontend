@@ -45,7 +45,6 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
         $parent = $("#"+@getId()).find ".users:first"
 
         $exists = $parent.find ".user ##{user.get('id')}"
-        console.log $exists
         if $exists.size() == 0
           thisState = 'leaf'
           newNode = { attr: {class: 'user', id: user.get('id')}, state: thisState, data: user.get('name') }
