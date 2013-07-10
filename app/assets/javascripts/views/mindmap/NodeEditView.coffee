@@ -70,7 +70,7 @@ define ->
     
     hide: (event)->
 
-      $('.editor-toolbar').fadeOut document.fadeDuration
+      @$el.find('.editor-toolbar').fadeOut document.fadeDuration
 
       @$el.children().animate({
         'left' : "+="+ @diffX
