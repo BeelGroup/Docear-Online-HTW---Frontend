@@ -313,9 +313,14 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
               # create new model and add to parent
               document.log "user \'"+new_name+"\' was added to project "+projectId
             error:()=>
-              document.log "error on folder adding with path : "+new_name+" to project "+projectId
+              document.log "Error while added user : "+new_name+" to project "+projectId
               # remove folder from view
               #$('#workspace-tree').jstree("delete_node", obj)
+            statusCode:
+              502: ()->
+                # remove user from view
+                $('#workspace-tree').jstree("delete_node", obj)
+                document.log 'User already in project.'
             dataType: 'json' 
           }
           $.ajax(params)
