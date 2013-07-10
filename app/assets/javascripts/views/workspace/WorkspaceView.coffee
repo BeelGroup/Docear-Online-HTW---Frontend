@@ -204,7 +204,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'folder delete-me-on-update', id:'fuadadeimuada'}, state: "closed", data: "New folder" }
+      newNode = { attr: {class: 'resource loading folder delete-me-on-update', id:'fuadadeimuada'}, state: "closed", data: "New folder" }
       obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
 
 
@@ -313,7 +313,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
               # create new model and add to parent
               document.log "user \'"+new_name+"\' was added to project "+projectId
             error:()=>
-              document.log "Error while added user : "+new_name+" to project "+projectId
+              document.log "Error while adding user : "+new_name+" to project "+projectId
               # remove folder from view
               #$('#workspace-tree').jstree("delete_node", obj)
             statusCode:
