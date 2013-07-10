@@ -317,7 +317,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
               # remove folder from view
               #$('#workspace-tree').jstree("delete_node", obj)
             statusCode:
-              502: ()->
+              403: ()->
                 # remove user from view
                 $('#workspace-tree').jstree("delete_node", obj)
                 document.log 'User already in project.'
