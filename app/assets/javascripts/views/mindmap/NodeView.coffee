@@ -29,14 +29,16 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         newChild = @model.get 'lastAddedChild'
         refreshConnections = true
 
-      @$el.children('.inner-node').find('.action-fold').show()
       $node = $(@$el)
       if @model.typeName is 'rootModel'
         if @model.get('lastAddedChildSide') is 'Left'
           $childrenContainer = $node.children('.leftChildren:first')
+          @$el.children('.inner-node').find('.action-fold.left').show()
         else
           $childrenContainer = $node.children('.rightChildren:first')
+          @$el.children('.inner-node').find('.action-fold.right').show()
       else
+        @$el.children('.inner-node').find('.action-fold').show()
         $childrenContainer = $node.children('.children:first')
 
       previousHeight = $childrenContainer.outerHeight()
