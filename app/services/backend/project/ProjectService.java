@@ -31,7 +31,7 @@ public interface ProjectService {
 	
 	
 	//File level
-	InputStream getFile(String projectId, String path, boolean zipped) throws IOException;
+	InputStream getFile(String projectId, String path, boolean zipped) throws IOException, InvalidFileNameException;
 
     FileMetaData metadata(String projectId, String path) throws IOException;
     EntityCursor<FileMetaData> getMetaDataOfDirectChildren(String id, String path, int max) throws IOException;

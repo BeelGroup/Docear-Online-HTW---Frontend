@@ -137,7 +137,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 							final MetaData metaData = metaIt.next();
 							final String projectId = metaData.getProjectId();
 							final String path = metaData.getMindMapResource();
-							Logger.debug("Mindmap '"+path+"' in project '"+projectId+"' will be saved.");
+							Logger.debug("Mindmap '" + path + "' in project '" + projectId + "' will be saved.");
 							// check if mindmap is open
 							try {
 								performActionOnMindMap(new MindmapAsJsonRequest(serverUserIdentifier, new MapIdentifier(projectId, path), 1), defaultTimeoutInMillis, false,
@@ -246,39 +246,39 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	public Promise<Boolean> listenForUpdates(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
 		final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(userIdentifier, mapIdentifier);
 
-        // two minutes for longpolling
-        final long twoMinutesInMillis = 120000;
-        return performActionOnMindMap(request, twoMinutesInMillis, new ActionOnMindMap<Boolean>() {
+		// two minutes for longpolling
+		final long twoMinutesInMillis = 120000;
+		return performActionOnMindMap(request, twoMinutesInMillis, new ActionOnMindMap<Boolean>() {
 
-            @Override
-            public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
-                return promise.map(new Function<Object, Boolean>() {
+			@Override
+			public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
+				return promise.map(new Function<Object, Boolean>() {
 
-                    @Override
-                    public Boolean apply(Object listenResponse) throws Throwable {
-                        final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) listenResponse;
-                        return response.getResult();
-                    }
-                }).recover(new Function<Throwable, Boolean>() {
+					@Override
+					public Boolean apply(Object listenResponse) throws Throwable {
+						final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) listenResponse;
+						return response.getResult();
+					}
+				}).recover(new Function<Throwable, Boolean>() {
 
-                    @Override
-                    public Boolean apply(Throwable t) throws Throwable {
-                        /*
-                         * When map was not found, something must have happened
+					@Override
+					public Boolean apply(Throwable t) throws Throwable {
+						/*
+						 * When map was not found, something must have happened
 						 * since the last interaction Probably the laptop was in
 						 * standby and tries now to reconnect, which should
 						 * result in a reload. When the frontend tries to load
 						 * updates, the map will be send to a server
 						 */
-                        if (t instanceof MapNotFoundException) {
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+						if (t instanceof MapNotFoundException) {
+							return true;
+						}
+						return false;
+					}
+				});
 
-            }
-        });
+			}
+		});
 	}
 
 	@Override
@@ -481,7 +481,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		final UserIdentifier user = message.getUserIdentifier();
 		// check that user has right to access map
 		// throws UnauthorizedException on failure
-		if(!hasUserMapAccessRights(user, mapIdentifier)) {
+		if (!hasUserMapAccessRights(user, mapIdentifier)) {
 			throw new UnauthorizedException("User has no right on Map!");
 		}
 
@@ -520,7 +520,12 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 					} catch (IOException e1) {
 						Logger.error("unexpected exception! ", e1);
 					}
-					sendMindMapToServer(user, mapIdentifierNotFound);
+
+					try {
+						sendMindMapToServer(user, mapIdentifierNotFound);
+					} catch (InvalidFileNameException e1) {
+						throw new SendResultException(e1.getMessage(), 400);
+					}
 					Logger.debug("ServerMindMapCrudService.performActionOnMindMap => re-sending request to freeplane");
 					final Promise<Object> promise = sendMessageToServer(message, timeoutInMillis);
 					promise.onRedeem(new SavingCallback(mapIdentifierNotFound, metaDataCrudService, this));
@@ -582,7 +587,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		return Akka.asPromise(ask(remoteActor, message, timeoutInMillis));
 	}
 
-	private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) throws NoUserLoggedInException {
+	private Boolean sendMindMapToServer(final UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) throws NoUserLoggedInException, InvalidFileNameException {
 		Logger.debug("ServerMindMapCrudService.sendMapToDocearInstance => userIdentifier: " + userIdentifier + "; mapIdentifier: " + mapIdentifier);
 		InputStream in = null;
 		ByteArrayOutputStream out = null;
@@ -663,7 +668,17 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 	}
 
-	private void saveMindMapInProjectService(final MapIdentifier mapIdentifier) throws IOException, InvalidFileNameException {
+	@Override
+	public Boolean isMindMapOpened(MapIdentifier mapIdentifier) {
+		try {
+			return metaDataCrudService.find(mapIdentifier.getProjectId(), mapIdentifier.getMapId()) != null;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	@Override
+	public void saveMindMapInProjectService(final MapIdentifier mapIdentifier) throws IOException, InvalidFileNameException {
 		final String projectId = mapIdentifier.getProjectId();
 		final String path = mapIdentifier.getMapId();
 
@@ -749,6 +764,9 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 		}
 		// check for project rights
 		else {
+			//check if server ordered this action
+			if(user.getSource().equals("SERVER") && user.getUsername().equals("SERVER"))
+				return true;
 			return projectService.userBelongsToProject(user.getUsername(), mapIdentifier.getProjectId());
 		}
 	}

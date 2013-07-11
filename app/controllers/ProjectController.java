@@ -110,7 +110,11 @@ public class ProjectController extends DocearController {
     public Result getFile(String projectId, String path, boolean zipped) throws IOException {
         assureUserBelongsToProject(projectId);
         path = normalizePath(path);
-        return ok(projectService.getFile(projectId, path, zipped));
+        try {
+			return ok(projectService.getFile(projectId, path, zipped));
+		} catch (InvalidFileNameException e) {
+			return badRequest(new MessageToFrontend(Type.error, e.getMessage()).toJsonNode());
+		}
     }
 
     /**
