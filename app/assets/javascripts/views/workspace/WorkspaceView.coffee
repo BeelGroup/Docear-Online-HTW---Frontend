@@ -385,20 +385,21 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         newParent += '/'
       newPath = newParent + name
 
-      projectId = $(data.args[0].o).closest('li.project').attr('id')
-      params = 
-        url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
-        type: 'POST'
-        cache: false
-        data: "currentPath": oldPath, "moveToPath": newPath
+      if oldPath isnt newPath
+        projectId = $(data.args[0].o).closest('li.project').attr('id')
+        params = 
+          url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
+          type: 'POST'
+          cache: false
+          data: "currentPath": oldPath, "moveToPath": newPath
 
-        success:()=>
-          document.log "SUCCESS: Resource \'"+name+"\' was be moved from "+oldPath+" to "+newPath
-        error:()=>
-          document.log "ERROR: resource \'"+name+"\' could not be moved from "+oldPath+" to "+newPath
-        dataType: 'json' 
-      
-      $.ajax(params)  
+          success:()=>
+            document.log "SUCCESS: Resource \'"+name+"\' was be moved from "+oldPath+" to "+newPath
+          error:()=>
+            document.log "ERROR: resource \'"+name+"\' could not be moved from "+oldPath+" to "+newPath
+          dataType: 'json' 
+        
+        $.ajax(params)  
 
 
     ###
