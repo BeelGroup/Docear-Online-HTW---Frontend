@@ -244,9 +244,9 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
       @recursiveRender $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren'), @
       @recursiveRender $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren'), @
       
-      foldedClass = '.expand'
+      foldedClass = '.fold'
       if @model.get 'folded'
-        foldedClass = '.fold'
+        foldedClass = '.expand'
       @$el.find(".action-fold.left#{foldedClass}").toggleClass('invisible')
       @$el.find(".action-fold.right#{foldedClass}").toggleClass('invisible')
       
