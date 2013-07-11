@@ -30,7 +30,7 @@ public class GeneralTest extends DocearTest{
             	gotoRoot();
             	
             	//Check Title
-            	assertThat(driver.getTitle()).isEqualTo("Docear online (Alpha) - Login");
+            	assertThat(driver.getTitle()).isEqualTo("Docear online (Beta) - Login");
             	
 
             	//Check menu
