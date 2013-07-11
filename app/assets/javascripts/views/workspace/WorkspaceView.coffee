@@ -647,7 +647,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       
       setTimeout(=>
         @initJsTree()
-      , 2000)
+      , 500)
       
       $(@$el).resizable({
         handles: 'e'
