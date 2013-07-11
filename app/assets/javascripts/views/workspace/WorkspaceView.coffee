@@ -468,9 +468,13 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         }
         $.ajax(params)
 
-    requestCreateMindMap: (obj, fileName)=>
+    isValidFilename: (fileName)=>
       illegalCharRegex = new RegExp("[#{document.illegalFilenameCharacter}]+")
-      if !!fileName.match(illegalCharRegex)
+      return !fileName.match(illegalCharRegex)
+      
+    
+    requestCreateMindMap: (obj, fileName)=>
+      if !@isValidFilename(fileName)
         pos = $(obj).position() 
         pos.top = pos.top + $(obj).outerHeight()
         $message = $('#illegal-character-error')
