@@ -116,6 +116,7 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
      
     updateFoldStatus:()->
       @$el.attr('folded', @model.get 'folded')
+      #flag for initial redering
       if @renderOnExpand
 
         # visible for layouting
@@ -132,6 +133,13 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
         if shouldBeVisible isnt domVisible
           @privateUpdateFoldStatus()
           (@model.get 'rootNodeModel').trigger 'updateMinimap'
+
+      # flag for child rendering after update
+      if @model.renderOnUnfold
+        console.log 'render new'
+        (@model.get 'rootNodeModel').trigger 'refreshDomConnectionsAndBoundaries'
+        @model.renderOnUnfold = false
+
 
       
 

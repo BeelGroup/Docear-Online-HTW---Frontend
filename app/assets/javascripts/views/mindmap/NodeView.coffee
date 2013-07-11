@@ -47,6 +47,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
         $childrenContainer = $node.children('.children:first')
 
       previousHeight = $childrenContainer.outerHeight()
+      @setRepaintFlagToFirstFoldedParent()
       
       nodeView = @
       $child = $("##{newChild.get('id')}")
@@ -82,7 +83,34 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
           child.updateConnection()
         )
       
+    setRepaintFlagToFirstFoldedParent:->
+      domVisible = $('#'+@model.get 'id').is ':visible'
+      side = if $('#'+@model.get 'id').hasClass 'left' then 'left' else 'right'
+
+      if not domVisible
+        currentParentModel = @model.get('parent')
+
+        while not currentParentModel.get 'folded'
+          #console.log "check "+currentParentModel.get 'id'
+          # check if root is reached - if invisible and root reached -> root has to be folded
+          if currentParentModel.typeName is 'rootModel'
+            if side is 'left'
+              currentParentModel.renderOnUnfoldLeft = true
+            else
+              currentParentModel.renderOnUnfoldRight = true
+            #console.log "set to true"
+            break
+          # set cursor to next parent
+          currentParentModel = currentParentModel.get('parent')
+
+
+        # set flag when folded parent was found  
+        if currentParentModel.get 'folded' 
+          currentParentModel.renderOnUnfold = true
+          console.log "set render flag for node "+currentParentModel.get 'id'
+        
     
+
     getCenterCoordinates: ($element) ->
       leftCenter = $element.position().left + $element.width() / 2
       topCenter = $element.position().top + $element.height() / 2

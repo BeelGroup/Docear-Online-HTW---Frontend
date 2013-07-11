@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import models.backend.MessageToFrontend;
 import models.backend.MessageToFrontend.Type;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.data.Form;
-import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Result;
@@ -373,17 +371,8 @@ public class MindMap extends DocearController {
     public Result listenForUpdates(final String projectId, final String mapId) {
         Logger.debug("MindMap.listenForUpdates => projectId= " + projectId + "; mapId=" + mapId);
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
-        final UserIdentifier userIdentifier = userIdentifier();
+        return async(mindMapCrudService.listenForUpdates(userIdentifier(), mapIdentifier).map(new Function<Boolean, Result>() {
 
-
-        F.Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mindMapCrudService.listenForUpdates(userIdentifier, mapIdentifier);
-            }
-        });
-
-        return async(promise.map(new Function<Boolean, Result>() {
             @Override
             public Result apply(Boolean hasChanged) throws Throwable {
                 if (hasChanged)

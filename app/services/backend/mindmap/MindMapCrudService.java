@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import models.backend.exceptions.DocearServiceException;
+import models.project.exceptions.InvalidFileNameException;
 
 import org.codehaus.jackson.JsonNode;
 import org.docear.messages.Messages;
@@ -48,7 +49,11 @@ public interface MindMapCrudService {
 	Promise<String> getNode(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId, Integer nodeCount);
 
 
-	Boolean listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier);
+	Promise<Boolean> listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier);
+	
+	Boolean isMindMapOpened(MapIdentifier mapIdentifier);
+
+	void saveMindMapInProjectService(final MapIdentifier mapIdentifier) throws IOException, InvalidFileNameException;
 
 	/**
 	 * 

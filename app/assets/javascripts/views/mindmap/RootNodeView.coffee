@@ -40,10 +40,15 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
         @$el.children('.inner-node').children('.action-fold.left').toggleClass('invisible')
         @$el.children('.leftChildren').fadeToggle(document.fadeDuration)
         @$el.trigger 'updateMinimap'
+        if @model.renderOnUnfoldLeft
+          @model.trigger 'refreshDomConnectionsAndBoundaries'
+          
       if side is 'right' or side is 'both'
         @$el.children('.inner-node').children('.action-fold.right').toggleClass('invisible')
         @$el.children('.rightChildren').fadeToggle(document.fadeDuration)
         @$el.trigger 'updateMinimap'
+        if @model.renderOnUnfoldRight
+          @model.trigger 'refreshDomConnectionsAndBoundaries'
 
 
 
