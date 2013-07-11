@@ -19,7 +19,7 @@ public class MockUserService extends UserService {
 
 	@Override
 	public Promise<String> authenticate(String username, String password) {
-		final boolean usernameCorrect = Arrays.asList("Jöran", "Julius", "Michael", "Florian", "Alex", "Paul", "Marcel", "Dimitri", "Volker").contains(username);
+		final boolean usernameCorrect = Arrays.asList("Jöran", "Julius", "Michael", "Florian", "Alex", "Paul", "Marcel", "Dimitri", "Volker", "showtime1", "showtime2", "showtime3", "showtime4").contains(username);
 		final boolean authenticated = usernameCorrect && "secret".equals(password);
 		return Promise.pure(authenticated ? generateMockToken(username) : null);
 	}
