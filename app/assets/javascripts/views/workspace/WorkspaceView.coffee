@@ -296,20 +296,18 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       if typeof userName isnt "string"
         userName = "new_user"
       $parent = $('#workspace-tree').jstree('get_selected')
-
       $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'user delete-me-on-update'}, state: "leaf", data: userName }
-      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', userName, false, true)
       $(obj).addClass('delete-me-on-update')
       $(obj).addClass('temp-user')
+      $(obj).addClass('user')
       $("#workspace-tree").jstree("rename",obj)
       
       
     # jstree functions are required, so dont use a fatarrow here
     requestAddUser:(obj, userName)=>
-      if userName.replace(/\s+/g, '') is ""
+      if !userName or userName.replace(/\s+/g, '') is ""
         $('#workspace-tree').jstree("delete_node", obj)
-        @addUser(userName)
       else
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
