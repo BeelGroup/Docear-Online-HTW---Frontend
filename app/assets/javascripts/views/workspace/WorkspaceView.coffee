@@ -92,6 +92,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
             @requestCreateProject(data.args[0], data.args[1])
           else if $(data.args[0]).hasClass 'temp-mindmap-file'
             @requestCreateMindMap(data.args[0], data.args[1])
+          else if $(data.args[0]).hasClass 'to-be-renamed'
+            @requestRenameResource(data.args[0], data.args[1])
           else
             @moveResource()
         else if type is 'dblclick'
@@ -180,6 +182,11 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           separator_before: true
           label: "Delete user"
           action:  @requestRemoveUser
+      
+      if $(node).hasClass("resource")
+        items.renameItem =
+          label: "Rename"
+          action:  @renameResource
 
       items
 
@@ -411,7 +418,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
     moveResource:(oldPath, newPath, newParentsPath)->
       obj = $("#"+oldPath)
       parent = $("#"+newParentsPath)
-
       @$workspaceTree.jstree('cut', obj)
       @$workspaceTree.jstree('paste', parent)
       @$workspaceTree.jstree 'refresh', obj
@@ -452,6 +458,19 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
 
       itemData
     
+    isValidFilename: (fileName, $currentObject = null)=>
+      illegalCharRegex = new RegExp("[#{document.illegalFilenameCharacter}]+")
+      isValid = !fileName.match(illegalCharRegex)
+      $message = $('#illegal-character-error').hide()
+      
+      if $currentObject isnt null and !isValid
+        pos = $($currentObject).position() 
+        pos.top = pos.top + $($currentObject).outerHeight()
+        if $message.size() > 0
+          $message.css 'top', pos.top
+          $message.show()
+      isValid
+      
     requestCreateProject: (obj, projectName)=>
       if !@isValidFilename(projectName, obj)
         $('#workspace-tree').jstree("delete_node", obj)
@@ -472,20 +491,13 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
             dataType: 'json' 
           }
           $.ajax(params)
-
-    isValidFilename: (fileName, $currentObject = null)=>
-      illegalCharRegex = new RegExp("[#{document.illegalFilenameCharacter}]+")
-      isValid = !fileName.match(illegalCharRegex)
-      $message = $('#illegal-character-error').hide()
-      
-      if $currentObject isnt null and !isValid
-        pos = $($currentObject).position() 
-        pos.top = pos.top + $($currentObject).outerHeight()
-        if $message.size() > 0
-          $message.css 'top', pos.top
-          $message.show()
-      isValid
-      
+        
+    newProject: (projectName = "new project")->
+      if typeof projectName isnt "string"
+        projectName = "new project"
+      obj = $("#workspace-tree").jstree("create","#workspace-tree","last",projectName, false, true)
+      $(obj).addClass('project temp-project delete-me-on-update')
+      $("#workspace-tree").jstree("rename",obj)
     
     requestCreateMindMap: (obj, fileName)=>
       if !@isValidFilename(fileName, obj)        
@@ -549,14 +561,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
           $("#multiplename-error").show()
           $('#workspace-tree').jstree("delete_node", obj)
-      
-        
-    newProject: (projectName = "new project")->
-      if typeof projectName isnt "string"
-        projectName = "new project"
-      obj = $("#workspace-tree").jstree("create","#workspace-tree","last",projectName, false, true)
-      $(obj).addClass('project temp-project delete-me-on-update')
-      $("#workspace-tree").jstree("rename",obj)
     
     newMindMap: (filename = "new_mindmap.mm")->
       if typeof filename isnt "string"
@@ -577,8 +581,44 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         pos.top = pos.top + $firstObj.outerHeight()
         $("#no-selection-error").css 'top', pos.top
         $("#no-selection-error").show()
-
-
+    
+    renameResource: (obj)=>
+      $parent = $('#workspace-tree').jstree('get_selected')
+      $parent.addClass('to-be-renamed').addClass('loading')
+      $("#workspace-tree").jstree("rename", $parent)
+    
+    requestRenameResource: (obj, newName)=>
+      if !@isValidFilename(newName, obj)
+        $('#workspace-tree').jstree("delete_node", obj)
+        @renameResource(obj)
+      else
+        oldPath = $(obj).attr('id')
+        oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
+        
+        lastSlashPos = oldPath.lastIndexOf('/')
+        parentPath = oldPath.substring(0, lastSlashPos)
+        oldName = oldPath.substring(lastSlashPos+1)
+        newPath = parentPath+"/"+newName
+  
+        #if oldPath isnt newPath
+        if !@isValidFilename(newName, obj)
+          $('#workspace-tree').jstree("rollback", obj)
+          @renameResource(obj)
+        else if oldPath isnt newPath
+          projectId = $(obj).closest('li.project').attr('id')
+          params = 
+            url: jsRoutes.controllers.ProjectController.moveFile(projectId).url
+            type: 'POST'
+            cache: false
+            data: "currentPath": oldPath, "moveToPath": newPath
+  
+            success:()=>
+              document.log "SUCCESS: Resource \'"+oldName+"\' was be moved from "+oldPath+" to "+newPath
+            error:()=>
+              document.log "ERROR: resource \'"+oldName+"\' could not be moved from "+oldPath+" to "+newPath
+            dataType: 'json' 
+          $.ajax(params)  
+    
     events:
       "click .add-project-toggle" : "newProject"
       "click .add-mindmap-toggle" : "newMindMap"
