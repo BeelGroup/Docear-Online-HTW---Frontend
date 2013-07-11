@@ -113,8 +113,19 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public List<Project> getProjectsFromUser(String username) throws IOException {
-        final EntityCursor<Project> projects = fileIndexStore.findProjectsFromUser(username);
-        return convertEntityCursorToList(projects);
+    	EntityCursor<Project> projects = null;
+    	List<Project> projectsList = null;
+    	try {
+    		projects = fileIndexStore.findProjectsFromUser(username);
+    		if(projects != null)
+    			projectsList = convertEntityCursorToList(projects);
+    		else
+    			projectsList = new ArrayList<Project>();
+    	} finally {
+    		if(projects != null)
+    			projects.close();
+    	}
+        return projectsList;
     }
 
     @Override
