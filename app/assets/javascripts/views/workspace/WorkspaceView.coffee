@@ -644,7 +644,10 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       for projectId, projectView in @projectViews
         $($projectsContainer).append $(projectView.render().el)
       @bindEvents()
-      @initJsTree()
+      
+      setTimeout(=>
+        @initJsTree()
+      , 2000)
       
       $(@$el).resizable({
         handles: 'e'
