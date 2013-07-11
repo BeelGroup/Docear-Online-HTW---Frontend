@@ -33,6 +33,12 @@ define ['logger'], (logger) ->
         document.strgPressed = off
         document.log 'strg off'
       , 'keyup'
+
+      Mousetrap.bind document.navigation.key.del, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        document.log 'Remove node '+selectedNode.get('id')+' (AbstarctNodeView)'
+        selectedNode.deleteNode()
+      , 'keyup'     
       
       Mousetrap.bind document.navigation.key.centerMap, (event)=>
         if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"

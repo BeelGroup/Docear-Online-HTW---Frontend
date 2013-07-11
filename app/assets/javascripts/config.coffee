@@ -14,6 +14,7 @@ document.navigation.key.down = "down"
 document.navigation.key.fold = "space"
 document.navigation.key.centerMap = "esc"
 document.navigation.key.strg = "ctrl"
+document.navigation.key.del = "del"
 
 document.navigation.key.addSibling = "enter"
 document.navigation.key.addChild = "ins"
