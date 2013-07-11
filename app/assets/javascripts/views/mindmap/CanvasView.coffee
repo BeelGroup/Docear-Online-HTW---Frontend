@@ -18,6 +18,8 @@ define ['logger'], (logger) ->
 
 
     moreEvents:()=>
+
+
       @$el.mousewheel (event, delta, deltaX, deltaY)=>
         if document.strgPressed is off
           if deltaY > 0 then dir = 1 else dir = -1 
@@ -38,7 +40,16 @@ define ['logger'], (logger) ->
         selectedNode = @rootView.model.getSelectedNode()
         document.log 'Remove node '+selectedNode.get('id')+' (AbstarctNodeView)'
         selectedNode.get('persistenceHandler').deleteNode selectedNode
-      , 'keyup'     
+      , 'keyup'  
+
+
+      Mousetrap.bind document.navigation.key.literals, (event)=>
+        selectedNode = @rootView.model.getSelectedNode()
+        if(selectedNode isnt null and selectedNode isnt undefined)
+          $domElement = $("##{selectedNode.get 'id'}")
+          $actionEditButton = $domElement.find('.icon-edit.action-edit')
+          $actionEditButton.click();
+      , 'keydown'     
       
       Mousetrap.bind document.navigation.key.centerMap, (event)=>
         if !($(event.target).is('input, textarea')) and typeof @rootView != "undefined"
@@ -99,7 +110,7 @@ define ['logger'], (logger) ->
                 side = 'Right'
               selectedNode.get('parent').createAndAddChild(side)
             else
-              selectedNode.get('parent').createAndAddChild()
+              selectedNode.get('parent').createAndAddChild()      
 
 
       Mousetrap.bind document.navigation.key.addChild, (event)=>

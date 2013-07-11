@@ -582,23 +582,26 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         $("#no-selection-error").css 'top', pos.top
         $("#no-selection-error").show()
     
-    renameResource: (obj)=>
-      $parent = $('#workspace-tree').jstree('get_selected')
-      $parent.addClass('to-be-renamed').addClass('loading')
-      $("#workspace-tree").jstree("rename", $parent)
+    renameResource: ($obj = null)=>
+      if $obj is null
+        $obj = $('#workspace-tree').jstree('get_selected')
+      $obj = $('#workspace-tree').jstree('get_selected')
+      $($obj).addClass('to-be-renamed').addClass('loading')
+      $("#workspace-tree").jstree("rename", $obj)
     
     requestRenameResource: (obj, newName)=>
+      oldPath = $(obj).attr('id')
+      oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
+      
+      lastSlashPos = oldPath.lastIndexOf('/')
+      parentPath = oldPath.substring(0, lastSlashPos)
+      oldName = oldPath.substring(lastSlashPos+1)
+      newPath = parentPath+"/"+newName
+      
       if !@isValidFilename(newName, obj)
-        $('#workspace-tree').jstree("delete_node", obj)
-        @renameResource(obj)
+        $(obj).removeClass('to-be-renamed').removeClass('loading')
+        $("#workspace-tree").jstree('set_text', obj , oldName )
       else
-        oldPath = $(obj).attr('id')
-        oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
-        
-        lastSlashPos = oldPath.lastIndexOf('/')
-        parentPath = oldPath.substring(0, lastSlashPos)
-        oldName = oldPath.substring(lastSlashPos+1)
-        newPath = parentPath+"/"+newName
   
         #if oldPath isnt newPath
         if !@isValidFilename(newName, obj)
