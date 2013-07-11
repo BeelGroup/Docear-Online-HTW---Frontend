@@ -5,6 +5,7 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
     constructor:->
       super() 
       @typeName = 'nodeModel'
+      @renderOnUnfold = true
 
       
     setEdgestyle: (edgeStyle) ->

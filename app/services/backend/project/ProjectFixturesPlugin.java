@@ -50,7 +50,7 @@ public final class ProjectFixturesPlugin extends Plugin {
         final ProjectService service = SpringConfiguration.getBean(ProjectService.class);
         final File projectFolder = new File(path);
         final Project project = service.createProject("Michael", projectFolder.getName());
-        final List<String> allowedUsers = Arrays.asList("Julius", "Alex", "Florian", "Paul", "alschwank", "online-demo");
+        final List<String> allowedUsers = Arrays.asList("Julius", "Alex", "Florian", "Paul", "alschwank", "online-demo", "showtime1", "showtime2", "showtime3", "showtime4");
         for (final String user: allowedUsers) {
             service.addUserToProject(project.getId(), user);
         }

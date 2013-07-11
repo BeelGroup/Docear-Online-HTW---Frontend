@@ -9,6 +9,8 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
       @unfinishedNodes = {}
       @typeName = 'rootModel'
       @sup = RootNode.__super__
+      @renderOnUnfoldLeft = true
+      @renderOnUnfoldRight = true
 
     addNodeToList:(node)->
       @allNodes.push node
