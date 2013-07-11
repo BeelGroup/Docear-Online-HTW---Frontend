@@ -2,6 +2,7 @@ package services.backend.mindmap;
 
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.sendResult.SendResultException;
+import models.project.exceptions.InvalidFileNameException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.JsonNode;
@@ -140,6 +141,16 @@ public class MockMindMapCrudService implements MindMapCrudService {
 		return promise;
 	}
 
+	@Override
+	public Boolean isMindMapOpened(MapIdentifier mapIdentifier) {
+		return false;
+	}
+	
+	@Override
+	public void saveMindMapInProjectService(MapIdentifier mapIdentifier) throws IOException, InvalidFileNameException {
+		
+	}
+	
 	@Override
 	public Promise<Boolean> changeEdge(UserIdentifier user, MapIdentifier mapIdentifier, String nodeId, Map<String, Object> attributeValueMap) {
 		throw new NotImplementedException();

@@ -30,6 +30,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
+import org.docear.messages.models.MapIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Component;
 import play.Logger;
 import play.libs.Akka;
 import play.libs.F.Promise;
+import services.backend.mindmap.MindMapCrudService;
 import services.backend.project.filestore.FileStore;
 import services.backend.project.filestore.PathFactory;
 import services.backend.project.filestore.PathFactory.PathFactoryHashedFile;
@@ -58,6 +60,8 @@ public class HashBasedProjectService implements ProjectService {
     private FileStore fileStore;
     @Autowired
     private FileIndexStore fileIndexStore;
+    @Autowired
+    private MindMapCrudService mindMapCrudService;
 
     private static MessageDigest createMessageDigest() {
         try {
@@ -114,17 +118,23 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public InputStream getFile(String projectId, String path, boolean zipped) throws IOException {
+    public InputStream getFile(String projectId, String path, boolean zipped) throws IOException, InvalidFileNameException {
         Logger.debug("HashBasedProjectService.getFile => projectId: " + projectId + "; path: " + path);
         path = normalizePath(path);
 
         try {
             // look for file in fileIndexStore
-            final FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
+            FileMetaData metadata = fileIndexStore.getMetaData(projectId, path);
             if (metadata == null) {
                 throw new NotFoundException("File not found!");
             }
 
+            //check if file is an open mindmap
+            final MapIdentifier mapIdentifier = new MapIdentifier(projectId, path);
+            if(mindMapCrudService.isMindMapOpened(mapIdentifier)) {
+            	mindMapCrudService.saveMindMapInProjectService(mapIdentifier);
+            }
+            metadata = fileIndexStore.getMetaData(projectId, path);
             final String fileHash = metadata.getHash();
             Logger.debug("HashBasedProjectService.getFile => fileHash: " + fileHash);
 
