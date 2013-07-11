@@ -94,6 +94,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
             @requestCreateMindMap(data.args[0], data.args[1])
           else if $(data.args[0]).hasClass 'to-be-renamed'
             @requestRenameResource(data.args[0], data.args[1])
+          else if $(data.args[0]).hasClass 'temp-user'
+            @requestAddUser(data.args[0], data.args[1])
           else
             @moveResource()
         else if type is 'dblclick'
@@ -166,7 +168,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       if($(node).hasClass("users"))
         items.addUserItem =
           label: "Add user",
-          action: @requestAddUser
+          action: @addUser
 
       if($(node).hasClass("file") && !$(node).hasClass("delete-me-on-update"))
         items.downloadItem = 
@@ -289,43 +291,44 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           $('#workspace-tree').jstree("delete_node", obj)
       )
 
-    # jstree functions are required, so dont use a fatarrow here
-    requestAddUser:()->
+
+    addUser: (userName = "new_user")->
+      if typeof userName isnt "string"
+        userName = "new_user"
       $parent = $('#workspace-tree').jstree('get_selected')
 
       $('#workspace-tree').jstree('open_node', $parent)
-      newNode = { attr: {class: 'user'}, state: "leaf", data: "New user" }
-      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
-
-      # instant renaming
-      # own implementation of @.rename(obj)
-      obj = @._get_node(obj)
-      @.__rollback()
-      f = @.__callback
-      @._show_input(obj, (obj, new_name, old_name)-> 
-        f.call(@, { "obj" : obj, "new_name" : new_name, "old_name" : old_name })
-
-        
+      newNode = { attr: {class: 'user delete-me-on-update'}, state: "leaf", data: userName }
+      obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+      $(obj).addClass('delete-me-on-update')
+      $(obj).addClass('temp-user')
+      $("#workspace-tree").jstree("rename",obj)
+      
+      
+    # jstree functions are required, so dont use a fatarrow here
+    requestAddUser:(obj, userName)=>
+      if userName.replace(/\s+/g, '') is ""
+        $('#workspace-tree').jstree("delete_node", obj)
+        @addUser(userName)
+      else
         $parent  = $('#workspace-tree').jstree('get_selected')
         $project = $($parent).closest('li.project')
 
         projectId   = $project.attr('id')
-
-        competingObjects = $('#'+projectId).find(".user a[id='"+new_name+"']")
-
+        competingObjects = $('#'+projectId).find(".user a[id='"+userName+"']")
 
         if competingObjects.size() < 1
-          $(obj).children('a').attr('id', new_name)
+          $(obj).children('a').attr('id', userName)
           params = {
             url: jsRoutes.controllers.ProjectController.addUserToProject(projectId).url
             type: 'POST'
             cache: false
-            data: {"username": new_name}
+            data: {"username": userName}
             success:(data)=>
               # create new model and add to parent
-              document.log "user \'"+new_name+"\' was added to project "+projectId
+              document.log "user \'"+userName+"\' was added to project "+projectId
             error:()=>
-              document.log "Error while adding user : "+new_name+" to project "+projectId
+              document.log "Error while adding user : "+userName+" to project "+projectId
               # remove folder from view
               #$('#workspace-tree').jstree("delete_node", obj)
             statusCode:
@@ -344,8 +347,6 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           $("#multiplename-error").find('.message').html('This user already exists.')
           $("#multiplename-error").show()
           $('#workspace-tree').jstree("delete_node", obj)
-
-      )
 
     requestDownloadItem: ()=>
       itemData = @getSelectedItemData()
@@ -460,7 +461,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
     
     isValidFilename: (fileName, $currentObject = null)=>
       illegalCharRegex = new RegExp("[#{document.illegalFilenameCharacter}]+")
-      isValid = !fileName.match(illegalCharRegex)
+      isValid = !fileName.match(illegalCharRegex) and fileName.replace(/\s+/g, '') isnt ""
       $message = $('#illegal-character-error').hide()
       
       if $currentObject isnt null and !isValid
