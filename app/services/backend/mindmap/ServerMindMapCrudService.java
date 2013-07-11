@@ -71,11 +71,10 @@ import play.Logger;
 import play.Play;
 import play.libs.Akka;
 import play.libs.F;
+import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.WS;
 import play.mvc.Controller;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import services.backend.project.ProjectService;
 import services.backend.project.persistance.EntityCursor;
@@ -244,22 +243,42 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Boolean listenForUpdates(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
+	public Promise<Boolean> listenForUpdates(UserIdentifier userIdentifier, final MapIdentifier mapIdentifier) {
 		final ListenToUpdateOccurrenceRequest request = new ListenToUpdateOccurrenceRequest(userIdentifier, mapIdentifier);
 
-		// two minutes for longpolling
-		final long twoMinutesInMillis = 130000;
-		Future<Object> future = ask(remoteActor, request, twoMinutesInMillis);
-		try {
-			Await.ready(future, Duration.apply(twoMinutesInMillis, TimeUnit.MILLISECONDS));
-			final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) Akka.asPromise(future).get();
-			return response.getResult();
-			// return response.getResult();
-		} catch (InterruptedException e) {
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
+        // two minutes for longpolling
+        final long twoMinutesInMillis = 120000;
+        return performActionOnMindMap(request, twoMinutesInMillis, new ActionOnMindMap<Boolean>() {
+
+            @Override
+            public Promise<Boolean> perform(Promise<Object> promise) throws Exception {
+                return promise.map(new Function<Object, Boolean>() {
+
+                    @Override
+                    public Boolean apply(Object listenResponse) throws Throwable {
+                        final ListenToUpdateOccurrenceResponse response = (ListenToUpdateOccurrenceResponse) listenResponse;
+                        return response.getResult();
+                    }
+                }).recover(new Function<Throwable, Boolean>() {
+
+                    @Override
+                    public Boolean apply(Throwable t) throws Throwable {
+                        /*
+                         * When map was not found, something must have happened
+						 * since the last interaction Probably the laptop was in
+						 * standby and tries now to reconnect, which should
+						 * result in a reload. When the frontend tries to load
+						 * updates, the map will be send to a server
+						 */
+                        if (t instanceof MapNotFoundException) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+
+            }
+        });
 	}
 
 	@Override

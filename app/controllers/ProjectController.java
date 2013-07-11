@@ -1,23 +1,37 @@
 package controllers;
 
-import controllers.featuretoggle.Feature;
-import controllers.featuretoggle.ImplementedFeature;
-import controllers.secured.SecuredRest;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
 import models.backend.MessageToFrontend;
 import models.backend.MessageToFrontend.Type;
 import models.backend.exceptions.sendResult.SendResultException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
 import models.project.exceptions.InvalidFileNameException;
-import models.project.formdatas.*;
+import models.project.formdatas.AddUserToProjectData;
+import models.project.formdatas.CreateFolderData;
+import models.project.formdatas.CreateProjectData;
+import models.project.formdatas.DeleteFileData;
+import models.project.formdatas.MoveData;
+import models.project.formdatas.ProjectDeltaData;
+import models.project.formdatas.RemoveUserFromProjectData;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import play.Logger;
 import play.data.Form;
-import play.libs.Akka;
-import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -29,18 +43,9 @@ import services.backend.project.persistance.EntityCursor;
 import services.backend.project.persistance.FileMetaData;
 import services.backend.project.persistance.Project;
 import services.backend.user.UserService;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
+import controllers.featuretoggle.Feature;
+import controllers.featuretoggle.ImplementedFeature;
+import controllers.secured.SecuredRest;
 
 @Component
 @ImplementedFeature(Feature.WORKSPACE)
@@ -235,28 +240,19 @@ public class ProjectController extends DocearController {
     }
 
     public Result listenForUpdates(final boolean longPolling) throws IOException {
-        final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
+    	final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
         final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
-        final String username = username();
 
-        if (urlEncodedBody != null) {
-            for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
-                final String projectId = entry.getKey();
-                try {
-                    projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
-                } catch (NumberFormatException e) {
-                    return badRequest("Revisions must be long value!");
-                }
+        for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+            final String projectId = entry.getKey();
+            try {
+                projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
+            } catch (NumberFormatException e) {
+                return badRequest("Revisions must be long value!");
             }
         }
 
-        F.Promise<JsonNode> promise = Akka.future(new Callable<JsonNode>() {
-            @Override
-            public JsonNode call() throws Exception {
-                return projectService.listenIfUpdateOccurs(username, projectRevisonMap, longPolling);
-            }
-        });
-        return async(promise.map(new Function<JsonNode, Result>() {
+        return async(projectService.listenIfUpdateOccurs(username(), projectRevisonMap,longPolling).map(new Function<JsonNode, Result>() {
             @Override
             public Result apply(JsonNode result) throws Throwable {
                 return ok(result);

@@ -35,6 +35,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import play.Logger;
+import play.libs.Akka;
+import play.libs.F.Promise;
 import services.backend.project.filestore.FileStore;
 import services.backend.project.filestore.PathFactory;
 import services.backend.project.filestore.PathFactory.PathFactoryHashedFile;
@@ -436,20 +438,18 @@ public class HashBasedProjectService implements ProjectService {
     }
 
     @Override
-    public JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
-        final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
+    public Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
+    	final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
         for (String projectId : projectRevisionMap.keySet()) {
-            try {
-                final Project project = fileIndexStore.findProjectById(projectId);
-                if (project != null) {
-                    projectUserMap.put(projectId, project.getAuthorizedUsers());
-                }
-            } catch (IllegalArgumentException e) {
-                throw new SendResultException(projectId + " is not a valid project id!", 400);
+            final Project project = fileIndexStore.findProjectById(projectId);
+            if (project != null) {
+                projectUserMap.put(projectId, project.getAuthorizedUsers());
             }
         }
 
         final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, projectUserMap, username);
+
+        final Promise<JsonNode> promise = Akka.future(callable);
 
         if (longPolling) {
             // put in listener maps
@@ -471,12 +471,7 @@ public class HashBasedProjectService implements ProjectService {
             callable.send();
         }
 
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            Logger.error("error in listen route! ", e);
-            return null;
-        }
+        return promise;
     }
 
     private void callListenersForChangeInProject(String projectId) {
