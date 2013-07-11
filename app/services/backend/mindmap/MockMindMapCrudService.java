@@ -128,7 +128,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Boolean listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier) {
+	public Promise<Boolean> listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier) {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -137,7 +137,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			}
 		});
 
-		return promise.get();
+		return promise;
 	}
 
 	@Override

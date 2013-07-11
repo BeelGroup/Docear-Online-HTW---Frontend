@@ -373,17 +373,8 @@ public class MindMap extends DocearController {
     public Result listenForUpdates(final String projectId, final String mapId) {
         Logger.debug("MindMap.listenForUpdates => projectId= " + projectId + "; mapId=" + mapId);
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
-        final UserIdentifier userIdentifier = userIdentifier();
+        return async(mindMapCrudService.listenForUpdates(userIdentifier(), mapIdentifier).map(new Function<Boolean, Result>() {
 
-
-        F.Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mindMapCrudService.listenForUpdates(userIdentifier, mapIdentifier);
-            }
-        });
-
-        return async(promise.map(new Function<Boolean, Result>() {
             @Override
             public Result apply(Boolean hasChanged) throws Throwable {
                 if (hasChanged)
