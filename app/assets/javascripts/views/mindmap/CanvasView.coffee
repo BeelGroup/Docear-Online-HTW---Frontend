@@ -37,7 +37,7 @@ define ['logger'], (logger) ->
       Mousetrap.bind document.navigation.key.del, (event)=>
         selectedNode = @rootView.model.getSelectedNode()
         document.log 'Remove node '+selectedNode.get('id')+' (AbstarctNodeView)'
-        selectedNode.deleteNode()
+        selectedNode.get('persistenceHandler').deleteNode selectedNode
       , 'keyup'     
       
       Mousetrap.bind document.navigation.key.centerMap, (event)=>
