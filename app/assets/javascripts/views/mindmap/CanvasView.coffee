@@ -44,11 +44,12 @@ define ['logger'], (logger) ->
 
 
       Mousetrap.bind document.navigation.key.literals, (event)=>
-        selectedNode = @rootView.model.getSelectedNode()
-        if(selectedNode isnt null and selectedNode isnt undefined)
-          $domElement = $("##{selectedNode.get 'id'}")
-          $actionEditButton = $domElement.find('.icon-edit.action-edit')
-          $actionEditButton.click();
+        if $('.node-edit-container').size() <= 0
+          selectedNode = @rootView.model.getSelectedNode()
+          if(selectedNode isnt null and selectedNode isnt undefined)
+            $actionEditButton = $("##{selectedNode.get 'id'} > .inner-node .controls .icon-edit.action-edit")
+            #$actionEditButton = $domElement.children('.inner-nore .icon-edit.action-edit')
+            $actionEditButton.click();
       , 'keydown'     
       
       Mousetrap.bind document.navigation.key.centerMap, (event)=>
