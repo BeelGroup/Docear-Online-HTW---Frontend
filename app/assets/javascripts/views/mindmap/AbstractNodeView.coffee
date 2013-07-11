@@ -183,6 +183,11 @@ define ['logger', 'models/mindmap/Node', 'views/SyncedView', 'views/mindmap/Node
       childrenHeight = $childrenContainer.outerHeight()
       parentIsHeigher = preHeight > childrenHeight
 
+      #EASTER EGG
+      if @model.get('nodeText').localeCompare("<div>:42:</div>") is 0 or  @model.get('nodeText').localeCompare(":42:") is 0
+        @model.set 'nodeText', "The Answer to the Ultimate Question of Life, the Universe, and Everything."
+      #EASTER EGG
+
       $contentContainer = $node.children('.inner-node').children('.content')
       if @model.get 'isHtml'
         document.log "Changing text as HTML"
