@@ -452,38 +452,44 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       itemData
     
     requestCreateProject: (obj, projectName)=>
-      params = {
-          url: jsRoutes.controllers.ProjectController.createProject().url
-          type: 'POST'
-          cache: false
-          data: {"name": projectName}
-          success:(data)=>
-            # create new model and add to parent
-            document.log "new project created : "+projectName
-          error:()=>
-            document.log "error while creating project : "+projectName
-            # remove folder from view
-            $('#workspace-tree').jstree("delete_node", obj)
-          dataType: 'json' 
-        }
-        $.ajax(params)
+      if !@isValidFilename(projectName, obj)
+        $('#workspace-tree').jstree("delete_node", obj)
+        @newProject(projectName)
+      else
+        params = {
+            url: jsRoutes.controllers.ProjectController.createProject().url
+            type: 'POST'
+            cache: false
+            data: {"name": projectName}
+            success:(data)=>
+              # create new model and add to parent
+              document.log "new project created : "+projectName
+            error:()=>
+              document.log "error while creating project : "+projectName
+              # remove folder from view
+              $('#workspace-tree').jstree("delete_node", obj)
+            dataType: 'json' 
+          }
+          $.ajax(params)
 
-    isValidFilename: (fileName)=>
+    isValidFilename: (fileName, $currentObject = null)=>
       illegalCharRegex = new RegExp("[#{document.illegalFilenameCharacter}]+")
-      return !fileName.match(illegalCharRegex)
+      isValid = !fileName.match(illegalCharRegex)
+      $message = $('#illegal-character-error').hide()
+      
+      if $currentObject isnt null and !isValid
+        pos = $($currentObject).position() 
+        pos.top = pos.top + $($currentObject).outerHeight()
+        if $message.size() > 0
+          $message.css 'top', pos.top
+          $message.show()
+      isValid
       
     
     requestCreateMindMap: (obj, fileName)=>
-      if !@isValidFilename(fileName)
-        pos = $(obj).position() 
-        pos.top = pos.top + $(obj).outerHeight()
-        $message = $('#illegal-character-error')
-        $message.css 'top', pos.top
-        $message.show()
-        
+      if !@isValidFilename(fileName, obj)        
         $parent  = $('#workspace-tree').jstree('get_selected')
         $('#workspace-tree').jstree("delete_node", obj)
-        
         @newMindMap(fileName)
       else
         indexOfDot = fileName.lastIndexOf('.')
@@ -544,9 +550,10 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           $('#workspace-tree').jstree("delete_node", obj)
       
         
-    newProject: ()->
-      new_name = "project"
-      obj = $("#workspace-tree").jstree("create","#workspace-tree","last","new_name", false, true)
+    newProject: (projectName = "new project")->
+      if typeof projectName isnt "string"
+        projectName = "new project"
+      obj = $("#workspace-tree").jstree("create","#workspace-tree","last",projectName, false, true)
       $(obj).addClass('project temp-project delete-me-on-update')
       $("#workspace-tree").jstree("rename",obj)
     
@@ -670,32 +677,33 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           fileInfos = []
           for f in files
             filename = escape(f.name)
-            filepath = path+filename
-
-            fileInfos.push({
-              "name": escape(f.name)
-              'filepath': filepath
-              "type": f.type
-              "size": f.size
-              "modified": f.lastModifiedDate.toLocaleDateString()
-            })
-            
-            $('#workspace-tree').jstree('open_node', $parent)
-            
-            resource = projectModel.getResourceByPath(filepath)
-            revision = -1
-            if !!resource
-              revision = resource.get('revision')
-              $treeItem = $("li.file[id*='#{filepath}']")
-              $treeItem.addClass('loading')
+            if @isValidFilename(filename, $parent)
+              filepath = path+filename
+  
+              fileInfos.push({
+                "name": escape(f.name)
+                'filepath': filepath
+                "type": f.type
+                "size": f.size
+                "modified": f.lastModifiedDate.toLocaleDateString()
+              })
               
-              resource.update null, =>
+              $('#workspace-tree').jstree('open_node', $parent)
+              
+              resource = projectModel.getResourceByPath(filepath)
+              revision = -1
+              if !!resource
+                revision = resource.get('revision')
+                $treeItem = $("li.file[id*='#{filepath}']")
+                $treeItem.addClass('loading')
+                
+                resource.update null, =>
+                  @uploadFile(f, projectId, filepath, revision)
+              else
+                newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
+                obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+                obj.attr('id', filepath)
                 @uploadFile(f, projectId, filepath, revision)
-            else
-              newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
-              obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
-              obj.attr('id', filepath)
-              @uploadFile(f, projectId, filepath, revision)
           
           # in case user wants to upload the same file again after changing it
           # http://stackoverflow.com/questions/1043957/clearing-input-type-file-using-jquery
