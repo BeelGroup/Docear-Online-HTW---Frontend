@@ -9,6 +9,7 @@ import models.project.exceptions.InvalidFileNameException;
 
 import org.codehaus.jackson.JsonNode;
 
+import play.libs.F.Promise;
 import services.backend.project.persistance.EntityCursor;
 import services.backend.project.persistance.FileMetaData;
 import services.backend.project.persistance.Project;
@@ -43,7 +44,7 @@ public interface ProjectService {
 
     FileMetaData delete(String projectId, String path) throws IOException;
 
-	JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException;
+	Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException;
 
     VersionDeltaResponse versionDelta(String projectId, Long revision) throws IOException;
 

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import models.backend.MessageToFrontend;
 import models.backend.MessageToFrontend.Type;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Component;
 
 import play.Logger;
 import play.data.Form;
-import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Result;
