@@ -37,7 +37,7 @@ define ['logger'], (logger) ->
       resourceView = new ResourceView(model, @projectView, @$el)
       @resourceViews.push(resourceView)
       
-      $objToDelete = $(".loading[id*='#{model.get('path')}']")
+      $objToDelete = $(".loading[id='#{model.get('path')}']")
 
       if @_rendered
         # if class "delete-me-on-update" is set, the folder was created on this client
@@ -50,7 +50,7 @@ define ['logger'], (logger) ->
     remove:(resourceToDelete)->
       document.log "Trying to remove node "+resourceToDelete.id
 
-      $objToDelete = $(".resource[id*='#{resourceToDelete.get('path')}']")
+      $objToDelete = $(".resource[id='#{resourceToDelete.get('prefixedId')}']")
       $('#workspace-tree').jstree("delete_node", $objToDelete)
         
 
