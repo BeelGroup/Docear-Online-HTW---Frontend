@@ -453,114 +453,89 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       itemData
     
     requestCreateProject: (obj, projectName)=>
-      if !@isValidFilename(projectName, obj)
-        $('#workspace-tree').jstree("delete_node", obj)
-        @newProject(projectName)
-      else
-        params = {
-            url: jsRoutes.controllers.ProjectController.createProject().url
-            type: 'POST'
-            cache: false
-            data: {"name": projectName}
-            success:(data)=>
-              # create new model and add to parent
-              document.log "new project created : "+projectName
-            error:()=>
-              document.log "error while creating project : "+projectName
-              # remove folder from view
-              $('#workspace-tree').jstree("delete_node", obj)
-            dataType: 'json' 
-          }
-          $.ajax(params)
-
-    isValidFilename: (fileName, $currentObject = null)=>
-      illegalCharRegex = new RegExp("[#{document.illegalFilenameCharacter}]+")
-      isValid = !fileName.match(illegalCharRegex)
-      $message = $('#illegal-character-error').hide()
-      
-      if $currentObject isnt null and !isValid
-        pos = $($currentObject).position() 
-        pos.top = pos.top + $($currentObject).outerHeight()
-        if $message.size() > 0
-          $message.css 'top', pos.top
-          $message.show()
-      isValid
-      
-    
+      params = {
+          url: jsRoutes.controllers.ProjectController.createProject().url
+          type: 'POST'
+          cache: false
+          data: {"name": projectName}
+          success:(data)=>
+            # create new model and add to parent
+            document.log "new project created : "+projectName
+          error:()=>
+            document.log "error while creating project : "+projectName
+            # remove folder from view
+            $('#workspace-tree').jstree("delete_node", obj)
+          dataType: 'json' 
+        }
+        $.ajax(params)
+        
     requestCreateMindMap: (obj, fileName)=>
-      if !@isValidFilename(fileName, obj)        
-        $parent  = $('#workspace-tree').jstree('get_selected')
-        $('#workspace-tree').jstree("delete_node", obj)
-        @newMindMap(fileName)
+      indexOfDot = fileName.lastIndexOf('.')
+      nameEnding = fileName.substring(indexOfDot+1)
+      if indexOfDot < 0 or nameEnding isnt 'mm'
+        fileName += '.mm'
+      
+      $parent  = $('#workspace-tree').jstree('get_selected')
+      $project = $($parent).closest('li.project')
+
+      currentPath = $parent.attr('id')
+      currentPath = currentPath.substr(currentPath.indexOf("_PATH_")+6)
+
+      if currentPath isnt "/"
+        $path = currentPath+"/"+fileName 
       else
-        indexOfDot = fileName.lastIndexOf('.')
-        nameEnding = fileName.substring(indexOfDot+1)
-        if indexOfDot < 0 or nameEnding isnt 'mm'
-          fileName += '.mm'
-        
-        $parent  = $('#workspace-tree').jstree('get_selected')
-        $project = $($parent).closest('li.project')
-  
-        currentPath = $parent.attr('id')
-        currentPath = currentPath.substr(currentPath.indexOf("_PATH_")+6)
-  
-        if currentPath isnt "/"
-          $path = currentPath+"/"+fileName 
-        else
-          $path = currentPath+fileName 
-  
-        # set path as id -> so it will be found and can be removed on update from server
-        $(obj).attr("id", $path)
-        $(obj).removeClass('temp-mindmap-file')
-        $("#workspace-tree").jstree('rename_node', obj , fileName)
-        # build path
-        if currentPath[currentPath.length-1] isnt '/'
-          currentPath += "/"
-        currentPath += fileName
-  
-        projectId   = $project.attr('id')
-        # set id in dom
-        obj[0].id = currentPath
-  
-        competingObjects = $('#'+projectId).find(".file[id*='"+currentPath+"']").not('.delete-me-on-update')
-        if competingObjects.size() < 1
-          params = {
-            url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
-            type: 'POST'
-            cache: false
-            data: {"path": currentPath}
-            success:(data)=>
-              # create new model and add to parent
-              document.log "mind map created: "+currentPath+" to project "+projectId
-  
-            error:()=>
-              document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
-              # remove mm file from view
-              $('#workspace-tree').jstree("delete_node", obj)
-  
-            dataType: 'json' 
-          }
-          $.ajax(params)
-        else
-          firstObj = $(competingObjects[0])
-          pos = $(firstObj).position()
-          pos.top = pos.top
-          $("#multiplename-error").css 'top', pos.top
-          $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
-          $("#multiplename-error").show()
-          $('#workspace-tree').jstree("delete_node", obj)
+        $path = currentPath+fileName 
+
+      # set path as id -> so it will be found and can be removed on update from server
+      $(obj).attr("id", $path)
+      $(obj).removeClass('temp-mindmap-file')
+      $("#workspace-tree").jstree('rename_node', obj , fileName)
+      # build path
+      if currentPath[currentPath.length-1] isnt '/'
+        currentPath += "/"
+      currentPath += fileName
+
+      projectId   = $project.attr('id')
+      # set id in dom
+      obj[0].id = currentPath
+
+      competingObjects = $('#'+projectId).find(".file[id*='"+currentPath+"']").not('.delete-me-on-update')
+      if competingObjects.size() < 1
+        params = {
+          url: jsRoutes.controllers.MindMap.createNewMap(projectId).url
+          type: 'POST'
+          cache: false
+          data: {"path": currentPath}
+          success:(data)=>
+            # create new model and add to parent
+            document.log "mind map created: "+currentPath+" to project "+projectId
+
+          error:()=>
+            document.log "error while adding mind map with path : "+currentPath+" to project "+projectId
+            # remove mm file from view
+            $('#workspace-tree').jstree("delete_node", obj)
+
+          dataType: 'json' 
+        }
+        $.ajax(params)
+      else
+        firstObj = $(competingObjects[0])
+        pos = $(firstObj).position()
+        pos.top = pos.top
+        $("#multiplename-error").css 'top', pos.top
+        $("#multiplename-error").find('.message').html('Sorry, but this name is already in use.')
+        $("#multiplename-error").show()
+        $('#workspace-tree').jstree("delete_node", obj)
       
         
-    newProject: (projectName = "new project")->
-      if typeof projectName isnt "string"
-        projectName = "new project"
-      obj = $("#workspace-tree").jstree("create","#workspace-tree","last",projectName, false, true)
+    newProject: ()->
+      new_name = "project"
+      obj = $("#workspace-tree").jstree("create","#workspace-tree","last","new_name", false, true)
       $(obj).addClass('project temp-project delete-me-on-update')
       $("#workspace-tree").jstree("rename",obj)
     
-    newMindMap: (filename = "new_mindmap.mm")->
-      if typeof filename isnt "string"
-        filename = "new_mindmap.mm"
+    newMindMap: ()->
+      new_name = "new_mindmap.mm"
       $parent = $('#workspace-tree').jstree('get_selected')
       
       if $parent.size() > 0 and ($parent.hasClass('resource') or $parent.hasClass('resources'))
@@ -568,7 +543,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           $('#workspace-tree').jstree("deselect_node", $parent)
           $parent = $parent.closest('.folder')
           $('#workspace-tree').jstree("select_node", $parent)
-        obj = $("#workspace-tree").jstree("create",$parent,"last",filename, false, true)
+        obj = $("#workspace-tree").jstree("create",$parent,"last",new_name, false, true)
         $(obj).addClass('resource loading file delete-me-on-update temp-mindmap-file')
         $("#workspace-tree").jstree("rename",obj)
       else
@@ -678,33 +653,32 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           fileInfos = []
           for f in files
             filename = escape(f.name)
-            if @isValidFilename(filename, $parent)
-              filepath = path+filename
-  
-              fileInfos.push({
-                "name": escape(f.name)
-                'filepath': filepath
-                "type": f.type
-                "size": f.size
-                "modified": f.lastModifiedDate.toLocaleDateString()
-              })
+            filepath = path+filename
+
+            fileInfos.push({
+              "name": escape(f.name)
+              'filepath': filepath
+              "type": f.type
+              "size": f.size
+              "modified": f.lastModifiedDate.toLocaleDateString()
+            })
+            
+            $('#workspace-tree').jstree('open_node', $parent)
+            
+            resource = projectModel.getResourceByPath(filepath)
+            revision = -1
+            if !!resource
+              revision = resource.get('revision')
+              $treeItem = $("li.file[id*='#{filepath}']")
+              $treeItem.addClass('loading')
               
-              $('#workspace-tree').jstree('open_node', $parent)
-              
-              resource = projectModel.getResourceByPath(filepath)
-              revision = -1
-              if !!resource
-                revision = resource.get('revision')
-                $treeItem = $("li.file[id*='#{filepath}']")
-                $treeItem.addClass('loading')
-                
-                resource.update null, =>
-                  @uploadFile(f, projectId, filepath, revision)
-              else
-                newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
-                obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
-                obj.attr('id', filepath)
+              resource.update null, =>
                 @uploadFile(f, projectId, filepath, revision)
+            else
+              newNode = { attr: {class: 'loading delete-me-on-update'}, state: "leaf", data: filename }
+              obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, true)
+              obj.attr('id', filepath)
+              @uploadFile(f, projectId, filepath, revision)
           
           # in case user wants to upload the same file again after changing it
           # http://stackoverflow.com/questions/1043957/clearing-input-type-file-using-jquery

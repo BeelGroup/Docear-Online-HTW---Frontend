@@ -16,6 +16,12 @@ document.navigation.key.centerMap = "esc"
 document.navigation.key.strg = "ctrl"
 document.navigation.key.del = "del"
 
+document.navigation.key.edit = {}
+document.navigation.key.edit.exit = "enter"
+
+document.navigation.key.literals = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ä','ö','ü','ß',
+									'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','Ä','Ö','Ü']
+
 document.navigation.key.addSibling = "enter"
 document.navigation.key.addChild = "ins"
 
