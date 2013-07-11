@@ -106,6 +106,8 @@
                     <ul class="nav pull-right">
                         @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
                         @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
+                            @menuItem("#profile/"+username, username, linkClass="", onlyIf = isAuthenticated, glyphicon = "icon-user")
+                        }else{
                             @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
                         }
                         @menuItem(controllers.routes.User.logout.url, "Logout", linkClass="logoutButton", onlyIf = isAuthenticated, glyphicon = "icon-off")

@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import models.project.exceptions.InvalidFileNameException;
+
 import static org.apache.commons.io.FileUtils.iterateFiles;
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 
@@ -56,7 +58,11 @@ public final class ProjectFixturesPlugin extends Plugin {
         while (fileIterator.hasNext()) {
             final File file = fileIterator.next();
             final String pathForDb = file.getAbsolutePath().replace(projectFolder.getAbsolutePath(), "").replace('\\','/');
-            service.putFile(project.getId(), pathForDb, readFileToByteArray(file), false, -1L, true);
+            try {
+				service.putFile(project.getId(), pathForDb, readFileToByteArray(file), false, -1L, true);
+			} catch (InvalidFileNameException e) {
+				throw new IOException("Tried to add file with impossible filename: "+pathForDb+"! ", e);
+			}
         }
     }
 }

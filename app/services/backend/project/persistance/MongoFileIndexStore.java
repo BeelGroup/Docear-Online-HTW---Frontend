@@ -183,7 +183,7 @@ public class MongoFileIndexStore implements FileIndexStore {
         try {
             final String folderPath = path.endsWith("/") ? path : path + "/";
             Pattern childrenOfFolderPattern = Pattern.compile("^" + (folderPath) + "[^/]+$");
-            final BasicDBObject query = doc("path", childrenOfFolderPattern).append("project", new ObjectId(id));
+            final BasicDBObject query = doc("project", new ObjectId(id)).append("path", childrenOfFolderPattern);
             final DBCursor cursor = files().find(query, DEFAULT_PRESENT_FIELDS_FILE_METADATA);
             return new EntityCursorBase<FileMetaData>(cursor) {
                 @Override

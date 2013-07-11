@@ -1,36 +1,57 @@
 package services.backend.project;
 
-import models.backend.exceptions.sendResult.NotFoundException;
-import models.backend.exceptions.sendResult.SendResultException;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.JsonNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-import play.Logger;
-import services.backend.project.filestore.FileStore;
-import services.backend.project.persistance.*;
+import static services.backend.project.filestore.PathFactory.path;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static services.backend.project.filestore.PathFactory.path;
+import models.backend.exceptions.sendResult.NotFoundException;
+import models.backend.exceptions.sendResult.SendResultException;
+import models.project.exceptions.InvalidFileNameException;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonNode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import play.Logger;
+import play.libs.Akka;
+import play.libs.F.Promise;
+import services.backend.project.filestore.FileStore;
+import services.backend.project.filestore.PathFactory;
+import services.backend.project.filestore.PathFactory.PathFactoryHashedFile;
+import services.backend.project.persistance.Changes;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileIndexStore;
+import services.backend.project.persistance.FileMetaData;
+import services.backend.project.persistance.Project;
 
 @Profile("projectHashImpl")
 @Component
 public class HashBasedProjectService implements ProjectService {
-    /**
-     * TODO UpdateCallables could cause performance issue. Implementing an Actor
-     * for the action might be better.
-     */
+	
+	private static final char[] ILLEGAL_CHARACTERS = { '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
+
     private final Map<String, List<UpdateCallable>> projectListenersMap = new HashMap<String, List<UpdateCallable>>();
     private final Map<String, List<UpdateCallable>> userListenerMap = new HashMap<String, List<UpdateCallable>>();
     @Autowired
@@ -72,6 +93,7 @@ public class HashBasedProjectService implements ProjectService {
 
     @Override
     public boolean removeUserFromProject(String projectId, String usernameToRemove, final boolean keepLastUser) throws IOException {
+    	Logger.debug("HashBasedProjectService.removeUserFromProject => projectId: "+projectId+"; usernameToRemove: "+usernameToRemove);
         final boolean removed = fileIndexStore.removeUserFromProject(projectId, usernameToRemove, keepLastUser);
         if (removed) {
             callListenerForChangeForUser(usernameToRemove);
@@ -165,12 +187,21 @@ public class HashBasedProjectService implements ProjectService {
 
     }
 
+    
     @Override
-    public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException {
+    public FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long parentRevision, boolean forceOverride) throws IOException, InvalidFileNameException {
         Logger.debug("putFile => projectId: " + projectId + "; path: " + path + "; forceOverride: " + forceOverride + "; bytes: " + fileBytes.length);
+        
+        //check that path has no invalid signs
+        
+        if(StringUtils.containsAny(path, ILLEGAL_CHARACTERS)) {
+        	throw new InvalidFileNameException("The filename contains invalid characters.");
+        }
         String actualPath = normalizePath(path);
         upsertFoldersInPath(projectId, actualPath);
 
+        
+        
         //check that path is not rootpath
         if (actualPath.equals("/"))
             throw new SendResultException("Cannot override root!", 400);
@@ -204,6 +235,7 @@ public class HashBasedProjectService implements ProjectService {
             }
         }
 
+        //check if file for hash is already present
         final PutFileResult result = isZip ? putFileInStoreWithZippedFileBytes(fileBytes) : putFileInStoreWithFileBytes(fileBytes);
         final String fileHash = result.getFileHash();
         final long bytes = result.getBytes();
@@ -316,6 +348,15 @@ public class HashBasedProjectService implements ProjectService {
             // get hash
             digestIn = new DigestInputStream(zipStream, createMessageDigest());
             fileHash = sha512(digestIn);
+            
+            if(isFileAlreadyPresent(fileHash)) {
+            	Logger.debug("putFile => file already present, do not save.");
+            	fileStore.delete(zippedTmpPath);
+            	fileStore.delete(tmpPath);
+            	return new PutFileResult(fileHash, fileByteCount);
+            }
+            
+            Logger.debug("putFile => saving file");
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
 
@@ -349,7 +390,14 @@ public class HashBasedProjectService implements ProjectService {
             // get hash
             digestIn = new DigestInputStream(new ByteArrayInputStream(fileBytes), createMessageDigest());
             fileHash = sha512(digestIn);
+            
+            if(isFileAlreadyPresent(fileHash)) {
+            	Logger.debug("putFile => file already present, do not save.");
+            	fileStore.delete(tmpPath);
+            	return new PutFileResult(fileHash, fileByteCount);
+            }
 
+            Logger.debug("putFile => saving file");
             final String unzippedPath = path().hash(fileHash).raw();
             final String zippedPath = path().hash(fileHash).zipped();
 
@@ -370,22 +418,38 @@ public class HashBasedProjectService implements ProjectService {
         }
         return new PutFileResult(fileHash, fileByteCount);
     }
+    
+    private boolean isFileAlreadyPresent(String fileHash) {
+    	final PathFactoryHashedFile path = PathFactory.path().hash(fileHash);
+    	
+    	InputStream in = null;
+    	boolean present = true;
+    	try {
+			fileStore.open(path.raw());
+		} catch (FileNotFoundException e) {
+			present = false;
+		} catch (IOException e) {
+			present = false;
+		} finally {
+			IOUtils.closeQuietly(in);
+		}
+    	
+    	return present;
+    }
 
     @Override
-    public JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
-        final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
+    public Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException {
+    	final Map<String, List<String>> projectUserMap = new HashMap<String, List<String>>();
         for (String projectId : projectRevisionMap.keySet()) {
-            try {
-                final Project project = fileIndexStore.findProjectById(projectId);
-                if (project != null) {
-                    projectUserMap.put(projectId, project.getAuthorizedUsers());
-                }
-            } catch (IllegalArgumentException e) {
-                throw new SendResultException(projectId + " is not a valid project id!", 400);
+            final Project project = fileIndexStore.findProjectById(projectId);
+            if (project != null) {
+                projectUserMap.put(projectId, project.getAuthorizedUsers());
             }
         }
 
         final UpdateCallable callable = new UpdateCallable(fileIndexStore, projectRevisionMap, projectUserMap, username);
+
+        final Promise<JsonNode> promise = Akka.future(callable);
 
         if (longPolling) {
             // put in listener maps
@@ -407,12 +471,7 @@ public class HashBasedProjectService implements ProjectService {
             callable.send();
         }
 
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            Logger.error("error in listen route! ", e);
-            return null;
-        }
+        return promise;
     }
 
     private void callListenersForChangeInProject(String projectId) {

@@ -39,9 +39,18 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     
     closeMap: (mapId = @mapId)->
       document.log "Close map #{@mapId}"
+      @minimap.clear()
       if @mapLoader isnt undefined
         @mapLoader.stop()
       if @rootView isnt undefined
+        $warning = $(@$el).find('.mindmap-closed-warning')
+        if $warning.size() == 0
+          $warning = $(@$el).parent().find('.mindmap-closed-warning')
+          $(@$el).append($warning)
+        $warning.slideDown()
+        
+        @rootView.getModel().get('mindMapUpdateHandler').stopRunningRequests()
+        
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
         @rootView.destroy()
@@ -51,10 +60,15 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         $editNodeContainer = $('.node-edit-container')
         $editNodeContainer.addClass('close-and-destroy').hide() 
 
-    showMapLoadingError:(a,b,c)=>
+    showMapLoadingError:(a)=>
       # if answere doesn't contain redirect, show error message
       if a.responseText.indexOf("<head>") is -1
-        alert a.responseText
+        result = $.parseJSON( a.responseText );
+        $warning = $("#mindmap-container").find('.server-warning')
+
+        $warning.find(".message.type").html result.type + ': '
+        $warning.find(".message.content").html result.message
+        $warning.slideDown()
       # otherwise redirect to welcome map
       else
         @loadMap '-1', 'welcome'
@@ -63,6 +77,9 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
     initMapLoading:(data)=>
       if @rootView isnt undefined
         document.log 'delete old map'
+        if !!@rootView.getModel().get('mindMapUpdateHandler')
+          @rootView.getModel().get('mindMapUpdateHandler').stopRunningRequests()
+        
         @canvas.zoomCenter(false)
         @rootView.getElement().remove()
         
@@ -165,6 +182,7 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       container = @$el.parent().parent()
       verticalMargin = parseFloat(container.css('margin-top'))+parseFloat(container.css('margin-bottom'))
       height = Math.round(window.innerHeight)-@$el.parent().position().top-verticalMargin
+      height
 
     computeWidth:->
       container = @$el.parent().parent()
@@ -184,23 +202,35 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
         width = container.width()
         height = container.height()
 
+      if height <= 0
+        height = $(mindmapContainer).outerHeight()
+      
       stats=
         width:  width+'px'
         height: height+'px'
+      plainStats=
+        width:  width
+        height: height
+        
 
       container.css stats
-      mindmapContainer.css stats
-      @$el.css stats
+      workspaceWidth = $('#workspace-container').outerWidth()
+      mindMapStats=
+        width:  (width-workspaceWidth)+'px'
+        height: height+'px'
+
+      mindmapContainer.css mindMapStats
+      @$el.css mindMapStats
 
       if typeof @canvas isnt 'undefined'
         @canvas.updateDragBoundaries()
 
-      stats
+      plainStats
 
     render:(@forceFullscreen)->
       @$el.parent().fadeIn()
       @updateWidthAndHeight()
-
+      
     renderSubviews:()->
       $viewport = @$el
 
@@ -214,13 +244,14 @@ define ['logger', 'MapLoader', 'views/mindmap/RootNodeView', 'views/mindmap/Node
       @zoomPanel = new ZoomPanelView("#{@id}_zoompanel", @canvas)
       @zoomPanel.renderAndAppendTo $viewport
 
-      if $.inArray('WORKSPACE', document.features)
+      if $.inArray('WORKSPACE', document.features) and $('body').hasClass('is-authenticated')
         @workspace = new Workspace()
         @workspaceView = new WorkspaceView(@workspace);
         $('#mindmap-container').before(@workspaceView.render().element())
-        @workspace.loadAllUserProjects()
-        @workspaceUpdateHandler = new WorkspaceUpdateHandler(@workspace)
-        @workspaceUpdateHandler.listen()
+        callback = =>
+          @workspaceUpdateHandler = new WorkspaceUpdateHandler(@workspace)
+          @workspaceUpdateHandler.listen()
+        @workspace.loadAllUserProjects(callback)
         
         @resizeWorkspace(@resizeViewport())
 

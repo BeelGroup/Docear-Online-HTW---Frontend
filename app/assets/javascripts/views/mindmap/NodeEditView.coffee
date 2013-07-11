@@ -23,6 +23,8 @@ define ->
       $editorWindow = @$el.find(".node-editor:first")
       $toolbar = @$el.find(".editor-toolbar:first")
 
+      buffer = 20
+
       parentSize = 
         width: @$el.width()
         height: @$el.height()
@@ -31,27 +33,28 @@ define ->
 
       currentWidth = if $toolbar.outerWidth() > $editorWindow.outerWidth() then $toolbar.outerWidth() else $editorWindow.outerWidth()
       maxRightOuterBound = $editorWindow.position().left + currentWidth
-      maxLowerOuterBound = $editorWindow.position().top + $editorWindow.height()
+      maxLowerOuterBound = $("#mindmap-viewport").position().top + $("#mindmap-viewport").outerHeight()
+      maxUpperOuterBound = $("#mindmap-viewport").position().top
 
-      if ($editorWindow.position().left - 20) < 0   
-        diffX = $editorWindow.position().left - 20
+      if ($editorWindow.position().left - buffer) < 0   
+        @diffX = $editorWindow.position().left - buffer
       else  
-        checkDiffX = maxRightOuterBound - @$el.width() + 20
-        diffX = if checkDiffX > 0 then checkDiffX else 0
+        checkDiffX = maxRightOuterBound - @$el.width() + buffer
+        @diffX = if checkDiffX > 0 then checkDiffX else 0
 
-      if ($editorWindow.position().top - 20)  < 0   
-        diffY = $editorWindow.position().top - 20
+      if ($editorWindow.position().top - buffer - $toolbar.outerHeight())  < maxUpperOuterBound   
+        @diffY = $editorWindow.position().top + (- maxUpperOuterBound - buffer - $toolbar.outerHeight())
       else  
-        checkDiffY = maxLowerOuterBound - @$el.outerHeight() + $toolbar.outerHeight() + 20
-        diffY = if checkDiffY > 0 then checkDiffY else 0
+        checkDiffY = ($editorWindow.outerHeight() + $editorWindow.position().top + buffer) - maxLowerOuterBound
+        @diffY = if checkDiffY > 0 then checkDiffY else 0
 
       if cancelAnimations
         @$el.children().stop()
 
       @$el.children().animate({
-          'left' : "-="+ diffX
-          'top' : "-="+ diffY
-        }, 200)
+          'left' : "-="+ @diffX
+          'top' : "-="+ @diffY
+        }, 400)
 
 
 
@@ -66,14 +69,26 @@ define ->
       
     
     hide: (event)->
-      @$node.children('.inner-node').animate({
-        opacity: 1.0
-      }, 0)
-      $(@$el).fadeOut(document.fadeDuration, ->
-        $(this).remove()
+
+      @$el.find('.editor-toolbar').fadeOut document.fadeDuration
+
+      @$el.children().animate({
+        'left' : "+="+ @diffX
+        'top' : "+="+ @diffY
+      }, document.fadeDuration*2, =>
+
+        @$node.children('.inner-node').css
+          opacity: 1.0
+
+        $(@$el).css
+          opacity: 0.0
+
+        $(@).remove()
         $('.editor-toolbar a').unbind().addClass('disabled')
+        
+        @destroy()        
       )
-      @destroy()
+
       
     hideAndSave: (event)->
       @saveChanges event
@@ -143,13 +158,14 @@ define ->
       
       @selectText(editorId)
       
-      toolbarX = offset.left
-      toolbarY = offset.top+($editContainer.outerHeight())
-      $toolbarIndoc.offset({left: toolbarX, top: toolbarY})
+      #toolbarX = offset.left
+      #toolbarY = offset.top+($editContainer.outerHeight())
+      #$toolbarIndoc.offset({left: toolbarX, top: toolbarY})
       $toolbarIndoc.draggable({ handle: ".handle" });
       if $.browser.msie and $.browser.version < 9
         $toolbarIndoc.remove()
-      
+
+      @positionToolbarOnTop()
       @scaleLikeRoot($editContainer)
       
       $viewPort = @$node.closest('.mindmap-viewport') 
@@ -158,6 +174,17 @@ define ->
       }, 0)
 
       @
+
+    positionToolbarOnTop:->
+      $editorWindow = @$el.find(".node-editor:first")
+      $toolbar = @$el.find(".editor-toolbar:first")
+
+      buffer = 20
+
+      pos = $editorWindow.position()
+      pos.top = pos.top - buffer -  $toolbar.outerHeight()
+
+      $toolbar.css pos
 
     render:->
       @updateLock()

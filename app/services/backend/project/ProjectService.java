@@ -1,15 +1,18 @@
 package services.backend.project;
 
-import org.codehaus.jackson.JsonNode;
-import play.libs.F.Promise;
-import services.backend.project.persistance.EntityCursor;
-import services.backend.project.persistance.FileMetaData;
-import services.backend.project.persistance.Project;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+
+import models.project.exceptions.InvalidFileNameException;
+
+import org.codehaus.jackson.JsonNode;
+
+import play.libs.F.Promise;
+import services.backend.project.persistance.EntityCursor;
+import services.backend.project.persistance.FileMetaData;
+import services.backend.project.persistance.Project;
 
 /**
  * The defined projectservice-API is inspired by the Dropbox-API
@@ -35,13 +38,13 @@ public interface ProjectService {
 
     FileMetaData createFolder(String projectId, String path) throws IOException;
 
-    FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException;
+    FileMetaData putFile(String projectId, String path, byte[] fileBytes, boolean isZip, Long revision, boolean forceOverride) throws IOException, InvalidFileNameException;
 
 	void moveFile(String projectId, String oldPath, String newPath) throws IOException;
 
     FileMetaData delete(String projectId, String path) throws IOException;
 
-	JsonNode listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException;
+	Promise<JsonNode> listenIfUpdateOccurs(String username, Map<String, Long> projectRevisionMap, boolean longPolling) throws IOException;
 
     VersionDeltaResponse versionDelta(String projectId, Long revision) throws IOException;
 

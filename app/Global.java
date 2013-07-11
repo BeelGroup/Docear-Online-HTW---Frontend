@@ -2,10 +2,13 @@ import configuration.SpringConfiguration;
 import controllers.featuretoggle.Feature;
 import controllers.featuretoggle.FeatureComparator;
 import controllers.routes;
+import models.backend.MessageToFrontend;
+import models.backend.MessageToFrontend.Type;
 import models.backend.exceptions.UserNotFoundException;
 import models.backend.exceptions.sendResult.SendResultException;
 import models.frontend.LoggedError;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import play.*;
@@ -113,10 +116,8 @@ public class Global extends GlobalSettings {
         final Throwable realThrowable = throwable.getCause();
         if (realThrowable instanceof SendResultException) {
             final SendResultException e = (SendResultException) realThrowable;
-            final ErrorResult errorResult = new ErrorResult(e.getMessage());
-            final ObjectNode jsonNode = org.codehaus.jackson.node.JsonNodeFactory.instance.objectNode();
-            jsonNode.put("type", "error");
-            jsonNode.put("message", e.getMessage());
+            final MessageToFrontend message = new MessageToFrontend(Type.error, e.getMessage());
+            final JsonNode jsonNode = message.toJsonNode();
 
             return Controller.status(e.getStatusCode(), jsonNode);
         } else if (realThrowable instanceof UserNotFoundException) {
@@ -179,23 +180,6 @@ public class Global extends GlobalSettings {
             ObjectNode result = Json.newObject();
             result.put("message", "not found");
             return notFound(result);
-        }
-    }
-
-    private static final class ErrorResult {
-        private final String type = "error";
-        private final String message;
-
-        private ErrorResult(String message) {
-            this.message = message;
-        }
-
-        private String getMessage() {
-            return message;
-        }
-
-        private String getType() {
-            return type;
         }
     }
 }

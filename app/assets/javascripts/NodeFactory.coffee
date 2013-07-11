@@ -4,7 +4,6 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
   class NodeFactory
 
     persistenceHandlers = []
-    mindMapUpdateHandlers = []
   
 
     createRootNodeByData:(data, containerID, @mapId, @projectId)->
@@ -27,9 +26,9 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
       if persistenceHandlers[@mapId] == undefined
         persistenceHandlers[@mapId] = new PersistenceHandler(@mapId, @projectId, isReadonly)
 
-      if !isReadonly and mindMapUpdateHandlers[@mapId] == undefined
-        mindMapUpdateHandlers[@mapId] = new MindMapUpdateHandler(@mapId, rootNode, @projectId)
-      rootNode.set 'mindMapUpdateHandler', mindMapUpdateHandlers[@mapId]
+      if !isReadonly
+        mindMapUpdateHandlers = new MindMapUpdateHandler(@mapId, rootNode, @projectId)
+        rootNode.set 'mindMapUpdateHandler', mindMapUpdateHandlers
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()

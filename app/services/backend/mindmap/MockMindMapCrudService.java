@@ -1,6 +1,8 @@
 package services.backend.mindmap;
 
 import models.backend.exceptions.DocearServiceException;
+import models.backend.exceptions.sendResult.SendResultException;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -32,7 +34,11 @@ public class MockMindMapCrudService implements MindMapCrudService {
 
     @Override
 	public Promise<String> mindMapAsJsonString(UserIdentifier user, MapIdentifier mapIdentifier, Integer nodeCount) throws DocearServiceException, IOException {
+    	try {
 		return Promise.pure(resourceToString("rest/v1/map/" + mapIdentifier.getMapId() + ".json"));
+    	} catch (Exception e) {
+    		throw new SendResultException("Resource not found. This is MindMapMock mode. Did you intend to start in mindmap prod mode?", 400,e);
+    	}
 	}
 
 	@Override
@@ -122,7 +128,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 	}
 
 	@Override
-	public Boolean listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier) {
+	public Promise<Boolean> listenForUpdates(UserIdentifier user, MapIdentifier mapIdentifier) {
 		Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -131,7 +137,7 @@ public class MockMindMapCrudService implements MindMapCrudService {
 			}
 		});
 
-		return promise.get();
+		return promise;
 	}
 
 	@Override

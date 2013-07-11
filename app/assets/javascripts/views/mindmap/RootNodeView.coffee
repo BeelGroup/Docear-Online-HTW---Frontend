@@ -221,7 +221,7 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
     render: ->
       @$el.html @template @getRenderData()
       @$el.addClass('root')
-
+        
       if !@model.get('isReadonly')
         @controls = new NodeControlsView(@model)
         @controls.renderAndAppendToNode(@)
@@ -239,6 +239,18 @@ define ['logger', 'views/mindmap/NodeView', 'models/mindmap/RootNode', 'views/mi
       @recursiveRender $(@$el).find('.rightChildren:first'), (@model.get 'rightChildren'), @
       @recursiveRender $(@$el).find('.leftChildren:first'), (@model.get 'leftChildren'), @
       
+      foldedClass = '.expand'
+      if @model.get 'folded'
+        foldedClass = '.fold'
+      @$el.find(".action-fold.left#{foldedClass}").toggleClass('invisible')
+      @$el.find(".action-fold.right#{foldedClass}").toggleClass('invisible')
+      
+      if @model.get('leftChildren').length is 0
+        @$el.find('.leftChildren, .action-fold.left').hide()
+        
+      if @model.get('rightChildren').length is 0
+        @$el.find('.rightChildren, .action-fold.right').hide()
+        
       # render the subviews
       for viewId, view of @subViews
         html = view.render().el

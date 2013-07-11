@@ -88,11 +88,11 @@ public class MongoMetaDataCrudServiceTest extends MongoTest {
     @Test
     public void testFindByNotSavedSince() throws Exception {
         upsert4MetaDatas();
-        assertThat(service.findByNotSavedSince(99)).hasSize(4);
-        assertThat(service.findByNotSavedSince(100)).hasSize(3);
-        assertThat(service.findByNotSavedSince(101)).hasSize(3);
-        assertThat(service.findByNotSavedSince(200)).hasSize(2);
-        assertThat(service.findByNotSavedSince(300)).hasSize(1);
-        assertThat(service.findByNotSavedSince(600)).hasSize(0);
+        assertThat(service.findByNotSavedSince(99)).hasSize(0);
+        assertThat(service.findByNotSavedSince(100)).hasSize(0);
+        assertThat(service.findByNotSavedSince(101)).hasSize(1);
+        assertThat(service.findByNotSavedSince(200)).hasSize(1);
+        assertThat(service.findByNotSavedSince(300)).hasSize(2);
+        assertThat(service.findByNotSavedSince(600)).hasSize(4);
     }
 }

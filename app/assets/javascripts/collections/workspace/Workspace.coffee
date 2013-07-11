@@ -4,7 +4,7 @@ define ['logger', 'models/workspace/Project'], (logger, Project)->
   class Workspace extends Backbone.Collection 
     model: Project
 
-    loadAllUserProjects: ()->
+    loadAllUserProjects: (callback = null)->
       me = @
       params = {
         url: jsRoutes.controllers.User.projectListFromDB().url
@@ -15,6 +15,8 @@ define ['logger', 'models/workspace/Project'], (logger, Project)->
             project = new Project(projectData)
             me.add(project)
           )
+          if !!callback
+            callback()
         dataType: 'json' 
       }
       $.ajax(params)

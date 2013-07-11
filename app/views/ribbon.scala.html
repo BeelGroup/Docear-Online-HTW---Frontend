@@ -48,6 +48,8 @@
                 <ul class="nav pull-right">
                     @menuItem(null, " ", linkClass="current-mindmap-name no-link", onlyIf = isAuthenticated)
                     @if(controllers.featuretoggle.Feature.USER_PROFILE.isEnabled()) {
+                        @menuItem("#profile/"+username, username, linkClass="", onlyIf = isAuthenticated, glyphicon = "icon-user")
+                    }else{
                         @menuItem(null, username, linkClass="no-link", onlyIf = isAuthenticated, glyphicon = "icon-user")
                     }
                     @menuItem("http://www.docear.org/imprint/", "Imprint")
@@ -73,13 +75,9 @@
             
             @if(controllers.featuretoggle.Feature.RIBBON_GENERAL.isEnabled()) {
             <div id="ribbon-general" class="ribbon">
-                <div class="ribbon-group pull-left">
-                    <a title="" class="btn toggle-workspace-sidebar">Show/Hide Workspace <i class="icon-list-alt"></i></a>
-                </div>
-                <div class="ribbon-group pull-left seperator"></div>                
                 <div class="ribbon-group pull-left editor-toolbar" data-target="#editor" data-role="editor-toolbar">
                   <div class="btn-group">
-                      <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font"><i class="icon-font"></i><b class="caret"></b></a>
+                      <a title=@if(controllers.featuretoggle.Feature.SIMPLE_TOOLTIP.isEnabled()){"Font type"}else{""} data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font"><i class="icon-font"></i><b class="caret"></b></a>
                          <ul class="dropdown-menu">
                              <li><a style="font-family:'Serif'" data-edit="fontName Serif">Serif</a></li>
                              <li><a style="font-family:'Sans'" data-edit="fontName Sans">Sans</a></li>
@@ -100,33 +98,57 @@
                   </div>
                                 
                   <div class="btn-group">
-                    <a title="" data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font Size"><i class="icon-text-height"></i>&nbsp;<b class="caret"></b></a>
+                    <a title=@if(controllers.featuretoggle.Feature.SIMPLE_TOOLTIP.isEnabled()){"Font size"}else{""} data-toggle="dropdown" class="btn disabled dropdown-toggle" data-original-title="Font Size"><i class="icon-text-height"></i>&nbsp;<b class="caret"></b></a>
                       <ul class="dropdown-menu">
                       <li><a data-edit="fontSize 5"><font size="5">Huge</font></a></li>
                       <li><a data-edit="fontSize 3"><font size="3">Normal</font></a></li>
                       <li><a data-edit="fontSize 1"><font size="1">Small</font></a></li>
                       </ul>
                   </div>
-                  <div class="btn-group">
-                    <a title="" data-edit="bold" class="btn disabled" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
-                    <a title="" data-edit="italic" class="btn disabled" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
-                    <a title="" data-edit="strikethrough" class="btn disabled" data-original-title="Strikethrough"><i class="icon-strikethrough"></i></a>
-                    <a title="" data-edit="underline" class="btn disabled" data-original-title="Underline (Ctrl/Cmd+U)"><i class="icon-underline"></i></a>
-                  </div>
-                  <div class="btn-group">
-                    <a title="" data-edit="outdent" class="btn disabled" data-original-title="Reduce indent (Shift+Tab)"><i class="icon-indent-left"></i></a>
-                    <a title="" data-edit="indent" class="btn disabled" data-original-title="Indent (Tab)"><i class="icon-indent-right"></i></a>
-                  </div>
-                  <div class="btn-group">
-                    <a title="" data-edit="justifyleft" class="btn disabled" data-original-title="Align Left (Ctrl/Cmd+L)"><i class="icon-align-left"></i></a>
-                    <a title="" data-edit="justifycenter" class="btn disabled" data-original-title="Center (Ctrl/Cmd+E)"><i class="icon-align-center"></i></a>
-                    <a title="" data-edit="justifyright" class="btn disabled" data-original-title="Align Right (Ctrl/Cmd+R)"><i class="icon-align-right"></i></a>
-                    <a title="" data-edit="justifyfull" class="btn disabled" data-original-title="Justify (Ctrl/Cmd+J)"><i class="icon-align-justify"></i></a>
-                  </div>
-                  <div class="btn-group">
-                    <a title="" data-edit="undo" class="btn disabled" data-original-title="Undo (Ctrl/Cmd+Z)"><i class="icon-undo"></i></a>
-                    <a title="" data-edit="redo" class="btn disabled" data-original-title="Redo (Ctrl/Cmd+Y)"><i class="icon-repeat"></i></a>
-                  </div>
+
+                  @if(controllers.featuretoggle.Feature.SIMPLE_TOOLTIP.isEnabled()){
+                    <div class="btn-group">
+                      <a title="Bold" data-edit="bold" class="btn disabled" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+                      <a title="Italic" data-edit="italic" class="btn disabled" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+                      <a title="Crossed out" data-edit="strikethrough" class="btn disabled" data-original-title="Strikethrough"><i class="icon-strikethrough"></i></a>
+                      <a title="Underlined" data-edit="underline" class="btn disabled" data-original-title="Underline (Ctrl/Cmd+U)"><i class="icon-underline"></i></a>
+                    </div>
+                    <div class="btn-group">
+                      <a title="Outdent" data-edit="outdent" class="btn disabled" data-original-title="Reduce indent (Shift+Tab)"><i class="icon-indent-left"></i></a>
+                      <a title="Indent" data-edit="indent" class="btn disabled" data-original-title="Indent (Tab)"><i class="icon-indent-right"></i></a>
+                    </div>
+                    <div class="btn-group">
+                      <a title="Justifiy left" data-edit="justifyleft" class="btn disabled" data-original-title="Align Left (Ctrl/Cmd+L)"><i class="icon-align-left"></i></a>
+                      <a title="Justifiy center" data-edit="justifycenter" class="btn disabled" data-original-title="Center (Ctrl/Cmd+E)"><i class="icon-align-center"></i></a>
+                      <a title="Justifiy right" data-edit="justifyright" class="btn disabled" data-original-title="Align Right (Ctrl/Cmd+R)"><i class="icon-align-right"></i></a>
+                      <a title="Justifiy full" data-edit="justifyfull" class="btn disabled" data-original-title="Justify (Ctrl/Cmd+J)"><i class="icon-align-justify"></i></a>
+                    </div>
+                    <div class="btn-group">
+                      <a title="Undo" data-edit="undo" class="btn disabled" data-original-title="Undo (Ctrl/Cmd+Z)"><i class="icon-undo"></i></a>
+                      <a title="Redo" data-edit="redo" class="btn disabled" data-original-title="Redo (Ctrl/Cmd+Y)"><i class="icon-repeat"></i></a>
+                    </div>
+                  }else{
+                    <div class="btn-group">
+                      <a title="" ){'Bold'}"" data-edit="bold" class="btn disabled" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+                      <a title="" data-edit="italic" class="btn disabled" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+                      <a title="" data-edit="strikethrough" class="btn disabled" data-original-title="Strikethrough"><i class="icon-strikethrough"></i></a>
+                      <a title="" data-edit="underline" class="btn disabled" data-original-title="Underline (Ctrl/Cmd+U)"><i class="icon-underline"></i></a>
+                    </div>
+                    <div class="btn-group">
+                      <a title="" data-edit="outdent" class="btn disabled" data-original-title="Reduce indent (Shift+Tab)"><i class="icon-indent-left"></i></a>
+                      <a title="" data-edit="indent" class="btn disabled" data-original-title="Indent (Tab)"><i class="icon-indent-right"></i></a>
+                    </div>
+                    <div class="btn-group">
+                      <a title="" data-edit="justifyleft" class="btn disabled" data-original-title="Align Left (Ctrl/Cmd+L)"><i class="icon-align-left"></i></a>
+                      <a title="" data-edit="justifycenter" class="btn disabled" data-original-title="Center (Ctrl/Cmd+E)"><i class="icon-align-center"></i></a>
+                      <a title="" data-edit="justifyright" class="btn disabled" data-original-title="Align Right (Ctrl/Cmd+R)"><i class="icon-align-right"></i></a>
+                      <a title="" data-edit="justifyfull" class="btn disabled" data-original-title="Justify (Ctrl/Cmd+J)"><i class="icon-align-justify"></i></a>
+                    </div>
+                    <div class="btn-group">
+                      <a title="" data-edit="undo" class="btn disabled" data-original-title="Undo (Ctrl/Cmd+Z)"><i class="icon-undo"></i></a>
+                      <a title="" data-edit="redo" class="btn disabled" data-original-title="Redo (Ctrl/Cmd+Y)"><i class="icon-repeat"></i></a>
+                    </div>                  
+                }
                 </div>
             </div>
             }

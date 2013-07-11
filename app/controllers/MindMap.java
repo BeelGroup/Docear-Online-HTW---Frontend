@@ -1,9 +1,25 @@
 package controllers;
 
-import controllers.secured.SecuredRest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import models.backend.MessageToFrontend;
+import models.backend.MessageToFrontend.Type;
 import models.backend.exceptions.DocearServiceException;
 import models.backend.exceptions.sendResult.UnauthorizedException;
-import models.frontend.formdata.*;
+import models.frontend.formdata.ChangeEdgeData;
+import models.frontend.formdata.ChangeNodeData;
+import models.frontend.formdata.CreateMapData;
+import models.frontend.formdata.CreateNodeData;
+import models.frontend.formdata.MoveNodeData;
+import models.frontend.formdata.ReleaseLockData;
+import models.frontend.formdata.RemoveNodeData;
+import models.frontend.formdata.RequestLockData;
+import models.project.exceptions.InvalidFileNameException;
+
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
@@ -14,23 +30,18 @@ import org.docear.messages.models.MapIdentifier;
 import org.docear.messages.models.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import play.Logger;
 import play.data.Form;
-import play.libs.Akka;
 import play.libs.F;
 import play.libs.F.Function;
 import play.mvc.Result;
 import play.mvc.Security;
 import services.backend.mindmap.MindMapCrudService;
 import services.backend.project.ProjectService;
+import services.backend.project.persistance.FileMetaData;
 import services.backend.user.UserService;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
+import controllers.secured.SecuredRest;
 
 @Component
 public class MindMap extends DocearController {
@@ -62,8 +73,13 @@ public class MindMap extends DocearController {
             final UserIdentifier userIdentifier = userIdentifier();
             final MapIdentifier mapIdentifier = new MapIdentifier(projectId, path);
             if (mindMapCrudService.createMindmap(userIdentifier(), mapIdentifier).get()) {
+            	try {
                 final MindmapAsXmlResponse mindMapAsXmlResponse = mindMapCrudService.mindMapAsXmlString(userIdentifier, mapIdentifier).get();
-                return ok(projectService.putFile(projectId, path, mindMapAsXmlResponse.getFileBytes(), false, 0L, true));
+                FileMetaData fileMetaData = projectService.putFile(projectId, path, mindMapAsXmlResponse.getFileBytes(), false, 0L, true);
+                return ok(fileMetaData);
+            	} catch(InvalidFileNameException e) {
+            		return badRequest(new MessageToFrontend(Type.error, e.getMessage()).toJsonNode());
+            	}
             } else {
                 return internalServerError("problem creating new map");
             }
@@ -355,17 +371,8 @@ public class MindMap extends DocearController {
     public Result listenForUpdates(final String projectId, final String mapId) {
         Logger.debug("MindMap.listenForUpdates => projectId= " + projectId + "; mapId=" + mapId);
         final MapIdentifier mapIdentifier = new MapIdentifier(projectId, mapId);
-        final UserIdentifier userIdentifier = userIdentifier();
+        return async(mindMapCrudService.listenForUpdates(userIdentifier(), mapIdentifier).map(new Function<Boolean, Result>() {
 
-
-        F.Promise<Boolean> promise = Akka.future(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mindMapCrudService.listenForUpdates(userIdentifier, mapIdentifier);
-            }
-        });
-
-        return async(promise.map(new Function<Boolean, Result>() {
             @Override
             public Result apply(Boolean hasChanged) throws Throwable {
                 if (hasChanged)

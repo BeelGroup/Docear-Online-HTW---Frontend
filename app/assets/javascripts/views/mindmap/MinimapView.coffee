@@ -94,14 +94,18 @@ define ->
         #@currentScale += scaleDiff
       
 
+    clear:->
+      $.each $('.mini-node'), -> 
+        $(@).remove()
+
 
     drawMiniNodes:(@nodePositions, firstDraw = false)->
       if firstDraw 
         @scaleAmount = 1.0
 
       @miniNodesContainer = @$el.find('.mini-nodes-container')
-      $.each $('.mini-node'), -> 
-        $(@).remove()
+
+      @clear()
 
       @$root = @createMiniNode @nodePositions, @miniNodesContainer
  

@@ -41,6 +41,14 @@ define ['logger', 'views/workspace/ResourceView', 'views/workspace/UserView', 'v
       if @_rendered
         userView = new UserView(user, @model.get('id'))
         @userViews.push(userView)
+        
+        $parent = $("#"+@getId()).find ".users:first"
+
+        $exists = $parent.find ".user ##{user.get('id')}"
+        if $exists.size() == 0
+          thisState = 'leaf'
+          newNode = { attr: {class: 'user', id: user.get('id')}, state: thisState, data: user.get('name') }
+          obj = $('#workspace-tree').jstree("create_node", $parent, 'inside', newNode, false, false)
       
     removeUser: (user)=>
       document.log "removing user #{user.get('name')} from view"

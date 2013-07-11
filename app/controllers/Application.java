@@ -30,7 +30,6 @@ import play.Play;
 import play.Routes;
 import play.cache.Cache;
 import play.data.Form;
-import play.mvc.Controller;
 import play.mvc.Result;
 import services.backend.user.UserService;
 
