@@ -23,12 +23,11 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
         isReadonly = false
       rootNode.set 'isReadonly', isReadonly
 
-      if persistenceHandlers[@mapId] == undefined
-        persistenceHandlers[@mapId] = new PersistenceHandler(@mapId, @projectId, isReadonly)
-
       if !isReadonly
         mindMapUpdateHandlers = new MindMapUpdateHandler(@mapId, rootNode, @projectId)
         rootNode.set 'mindMapUpdateHandler', mindMapUpdateHandlers
+        persistenceHandlers[rootNode.getUniqueId()] = new PersistenceHandler(@mapId, @projectId, rootNode.getUniqueId(), isReadonly)
+        rootNode.set 'persistenceHandler', persistenceHandlers[rootNode.getUniqueId()]
       
       @setDefaults(rootNode, rootNode, data.root)
       rootNode.activateListeners()
@@ -102,7 +101,7 @@ define ['logger', 'models/mindmap/RootNode', 'models/mindmap/Node', 'handlers/Pe
       node.set 'lastAddedChild', 'undefined'
       node.set 'connectionUpdated', 0
 
-      node.set 'persistenceHandler', persistenceHandlers[rootNode.get('mapId')]
+      node.set 'persistenceHandler', persistenceHandlers[rootNode.getUniqueId()]
       node.set 'attributesToPersist', ['folded', 'nodeText', 'isHtml']
       node.set 'autoPersist', false
 
