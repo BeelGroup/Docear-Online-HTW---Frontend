@@ -33,10 +33,15 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
       if @model.typeName is 'rootModel'
         if @model.get('lastAddedChildSide') is 'Left'
           $childrenContainer = $node.children('.leftChildren:first')
-          @$el.children('.inner-node').find('.action-fold.left').show().toggleClass 'invisible'
+          $side = 'left'
         else
           $childrenContainer = $node.children('.rightChildren:first')
-          @$el.children('.inner-node').find('.action-fold.right').show().toggleClass 'invisible'
+          $side = 'right'
+            
+        $foldIcons = @$el.children('.inner-node').find(".action-fold.#{$side}")
+        $foldIcons.show()
+        if $childrenContainer.size() == 0
+          $foldIcons.toggleClass 'invisible'
       else
         @$el.children('.inner-node').find('.action-fold').show()
         $childrenContainer = $node.children('.children:first')
