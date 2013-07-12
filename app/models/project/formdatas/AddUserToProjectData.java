@@ -1,7 +1,10 @@
 package models.project.formdatas;
 
+import play.data.validation.Constraints.Required;
+
 public class AddUserToProjectData {
 
+	@Required
 	private String username;
 
 	public AddUserToProjectData() {
