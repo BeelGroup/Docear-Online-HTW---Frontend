@@ -51,6 +51,8 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
                 me.listen()
               304: ()->
                 me.listen()
+              303: ()->
+                me.listen()
               401: ()->
                 document.log "user is not logged in -> stop listening on workspace"
               503: ()->
