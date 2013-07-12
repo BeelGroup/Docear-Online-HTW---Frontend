@@ -3,24 +3,23 @@ define ['routers/DocearRouter'],  (DocearRouter) ->
   
   class PersistenceHandler extends Backbone.Model
 
-    constructor: (@mapId, @projectId, @disabled)->
+    constructor: (@mapId, @projectId, @sourceId, @disabled)->
       super()
-      
       @persistenceApi = {
         'change': {
-          'Node': jsRoutes.controllers.MindMap.changeNode(@projectId, encodeURIComponent(@mapId)).url
+          'Node': document.addURLParam(jsRoutes.controllers.MindMap.changeNode(@projectId, encodeURIComponent(@mapId)).url, 'source', @sourceId)
         },
         'create': {
-          'Node': jsRoutes.controllers.MindMap.createNode(@projectId, encodeURIComponent(@mapId)).url
+          'Node': document.addURLParam(jsRoutes.controllers.MindMap.createNode(@projectId, encodeURIComponent(@mapId)).url, 'source', @sourceId)
         },
         'delete': {
-          'Node': jsRoutes.controllers.MindMap.deleteNode(@projectId, encodeURIComponent(@mapId)).url
+          'Node': document.addURLParam(jsRoutes.controllers.MindMap.deleteNode(@projectId, encodeURIComponent(@mapId)).url, 'source', @sourceId)
         },
         'lock': {
-          'Node': jsRoutes.controllers.MindMap.requestLock(@projectId, encodeURIComponent(@mapId)).url
+          'Node': document.addURLParam(jsRoutes.controllers.MindMap.requestLock(@projectId, encodeURIComponent(@mapId)).url, 'source', @sourceId)
         },
         'unlock': {
-          'Node': jsRoutes.controllers.MindMap.releaseLock(@projectId, encodeURIComponent(@mapId)).url
+          'Node': document.addURLParam(jsRoutes.controllers.MindMap.releaseLock(@projectId, encodeURIComponent(@mapId)).url, 'source', @sourceId)
         }
       }
       

@@ -9,84 +9,92 @@ define ['routers/DocearRouter', 'collections/workspace/Workspace', 'models/works
       
     listen: ()->
       if $.inArray('LISTEN_FOR_UPDATES', document.features) > -1 and $.inArray('WORKSPACE', document.features) > -1
-        document.log "listen for updates on workspace"
-        me = @
-        
-        projects = {}
-        if @workspace.length > 0
-          @workspace.each (project)=>
-            if project.get('revision') > -1
-              projects[project.id] = project.get('revision');
-            else
-              projects[project.id] = 0;
-
-        apiUrl = jsRoutes.controllers.ProjectController.listenForUpdates().url
-        if apiUrl.indexOf('?') < 0
-          apiUrl +=  "?"
+        if @workspace._editMode
+          setTimeout(=>
+            @listen()
+          , 1000)
         else
-          apiUrl +=  "&"
-        apiUrl += "_=#{Math.floor(Math.random()*100000)}"
+          document.log "listen for updates on workspace"
+          me = @
+          
+          projects = {}
+          if @workspace.length > 0
+            @workspace.each (project)=>
+              if project.get('revision') > -1
+                projects[project.id] = project.get('revision');
+              else
+                projects[project.id] = 0;
+  
+          apiUrl = jsRoutes.controllers.ProjectController.listenForUpdates().url
+          if apiUrl.indexOf('?') < 0
+            apiUrl +=  "?"
+          else
+            apiUrl +=  "&"
+          apiUrl += "_=#{Math.floor(Math.random()*100000)}"
+          params = {
+            url: apiUrl
+            type: 'POST'
+            cache: false
+            data: projects
+            success: (projectData)=>
+              for projectId, revision of projectData.updatedProjects
+                project = me.workspace.get(projectId)
+                me.getChangesByProject(project)
+              
+              for projectId, revision of projectData.newProjects
+                me.getProject(projectId)
+              
+              for projectId in projectData.deletedProjects
+                me.workspace.remove(projectId)
+            statusCode: {
+              200: ()->
+                me.listen()
+              304: ()->
+                me.listen()
+              303: ()->
+                me.listen()
+              401: ()->
+                document.log "user is not logged in -> stop listening on workspace"
+              503: ()->
+                document.log "Service Temporarily Unavailable"
+                setTimeout(->
+                  me.listen()
+                , 5000)
+            }
+            dataType: 'json' 
+          }
+          @execAjax(params)
+      
+    getChangesByProject: (project)->
+    	if !@workspace._editMode
+        project.update()
         params = {
-          url: apiUrl
+          url: jsRoutes.controllers.ProjectController.projectVersionDelta(project.get('id')).url
           type: 'POST'
           cache: false
-          data: projects
-          success: (projectData)=>
-            for projectId, revision of projectData.updatedProjects
-              project = me.workspace.get(projectId)
-              me.getChangesByProject(project)
+          data: {'projectRevision': project.get('revision')}
+          success: (projectsData)=>
+            project.set 'revision', projectsData.currentRevision
             
-            for projectId, revision of projectData.newProjects
-              me.getProject(projectId)
+            for path, meta of projectsData.resources
+              
+              if meta.deleted
+                resource = project.getResourceByPath path, false
+                if resource != undefined
+                  resource.get('parent').deleteResourceByPath(path)
+                  if $(".node.root .map-id[value*='#{path}']").size() > 0
+                    location.href = "/#closeMap/#{path}"
+                  document.log "Resource #{path} deleted"
+              else
+                resource = project.getResourceByPath path, true
+                if resource != undefined
+                  resource.fillFromData(meta)
+                  resource.get('parent').addResouce resource
+                  document.log "Resource #{path} updated"
             
-            for projectId in projectData.deletedProjects
-              me.workspace.remove(projectId)
-          statusCode: {
-            200: ()->
-              me.listen()
-            304: ()->
-              me.listen()
-            401: ()->
-              document.log "user is not logged in -> stop listening on workspace"
-            503: ()->
-              document.log "Service Temporarily Unavailable"
-              setTimeout(->
-                me.listen()
-              , 5000)
-          }
           dataType: 'json' 
         }
         @execAjax(params)
-      
-    getChangesByProject: (project)->
-      project.update()
-      params = {
-        url: jsRoutes.controllers.ProjectController.projectVersionDelta(project.get('id')).url
-        type: 'POST'
-        cache: false
-        data: {'projectRevision': project.get('revision')}
-        success: (projectsData)=>
-          project.set 'revision', projectsData.currentRevision
-          
-          for path, meta of projectsData.resources
-            
-            if meta.deleted
-              resource = project.getResourceByPath path, false
-              if resource != undefined
-                resource.get('parent').deleteResourceByPath(path)
-                if $(".node.root .map-id[value*='#{path}']").size() > 0
-                  location.href = "/#closeMap/#{path}"
-                document.log "Resource #{path} deleted"
-            else
-              resource = project.getResourceByPath path, true
-              if resource != undefined
-                resource.fillFromData(meta)
-                resource.get('parent').addResouce resource
-                document.log "Resource #{path} updated"
-          
-        dataType: 'json' 
-      }
-      @execAjax(params)
     
     getProject: (projectId)->
       me = @

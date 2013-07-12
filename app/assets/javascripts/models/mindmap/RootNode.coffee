@@ -4,6 +4,7 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
   class RootNode extends AbstractNode
     constructor:->
       super()
+      @uniqueId = (new Date()).getMilliseconds()+"_"+Math.floor(Math.random()*99999)
       @allNodes = new Array()
       @parentsToLoad = new Array()
       @unfinishedNodes = {}
@@ -11,6 +12,9 @@ define ['logger', 'models/mindmap/AbstractNode'],  (logger, AbstractNode) ->
       @sup = RootNode.__super__
       @renderOnUnfoldLeft = true
       @renderOnUnfoldRight = true
+
+    getUniqueId: ()->
+    	@uniqueId
 
     addNodeToList:(node)->
       @allNodes.push node

@@ -158,7 +158,7 @@ define ['logger','views/mindmap/AbstractNodeView','views/mindmap/ConnectionView'
               $(child).addClass('left')
               $(child).css('right', @horizontalSpacer)
             else
-              $(child).addClass('right')	
+              $(child).addClass('right')
               $(child).css('left', @horizontalSpacer) 
             lastChild = child
 
