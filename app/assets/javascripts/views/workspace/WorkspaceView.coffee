@@ -13,6 +13,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       @model.bind "add", @add , @
       @model.bind "remove", @remove , @   
       @_rendered = false
+      @model._editMode = false
 
     resize:(widthAndHeight)->
       @$el.css
@@ -292,7 +293,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       )
 
 
-    addUser: (userName = "new_user")->
+    addUser: (userName = "new_user")=>
+      @model._editMode = true
       if typeof userName isnt "string"
         userName = "new_user"
       $parent = $('#workspace-tree').jstree('get_selected')
@@ -306,7 +308,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       
     # jstree functions are required, so dont use a fatarrow here
     requestAddUser:(obj, userName)=>
-      if !userName or userName.replace(/\s+/g, '') is ""
+      @model._editMode = false
+      if !userName or userName is "new_user" or userName.replace(/\s+/g, '') is ""
         $('#workspace-tree').jstree("delete_node", obj)
       else
         $parent  = $('#workspace-tree').jstree('get_selected')
@@ -471,6 +474,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       isValid
       
     requestCreateProject: (obj, projectName)=>
+      @model._editMode = false
       if !@isValidFilename(projectName, obj)
         $('#workspace-tree').jstree("delete_node", obj)
         @newProject(projectName)
@@ -491,7 +495,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           }
           $.ajax(params)
         
-    newProject: (projectName = "new project")->
+    newProject: (projectName = "new project")=>
+      @model._editMode = true
       if typeof projectName isnt "string"
         projectName = "new project"
       obj = $("#workspace-tree").jstree("create","#workspace-tree","last",projectName, false, true)
@@ -499,6 +504,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       $("#workspace-tree").jstree("rename",obj)
     
     requestCreateMindMap: (obj, fileName)=>
+      @model._editMode = false
       if !@isValidFilename(fileName, obj)        
         $parent  = $('#workspace-tree').jstree('get_selected')
         $('#workspace-tree').jstree("delete_node", obj)
@@ -561,7 +567,8 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
           $("#multiplename-error").show()
           $('#workspace-tree').jstree("delete_node", obj)
     
-    newMindMap: (filename = "new_mindmap.mm")->
+    newMindMap: (filename = "new_mindmap.mm")=>
+      @model._editMode = true
       if typeof filename isnt "string"
         filename = "new_mindmap.mm"
       $parent = $('#workspace-tree').jstree('get_selected')
@@ -582,6 +589,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
         $("#no-selection-error").show()
     
     renameResource: ($obj = null)=>
+      @model._editMode = true
       if $obj is null
         $obj = $('#workspace-tree').jstree('get_selected')
       $obj = $('#workspace-tree').jstree('get_selected')
@@ -589,6 +597,7 @@ define ['logger', 'views/workspace/ProjectView'], (logger, ProjectView) ->
       $("#workspace-tree").jstree("rename", $obj)
     
     requestRenameResource: (obj, newName)=>
+      @model._editMode = false
       oldPath = $(obj).attr('id')
       oldPath = oldPath.substr(oldPath.indexOf("_PATH_")+6)
       
