@@ -33,10 +33,7 @@ import org.springframework.stereotype.Component;
 import play.Logger;
 import play.data.Form;
 import play.libs.F.Function;
-import play.mvc.BodyParser;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Security;
+import play.mvc.*;
 import services.backend.project.ProjectService;
 import services.backend.project.VersionDeltaResponse;
 import services.backend.project.persistance.EntityCursor;
@@ -244,15 +241,18 @@ public class ProjectController extends DocearController {
     }
 
     public Result listenForUpdates(final boolean longPolling) throws IOException {
-    	final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
-        final Map<String, String[]> urlEncodedBody = request().body().asFormUrlEncoded();
+        final Map<String, Long> projectRevisonMap = new HashMap<String, Long>();
+        final Http.RequestBody body = request().body();
+        if(body != null) {
+            final Map<String, String[]> urlEncodedBody = body.asFormUrlEncoded();
 
-        for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
-            final String projectId = entry.getKey();
-            try {
-                projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
-            } catch (NumberFormatException e) {
-                return badRequest("Revisions must be long value!");
+            for (Map.Entry<String, String[]> entry : urlEncodedBody.entrySet()) {
+                final String projectId = entry.getKey();
+                try {
+                    projectRevisonMap.put(projectId, Long.parseLong(entry.getValue()[0]));
+                } catch (NumberFormatException e) {
+                    return badRequest("Revisions must be long value!");
+                }
             }
         }
 
