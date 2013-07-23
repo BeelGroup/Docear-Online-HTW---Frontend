@@ -66,7 +66,7 @@ public class SpringConfiguration {
     @Bean
     public FileSystem fileSystem() throws IOException {
         final FileSystem fileSystem = new RawLocalFileSystem();
-        final String pathToStorage = Play.application().configuration().getString("fileStore.rawLocalFileSystem.path");
+        final String pathToStorage = Play.application().configuration().getString("services.backend.project.filestore.rawLocalFileSystem.path");
         final File folderForStorage = new File(pathToStorage);
         if (!folderForStorage.exists()) {
             FileUtils.forceMkdir(folderForStorage);

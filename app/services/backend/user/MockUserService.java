@@ -11,16 +11,20 @@ import models.backend.exceptions.UserNotFoundException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import play.Play;
 import play.libs.F.Promise;
 
 @Profile("userServiceMock")
 @Component
 public class MockUserService extends UserService {
-
+	
+	private final List<String> allowedUsernames = Play.application().configuration().getStringList("application.users.mockNames");
+	private final String allowedPasswort = Play.application().configuration().getString("application.users.mockPassword");
+	
 	@Override
 	public Promise<String> authenticate(String username, String password) {
-		final boolean usernameCorrect = Arrays.asList("Jöran", "Julius", "Michael", "Florian", "Alex", "Paul", "Marcel", "Dimitri", "Volker", "showtime1", "showtime2", "showtime3", "showtime4").contains(username);
-		final boolean authenticated = usernameCorrect && "secret".equals(password);
+		final boolean usernameCorrect = allowedUsernames.contains(username);
+		final boolean authenticated = usernameCorrect && allowedPasswort.equals(password);
 		return Promise.pure(authenticated ? generateMockToken(username) : null);
 	}
 

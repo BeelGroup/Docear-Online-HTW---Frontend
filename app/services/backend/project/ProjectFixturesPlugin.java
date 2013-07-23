@@ -1,20 +1,25 @@
 package services.backend.project;
 
-import com.google.common.collect.Lists;
-import configuration.SpringConfiguration;
-import play.*;
-import services.backend.project.persistance.Project;
+import static org.apache.commons.io.FileUtils.iterateFiles;
+import static org.apache.commons.io.FileUtils.readFileToByteArray;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import models.backend.exceptions.sendResult.SendResultException;
 import models.project.exceptions.InvalidFileNameException;
+import play.Application;
+import play.Configuration;
+import play.Logger;
+import play.Play;
+import play.Plugin;
+import services.backend.project.persistance.Project;
 
-import static org.apache.commons.io.FileUtils.iterateFiles;
-import static org.apache.commons.io.FileUtils.readFileToByteArray;
+import com.google.common.collect.Lists;
+
+import configuration.SpringConfiguration;
 
 /**
  * This plugin is loads files from a local folder into the file store and the index db.
@@ -50,9 +55,13 @@ public final class ProjectFixturesPlugin extends Plugin {
         final ProjectService service = SpringConfiguration.getBean(ProjectService.class);
         final File projectFolder = new File(path);
         final Project project = service.createProject("Michael", projectFolder.getName());
-        final List<String> allowedUsers = Arrays.asList("Julius", "Alex", "Florian", "Paul", "alschwank", "online-demo", "showtime1", "showtime2", "showtime3", "showtime4");
+        final List<String> allowedUsers = Play.application().configuration().getStringList("application.users.mockNames");
         for (final String user: allowedUsers) {
+        	try {
             service.addUserToProject(project.getId(), user);
+        	} catch (SendResultException e) {
+        		//nothing to do, just catching already present
+        	}
         }
         final Iterator<File> fileIterator = iterateFiles(projectFolder, null, true);
         while (fileIterator.hasNext()) {

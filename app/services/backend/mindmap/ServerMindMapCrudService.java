@@ -117,7 +117,7 @@ public class ServerMindMapCrudService implements MindMapCrudService {
 	private MetaDataCrudService metaDataCrudService;
 
 	public ServerMindMapCrudService() {
-		final String freeplaneActorUrl = Play.application().configuration().getString("backend.singleInstance.host");
+		final String freeplaneActorUrl = Play.application().configuration().getStringList("services.backend.mindmap.MindMapCrudService.instances").get(0);
 		system = ActorSystem.create("freeplaneSystem", ConfigFactory.load().getConfig("local"));
 		remoteActor = system.actorFor(freeplaneActorUrl);
 
