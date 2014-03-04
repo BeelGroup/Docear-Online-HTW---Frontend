@@ -33,7 +33,7 @@ public class ServerUserService extends UserService {
 		try {
 			final String user = URLEncoder.encode(username, "UTF-8");
 			final String pwd = URLEncoder.encode(password, "UTF-8");
-			final Promise<Response> wsResponsePromise = WS.url("https://api.docear.org/authenticate/" + user).post("password=" + pwd);
+			final Promise<Response> wsResponsePromise = WS.url("https://api.docear.org/authenticate/" + user).setHeader("Content-Type", "application/x-www-form-urlencoded").post("password=" + pwd);
 			return wsResponsePromise.map(new F.Function<Response, String>() {
 				@Override
 				public String apply(Response response) throws Throwable {
